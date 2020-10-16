@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core
+namespace Furesoft.Core.Factory
 {
     public static class ObjectFactory
     {

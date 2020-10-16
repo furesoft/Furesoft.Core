@@ -1,4 +1,4 @@
-﻿namespace Furesoft.Core
+﻿namespace Furesoft.Core.Factory
 {
     public interface IObjectFactory
     {
