@@ -1,0 +1,4 @@
+C:\Users\filmee24\source\repos\Furesoft.Core\Furesoft.Core\obj\Debug\netstandard2.0\Furesoft.Core.csprojAssemblyReference.cache
+C:\Users\filmee24\source\repos\Furesoft.Core\Furesoft.Core\obj\Debug\netstandard2.0\Furesoft.Core.AssemblyInfoInputs.cache
+C:\Users\filmee24\source\repos\Furesoft.Core\Furesoft.Core\obj\Debug\netstandard2.0\Furesoft.Core.AssemblyInfo.cs
+C:\Users\filmee24\source\repos\Furesoft.Core\Furesoft.Core\obj\Debug\netstandard2.0\Furesoft.Core.csproj.CoreCompileInputs.cache
