@@ -9,13 +9,23 @@ namespace TestApp
 {
     internal class CowDatabase : IDisposable
     {
-        readonly Stream mainDatabaseFile;
-        readonly Stream primaryIndexFile;
-        readonly Stream secondaryIndexFile;
-        readonly Tree<Guid, uint> primaryIndex;
-        readonly Tree<Tuple<string, int>, uint> secondaryIndex;
+        private readonly Stream mainDatabaseFile;
+        private readonly Stream primaryIndexFile;
+        private readonly Stream secondaryIndexFile;
+        private readonly Tree<Guid, uint> primaryIndex;
+        private readonly Tree<Tuple<string, int>, uint> secondaryIndex;
         private readonly RecordStorage cowRecords;
         private readonly CowSerializer cowSerializer = new CowSerializer();
+
+        public IEnumerable<CowModel> FindAll()
+        {
+            var entries = primaryIndex.GetKeys();
+
+            foreach (var entry in entries)
+            {
+                yield return Find(entry);
+            }
+        }
 
         public CowDatabase(string pathToCowDb)
         {

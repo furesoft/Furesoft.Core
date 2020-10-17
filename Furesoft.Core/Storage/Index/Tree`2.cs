@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.Storage.Index
 {
@@ -7,6 +8,11 @@ namespace Furesoft.Core.Storage.Index
 	{
 		private readonly ITreeNodeManager<K, V> nodeManager;
 		private readonly bool _allowDuplicateKeys;
+
+		public IEnumerable<K> GetKeys()
+		{
+			return nodeManager.RootNode.Entries.ToArray().Select(_=>_.Item1);
+		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Sdb.BTree.Tree`2"/> class.
