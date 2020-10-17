@@ -13,6 +13,7 @@ namespace TestApp
             try
             {
                 // Init the cow db based on a file on temp directory
+                /*
                 using (var db = new CowDatabase(dbFile))
                 {
                     // Insert some cows into our database..
@@ -54,7 +55,7 @@ namespace TestApp
                     });
                     Console.WriteLine("Inserted 2 cows");
                 }
-
+                */
                 // Reconstruct our database again,
                 // to demonstrate that cow data are persistence
                 using (var db = new CowDatabase(dbFile))
@@ -70,28 +71,30 @@ namespace TestApp
                     {
                         Console.WriteLine(row.ToString());
                     }
+
+                    db.Delete(db.Find(Guid.Parse("8872d8ba-e470-440d-aa9b-071822e8053f")));
                 }
             }
             // Clean up stuff after the demo,
             finally
             {
-                if (File.Exists(dbFile))
-                {
-                    File.Delete(dbFile);
-                    Console.WriteLine("Deleted main database file");
-                }
+                /* if (File.Exists(dbFile))
+                 {
+                     File.Delete(dbFile);
+                     Console.WriteLine("Deleted main database file");
+                 }
 
-                if (File.Exists(dbFile + ".pidx"))
-                {
-                    File.Delete(dbFile + ".pidx");
-                    Console.WriteLine("Deleted primary index file");
-                }
+                 if (File.Exists(dbFile + ".pidx"))
+                 {
+                     File.Delete(dbFile + ".pidx");
+                     Console.WriteLine("Deleted primary index file");
+                 }
 
-                if (File.Exists(dbFile + ".sidx"))
-                {
-                    File.Delete(dbFile + ".sidx");
-                    Console.WriteLine("Deleted secondary index file");
-                }
+                 if (File.Exists(dbFile + ".sidx"))
+                 {
+                     File.Delete(dbFile + ".sidx");
+                     Console.WriteLine("Deleted secondary index file");
+                 }*/
             }
         }
     }
