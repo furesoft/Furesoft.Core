@@ -1,0 +1,3 @@
+[ ] AST - TokenNode??
+[ ] StringEncoder - implement different Checksum algorythms
+[ ] Add parser framework
