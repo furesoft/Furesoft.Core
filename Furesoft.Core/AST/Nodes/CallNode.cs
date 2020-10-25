@@ -4,14 +4,16 @@ namespace Furesoft.Core.AST.Nodes
 {
 	public struct CallNode : IAstNode
 	{
-		public CallNode(string name, List<IAstNode> args)
+		public CallNode(string name, List<IAstNode> args, NodeRange range)
 		{
 			Name = name;
 			Args = args;
+			Range = range;
 		}
 
 		public List<IAstNode> Args { get; set; }
 		public string Name { get; set; }
+		public NodeRange Range { get; set; }
 
 		public override string ToString()
 		{

@@ -2,12 +2,14 @@
 {
 	public struct IdentifierNode : IAstNode
 	{
-		public IdentifierNode(string name)
+		public IdentifierNode(string name, NodeRange range)
 		{
 			Name = name;
+			Range = range;
 		}
 
 		public string Name { get; set; }
+		public NodeRange Range { get; set; }
 
 		public override string ToString()
 		{

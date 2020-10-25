@@ -2,11 +2,13 @@
 {
 	public struct LiteralNode : IAstNode
 	{
-		public LiteralNode(object value)
+		public LiteralNode(object value, NodeRange range)
 		{
 			Value = value;
+			Range = range;
 		}
 
+		public NodeRange Range { get; set; }
 		public object Value { get; set; }
 
 		public override string ToString()
