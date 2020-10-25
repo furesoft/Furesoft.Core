@@ -1,3 +1,8 @@
-[ ] AST - TokenNode??
+AST:
+	[ ] TokenNode??
+	[ ] Add NodeStyle {Int, Decimal, String, Hexadecimal, Binary, Brackets, Paranthesis}
+	[ ] Add WithStyle-Extension
+	[ ] Printer - implement different printing of NodeStyle
+
 [ ] StringEncoder - implement different Checksum algorythms
 [ ] Add parser framework

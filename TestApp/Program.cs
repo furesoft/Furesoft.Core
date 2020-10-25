@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Furesoft.Core.AST;
+using System;
 using System.IO;
 
 namespace TestApp
@@ -7,6 +8,8 @@ namespace TestApp
     {
         public static void Main(string[] args)
         {
+            var ast = NodeFactory.Call("def", NodeFactory.Id("x"), NodeFactory.Literal(42));
+
             // For demonstartion purpose, our cow database is saved into a temp file
             var dbFile = Path.Combine(Environment.CurrentDirectory, "cowdb.data");
 
