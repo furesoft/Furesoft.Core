@@ -13,5 +13,10 @@
 		{
 			return Printer.Default.Print(this);
 		}
+
+		public void Visit(INodeVisitor visitor)
+		{
+			visitor.Visit(this);
+		}
 	}
 }

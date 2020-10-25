@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
 namespace Furesoft.Core.AST.Nodes
 {
@@ -19,6 +16,11 @@ namespace Furesoft.Core.AST.Nodes
 		public override string ToString()
 		{
 			return Printer.Default.Print(this);
+		}
+
+		public void Visit(INodeVisitor visitor)
+		{
+			visitor.Visit(this);
 		}
 	}
 }

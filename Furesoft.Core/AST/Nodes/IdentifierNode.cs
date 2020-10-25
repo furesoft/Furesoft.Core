@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Furesoft.Core.AST.Nodes
+﻿namespace Furesoft.Core.AST.Nodes
 {
 	public struct IdentifierNode : IAstNode
 	{
@@ -15,6 +12,11 @@ namespace Furesoft.Core.AST.Nodes
 		public override string ToString()
 		{
 			return Printer.Default.Print(this);
+		}
+
+		public void Visit(INodeVisitor visitor)
+		{
+			visitor.Visit(this);
 		}
 	}
 }
