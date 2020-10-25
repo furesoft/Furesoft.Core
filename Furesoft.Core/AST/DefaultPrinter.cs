@@ -1,13 +1,20 @@
-﻿using System.Collections.Generic;
+﻿/// Copyright by Chris Anders (filmee24, Furesoft)
+/// Copyright by Chris Anders (filmee24, Furesoft)
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Furesoft.Core.AST;
 using Furesoft.Core.AST.Nodes;
 
 namespace Furesoft.Core.AST
 {
 	public class DefaultPrinter : IPrinter
 	{
+		public static string SeperateArgs(IEnumerable<IAstNode> a)
+		{
+			var args = a.Select(_ => _.ToString());
+			return string.Join(',', args);
+		}
+
 		public string Print(LiteralNode lit)
 		{
 			return lit.Value.ToString();
@@ -16,12 +23,6 @@ namespace Furesoft.Core.AST
 		public string Print(IdentifierNode id)
 		{
 			return id.Name;
-		}
-
-		public static string SeperateArgs(IEnumerable<IAstNode> a)
-		{
-			var args = a.Select(_ => _.ToString());
-			return string.Join(',', args);
 		}
 
 		public string Print(CallNode call)
