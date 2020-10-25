@@ -1,8 +1,12 @@
-AST:
+- AST:
+	[ ] Add Symbol-Struct and replace possibly strings in nodes 
 	[ ] TokenNode??
 	[ ] Add NodeStyle {Int, Decimal, String, Hexadecimal, Binary, Brackets, Paranthesis}
 	[ ] Add WithStyle-Extension
-	[ ] Printer - implement different printing of NodeStyle
+	- Printer:
+		[ ] Printer - implement different printing of NodeStyle
 
-[ ] StringEncoder - implement different Checksum algorythms
+- StringEncoder
+	[ ] implement different Checksum algorythms
+
 [ ] Add parser framework
