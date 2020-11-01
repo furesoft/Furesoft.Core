@@ -10,3 +10,9 @@
 	[ ] implement different Checksum algorythms
 
 [ ] Add parser framework
+[ ] Add CLI App Framework
+	[ ] Commandline Parser
+	[ ] OOP Based Commands
+	[ ] SubCommands
+	[ ] REPL Mode? --interactive
+	[ ] Aliases?

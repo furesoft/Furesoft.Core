@@ -1,13 +1,35 @@
 ﻿using Furesoft.Core.AST;
+using Furesoft.Core.CLI;
 using System;
 using System.IO;
 
 namespace TestApp
 {
+    public class SetCommand : ICommand
+    {
+        public string Name => "set";
+
+        public string HelpText => "set <property> <value>";
+
+        public string Description => "Change Metadata of the current book";
+
+        public int Invoke(ArgumentVector args)
+        {
+            var prop = args.GetValue<string>(0);
+            var value = args.GetValue<string>(1);
+            var wall = args.GetOption("-Wall");
+
+            return 0;
+        }
+    }
+
     internal static class Program
     {
         public static void Main(string[] args)
         {
+            var app = new App();
+            app.Run();
+
             var ast = NodeFactory.Call("def", NodeFactory.Id("x"), NodeFactory.Literal(42));
 
             // For demonstartion purpose, our cow database is saved into a temp file
