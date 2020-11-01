@@ -1,9 +1,10 @@
 ﻿using Furesoft.Core.CLI;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace TestApp
 {
-    public class AddCommand : ICommand
+    public class AddCommand : ICliCommand
     {
         public string Name => "add";
 
@@ -11,7 +12,7 @@ namespace TestApp
 
         public string Description => "Add Article from Site to Book";
 
-        public int Invoke(ArgumentVector args)
+        public async Task<int> InvokeAsync(ArgumentVector args)
         {
             var id = args.GetValue<int>(0);
             var optimize = args.GetOption("-opt|--optimize");

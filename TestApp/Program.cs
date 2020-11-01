@@ -3,15 +3,16 @@ using Furesoft.Core.CLI;
 using Furesoft.Core.Commands;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace TestApp
 {
     internal static class Program
     {
-        public static int Main(string[] args)
+        public static Task<int> Main(string[] args)
         {
             var app = new App();
-            return app.Run();
+            return app.RunAsync();
 
             /* var ast = NodeFactory.Call("def",
                      NodeFactory.Id("x"),

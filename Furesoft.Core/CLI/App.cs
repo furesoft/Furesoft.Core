@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Furesoft.Core.Activation;
 
 namespace Furesoft.Core.CLI
@@ -11,13 +12,13 @@ namespace Furesoft.Core.CLI
 	/// </summary>
 	public class App
 	{
-		private Dictionary<string, ICommand> _commands = new Dictionary<string, ICommand>();
+		private Dictionary<string, ICliCommand> _commands = new Dictionary<string, ICliCommand>();
 
 		/// <summary>
 		/// Start The Application
 		/// </summary>
 		/// <returns>The Return Code</returns>
-		public int Run()
+		public async Task<int> RunAsync()
 		{
 			//collect all command processors
 			var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(_ => _.GetTypes());
@@ -28,9 +29,9 @@ namespace Furesoft.Core.CLI
 				{
 					continue;
 				}
-				else if (typeof(ICommand).IsAssignableFrom(t))
+				else if (typeof(ICliCommand).IsAssignableFrom(t))
 				{
-					var instance = DefaultActivator.Instance.CreateInstance<ICommand>(t, Array.Empty<Type>());
+					var instance = DefaultActivator.Instance.CreateInstance<ICliCommand>(t, Array.Empty<Type>());
 					_commands.Add(instance.Name, instance);
 				}
 			}
@@ -43,16 +44,16 @@ namespace Furesoft.Core.CLI
 				{
 					Console.Write(">> ");
 					var input = Console.ReadLine();
-					ProcessCommand(input.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+					await ProcessCommandAsync(input.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 				}
 			}
 			else
 			{
-				return ProcessCommand(args);
+				return await ProcessCommandAsync(args);
 			}
 		}
 
-		private int ProcessCommand(string[] args)
+		private async Task<int> ProcessCommandAsync(string[] args)
 		{
 			var name = args[1]; //ToDo: Parse command line arguments
 
@@ -60,7 +61,7 @@ namespace Furesoft.Core.CLI
 			if (_commands.ContainsKey(name))
 			{
 				BuildArgumentVector(out var av, args); //ToDo: Fix BuildArgumentVector
-				return _commands[name].Invoke(av);
+				return await _commands[name].InvokeAsync(av);
 			}
 			else if (name == "help")
 			{

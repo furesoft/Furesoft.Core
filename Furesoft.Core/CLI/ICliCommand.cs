@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System.Threading.Tasks;
 
 namespace Furesoft.Core.CLI
 {
-	public interface ICommand
+	public interface ICliCommand
 	{
 		string Name { get; }
 		string HelpText { get; }
 		string Description { get; }
 
-		int Invoke(ArgumentVector args);
+		Task<int> InvokeAsync(ArgumentVector args);
 	}
 }
