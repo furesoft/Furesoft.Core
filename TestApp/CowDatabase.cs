@@ -138,9 +138,10 @@ namespace TestApp
         /// <summary>
         /// Delete specified cow from our database
         /// </summary>
-        public void Delete(CowModel cow)
+        public void Delete(Guid id)
         {
-            cowRecords.Delete(primaryIndex.Get(cow.Id).Item2);
+            cowRecords.Delete(primaryIndex.Get(id).Item2);
+            primaryIndex.Delete(id);
         }
 
         public void Dispose()
