@@ -16,3 +16,4 @@
 	[ ] SubCommands?
 	[-] REPL Mode? --interactive
 	[ ] Aliases?
+	[ ] Console Extensions? ConsoleEx.Prompt("")

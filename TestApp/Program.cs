@@ -49,9 +49,18 @@ namespace TestApp
                 }
                 else if (cmd == "add")
                 {
-                    var name = Console.ReadLine();
                     using var db = new CowDatabase(dbFile);
-                    db.Insert(new CowModel { Name = name, Id = Guid.NewGuid(), Breed = name, DnaData = new byte[] { 20, 40, 36, 21 } });
+                    var name = ConsoleEx.Prompt("Name: ");
+                    var breed = ConsoleEx.Prompt("Breed:");
+                    var age = ConsoleEx.PromptInt("Age: ");
+                    byte[] dnaBuffer = new byte[20];
+
+                    var r = new Random();
+                    r.NextBytes(dnaBuffer);
+
+                    db.Insert(new CowModel { Name = name, Id = Guid.NewGuid(), Breed = breed, DnaData = dnaBuffer });
+
+                    Console.WriteLine("Cow successfully added");
                 }
                 else if (cmd == "init")
                 {
