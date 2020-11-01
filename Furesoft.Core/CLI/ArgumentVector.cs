@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Furesoft.Core.CLI
 {
@@ -29,7 +30,15 @@ namespace Furesoft.Core.CLI
 
 		public bool GetOption(string name)
 		{
-			return _values.ContainsKey(name);
+			foreach (var key in _values.Keys)
+			{
+				if (Regex.IsMatch(key, name))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }

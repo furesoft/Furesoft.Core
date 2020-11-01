@@ -17,7 +17,7 @@ namespace TestApp
         {
             var prop = args.GetValue<string>(0);
             var value = args.GetValue<string>(1);
-            var wall = args.GetOption("-Wall");
+            var wall = args.GetOption("-Wall|--warning-all");
 
             return 0;
         }
