@@ -2,6 +2,9 @@
 
 namespace Furesoft.Core
 {
+	/// <summary>
+	/// A Class To Easily Use Int as BitField
+	/// </summary>
 	public struct BitSet
 	{
 		private int flags;

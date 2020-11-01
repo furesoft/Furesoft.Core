@@ -3,8 +3,16 @@ using System.Text;
 
 namespace Furesoft.Core
 {
+	/// <summary>
+	/// A Class To Encode Strings in a SerialKey Format
+	/// </summary>
 	public static class StringEncoder
 	{
+		/// <summary>
+		/// Encode Integer Values To String
+		/// </summary>
+		/// <param name="values">The Values To Encode</param>
+		/// <returns></returns>
 		public static string Encode(params int[] values)
 		{
 			var sb = new StringBuilder();
@@ -15,7 +23,7 @@ namespace Furesoft.Core
 				sb.Append(GetLetter(v)).Append("-");
 			}
 
-			string result = sb.ToString();
+			var result = sb.ToString();
 
 			//build checksum and append to stringbuilder
 			var checksum = (result.Length - values.Length) ^ 3;
@@ -25,6 +33,11 @@ namespace Furesoft.Core
 			return sb.ToString();
 		}
 
+		/// <summary>
+		/// Validates A Encoded String
+		/// </summary>
+		/// <param name="code">The encoded String</param>
+		/// <returns></returns>
 		public static bool Validate(string code)
 		{
 			var spl = code.Split('-', StringSplitOptions.RemoveEmptyEntries);
@@ -34,17 +47,20 @@ namespace Furesoft.Core
 			var checksum = (code.Length - spl.Length) ^ 3;
 			var checksumLetter = GetLetter(checksum);
 
-			if (spl[^1] != checksumLetter) return false;
-
-			return true;
+			return spl[^1] == checksumLetter;
 		}
 
+		/// <summary>
+		/// Decode a EncodedString to Integer Values
+		/// </summary>
+		/// <param name="code">The Encoded String to Decode</param>
+		/// <returns></returns>
 		public static int[] Decode(string code)
 		{
 			var spl = code.Split('-', StringSplitOptions.RemoveEmptyEntries);
 			var buffer = new int[spl.Length - 1];
 
-			for (int i = 0; i < spl.Length - 1; i++)
+			for (var i = 0; i < spl.Length - 1; i++)
 			{
 				buffer[i] = int.Parse(GetNumberString(spl[i]));
 			}
@@ -66,7 +82,7 @@ namespace Furesoft.Core
 
 			foreach (var l in v)
 			{
-				var index = alphabet.IndexOf(l);
+				var index = Alphabet.IndexOf(l);
 				var digit = index.ToString();
 
 				sb.Append(digit);
@@ -75,7 +91,7 @@ namespace Furesoft.Core
 			return sb.ToString();
 		}
 
-		private const string alphabet = "ACBZXJHFRTKNLMUV";
+		private const string Alphabet = "ACBZXJHFRTKNLMUV";
 
 		private static string GetLetter(int v)
 		{
@@ -85,7 +101,7 @@ namespace Furesoft.Core
 
 			foreach (var d in str)
 			{
-				sb.Append(alphabet[d - '0']);
+				sb.Append(Alphabet[d - '0']);
 			}
 
 			return sb.ToString();

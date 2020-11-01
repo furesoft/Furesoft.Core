@@ -6,10 +6,17 @@ using Furesoft.Core.Activation;
 
 namespace Furesoft.Core.CLI
 {
+	/// <summary>
+	/// A Class to build CommandLine Applications easily
+	/// </summary>
 	public class App
 	{
 		private Dictionary<string, ICommand> _commands = new Dictionary<string, ICommand>();
 
+		/// <summary>
+		/// Start The Application
+		/// </summary>
+		/// <returns>The Return Code</returns>
 		public int Run()
 		{
 			//collect all command processors
