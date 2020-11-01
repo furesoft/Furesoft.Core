@@ -8,17 +8,17 @@ namespace Furesoft.Core.Activation
 		public static Activator<ActivationStrategy> Instance = new Activator<ActivationStrategy>();
 		private readonly ActivationStrategy _strategy = new ActivationStrategy();
 
-		public object CreateInstance(Type type, object[] args = null)
+		public object CreateInstance(Type type, object[] args)
 		{
 			return _strategy.Activate(type, args);
 		}
 
-		public T CreateInstance<T>(Type type, object[] args = null)
+		public T CreateInstance<T>(Type type, object[] args)
 		{
 			return (T)_strategy.Activate(type, args);
 		}
 
-		public T CreateInstance<T>(object[] args = null)
+		public T CreateInstance<T>(object[] args)
 		{
 			return (T)CreateInstance(typeof(T), args);
 		}
