@@ -54,15 +54,13 @@ namespace Furesoft.Core.CLI
 
 		private int ProcessCommand(string[] args)
 		{
-			var name = args[0]; //ToDo: Parse command line arguments
+			var name = args[1]; //ToDo: Parse command line arguments
 
 			//find correct processor and invoke it with new argumentvector
 			if (_commands.ContainsKey(name))
 			{
-				var values = new Dictionary<string, object>();
-				values.Add("custom_cover", "hello.jpg");
-				values.Add("-Wall", null);
-				return _commands[name].Invoke(new ArgumentVector(values));
+				BuildArgumentVector(out var av, args); //ToDo: Fix BuildArgumentVector
+				return _commands[name].Invoke(av);
 			}
 			else
 			{
@@ -76,6 +74,26 @@ namespace Furesoft.Core.CLI
 			}
 
 			return -1;
+		}
+
+		private void BuildArgumentVector(out ArgumentVector av, string[] args)
+		{
+			var values = new Dictionary<string, object>();
+			for (var i = 2; i < args.Length; i++)
+			{
+				var key = args[i];
+
+				if (key.StartsWith("-"))
+				{
+					values.Add(key, true);
+				}
+				else
+				{
+					values.Add(key, args[i++]);
+				}
+			}
+
+			av = new ArgumentVector(values);
 		}
 	}
 }
