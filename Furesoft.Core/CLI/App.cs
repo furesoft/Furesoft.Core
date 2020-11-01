@@ -62,18 +62,27 @@ namespace Furesoft.Core.CLI
 				BuildArgumentVector(out var av, args); //ToDo: Fix BuildArgumentVector
 				return _commands[name].Invoke(av);
 			}
+			else if (name == "help")
+			{
+				PrintAllCommands();
+			}
 			else
 			{
 				// Print list of commands with helptext
-				Console.WriteLine("Command\t\t\tDescription\t\t\tExample");
-				Console.WriteLine("-----------------------------");
-				foreach (var cmd in _commands)
-				{
-					Console.WriteLine(cmd.Key + "\t" + cmd.Value.Description + "\t" + cmd.Value.HelpText);
-				}
+				PrintAllCommands();
 			}
 
 			return -1;
+		}
+
+		private void PrintAllCommands()
+		{
+			Console.WriteLine("Command\t\t\tDescription\t\t\tExample");
+			Console.WriteLine("-----------------------------");
+			foreach (var cmd in _commands)
+			{
+				Console.WriteLine(cmd.Key + "\t" + cmd.Value.Description + "\t" + cmd.Value.HelpText);
+			}
 		}
 
 		private void BuildArgumentVector(out ArgumentVector av, string[] args)

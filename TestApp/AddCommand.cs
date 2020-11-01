@@ -1,8 +1,5 @@
-﻿using Furesoft.Core.AST;
-using Furesoft.Core.CLI;
-using Furesoft.Core.Commands;
-using System;
-using System.IO;
+﻿using Furesoft.Core.CLI;
+using System.Diagnostics;
 
 namespace TestApp
 {
