@@ -2,7 +2,7 @@
   "profiles": {
     "TestApp": {
       "commandName": "Project",
-      "commandLineArgs": "add --id 5236421 -opt"
+      "commandLineArgs": "add -id 5236421 -opt"
     }
   }
 }

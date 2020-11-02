@@ -60,8 +60,7 @@ namespace Furesoft.Core.CLI
 			//find correct processor and invoke it with new argumentvector
 			if (_commands.ContainsKey(name))
 			{
-				BuildArgumentVector(out var av, args); //ToDo: Fix BuildArgumentVector
-				return await _commands[name].InvokeAsync(av);
+				return await _commands[name].InvokeAsync(new CommandlineArguments(args));
 			}
 			else if (name == "help")
 			{
@@ -84,26 +83,6 @@ namespace Furesoft.Core.CLI
 			{
 				Console.WriteLine(cmd.Key + "\t" + cmd.Value.Description + "\t" + cmd.Value.HelpText);
 			}
-		}
-
-		private void BuildArgumentVector(out ArgumentVector av, string[] args)
-		{
-			var values = new Dictionary<string, object>();
-			for (var i = 2; i < args.Length; i++)
-			{
-				var key = args[i];
-
-				if (key.StartsWith("-"))
-				{
-					values.Add(key, true);
-				}
-				else
-				{
-					values.Add(key, args[i++]);
-				}
-			}
-
-			av = new ArgumentVector(values);
 		}
 	}
 }

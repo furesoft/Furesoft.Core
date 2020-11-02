@@ -1,5 +1,4 @@
 ﻿using Furesoft.Core.CLI;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace TestApp
@@ -12,12 +11,12 @@ namespace TestApp
 
         public string Description => "Add Article from Site to Book";
 
-        public async Task<int> InvokeAsync(ArgumentVector args)
+        public Task<int> InvokeAsync(CommandlineArguments args)
         {
-            var id = args.GetValue<int>(0);
-            var optimize = args.GetOption("-opt|--optimize");
+            var id = args["id"];
+            var optimize = args.GetValue<bool>("opt");
 
-            return 0;
+            return Task.FromResult(0);
         }
     }
 }

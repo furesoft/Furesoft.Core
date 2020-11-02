@@ -8,6 +8,6 @@ namespace Furesoft.Core.CLI
 		string HelpText { get; }
 		string Description { get; }
 
-		Task<int> InvokeAsync(ArgumentVector args);
+		Task<int> InvokeAsync(CommandlineArguments args);
 	}
 }
