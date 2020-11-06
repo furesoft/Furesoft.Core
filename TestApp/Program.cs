@@ -1,8 +1,5 @@
-﻿using Furesoft.Core.AST;
-using Furesoft.Core.CLI;
-using Furesoft.Core.Commands;
-using System;
-using System.IO;
+﻿using Furesoft.Core.CLI;
+using Furesoft.Core.RegExp;
 using System.Threading.Tasks;
 
 namespace TestApp
@@ -11,6 +8,8 @@ namespace TestApp
     {
         public static Task<int> Main(string[] args)
         {
+            var preg = Regex.IsMatch("a?b+c.", "abcd");
+
             var app = new App();
             return app.RunAsync();
 
