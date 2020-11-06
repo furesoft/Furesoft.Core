@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -87,8 +88,25 @@ namespace Furesoft.Core.CLI
 
 		public T GetValue<T>(string param)
 		{
+			var value = this[param];
+
+			if (value == null) return default;
+
 			var conv = TypeDescriptor.GetConverter(typeof(T));
-			return (T)conv.ConvertFromString(this[param]);
+			return (T)conv.ConvertFromString(value);
+		}
+
+		public bool GetOption(string shortTerm, string longTerm)
+		{
+			foreach (DictionaryEntry item in Parameters)
+			{
+				if (Regex.IsMatch(item.Key.ToString(), $"{shortTerm}|{longTerm}"))
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 }
