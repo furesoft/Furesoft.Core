@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Nullable>warnings</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Authors>furesoft</Authors>
   </PropertyGroup>
   
   <ItemGroup>
