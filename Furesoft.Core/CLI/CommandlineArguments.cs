@@ -96,6 +96,11 @@ namespace Furesoft.Core.CLI
 			return (T)conv.ConvertFromString(value);
 		}
 
+		public bool HasOption(string key)
+		{
+			return Parameters.ContainsKey(key);
+		}
+
 		public bool GetOption(string shortTerm, string longTerm)
 		{
 			foreach (DictionaryEntry item in Parameters)
