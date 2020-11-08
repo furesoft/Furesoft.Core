@@ -4,9 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
-using Creek.Plugins.Internal.Tools;
 
-namespace Creek.Extensibility.Plugins
+namespace Furesoft.Core.Extensibility.Plugins
 {
 	/// <summary>
 	/// This class must be inherited by applications that uses plugins.

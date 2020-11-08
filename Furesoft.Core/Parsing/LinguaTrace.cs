@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	public enum LinguaTraceId
 	{

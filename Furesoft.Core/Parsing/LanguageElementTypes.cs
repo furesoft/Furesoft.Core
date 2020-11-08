@@ -2,7 +2,7 @@
  * Licensed under the terms of the Microsoft Public License (Ms-PL).
  */
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Identifies the types of language elements that compose a grammar: terminals and nonterminals.

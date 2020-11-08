@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Creek.Extensibility.Plugins.Runnable
+namespace Furesoft.Core.Extensibility.Plugins.Runnable
 {
 	/// <summary>
 	/// This class is used to make possible to create a plugin that implements

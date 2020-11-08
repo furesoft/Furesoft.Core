@@ -1,4 +1,4 @@
-﻿namespace Creek.Text
+﻿namespace Furesoft.Core.CLI
 {
 	using System;
 	using System.Collections;

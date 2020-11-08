@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Creek.Plugins.Internal.Tools
+namespace Furesoft.Core.Extensibility.Plugins
 {
 	internal class LinkFinder
 	{

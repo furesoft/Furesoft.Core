@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace Furesoft.Core.Storage
 {

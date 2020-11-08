@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using Creek.Parsing.Generator;
 
 namespace Furesoft.Core.RegExp
 {

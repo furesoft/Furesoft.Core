@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Creek.Extensibility.Addins
+namespace Furesoft.Core.Extensibility.Addins
 {
 	public class ExtensionNode
 	{

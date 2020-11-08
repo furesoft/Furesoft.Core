@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Creek.Extensibility.Plugins
+namespace Furesoft.Core.Extensibility.Plugins
 {
 	/// <summary>
 	/// Implementation of IApplicationPlugIn interface.

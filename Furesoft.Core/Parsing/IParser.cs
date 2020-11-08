@@ -2,7 +2,7 @@
  * Licensed under the terms of the Microsoft Public License (Ms-PL).
  */
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines the contract implemented by all Lingua.NET parsers.

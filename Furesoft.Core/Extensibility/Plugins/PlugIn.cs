@@ -1,4 +1,4 @@
-﻿namespace Creek.Extensibility.Plugins
+﻿namespace Furesoft.Core.Extensibility.Plugins
 {
 	/// <summary>
 	/// This class is used to make possible to create a plugin that implements

@@ -5,7 +5,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// A concrete implementation of <see cref="IParserGenerator" />.

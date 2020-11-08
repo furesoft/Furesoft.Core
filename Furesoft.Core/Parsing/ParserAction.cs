@@ -2,7 +2,7 @@
  * Licensed under the terms of the Microsoft Public License (Ms-PL).
  */
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines the action taken during parsing for a specific <see cref="ParserState" /> and <see cref="ParserActionShift" />.

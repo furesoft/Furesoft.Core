@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Specifies the attribute of a method associated with a <see cref="RuleType" />.

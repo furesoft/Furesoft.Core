@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Contains the set of <see cref="TerminalType" /> objects representing terminals that can begin strings derived from a language element.

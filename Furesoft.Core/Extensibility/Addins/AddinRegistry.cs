@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 
-namespace Creek.Extensibility.Addins
+namespace Furesoft.Core.Extensibility.Addins
 {
 	public class AddinRegistry : Collection<Addin>
 	{

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Creek.Extensibility.Plugins.Runnable
+namespace Furesoft.Core.Extensibility.Plugins.Runnable
 {
 	/// <summary>
 	/// This class is used as a base class for plugin applications that they and their plugins can be run (start/stop).

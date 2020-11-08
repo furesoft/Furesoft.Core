@@ -8,7 +8,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// A concrete implementation of <see cref="ITerminalReader" /> created by <see cref="TerminalReaderGenerator" />.

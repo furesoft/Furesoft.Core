@@ -4,7 +4,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Provides concrete implementation of <see cref="ITerminalReaderGenerator" />.

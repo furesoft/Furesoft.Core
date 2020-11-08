@@ -1,4 +1,4 @@
-﻿namespace Creek.Extensibility.Plugins
+﻿namespace Furesoft.Core.Extensibility.Plugins
 {
 	/// <summary>
 	/// All plugin-based applications implements this interface.

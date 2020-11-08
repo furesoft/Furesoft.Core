@@ -2,7 +2,7 @@
  * Licensed under the terms of the Microsoft Public License (Ms-PL).
  */
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines a <see cref="LanguageElement" /> that represents a terminal: a token recognized by an <see cref="ITerminalReader"/>

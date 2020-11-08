@@ -2,7 +2,7 @@
  * Licensed under the terms of the Microsoft Public License (Ms-PL).
  */
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines a <see cref="ParserAction" /> that causes a <see cref="Parser" /> to update a <see cref="ParserStack"/> by

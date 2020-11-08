@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
-namespace Creek.Extensibility.Plugins
+namespace Furesoft.Core.Extensibility.Plugins
 {
 	/// <summary>
 	/// This class contains general purpose methods to be used by PlugIn system.

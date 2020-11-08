@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines the contract implemented by all Lingua.NET terminal readers.

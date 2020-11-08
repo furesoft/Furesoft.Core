@@ -5,7 +5,7 @@
 using System;
 using System.Text;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Represents an LR(0) item identified by a <see cref="ParserGenerator" />.  Augments a <see cref="RuleType" /> with a position, or "dot", that represents the portion of the rule that has been

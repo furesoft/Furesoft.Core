@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Maintains the <see cref="ParserState"/> objects used by a <see cref="Parser"/> to represent the current state of syntax anaylsis.

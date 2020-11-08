@@ -1,4 +1,4 @@
-﻿namespace Creek.Plugins.Internal.Tools
+﻿namespace Furesoft.Core.Extensibility.Plugins
 {
 	internal struct LinkItem
 	{

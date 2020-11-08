@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Creek.Extensibility.Plugins
+namespace Furesoft.Core.Extensibility.Plugins
 {
 	/// <summary>
 	/// This attribute is used to mark a class as a PlugIn based Application.

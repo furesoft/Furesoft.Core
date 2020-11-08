@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Specifies the grammar attribute of a <see cref="Terminal" /> or <see cref="Nonterminal" />-derived class.

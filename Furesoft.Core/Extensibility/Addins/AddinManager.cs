@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Creek.Extensibility.Addins
+namespace Furesoft.Core.Extensibility.Addins
 {
 	public class AddinManager
 	{

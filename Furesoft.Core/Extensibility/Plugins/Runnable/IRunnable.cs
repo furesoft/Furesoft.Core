@@ -1,4 +1,4 @@
-﻿namespace Creek.Extensibility.Plugins.Runnable
+﻿namespace Furesoft.Core.Extensibility.Plugins.Runnable
 {
 	/// <summary>
 	/// Interface to control modules that can run in self thread.

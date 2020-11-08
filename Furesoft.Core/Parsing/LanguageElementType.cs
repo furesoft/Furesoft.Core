@@ -6,7 +6,7 @@ using System;
 using System.Reflection;
 using System.Text;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines a language element type identified by an <see cref="IGrammar" />.

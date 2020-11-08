@@ -1,4 +1,4 @@
-﻿namespace Creek.Extensibility.Addins
+﻿namespace Furesoft.Core.Extensibility.Addins
 {
 	using System.Collections.Generic;
 	using System.Linq;

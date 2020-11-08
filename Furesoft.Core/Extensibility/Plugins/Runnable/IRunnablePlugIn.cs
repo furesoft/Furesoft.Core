@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Creek.Extensibility.Plugins.Runnable
+namespace Furesoft.Core.Extensibility.Plugins.Runnable
 {
 	/// <summary>
 	/// This interface is extended by plugins which are used by runnable plugin

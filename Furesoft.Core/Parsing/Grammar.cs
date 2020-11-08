@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// A concrete implementation of <see cref="IGrammar" />.  Uses refection to retrieve a grammar from the classes and methods defined by

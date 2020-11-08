@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines the possible actions that can be taken by a <see cref="Parser" /> at a particular point during syntax analysis.

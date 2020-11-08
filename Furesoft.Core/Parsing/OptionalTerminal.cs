@@ -1,4 +1,4 @@
-﻿namespace Creek.Parsing.Generator
+﻿namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines a <see cref="Terminal"/> that may optionally appear in the RHS side of a rule.

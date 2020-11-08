@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines a <see cref="GeneratorState" /> created by a <see cref="ParserGenerator" />.  Represents all the LR(0)

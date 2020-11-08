@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace Creek.Extensibility.Addins
+namespace Furesoft.Core.Extensibility.Addins
 {
 	public class AddinInstance
 	{

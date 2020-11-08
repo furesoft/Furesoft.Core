@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Furesoft.Core.Storage
+﻿namespace Furesoft.Core.Storage
 {
 	public interface ISerializer<K>
 	{

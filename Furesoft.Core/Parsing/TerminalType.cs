@@ -5,7 +5,7 @@
 using System;
 using System.Reflection;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines a <see cref="LanguageElementType" /> that represents a type of a terminal or token identified by an <see cref="TerminalType" />.

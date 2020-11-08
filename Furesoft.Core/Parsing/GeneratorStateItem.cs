@@ -6,7 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Creek.Parsing.Generator
+namespace Furesoft.Core.Parsing
 {
 	/// <summary>
 	/// Defines an element of a <see cref="GeneratorState" /> created by a <see cref="ParserGenerator" />.  Combines a <see cref="GeneratorRuleItem" /> with,
