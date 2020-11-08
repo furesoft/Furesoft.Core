@@ -6,12 +6,12 @@ namespace TestApp
 {
     internal static class Program
     {
-        public static Task<int> Main(string[] args)
+        public static int Main(string[] args)
         {
             var preg = Regex.IsMatch("a?b+c.", "abcd");
 
             var app = new App();
-            return app.RunAsync();
+            return app.Run();
 
             /* var ast = NodeFactory.Call("def",
                      NodeFactory.Id("x"),

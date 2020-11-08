@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Furesoft.Core.CLI
+﻿namespace Furesoft.Core.CLI
 {
 	public interface ICliCommand
 	{
@@ -8,6 +6,6 @@ namespace Furesoft.Core.CLI
 		string HelpText { get; }
 		string Description { get; }
 
-		Task<int> InvokeAsync(CommandlineArguments args);
+		int Invoke(CommandlineArguments args);
 	}
 }

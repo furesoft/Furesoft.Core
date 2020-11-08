@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Threading.Tasks;
 using Furesoft.Core.Activation;
 
 namespace Furesoft.Core.CLI
@@ -18,7 +16,7 @@ namespace Furesoft.Core.CLI
 		/// Start The Application
 		/// </summary>
 		/// <returns>The Return Code</returns>
-		public async Task<int> RunAsync()
+		public int Run()
 		{
 			//collect all command processors
 			var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(_ => _.GetTypes());
@@ -38,29 +36,37 @@ namespace Furesoft.Core.CLI
 
 			var args = Environment.GetCommandLineArgs();
 
+			if(args.Length == 1)
+			{
+				PrintAllCommands();
+				return -1;
+			}
+
 			if (args.Length == 2 && (args[1] == "--interactive" || args[1] == "-i"))
 			{
 				while (true)
 				{
 					Console.Write(">> ");
 					var input = Console.ReadLine();
-					await ProcessCommandAsync(input.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+					ProcessCommandAsync(input.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 				}
 			}
 			else
 			{
-				return await ProcessCommandAsync(args);
+				return ProcessCommandAsync(args);
 			}
 		}
 
-		private async Task<int> ProcessCommandAsync(string[] args)
+		private int ProcessCommandAsync(string[] args)
 		{
+
+
 			var name = args[1]; //ToDo: Parse command line arguments
 
 			//find correct processor and invoke it with new argumentvector
 			if (_commands.ContainsKey(name))
 			{
-				return await _commands[name].InvokeAsync(new CommandlineArguments(args));
+				return _commands[name].Invoke(new CommandlineArguments(args));
 			}
 			else if (name == "help")
 			{

@@ -13,7 +13,7 @@ namespace TestApp
 
         public string Description => throw new System.NotImplementedException();
 
-        public Task<int> InvokeAsync(CommandlineArguments args)
+        public int Invoke(CommandlineArguments args)
         {
             var dbFile = Path.Combine(Environment.CurrentDirectory, "cowdb.data");
 
@@ -23,7 +23,7 @@ namespace TestApp
                 Console.WriteLine(cow);
             }
 
-            return Task.FromResult(0);
+            return 0;
         }
     }
 
@@ -35,12 +35,12 @@ namespace TestApp
 
         public string Description => "Add Article from Site to Book";
 
-        public Task<int> InvokeAsync(CommandlineArguments args)
+        public int Invoke(CommandlineArguments args)
         {
             var id = args["id"];
             var optimize = args.GetOption("opt", "optimize");
 
-            return Task.FromResult(0);
+            return 0;
         }
     }
 }

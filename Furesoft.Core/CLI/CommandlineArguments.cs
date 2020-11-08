@@ -86,6 +86,17 @@ namespace Furesoft.Core.CLI
 			get { return Parameters[param]; }
 		}
 
+		public string this[int index]
+		{
+			get
+			{
+				var p = new string[Parameters.Count];
+				Parameters.Values.CopyTo(p, 0);
+
+				return p[index];
+			}
+		}
+
 		public T GetValue<T>(string param)
 		{
 			var value = this[param];
