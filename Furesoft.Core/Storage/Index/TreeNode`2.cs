@@ -195,8 +195,7 @@ namespace Furesoft.Core.Storage.Index
 			{
 				// Grab the largest entry on the left subtree
 				var leftSubTree = nodeManager.Find(childrenIds[removeAt]);
-				TreeNode<K, V> largestNode; int largestIndex;
-				leftSubTree.FindLargest(out largestNode, out largestIndex);
+				leftSubTree.FindLargest(out var largestNode, out var largestIndex);
 				var replacementEntry = largestNode.GetEntry(largestIndex);
 
 				// REplace it
@@ -359,20 +358,18 @@ namespace Furesoft.Core.Storage.Index
 			// to the parent node
 			else
 			{
-				int insertPosition;
 				parent.InsertAsParent(middleEntry.Item1
 					, middleEntry.Item2
 					, id
 					, newRightNode.Id
-					, out insertPosition);
+					, out var insertPosition);
 
 				newRightNode.ParentId = parent.id;
 
 				// If parent is overflow, split and update reference
 				if (parent.IsOverflow)
 				{
-					TreeNode<K, V> left, right;
-					parent.Split(out left, out right);
+					parent.Split(out var left, out var right);
 				}
 			}
 

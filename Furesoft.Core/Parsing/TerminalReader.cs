@@ -47,9 +47,9 @@ namespace Furesoft.Core.Parsing
 		#region ITerminalReader Members
 
 		/// <summary>
-		/// Prepares an <see cref="TerminalReader"/> to read from the specified <see cref="String"/>.
+		/// Prepares an <see cref="TerminalReader"/> to read from the specified <see cref="string"/>.
 		/// </summary>
-		/// <param name="text">A <see cref="String"/> containing the input text to be processed by the <see cref="TerminalReader"/>.</param>
+		/// <param name="text">A <see cref="string"/> containing the input text to be processed by the <see cref="TerminalReader"/>.</param>
 		public void Open(string text)
 		{
 			m_text = text;

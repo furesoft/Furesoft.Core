@@ -81,8 +81,7 @@ namespace Furesoft.Core.Parsing
 		/// Returns <value>null</value> if no such <see cref="ParserAction"/> exists.</returns>
 		public ParserAction GetAction(TerminalType terminalType)
 		{
-			ParserAction action;
-			if (m_actions.TryGetValue(terminalType, out action))
+			if (m_actions.TryGetValue(terminalType, out var action))
 			{
 				return action;
 			}
@@ -97,8 +96,7 @@ namespace Furesoft.Core.Parsing
 		/// Returns <value>null</value> if no such <see cref="ParserState"/> exists.</returns>
 		public ParserState GetGoto(NonterminalType nonterminalType)
 		{
-			ParserState state;
-			if (m_gotos.TryGetValue(nonterminalType, out state))
+			if (m_gotos.TryGetValue(nonterminalType, out var state))
 			{
 				return state;
 			}

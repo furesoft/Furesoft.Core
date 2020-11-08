@@ -72,9 +72,9 @@ namespace Furesoft.Core.Parsing
 		#region Public Methods
 
 		/// <summary>
-		/// Returns a <see cref="String"/> that represents the current <see cref="GeneratorState"/>.
+		/// Returns a <see cref="string"/> that represents the current <see cref="GeneratorState"/>.
 		/// </summary>
-		/// <returns>A <see cref="String"/> that represents the current <see cref="GeneratorState"/>.</returns>
+		/// <returns>A <see cref="string"/> that represents the current <see cref="GeneratorState"/>.</returns>
 		public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder();

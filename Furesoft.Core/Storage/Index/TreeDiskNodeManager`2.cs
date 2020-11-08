@@ -124,8 +124,7 @@ namespace Furesoft.Core.Storage.Index
 			// if it does then return it
 			if (_nodeWeakRefs.ContainsKey(id))
 			{
-				TreeNode<K, V> node;
-				if (_nodeWeakRefs[id].TryGetTarget(out node))
+				if (_nodeWeakRefs[id].TryGetTarget(out var node))
 				{
 					return node;
 				}
@@ -243,8 +242,7 @@ namespace Furesoft.Core.Storage.Index
 				var tobeDeleted = new List<uint>();
 				foreach (var kv in _nodeWeakRefs)
 				{
-					TreeNode<K, V> target;
-					if (false == kv.Value.TryGetTarget(out target))
+					if (false == kv.Value.TryGetTarget(out var target))
 					{
 						tobeDeleted.Add(kv.Key);
 					}

@@ -110,9 +110,9 @@ namespace Furesoft.Core.Parsing
 		#region Public Methods
 
 		/// <summary>
-		/// Returns a <see cref="String"/> that represents the current <see cref="RuleType"/>.
+		/// Returns a <see cref="string"/> that represents the current <see cref="RuleType"/>.
 		/// </summary>
-		/// <returns>A <see cref="String"/> that represents the current <see cref="RuleType"/>.</returns>
+		/// <returns>A <see cref="string"/> that represents the current <see cref="RuleType"/>.</returns>
 		public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder();

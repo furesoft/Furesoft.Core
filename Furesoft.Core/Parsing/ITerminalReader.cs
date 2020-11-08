@@ -14,9 +14,9 @@ namespace Furesoft.Core.Parsing
 		#region Methods
 
 		/// <summary>
-		/// Prepares an <see cref="ITerminalReader"/> to read from the specified <see cref="String"/>.
+		/// Prepares an <see cref="ITerminalReader"/> to read from the specified <see cref="string"/>.
 		/// </summary>
-		/// <param name="text">A <see cref="String"/> containing the input text to be processed by the <see cref="ITerminalReader"/>.</param>
+		/// <param name="text">A <see cref="string"/> containing the input text to be processed by the <see cref="ITerminalReader"/>.</param>
 		void Open(string text);
 
 		/// <summary>

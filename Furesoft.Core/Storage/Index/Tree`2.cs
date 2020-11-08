@@ -137,8 +137,7 @@ namespace Furesoft.Core.Storage.Index
 			// If the leaf is overflow, then split it
 			if (leafNode.IsOverflow)
 			{
-				TreeNode<K, V> left, right;
-				leafNode.Split(out left, out right);
+				leafNode.Split(out var left, out var right);
 			}
 
 			// Save changes, if any

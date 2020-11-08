@@ -133,8 +133,7 @@ namespace Furesoft.Core.Parsing
 
 						if (idx == 0)
 						{
-							NonterminalType nonterminal;
-							if (m_nonterminals.TryGetValue(parameterType, out nonterminal))
+							if (m_nonterminals.TryGetValue(parameterType, out var nonterminal))
 							{
 								lhs = nonterminal;
 							}
@@ -145,15 +144,13 @@ namespace Furesoft.Core.Parsing
 						}
 						else
 						{
-							NonterminalType nonterminal;
-							if (m_nonterminals.TryGetValue(parameterType, out nonterminal))
+							if (m_nonterminals.TryGetValue(parameterType, out var nonterminal))
 							{
 								rhs.Add(nonterminal);
 							}
 							else
 							{
-								TerminalType terminal;
-								if (m_terminals.TryGetValue(parameterType, out terminal))
+								if (m_terminals.TryGetValue(parameterType, out var terminal))
 								{
 									rhs.Add(terminal);
 								}
