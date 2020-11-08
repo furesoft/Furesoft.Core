@@ -5,8 +5,8 @@
     <Nullable>warnings</Nullable>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>furesoft</Authors>
-    <Version>1.0.2</Version>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <Version>1.0.3</Version>
+    <AssemblyVersion>1.0.3.0</AssemblyVersion>
   </PropertyGroup>
   
   <ItemGroup>
