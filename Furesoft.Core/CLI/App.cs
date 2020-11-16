@@ -12,6 +12,11 @@ namespace Furesoft.Core.CLI
 	{
 		private Dictionary<string, ICliCommand> _commands = new Dictionary<string, ICliCommand>();
 
+		public void AddCommand(ICliCommand cmd)
+		{
+			_commands.Add(cmd.Name, cmd);
+		}
+
 		/// <summary>
 		/// Start The Application
 		/// </summary>
@@ -36,7 +41,7 @@ namespace Furesoft.Core.CLI
 
 			var args = Environment.GetCommandLineArgs();
 
-			if(args.Length == 1)
+			if (args.Length == 1)
 			{
 				PrintAllCommands();
 				return -1;
@@ -59,9 +64,7 @@ namespace Furesoft.Core.CLI
 
 		private int ProcessCommandAsync(string[] args)
 		{
-
-
-			var name = args[1]; //ToDo: Parse command line arguments
+			var name = args[1];
 
 			//find correct processor and invoke it with new argumentvector
 			if (_commands.ContainsKey(name))
