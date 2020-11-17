@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Furesoft.Core.Activation;
@@ -91,12 +92,15 @@ namespace Furesoft.Core.CLI
 
 		private void PrintAllCommands()
 		{
-			Console.WriteLine("Command\t\t\tDescription\t\t\tExample");
-			Console.WriteLine("-----------------------------");
+			var table = new ConsoleTable(Console.CursorTop, ConsoleTable.Align.Left, new string[] { "Command", "Description" });
+			var rows = new ArrayList();
+
 			foreach (var cmd in _commands)
 			{
-				Console.WriteLine(cmd.Key + "\t" + cmd.Value.Description + "\t" + cmd.Value.HelpText);
+				rows.Add(new string[] { cmd.Key, cmd.Value.Description, cmd.Value.HelpText });
 			}
+
+			table.RePrint(rows);
 		}
 	}
 }
