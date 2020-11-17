@@ -18,13 +18,13 @@ namespace Furesoft.Core.CLI
 		public CommandlineArguments(IEnumerable<string> args)
 		{
 			Parameters = new StringDictionary();
-			var spliter = new Regex(@"^-{1,2}|^/|=|:", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+			var spliter = new Regex(@"^-{1,2}|=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 			var remover = new Regex(@"^['""]?(.*?)['""]?$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 			string parameter = null;
 			string[] parts;
 
 			// Valid parameters forms:
-			// {-,/,--}param{ ,=,:}((",')value(",'))
+			// {-,/,--}param{ ,=}((",')value(",'))
 			// Examples: -param1 value1 --param2 /param3:"Test-:-work" /param4=happy -param5 '--=nice=--'
 			foreach (var txt in args)
 			{
