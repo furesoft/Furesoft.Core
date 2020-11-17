@@ -2,7 +2,7 @@
   "profiles": {
     "TestApp": {
       "commandName": "Project",
-      "commandLineArgs": "add --url \"http://furesoft.ml/12345\" --optimize"
+      "commandLineArgs": "add \"http://furesoft.ml/12345\""
     }
   }
 }

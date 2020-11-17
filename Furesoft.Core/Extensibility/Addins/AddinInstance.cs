@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Reflection;
 
 namespace Furesoft.Core.Extensibility.Addins
 {
@@ -27,15 +28,13 @@ namespace Furesoft.Core.Extensibility.Addins
 
 			var manifest = "manifest.xml";
 
-			var man = ass.GetCustomAttributes(typeof(ManifestAttribute), true);
-			if (man.Length == 1)
+			var man = ass.GetCustomAttribute<ManifestAttribute>();
+
+			if (man != null)
 			{
-				if (man[0] != null)
-				{
-					var m = man[0] as ManifestAttribute;
-					manifest = m.Name;
-				}
+				manifest = man.Name;
 			}
+
 			var str = ass.GetManifestResourceStream(ass.GetName().Name + "." + manifest);
 
 			if (str != null)
