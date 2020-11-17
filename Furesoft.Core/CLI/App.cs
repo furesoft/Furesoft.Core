@@ -62,6 +62,11 @@ namespace Furesoft.Core.CLI
 			}
 		}
 
+		public int EvaluateLine(string cmd)
+		{
+			return ProcessCommand(cmd.Split(' ', StringSplitOptions.RemoveEmptyEntries)); ;
+		}
+
 		private int ProcessCommand(string[] args)
 		{
 			var name = args[1];
