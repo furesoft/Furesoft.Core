@@ -53,16 +53,16 @@ namespace Furesoft.Core.CLI
 				{
 					Console.Write(">> ");
 					var input = Console.ReadLine();
-					ProcessCommandAsync(input.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+					ProcessCommand(input.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 				}
 			}
 			else
 			{
-				return ProcessCommandAsync(args);
+				return ProcessCommand(args);
 			}
 		}
 
-		private int ProcessCommandAsync(string[] args)
+		private int ProcessCommand(string[] args)
 		{
 			var name = args[1];
 
