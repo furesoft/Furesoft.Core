@@ -13,9 +13,15 @@ namespace Furesoft.Core.Activation.Strategies
 		{
 			var argTypes = args?.Select(_ => _.GetType()).ToArray();
 			var ctor = type.GetConstructor(argTypes);
-			var a = GetActivator(ctor);
 
-			return a(args);
+			if (ctor != null)
+			{
+				var a = GetActivator(ctor);
+
+				return a(args);
+			}
+
+			return null;
 		}
 
 		private static ObjectActivator GetActivator(ConstructorInfo ctor)

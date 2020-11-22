@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.Activation;
+using System.Reflection;
 
 namespace Furesoft.Core.CLI
 {
@@ -13,10 +13,14 @@ namespace Furesoft.Core.CLI
 	{
 		private Dictionary<string, ICliCommand> _commands = new Dictionary<string, ICliCommand>();
 
+		public static App Current = new App();
+
 		public void AddCommand(ICliCommand cmd)
 		{
 			_commands.Add(cmd.Name, cmd);
 		}
+
+		public event Action BeforeRun;
 
 		/// <summary>
 		/// Start The Application
@@ -27,15 +31,18 @@ namespace Furesoft.Core.CLI
 			//collect all command processors
 			var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(_ => _.GetTypes());
 
+			BeforeRun?.Invoke();
+
 			foreach (var t in types)
 			{
-				if (t.IsInterface || t.IsAbstract)
-				{
+				if (t.GetCustomAttribute<DoNotTrackAttribute>() != null)
 					continue;
-				}
+
+				if (t.IsInterface || t.IsAbstract)
+					continue;
 				else if (typeof(ICliCommand).IsAssignableFrom(t))
 				{
-					var instance = DefaultActivator.Instance.CreateInstance<ICliCommand>(t, Array.Empty<Type>());
+					var instance = (ICliCommand)Activator.CreateInstance(t, Array.Empty<Type>());
 					_commands.Add(instance.Name, instance);
 				}
 			}
@@ -54,7 +61,7 @@ namespace Furesoft.Core.CLI
 				{
 					Console.Write(">> ");
 					var input = Console.ReadLine();
-					ProcessCommand(input.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+					ProcessCommand(input.Split(' ', StringSplitOptions.RemoveEmptyEntries), true);
 				}
 			}
 			else
@@ -68,15 +75,25 @@ namespace Furesoft.Core.CLI
 			return ProcessCommand(cmd.Split(' ', StringSplitOptions.RemoveEmptyEntries)); ;
 		}
 
-		private int ProcessCommand(string[] args)
+		private int ProcessCommand(string[] args, bool isInteractive = false)
 		{
-			var name = args[1];
+			if (args.Length == 0)
+			{
+				PrintAllCommands();
+				return 0;
+			}
+
+			var name = "";
+			if (isInteractive)
+				name = args[0];
+			else
+			{
+				name = args[1];
+			}
 
 			//find correct processor and invoke it with new argumentvector
 			if (_commands.ContainsKey(name))
-			{
 				return _commands[name].Invoke(new CommandlineArguments(args));
-			}
 			else if (name == "help")
 			{
 				PrintAllCommands();
@@ -90,7 +107,7 @@ namespace Furesoft.Core.CLI
 			return -1;
 		}
 
-		private void PrintAllCommands()
+		public void PrintAllCommands()
 		{
 			var table = new ConsoleTable(Console.CursorTop, ConsoleTable.Align.Left, new string[] { "Command", "Description" });
 			var rows = new ArrayList();

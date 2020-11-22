@@ -10,8 +10,7 @@ namespace TestApp
         {
             var preg = Regex.IsMatch("a?b+c.", "abcd");
 
-            var app = new App();
-            return app.Run();
+            return App.Current.Run();
 
             /* var ast = NodeFactory.Call("def",
                      NodeFactory.Id("x"),
