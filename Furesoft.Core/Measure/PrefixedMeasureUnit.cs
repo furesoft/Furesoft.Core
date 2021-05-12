@@ -5,13 +5,13 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 
-namespace CK.UnitsOfMeasure
+namespace Furesoft.Core.Measure
 {
-    /// <summary>
-    /// A <see cref="MeasureStandardPrefix"/> applied to a <see cref="AtomicMeasureUnit"/>. 
-    /// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
-    /// </summary>
-    public sealed class PrefixedMeasureUnit : AtomicMeasureUnit
+	/// <summary>
+	/// A <see cref="MeasureStandardPrefix"/> applied to a <see cref="AtomicMeasureUnit"/>. 
+	/// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
+	/// </summary>
+	public sealed class PrefixedMeasureUnit : AtomicMeasureUnit
     {
         internal PrefixedMeasureUnit( MeasureContext ctx, (string A, string N) names, ExpFactor adjusment, MeasureStandardPrefix p, AtomicMeasureUnit u, bool isNormalized )
             : base( ctx, names.A, names.N, AutoStandardPrefix.None, isNormalized )
@@ -30,7 +30,7 @@ namespace CK.UnitsOfMeasure
                 return (name, name);
             }
             if( adjustment.IsNeutral ) return (p.Abbreviation + u.Abbreviation, p.Name + u.Name.ToLowerInvariant());
-            string a = '(' + adjustment.ToString() + ')';
+            var a = '(' + adjustment.ToString() + ')';
             return (a + p.Abbreviation + u.Abbreviation, a + p.Name + u.Name.ToLowerInvariant());
         }
 

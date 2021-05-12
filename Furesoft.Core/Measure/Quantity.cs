@@ -1,25 +1,22 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
-namespace CK.UnitsOfMeasure
+namespace Furesoft.Core.Measure
 {
-    /// <summary>
-    /// Immutable struct that encapsulates a double <see cref="Value"/> and its <see cref="MeasureUnit"/>.
-    /// </summary>
-    public struct Quantity : IEquatable<Quantity>, IComparable<Quantity>
+	/// <summary>
+	/// Immutable struct that encapsulates a double <see cref="Value"/> and its <see cref="MeasureUnit"/>.
+	/// </summary>
+	public struct Quantity : IEquatable<Quantity>, IComparable<Quantity>
     {
-        /// <summary>
-        /// This is the "G15" format used when calling <see cref="Double.ToString(string, IFormatProvider)"/> (with the <see cref="CultureInfo.InvariantCulture"/>)
-        /// to obtain a string where small rounding adjustments are erased.
-        /// <para>The float formatting has changed with .Net Core 3.0 - see https://devblogs.microsoft.com/dotnet/floating-point-parsing-and-formatting-improvements-in-net-core-3-0/ -
-        /// so that the ToString is now "roundtrippable" by default.
-        /// The "G15" format is the previous default one that worked perfectly well for our "equality".</para>
-        /// </summary>
-        public const string ValueRoundedFormat = "G15";
-
-        readonly MeasureUnit _unit;
+		/// <summary>
+		/// This is the "G15" format used when calling <see cref="double.ToString(string, IFormatProvider)"/> (with the <see cref="CultureInfo.InvariantCulture"/>)
+		/// to obtain a string where small rounding adjustments are erased.
+		/// <para>The float formatting has changed with .Net Core 3.0 - see https://devblogs.microsoft.com/dotnet/floating-point-parsing-and-formatting-improvements-in-net-core-3-0/ -
+		/// so that the ToString is now "roundtrippable" by default.
+		/// The "G15" format is the previous default one that worked perfectly well for our "equality".</para>
+		/// </summary>
+		public const string ValueRoundedFormat = "G15";
+		private readonly MeasureUnit _unit;
 
         /// <summary>
         /// The value.
@@ -32,7 +29,7 @@ namespace CK.UnitsOfMeasure
         /// </summary>
         public MeasureUnit Unit => _unit ?? MeasureUnit.None;
 
-        string _normalized;
+		private string _normalized;
 
         /// <summary>
         /// Initializes a new <see cref="Quantity"/>.
@@ -136,12 +133,12 @@ namespace CK.UnitsOfMeasure
             }
             if( Unit.Normalization == u.Normalization )
             {
-                FullFactor ratio = Unit.NormalizationFactor.DivideBy( u.NormalizationFactor );
+                var ratio = Unit.NormalizationFactor.DivideBy( u.NormalizationFactor );
                 return new Quantity( Value * ratio.ToDouble(), u );
             }
             else
             {
-                FullFactor ratio = Unit.NormalizationFactor.Multiply( u.NormalizationFactor );
+                var ratio = Unit.NormalizationFactor.Multiply( u.NormalizationFactor );
                 return new Quantity( 1/(Value * ratio.ToDouble()), u );
             }
         }
@@ -174,7 +171,7 @@ namespace CK.UnitsOfMeasure
         public string ToString( string format, IFormatProvider provider ) => Value.ToString( format, provider )
                                                                               + (Unit != MeasureUnit.None
                                                                                  ? " " + Unit.Abbreviation
-                                                                                 : String.Empty);
+                                                                                 : string.Empty);
 
         /// <summary>
         /// Get this string representation of this <see cref="Value"/> with this <see cref="Unit"/>,
@@ -185,24 +182,24 @@ namespace CK.UnitsOfMeasure
         /// <returns>A readable string.</returns>
         public string ToRoundedString() => ToString( "G15", CultureInfo.InvariantCulture );
 
-        /// <summary>
-        /// Get this string representation of this <see cref="Value"/> with this <see cref="Unit"/>.
-        /// </summary>
-        /// <param name="provider">The format provider.</param>
-        /// <returns>A readable string.</returns>
-        public string ToString( IFormatProvider provider ) => Value.ToString( provider )
-                                                              + (Unit != MeasureUnit.None
-                                                                 ? " " + Unit.Abbreviation
-                                                                 : String.Empty);
+		/// <summary>
+		/// Get this string representation of this <see cref="Value"/> with this <see cref="Unit"/>.
+		/// </summary>
+		/// <param name="provider">The format provider.</param>
+		/// <returns>A readable string.</returns>
+		public string ToString(IFormatProvider provider) => Value.ToString(provider)
+			  + (Unit != MeasureUnit.None
+				 ? " " + Unit.Abbreviation
+				 : string.Empty);
 
-        /// <summary>
-        /// Overridden to return this string representation of this <see cref="Value"/> with this <see cref="Unit"/>.
-        /// </summary>
-        /// <returns>A readable string.</returns>
-        public override string ToString() => Value.ToString()
+		/// <summary>
+		/// Overridden to return this string representation of this <see cref="Value"/> with this <see cref="Unit"/>.
+		/// </summary>
+		/// <returns>A readable string.</returns>
+		public override string ToString() => Value.ToString()
                                                 + (Unit != MeasureUnit.None
                                                     ? " " + Unit.Abbreviation
-                                                    : String.Empty);
+                                                    : string.Empty);
 
         /// <summary>
         /// Returns the <see cref="ToRoundedString()"/> representation of this quantity in
@@ -265,13 +262,13 @@ namespace CK.UnitsOfMeasure
                 // Same normalized units, we convert this Value to the other unit before comparison.
                 if( tU.Normalization == oU.Normalization )
                 {
-                    FullFactor ratio = tU.NormalizationFactor.DivideBy( oU.NormalizationFactor );
+                    var ratio = tU.NormalizationFactor.DivideBy( oU.NormalizationFactor );
                     return (Value * ratio.ToDouble()).CompareTo( other.Value );
                 }
                 // Inverted normalized units, we convert this Value to the other unit before comparison.
                 if( tU.Normalization == oU.Normalization.Invert() )
                 {
-                    FullFactor ratio = tU.NormalizationFactor.Multiply( oU.NormalizationFactor );
+                    var ratio = tU.NormalizationFactor.Multiply( oU.NormalizationFactor );
                     return (1/(Value * ratio.ToDouble())).CompareTo( other.Value );
                 }
                 // No possible conversion. How to compare kilograms and milliSievert?

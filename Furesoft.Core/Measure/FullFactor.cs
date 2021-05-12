@@ -12,7 +12,7 @@ namespace Furesoft.Core.Measure
         /// <summary>
         /// The neutral factor: <see cref="Factor"/> = 1 and <see cref="ExpFactor.Neutral"/>.
         /// </summary>
-        public static readonly FullFactor Neutral = new FullFactor( 1.0, ExpFactor.Neutral );
+        public static readonly FullFactor Neutral = new( 1.0, ExpFactor.Neutral );
 
         /// <summary>
         /// The default factor is 0 (unfortunaletly).
@@ -73,21 +73,21 @@ namespace Furesoft.Core.Measure
         /// </summary>
         /// <param name="p">The power.</param>
         /// <returns>The elevated full factor.</returns>
-        public FullFactor Power( int p ) => new FullFactor( Math.Pow( Factor, p ), ExpFactor.Power( p ) );
+        public FullFactor Power( int p ) => new( Math.Pow( Factor, p ), ExpFactor.Power( p ) );
 
         /// <summary>
         /// Returns this factor multiplied by another one.
         /// </summary>
         /// <param name="x">The factor to multiply with.</param>
         /// <returns>The resulting full factor.</returns>
-        public FullFactor Multiply( FullFactor x ) => new FullFactor( Factor * x.Factor, ExpFactor.Multiply( x.ExpFactor ) );
+        public FullFactor Multiply( FullFactor x ) => new( Factor * x.Factor, ExpFactor.Multiply( x.ExpFactor ) );
 
         /// <summary>
         /// Returns this factor divide by another one.
         /// </summary>
         /// <param name="x">The divisor.</param>
         /// <returns>The resulting full factor.</returns>
-        public FullFactor DivideBy( FullFactor x ) => new FullFactor( Factor / x.Factor, ExpFactor.DivideBy( x.ExpFactor ) );
+        public FullFactor DivideBy( FullFactor x ) => new( Factor / x.Factor, ExpFactor.DivideBy( x.ExpFactor ) );
 
         /// <summary>
         /// Computes the double value of this factor.
@@ -101,16 +101,16 @@ namespace Furesoft.Core.Measure
         /// <returns>A readable string.</returns>
         public override string ToString()
         {
-            if( IsNeutral ) return String.Empty;
+            if( IsNeutral ) return string.Empty;
             if( IsZero ) return "0";
             if( Factor == 1.0 ) return ExpFactor.ToString();
             return Factor.ToString() + ExpFactor.ToString( '*' );
         }
 
 #pragma warning disable 1591
-        public static implicit operator FullFactor( double d ) => new FullFactor( d );
+        public static implicit operator FullFactor( double d ) => new( d );
 
-        public static implicit operator FullFactor( ExpFactor e ) => new FullFactor( e );
+        public static implicit operator FullFactor( ExpFactor e ) => new( e );
 
         public static bool operator ==( FullFactor f1, FullFactor f2 ) => f1.Equals( f2 );
 

@@ -1,6 +1,6 @@
 ﻿using Furesoft.Core.CLI;
-using Furesoft.Core.RegExp;
 using System.Threading.Tasks;
+using Furesoft.Core.Measure;
 
 namespace TestApp
 {
@@ -8,7 +8,12 @@ namespace TestApp
     {
         public static int Main(string[] args)
         {
-            var preg = Regex.IsMatch("a?b+c.", "abcd");
+            var m = StandardMeasureContext.Default.Metre;
+            var s = StandardMeasureContext.Default.Second;
+
+            var mps = m / (s * s);
+
+            System.Console.WriteLine(mps.Abbreviation);
 
             return App.Current.Run();
 

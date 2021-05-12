@@ -79,14 +79,18 @@ namespace Furesoft.Core.Measure
         /// <returns>A readable string.</returns>
         public string ToString( char mult )
         {
-            string s = String.Empty;
+            var s = string.Empty;
             if( Exp10 != 0 )
             {
                 s = (mult != '\0' ? mult + "10^" : "10^") + Exp10.ToString( CultureInfo.InvariantCulture );
-                if( Exp2 != 0 ) s += (mult == '\0' ? '.' : mult) + "2^" + Exp2.ToString( CultureInfo.InvariantCulture );
+				if (Exp2 != 0) s += (mult == '\0' ? '.' : mult) + "2^" + Exp2.ToString(CultureInfo.InvariantCulture);
             }
-            else if( Exp2 != 0 ) s = (mult != '\0' ? mult + "2^" : "2^") + Exp2.ToString( CultureInfo.InvariantCulture );
-            return s;
+            else if( Exp2 != 0 )
+			{
+				s = (mult != '\0' ? mult + "2^" : "2^") + Exp2.ToString( CultureInfo.InvariantCulture );
+			}
+
+			return s;
         }
 
         /// <summary>
@@ -123,7 +127,7 @@ namespace Furesoft.Core.Measure
         /// <returns>Positive if this is greater than other, 0 if they are equal and negative otherwise.</returns>
         public int CompareTo( ExpFactor other )
         {
-            int cmp = Exp10 - other.Exp10;
+            var cmp = Exp10 - other.Exp10;
             return cmp == 0 ? Exp2 - other.Exp2 : cmp;
         }
 

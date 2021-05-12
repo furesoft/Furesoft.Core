@@ -45,7 +45,7 @@ namespace Furesoft.Core.Measure
         internal static (string A, string N) ComputeNames( int exp, AtomicMeasureUnit u )
         {
             if( exp == 1 ) return (u.Abbreviation, u.Name);
-            string e = exp.ToString();
+            var e = exp.ToString();
             return (u.Abbreviation + e, u.Name + "^" + e);
         }
 
@@ -58,7 +58,7 @@ namespace Furesoft.Core.Measure
         public int CompareTo( ExponentMeasureUnit other )
         {
             if( other == null ) return 1;
-            int cmp = Exponent.CompareTo( other.Exponent );
+            var cmp = Exponent.CompareTo( other.Exponent );
             return cmp == 0 ? AtomicMeasureUnit.CompareTo( other.AtomicMeasureUnit ) : -cmp;
         }
 

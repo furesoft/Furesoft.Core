@@ -1,7 +1,7 @@
 {
   "version": 3,
   "targets": {
-    ".NETCoreApp,Version=v3.1": {
+    "net5.0": {
       "Microsoft.CSharp/4.7.0": {
         "type": "package",
         "compile": {
@@ -22,7 +22,7 @@
       },
       "Furesoft.Core/1.0.4": {
         "type": "project",
-        "framework": ".NETStandard,Version=v2.1",
+        "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
           "Microsoft.CSharp": "4.7.0",
           "Newtonsoft.Json": "12.0.3"
@@ -144,38 +144,41 @@
     }
   },
   "projectFileDependencyGroups": {
-    ".NETCoreApp,Version=v3.1": [
+    "net5.0": [
       "Furesoft.Core >= 1.0.4"
     ]
   },
   "packageFolders": {
-    "C:\\Users\\filmee24\\.nuget\\packages\\": {}
+    "/home/filmee24/.nuget/packages/": {},
+    "/usr/share/dotnet/sdk/NuGetFallbackFolder": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\filmee24\\source\\repos\\Furesoft.Core\\TestApp\\TestApp.csproj",
+      "projectUniqueName": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/TestApp/TestApp.csproj",
       "projectName": "TestApp",
-      "projectPath": "C:\\Users\\filmee24\\source\\repos\\Furesoft.Core\\TestApp\\TestApp.csproj",
-      "packagesPath": "C:\\Users\\filmee24\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\filmee24\\source\\repos\\Furesoft.Core\\TestApp\\obj\\",
+      "projectPath": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/TestApp/TestApp.csproj",
+      "packagesPath": "/home/filmee24/.nuget/packages/",
+      "outputPath": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/TestApp/obj/",
       "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "/usr/share/dotnet/sdk/NuGetFallbackFolder"
+      ],
       "configFilePaths": [
-        "C:\\Users\\filmee24\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/home/filmee24/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
-        "netcoreapp3.1"
+        "net5.0"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
-        "netcoreapp3.1": {
+        "net5.0": {
+          "targetAlias": "net5.0",
           "projectReferences": {
-            "C:\\Users\\filmee24\\source\\repos\\Furesoft.Core\\Furesoft.Core\\Furesoft.Core.csproj": {
-              "projectPath": "C:\\Users\\filmee24\\source\\repos\\Furesoft.Core\\Furesoft.Core\\Furesoft.Core.csproj"
+            "/home/filmee24/Dokumente/Projekte/Furesoft.Core/Furesoft.Core/Furesoft.Core.csproj": {
+              "projectPath": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/Furesoft.Core/Furesoft.Core.csproj"
             }
           }
         }
@@ -187,7 +190,8 @@
       }
     },
     "frameworks": {
-      "netcoreapp3.1": {
+      "net5.0": {
+        "targetAlias": "net5.0",
         "imports": [
           "net461",
           "net462",
@@ -203,7 +207,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files (x86)\\dotnet\\sdk\\3.1.301\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/5.0.202/RuntimeIdentifierGraph.json"
       }
     }
   }

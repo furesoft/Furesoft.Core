@@ -4,16 +4,16 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace CK.UnitsOfMeasure
+namespace Furesoft.Core.Measure
 {
-    /// <summary>
-    /// Represents a standard prefix like "Kilo" (abbrev. "k") or "Mega" (abbrev. "M")
-    /// or binary prefix like "Kibi" (abbrev. "ki").
-    /// All standard prefix are registered in a static dictionary and there is no way to add
-    /// new prefix.
-    /// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
-    /// </summary>
-    public sealed class MeasureStandardPrefix
+	/// <summary>
+	/// Represents a standard prefix like "Kilo" (abbrev. "k") or "Mega" (abbrev. "M")
+	/// or binary prefix like "Kibi" (abbrev. "ki").
+	/// All standard prefix are registered in a static dictionary and there is no way to add
+	/// new prefix.
+	/// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
+	/// </summary>
+	public sealed class MeasureStandardPrefix
     {
         /// <summary>
         /// Gets the abbreviation of the prefix.
@@ -54,7 +54,7 @@ namespace CK.UnitsOfMeasure
         /// <returns>The abbreviation.</returns>
         public override string ToString() => Abbreviation;
 
-        MeasureStandardPrefix( string abbreviation, string name, int eBase, int exp )
+		private MeasureStandardPrefix( string abbreviation, string name, int eBase, int exp )
         {
             Abbreviation = abbreviation;
             Name = name;
@@ -91,7 +91,7 @@ namespace CK.UnitsOfMeasure
         /// <returns>The resulting adjustment and unit.</returns>
         public (ExpFactor Adjustment, AtomicMeasureUnit Result) On( AtomicMeasureUnit unit, bool allowAdjustmentPrefix ) => Combine( this, unit, allowAdjustmentPrefix );
 
-        static (ExpFactor Adjustment, AtomicMeasureUnit Result) Combine( MeasureStandardPrefix prefix, AtomicMeasureUnit u, bool allowAdjustmentPrefix )
+		private static (ExpFactor Adjustment, AtomicMeasureUnit Result) Combine( MeasureStandardPrefix prefix, AtomicMeasureUnit u, bool allowAdjustmentPrefix )
         {
             if( prefix.Base == 0 ) return (ExpFactor.Neutral, u);
             if( u is PrefixedMeasureUnit p )
@@ -127,25 +127,28 @@ namespace CK.UnitsOfMeasure
             Debug.Assert( !newExp.IsNeutral );
             if( newExp.Exp10 != 0 && (stdPrefix&AutoStandardPrefix.Metric) != 0 )
             {
-                var b10 = FindBest( newExp.Exp10, _allMetricIndex, _allMetric );
+                var b10 = FindBest( newExp.Exp10, allMetricIndex, allMetric );
                 return (new ExpFactor(newExp.Exp2, b10.Item1), b10.Item2);
             }
             if( newExp.Exp2 != 0 && (stdPrefix&AutoStandardPrefix.Binary) != 0 )
             {
                 Debug.Assert( newExp.Exp2 != 0 );
-                var b2 = FindBest( newExp.Exp2, _allBinaryIndex, _allBinary );
+                var b2 = FindBest( newExp.Exp2, allBinaryIndex, allBinary );
                 return (new ExpFactor( b2.Item1, 0 ), b2.Item2);
             }
             return (newExp, None);
         }
 
-        static (int,MeasureStandardPrefix) FindBest( int v, int[] indexes, MeasureStandardPrefix[] prefixes )
+		private static (int,MeasureStandardPrefix) FindBest( int v, int[] indexes, MeasureStandardPrefix[] prefixes )
         {
-            int idx = Array.BinarySearch( indexes, v );
+            var idx = Array.BinarySearch( indexes, v );
             if( idx >= 0 ) return (0, prefixes[idx]);
             idx = ~idx;
-            if( idx == indexes.Length ) --idx;
-            else if( idx != 0 )
+            if( idx == indexes.Length )
+			{
+				--idx;
+			}
+			else if( idx != 0 )
             {
                 var positiveDelta = prefixes[idx].Exponent - v;
                 Debug.Assert( positiveDelta > 0 );
@@ -157,11 +160,11 @@ namespace CK.UnitsOfMeasure
             return (v-p.Exponent,p);
         }
 
-        private static readonly Dictionary<string, MeasureStandardPrefix> _prefixes;
-        private static readonly MeasureStandardPrefix[] _allBinary;
-        private static readonly int[] _allBinaryIndex;
-        private static readonly MeasureStandardPrefix[] _allMetric;
-        private static readonly int[] _allMetricIndex;
+        private static readonly Dictionary<string, MeasureStandardPrefix> prefixes;
+        private static readonly MeasureStandardPrefix[] allBinary;
+        private static readonly int[] allBinaryIndex;
+        private static readonly MeasureStandardPrefix[] allMetric;
+        private static readonly int[] allMetricIndex;
 
         static MeasureStandardPrefix()
         {
@@ -197,20 +200,22 @@ namespace CK.UnitsOfMeasure
             Zebi = new MeasureStandardPrefix( "Zi", "Zebi", 2, 70 );
             Yobi = new MeasureStandardPrefix( "Yi", "Yobi", 2, 80 );
 
-            _allMetric = new MeasureStandardPrefix[] {
+            allMetric = new MeasureStandardPrefix[] {
                 Yocto, Zepto, Atto, Femto, Pico, Nano, Micro, Milli, Centi, Deci, Deca,
                 Hecto, Kilo, Mega, Giga, Tera, Peta, Exa, Zetta, Yotta };
-            _allMetricIndex = _allMetric.Select( p => (int)p.Factor.Exp10 ).ToArray();
+            allMetricIndex = allMetric.Select( p => (int)p.Factor.Exp10 ).ToArray();
 
-            _allBinary = new MeasureStandardPrefix[] { Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi };
-            _allBinaryIndex = _allBinary.Select( p => (int)p.Factor.Exp2 ).ToArray();
+            allBinary = new MeasureStandardPrefix[] { Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi };
+            allBinaryIndex = allBinary.Select( p => (int)p.Factor.Exp2 ).ToArray();
 
-            _prefixes = new Dictionary<string, MeasureStandardPrefix>();
-            _prefixes.Add( String.Empty, None );
-            foreach( var p in _allMetric.Concat( _allBinary ) )
+			prefixes = new Dictionary<string, MeasureStandardPrefix>
+			{
+				{ string.Empty, None }
+			};
+			foreach ( var p in allMetric.Concat( allBinary ) )
             {
-                _prefixes.Add( p.Abbreviation, p );
-                _prefixes.Add( p.Name, p );
+                prefixes.Add( p.Abbreviation, p );
+                prefixes.Add( p.Name, p );
             }
         }
 
@@ -259,24 +264,24 @@ namespace CK.UnitsOfMeasure
         /// <returns>The associated prefix, if no prefix was found, <c>null</c>.</returns>
         public static MeasureStandardPrefix Get( string n )
         {
-            _prefixes.TryGetValue( n, out var p );
+            prefixes.TryGetValue( n, out var p );
             return p;
         }
 
         /// <summary>
         /// Gets all standard prefixes (including <see cref="None"/>).
         /// </summary>
-        public static IEnumerable<MeasureStandardPrefix> All => _allMetric.Concat( _allBinary );
+        public static IEnumerable<MeasureStandardPrefix> All => allMetric.Concat( allBinary );
 
         /// <summary>
         /// Gets all the metric prefixes.
         /// </summary>
-        public static IReadOnlyCollection<MeasureStandardPrefix> MetricPrefixes => _allMetric;
+        public static IReadOnlyCollection<MeasureStandardPrefix> MetricPrefixes => allMetric;
 
         /// <summary>
         /// Gets all the binary prefixes.
         /// </summary>
-        public static IReadOnlyCollection<MeasureStandardPrefix> BinaryPrefixes => _allBinary;
+        public static IReadOnlyCollection<MeasureStandardPrefix> BinaryPrefixes => allBinary;
 
         /// <summary>
         /// Gets all the prefixes for a <see cref="AutoStandardPrefix"/>.
@@ -302,32 +307,32 @@ namespace CK.UnitsOfMeasure
         /// <returns>The standard prefix or <see cref="None"/> if not found.</returns>
         public static MeasureStandardPrefix FindPrefix( string s )
         {
-            if( String.IsNullOrWhiteSpace( s ) ) return None;
-            switch( s[0] )
-            {
-                case 'y': return Yocto;
-                case 'z': return Zepto;
-                case 'a': return Atto;
-                case 'f': return Femto;
-                case 'p': return Pico;
-                case 'n': return Nano;
-                case 'µ': return Micro;
-                case 'm': return Milli;
-                case 'c': return Centi;
-                case 'd': return s.Length > 1 && s[1] == 'a' ? Deca : Deci;
-                case 'h': return Hecto;
-                case 'k': return Kilo;
-                case 'K': return s.Length > 1 && s[1] == 'i' ? Kibi : None;
-                case 'M': return s.Length > 1 && s[1] == 'i' ? Mebi : Mega;
-                case 'G': return s.Length > 1 && s[1] == 'i' ? Gibi : Giga;
-                case 'T': return s.Length > 1 && s[1] == 'i' ? Tebi : Tera;
-                case 'P': return s.Length > 1 && s[1] == 'i' ? Pebi : Peta;
-                case 'E': return s.Length > 1 && s[1] == 'i' ? Exbi : Exa;
-                case 'Z': return s.Length > 1 && s[1] == 'i' ? Zebi : Zetta;
-                case 'Y': return s.Length > 1 && s[1] == 'i' ? Yobi : Yotta;
-            }
-            return None;
-        }
+            if(string.IsNullOrWhiteSpace( s ) ) return None;
+			return s[0] switch
+			{
+				'y' => Yocto,
+				'z' => Zepto,
+				'a' => Atto,
+				'f' => Femto,
+				'p' => Pico,
+				'n' => Nano,
+				'µ' => Micro,
+				'm' => Milli,
+				'c' => Centi,
+				'd' => s.Length > 1 && s[1] == 'a' ? Deca : Deci,
+				'h' => Hecto,
+				'k' => Kilo,
+				'K' => s.Length > 1 && s[1] == 'i' ? Kibi : None,
+				'M' => s.Length > 1 && s[1] == 'i' ? Mebi : Mega,
+				'G' => s.Length > 1 && s[1] == 'i' ? Gibi : Giga,
+				'T' => s.Length > 1 && s[1] == 'i' ? Tebi : Tera,
+				'P' => s.Length > 1 && s[1] == 'i' ? Pebi : Peta,
+				'E' => s.Length > 1 && s[1] == 'i' ? Exbi : Exa,
+				'Z' => s.Length > 1 && s[1] == 'i' ? Zebi : Zetta,
+				'Y' => s.Length > 1 && s[1] == 'i' ? Yobi : Yotta,
+				_ => None,
+			};
+		}
     }
 
 }

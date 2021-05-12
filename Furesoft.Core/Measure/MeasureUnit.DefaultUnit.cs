@@ -6,9 +6,9 @@ using System.IO;
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 
-namespace CK.UnitsOfMeasure
+namespace Furesoft.Core.Measure
 {
-    public partial class MeasureUnit
+	public partial class MeasureUnit
     {
         /// <summary>
         /// Tries to parse a string in the default context (<see cref="StandardMeasureContext.Default"/>).

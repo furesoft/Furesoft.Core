@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CK.UnitsOfMeasure
+namespace Furesoft.Core.Measure
 {
-    /// <summary>
-    /// Specialized <see cref="MeasureContext"/> that defines standard units.
-    /// </summary>
-    public class StandardMeasureContext : MeasureContext
+	/// <summary>
+	/// Specialized <see cref="MeasureContext"/> that defines standard units.
+	/// </summary>
+	public class StandardMeasureContext : MeasureContext
     {
         /// <summary>
         /// Exposes the default context singleton.
         /// </summary>
-        public static readonly StandardMeasureContext Default = new StandardMeasureContext( String.Empty, true );
+        public static readonly StandardMeasureContext Default = new(string.Empty, true );
 
-        StandardMeasureContext( string name, bool isDefault )
+		private StandardMeasureContext( string name, bool isDefault )
             : base( name, isDefault )
         {
             Unit = DefineFundamental( "#", "Unit", AutoStandardPrefix.Metric );
