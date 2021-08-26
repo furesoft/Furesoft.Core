@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Forces the compiler to emit an error message.
     /// </summary>
     public class ErrorDirective : MessageDirective
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="ErrorDirective"/>.
         /// </summary>
@@ -20,27 +18,10 @@ namespace Nova.CodeDOM
             : base(message)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "error";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="ErrorDirective"/>.
-        /// </summary>
-        public static ErrorDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new ErrorDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse an <see cref="ErrorDirective"/>.
@@ -51,9 +32,18 @@ namespace Nova.CodeDOM
             ParseMessage(parser);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse an <see cref="ErrorDirective"/>.
+        /// </summary>
+        public static ErrorDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new ErrorDirective(parser, parent);
+        }
 
-        #region /* RENDERING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
 
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
@@ -62,7 +52,5 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -10,11 +10,11 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a collection of <see cref="CodeUnit"/> objects (files) that
@@ -2991,7 +2991,7 @@ namespace Nova.CodeDOM
             /// </summary>
             public bool IsConstantDefined(string name)
             {
-                return (_constants.Contains(name) || name == "USING_NOVA" || name == "USING_NOVA_2");
+                return (_constants.Contains(name) || name == "USING_Furesoft.Core.CodeDom" || name == "USING_Furesoft.Core.CodeDom_2");
             }
 
             /// <summary>

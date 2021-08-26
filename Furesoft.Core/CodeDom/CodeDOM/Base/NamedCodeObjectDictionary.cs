@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -6,7 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a dictionary of named code objects, allowing multiple entries with the same name.
@@ -18,13 +18,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class NamedCodeObjectDictionary : ICollection
     {
-        #region /* FIELDS */
-
         protected Dictionary<string, INamedCodeObject> _dictionary = new Dictionary<string, INamedCodeObject>();
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The number of items in the dictionary.
@@ -49,10 +43,6 @@ namespace Nova.CodeDOM
         {
             get { return this; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add a code object with the specified name to the dictionary.
@@ -82,38 +72,29 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Remove the object with the specified name from the dictionary.
-        /// </summary>
-        /// <param name="name">The name of the object.</param>
-        /// <param name="namedCodeObject">The named code object.</param>
-        public void Remove(string name, INamedCodeObject namedCodeObject)
-        {
-            INamedCodeObject existingObj;
-            if (_dictionary.TryGetValue(name, out existingObj))
-            {
-                if (existingObj is NamedCodeObjectGroup)
-                {
-                    // If there's a group with the given name, remove the object from the group
-                    NamedCodeObjectGroup group = (NamedCodeObjectGroup)existingObj;
-                    group.Remove(namedCodeObject);
-                    if (group.Count == 1)
-                    {
-                        // If only one object is left in the group, replace the group with the object
-                        _dictionary.Remove(name);
-                        _dictionary.Add(name, namedCodeObject);
-                    }
-                }
-                else
-                    _dictionary.Remove(name);
-            }
-        }
-
-        /// <summary>
         /// Clear all members from the dictionary.
         /// </summary>
         public void Clear()
         {
             _dictionary.Clear();
+        }
+
+        /// <summary>
+        /// Copy the objects in the dictionary to the specified array, starting at the specified offset.
+        /// </summary>
+        /// <param name="array">The array to copy into.</param>
+        /// <param name="index">The starting index in the array.</param>
+        public virtual void CopyTo(Array array, int index)
+        {
+            if (array == null)
+                throw new ArgumentNullException("array", "Null array reference");
+            if (index < 0)
+                throw new ArgumentOutOfRangeException("index", "Index is out of range");
+            if (array.Rank > 1)
+                throw new ArgumentException("Array is multi-dimensional", "array");
+
+            foreach (INamedCodeObject obj in this)
+                array.SetValue(obj, index++);
         }
 
         /// <summary>
@@ -151,23 +132,30 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Copy the objects in the dictionary to the specified array, starting at the specified offset.
+        /// Remove the object with the specified name from the dictionary.
         /// </summary>
-        /// <param name="array">The array to copy into.</param>
-        /// <param name="index">The starting index in the array.</param>
-        public virtual void CopyTo(Array array, int index)
+        /// <param name="name">The name of the object.</param>
+        /// <param name="namedCodeObject">The named code object.</param>
+        public void Remove(string name, INamedCodeObject namedCodeObject)
         {
-            if (array == null)
-                throw new ArgumentNullException("array", "Null array reference");
-            if (index < 0)
-                throw new ArgumentOutOfRangeException("index", "Index is out of range");
-            if (array.Rank > 1)
-                throw new ArgumentException("Array is multi-dimensional", "array");
-
-            foreach (INamedCodeObject obj in this)
-                array.SetValue(obj, index++);
+            INamedCodeObject existingObj;
+            if (_dictionary.TryGetValue(name, out existingObj))
+            {
+                if (existingObj is NamedCodeObjectGroup)
+                {
+                    // If there's a group with the given name, remove the object from the group
+                    NamedCodeObjectGroup group = (NamedCodeObjectGroup)existingObj;
+                    group.Remove(namedCodeObject);
+                    if (group.Count == 1)
+                    {
+                        // If only one object is left in the group, replace the group with the object
+                        _dictionary.Remove(name);
+                        _dictionary.Add(name, namedCodeObject);
+                    }
+                }
+                else
+                    _dictionary.Remove(name);
+            }
         }
-
-        #endregion
     }
 }

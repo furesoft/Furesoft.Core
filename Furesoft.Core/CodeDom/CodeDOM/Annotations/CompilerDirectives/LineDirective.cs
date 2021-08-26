@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The type of a <see cref="LineDirective"/>.
@@ -17,15 +17,9 @@ namespace Nova.CodeDOM
     /// </summary>
     public class LineDirective : CompilerDirective
     {
-        #region /* FIELDS */
-
         protected LineDirectiveType _directiveType;
-        protected int _number;
         protected string _fileName;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected int _number;
 
         /// <summary>
         /// Create a <see cref="LineDirective"/> with the specified type.
@@ -45,10 +39,6 @@ namespace Nova.CodeDOM
             _fileName = fileName;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The type of the <see cref="LineDirective"/>.
         /// </summary>
@@ -56,15 +46,6 @@ namespace Nova.CodeDOM
         {
             get { return _directiveType; }
             set { _directiveType = value; }
-        }
-
-        /// <summary>
-        /// The associated line number.
-        /// </summary>
-        public int Number
-        {
-            get { return _number; }
-            set { _number = value; }
         }
 
         /// <summary>
@@ -76,9 +57,14 @@ namespace Nova.CodeDOM
             set { _fileName = value; }
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The associated line number.
+        /// </summary>
+        public int Number
+        {
+            get { return _number; }
+            set { _number = value; }
+        }
 
         /// <summary>
         /// The token used to parse the code object.
@@ -94,19 +80,6 @@ namespace Nova.CodeDOM
         /// The token used to parse the 'hidden' type.
         /// </summary>
         public const string ParseTokenHidden = "hidden";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="LineDirective"/>.
-        /// </summary>
-        public static LineDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new LineDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="LineDirective"/>.
@@ -141,21 +114,30 @@ namespace Nova.CodeDOM
             MoveEOLComment(parser.LastToken);
         }
 
+        /// <summary>
+        /// Parse a <see cref="LineDirective"/>.
+        /// </summary>
+        public static LineDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new LineDirective(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         protected static LineDirectiveType ParseLineDirectiveType(string actionName)
         {
             LineDirectiveType action;
             switch (actionName)
             {
                 case ParseTokenDefault: action = LineDirectiveType.Default; break;
-                case ParseTokenHidden:  action = LineDirectiveType.Hidden; break;
-                default:                action = LineDirectiveType.Number; break;
+                case ParseTokenHidden: action = LineDirectiveType.Hidden; break;
+                default: action = LineDirectiveType.Number; break;
             }
             return action;
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// Determines if the compiler directive should be indented.
@@ -164,10 +146,6 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
@@ -185,7 +163,7 @@ namespace Nova.CodeDOM
             switch (directiveType)
             {
                 case LineDirectiveType.Default: return ParseTokenDefault;
-                case LineDirectiveType.Hidden:  return ParseTokenHidden;
+                case LineDirectiveType.Hidden: return ParseTokenHidden;
             }
             return "";
         }
@@ -197,7 +175,5 @@ namespace Nova.CodeDOM
             else
                 writer.Write(LineDirectiveTypeToString(_directiveType));
         }
-
-        #endregion
     }
 }

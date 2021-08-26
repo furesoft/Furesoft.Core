@@ -1,27 +1,21 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Causes execution of the active loop or switch/case block to terminate.
     /// </summary>
     public class Break : Statement
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="Break"/>.
         /// </summary>
         public Break()
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
@@ -31,18 +25,16 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "break";
 
-        internal static void AddParsePoints()
+        protected Break(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+            parser.NextToken();  // Move past 'break'
+            ParseTerminator(parser);
         }
 
         /// <summary>
@@ -53,16 +45,10 @@ namespace Nova.CodeDOM
             return new Break(parser, parent);
         }
 
-        protected Break(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            parser.NextToken();  // Move past 'break'
-            ParseTerminator(parser);
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -79,7 +65,5 @@ namespace Nova.CodeDOM
         {
             get { return true; }
         }
-
-        #endregion
     }
 }

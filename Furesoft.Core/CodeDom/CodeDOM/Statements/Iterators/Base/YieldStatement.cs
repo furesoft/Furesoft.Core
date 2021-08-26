@@ -1,35 +1,27 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="YieldReturn"/> and <see cref="YieldBreak"/>.
     /// </summary>
     public abstract class YieldStatement : Statement
     {
-        #region /* CONSTRUCTORS */
-
         protected YieldStatement()
         { }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse yield statements.
         /// </summary>
         public const string ParseToken1 = "yield";
 
-        internal static void AddParsePoints()
-        {
-            // Set parse-point on 1st of the 2 keywords
-            Parser.AddParsePoint(ParseToken1, Parse, typeof(IBlock));
-        }
+        protected YieldStatement(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// Parse a <see cref="YieldBreak"/> or <see cref="YieldReturn"/>.
@@ -45,13 +37,11 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected YieldStatement(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* FORMATTING */
+        internal static void AddParsePoints()
+        {
+            // Set parse-point on 1st of the 2 keywords
+            Parser.AddParsePoint(ParseToken1, Parse, typeof(IBlock));
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has a terminator character by default.
@@ -60,7 +50,5 @@ namespace Nova.CodeDOM
         {
             get { return true; }
         }
-
-        #endregion
     }
 }

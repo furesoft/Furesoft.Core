@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="AnonymousMethod"/>.
@@ -16,8 +16,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class AnonymousMethodRef : MethodRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="AnonymousMethodRef"/> from an <see cref="AnonymousMethod"/>.
         /// </summary>
@@ -32,10 +30,6 @@ namespace Nova.CodeDOM
             : base(anonymousMethod, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// Always returns null for an <see cref="AnonymousMethodRef"/>.
         /// </summary>
@@ -43,18 +37,6 @@ namespace Nova.CodeDOM
         {
             // Anonymous methods don't have a name
             get { return null; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Determine the return type of the anonymous method (never null - will be 'void' instead).
-        /// </summary>
-        public override TypeRefBase GetReturnType()
-        {
-            return ((AnonymousMethod)_reference).GetReturnType();
         }
 
         /// <summary>
@@ -65,16 +47,18 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// Determine the return type of the anonymous method (never null - will be 'void' instead).
+        /// </summary>
+        public override TypeRefBase GetReturnType()
+        {
+            return ((AnonymousMethod)_reference).GetReturnType();
+        }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             // Always render an AnonymousMethodRef as a description (which will render it's delegate type)
             ((AnonymousMethod)_reference).AsText(writer, flags | RenderFlags.SuppressNewLine | RenderFlags.Description);
         }
-
-        #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -6,10 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents metadata associated with a <see cref="CodeObject"/>.
@@ -17,7 +17,7 @@ namespace Nova.CodeDOM
     /// <remarks>
     /// Format: [target: name(arg, name=arg, ...), ...]
     /// Attributes can appear on the following declarations, with targets as shown:
-    /// 
+    ///
     /// Declaration                      Targets
     /// -----------                      -------
     /// (global)                         assembly, module (no default!)
@@ -32,25 +32,17 @@ namespace Nova.CodeDOM
     /// event - field                    event, field, method
     /// event - property                 event, property
     /// event - add, remove              method, param
-    /// 
+    ///
     /// Global attributes must appear at the top level of a file, after using directives and before
     /// namespace declarations.  The first target is the default if none is specified, except for
     /// global attributes (which have no default target).
     /// </remarks>
     public class Attribute : Annotation
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The name suffix used for attribute classes.
         /// </summary>
         public const string NameSuffix = "Attribute";
-
-        #endregion
-
-        #region /* FIELDS */
-
-        protected AttributeTarget _target;
 
         /// <summary>
         /// One or more <see cref="Expression"/> objects, which in valid code should each be either a <see cref="Call"/> with
@@ -61,9 +53,7 @@ namespace Nova.CodeDOM
         /// </summary>
         protected ChildList<Expression> _attributeExpressions;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected AttributeTarget _target;
 
         /// <summary>
         /// Create an <see cref="Attribute"/>.
@@ -114,10 +104,6 @@ namespace Nova.CodeDOM
             : this(AttributeTarget.None, constructorRef, arguments)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The list of attribute <see cref="Expression"/>s.
         /// </summary>
@@ -132,14 +118,6 @@ namespace Nova.CodeDOM
         public bool HasAttributeExpressions
         {
             get { return (_attributeExpressions != null && _attributeExpressions.Count > 0); }
-        }
-
-        /// <summary>
-        /// The <see cref="AttributeTarget"/>.
-        /// </summary>
-        public AttributeTarget Target
-        {
-            get { return _target; }
         }
 
         /// <summary>
@@ -160,9 +138,23 @@ namespace Nova.CodeDOM
             get { return IsGlobal; }
         }
 
-        #endregion
+        /// <summary>
+        /// The <see cref="AttributeTarget"/>.
+        /// </summary>
+        public AttributeTarget Target
+        {
+            get { return _target; }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Attribute clone = (Attribute)base.Clone();
+            clone._attributeExpressions = ChildListHelpers.Clone(_attributeExpressions, clone);
+            return clone;
+        }
 
         /// <summary>
         /// Get the list of attribute <see cref="Expression"/>s, or return the existing one.
@@ -225,18 +217,9 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
+        /// The token used to parse the end of an attribute.
         /// </summary>
-        public override CodeObject Clone()
-        {
-            Attribute clone = (Attribute)base.Clone();
-            clone._attributeExpressions = ChildListHelpers.Clone(_attributeExpressions, clone);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const string ParseTokenEnd = "]";
 
         /// <summary>
         /// The token used to parse the start of an attribute.
@@ -247,27 +230,6 @@ namespace Nova.CodeDOM
         /// The token used to parse an attribute target.
         /// </summary>
         public const string ParseTokenTarget = ":";
-
-        /// <summary>
-        /// The token used to parse the end of an attribute.
-        /// </summary>
-        public const string ParseTokenEnd = "]";
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 300 (IndexerDecl uses 0, TypeRef uses 100, Index uses 200)
-            // Attributes can appear in many places (see top of this file), so we won't restrict their
-            // scope for parsing (but static analysis will flag them if they aren't in a valid place.
-            Parser.AddParsePoint(ParseTokenStart, 300, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="Attribute"/>.
-        /// </summary>
-        public static Attribute Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Attribute(parser, parent);
-        }
 
         protected Attribute(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -284,6 +246,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Parse an <see cref="Attribute"/>.
+        /// </summary>
+        public static Attribute Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Attribute(parser, parent);
+        }
+
+        /// <summary>
         /// Parse multiple attributes.
         /// </summary>
         public static void ParseAttributes(Parser parser, CodeObject parent)
@@ -295,9 +265,35 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        internal static void AddParsePoints()
+        {
+            // Use a parse-priority of 300 (IndexerDecl uses 0, TypeRef uses 100, Index uses 200)
+            // Attributes can appear in many places (see top of this file), so we won't restrict their
+            // scope for parsing (but static analysis will flag them if they aren't in a valid place.
+            Parser.AddParsePoint(ParseTokenStart, 300, Parse);
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get
+            {
+                return (base.IsSingleLine && (_attributeExpressions == null || _attributeExpressions.Count == 0
+              || (!_attributeExpressions[0].IsFirstOnLine && _attributeExpressions.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_attributeExpressions != null && _attributeExpressions.Count > 0)
+                {
+                    if (value)
+                        _attributeExpressions[0].IsFirstOnLine = false;
+                    _attributeExpressions.IsSingleLine = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
@@ -312,27 +308,39 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the code object only requires a single line for display.
+        /// Helper method to convert a collection of Attributes to text.
         /// </summary>
-        public override bool IsSingleLine
+        public static void AsTextAttributes(CodeWriter writer, ChildList<Attribute> attributes, RenderFlags flags)
         {
-            get { return (base.IsSingleLine && (_attributeExpressions == null || _attributeExpressions.Count == 0
-                || (!_attributeExpressions[0].IsFirstOnLine && _attributeExpressions.IsSingleLine))); }
-            set
+            if (attributes != null && attributes.Count > 0)
             {
-                base.IsSingleLine = value;
-                if (_attributeExpressions != null && _attributeExpressions.Count > 0)
-                {
-                    if (value)
-                        _attributeExpressions[0].IsFirstOnLine = false;
-                    _attributeExpressions.IsSingleLine = value;
-                }
+                flags &= ~RenderFlags.Description;  // Don't pass description flag through
+                foreach (Attribute attrDecl in attributes)
+                    attrDecl.AsText(writer, flags);
             }
         }
 
-        #endregion
+        public static void AsTextAttributes(CodeWriter writer, MemberInfo memberInfo, AttributeTarget attributeTarget)
+        {
+            // Use the static method to get the attributes so that this works with types from reflection-only assemblies
+            AsTextAttributes(writer, CustomAttributeData.GetCustomAttributes(memberInfo), attributeTarget);
+        }
 
-        #region /* RENDERING */
+        public static void AsTextAttributes(CodeWriter writer, MemberInfo memberInfo)
+        {
+            AsTextAttributes(writer, memberInfo, AttributeTarget.None);
+        }
+
+        public static void AsTextAttributes(CodeWriter writer, ParameterInfo parameterInfo, AttributeTarget attributeTarget)
+        {
+            // Use the static method to get the attributes so that this works with types from reflection-only assemblies
+            AsTextAttributes(writer, CustomAttributeData.GetCustomAttributes(parameterInfo), attributeTarget);
+        }
+
+        public static void AsTextAttributes(CodeWriter writer, ParameterInfo parameterInfo)
+        {
+            AsTextAttributes(writer, parameterInfo, AttributeTarget.None);
+        }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -376,41 +384,6 @@ namespace Nova.CodeDOM
                 else
                     writer.Write(" ");
             }
-        }
-
-        /// <summary>
-        /// Helper method to convert a collection of Attributes to text.
-        /// </summary>
-        public static void AsTextAttributes(CodeWriter writer, ChildList<Attribute> attributes, RenderFlags flags)
-        {
-            if (attributes != null && attributes.Count > 0)
-            {
-                flags &= ~RenderFlags.Description;  // Don't pass description flag through
-                foreach (Attribute attrDecl in attributes)
-                    attrDecl.AsText(writer, flags);
-            }
-        }
-
-        public static void AsTextAttributes(CodeWriter writer, MemberInfo memberInfo, AttributeTarget attributeTarget)
-        {
-            // Use the static method to get the attributes so that this works with types from reflection-only assemblies
-            AsTextAttributes(writer, CustomAttributeData.GetCustomAttributes(memberInfo), attributeTarget);
-        }
-
-        public static void AsTextAttributes(CodeWriter writer, MemberInfo memberInfo)
-        {
-            AsTextAttributes(writer, memberInfo, AttributeTarget.None);
-        }
-
-        public static void AsTextAttributes(CodeWriter writer, ParameterInfo parameterInfo, AttributeTarget attributeTarget)
-        {
-            // Use the static method to get the attributes so that this works with types from reflection-only assemblies
-            AsTextAttributes(writer, CustomAttributeData.GetCustomAttributes(parameterInfo), attributeTarget);
-        }
-
-        public static void AsTextAttributes(CodeWriter writer, ParameterInfo parameterInfo)
-        {
-            AsTextAttributes(writer, parameterInfo, AttributeTarget.None);
         }
 
         protected static void AsTextAttributes(CodeWriter writer, IList<CustomAttributeData> attributes, AttributeTarget attributeTarget)
@@ -485,11 +458,7 @@ namespace Nova.CodeDOM
                 }
             }
         }
-
-        #endregion
     }
-
-    #region /* ATTRIBUTE TARGET */
 
     /// <summary>
     /// Valid attribute target types.
@@ -501,6 +470,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public static class AttributeTargetHelpers
     {
+        private static readonly Dictionary<string, AttributeTarget> _nameToTarget = new Dictionary<string, AttributeTarget>();
+
+        private static readonly Dictionary<AttributeTarget, string> _targetToName = new Dictionary<AttributeTarget, string>();
+
         // Setup maps of name-to-enum and enum-to-name.
         static AttributeTargetHelpers()
         {
@@ -515,9 +488,6 @@ namespace Nova.CodeDOM
                 ++i;
             }
         }
-
-        private static readonly Dictionary<string, AttributeTarget> _nameToTarget = new Dictionary<string, AttributeTarget>();
-        private static readonly Dictionary<AttributeTarget, string> _targetToName = new Dictionary<AttributeTarget, string>();
 
         /// <summary>
         /// Format Target as a string.
@@ -545,6 +515,4 @@ namespace Nova.CodeDOM
             return target;
         }
     }
-
-    #endregion
 }

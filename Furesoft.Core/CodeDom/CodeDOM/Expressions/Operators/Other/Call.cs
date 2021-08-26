@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a call to a Method or a Delegate, including any arguments.
@@ -20,8 +20,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Call : ArgumentsOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="Call"/>.
         /// </summary>
@@ -35,14 +33,6 @@ namespace Nova.CodeDOM
         public Call(MethodDecl methodDecl, params Expression[] arguments)
             : this(methodDecl.CreateRef(), arguments)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        #endregion
-
-        #region / * METHODS */
 
         /// <summary>
         /// Determine the type of the parameter for the specified argument index.
@@ -58,14 +48,10 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
-        /// The token used to parse the start of the parameters.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the end of the parameters.
@@ -73,31 +59,14 @@ namespace Nova.CodeDOM
         public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
 
         /// <summary>
+        /// The token used to parse the start of the parameters.
+        /// </summary>
+        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
+
+        /// <summary>
         /// The precedence of the operator.
         /// </summary>
         public const int Precedence = 100;
-
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 200 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Cast uses 300, Expression parens uses 400)
-            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Call"/>.
-        /// </summary>
-        public static Call Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // Verify that we have an unused expression before proceeding
-            if (parser.HasUnusedExpression)
-                return new Call(parser, parent, false);
-            return null;
-        }
 
         protected Call(Parser parser, CodeObject parent, bool isInitializer)
             : base(parser, parent)
@@ -123,6 +92,17 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Parse a <see cref="Call"/>.
+        /// </summary>
+        public static Call Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // Verify that we have an unused expression before proceeding
+            if (parser.HasUnusedExpression)
+                return new Call(parser, parent, false);
+            return null;
+        }
+
+        /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
         public override int GetPrecedence()
@@ -130,9 +110,18 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Cast uses 300, Expression parens uses 400)
+            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
+        }
 
-        #region /* RENDERING */
+        protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)
+        {
+            if (IsEndFirstOnLine)
+                writer.WriteLine();
+            writer.Write(ParseTokenEnd);
+        }
 
         protected override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
@@ -144,14 +133,5 @@ namespace Nova.CodeDOM
         {
             writer.Write(ParseTokenStart);
         }
-
-        protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)
-        {
-            if (IsEndFirstOnLine)
-                writer.WriteLine();
-            writer.Write(ParseTokenEnd);
-        }
-
-        #endregion
     }
 }

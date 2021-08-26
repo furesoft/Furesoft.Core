@@ -1,36 +1,26 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of all unary operators (<see cref="PreUnaryOperator"/>, <see cref="PostUnaryOperator"/>).
     /// </summary>
     public abstract class UnaryOperator : Operator
     {
-        #region /* FIELDS */
-
         protected Expression _expression;
 
         // If the operator is overloaded, a hidden reference (OperatorRef) to the overloaded
         // operator declaration is stored here.
         protected SymbolicRef _operatorRef;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         protected UnaryOperator(Expression expression)
         {
             Expression = expression;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The associated <see cref="Expression"/>.
@@ -58,18 +48,6 @@ namespace Nova.CodeDOM
             get { return (_expression != null && _expression.IsConst); }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="UnaryOperator"/>.
-        /// </summary>
-        public virtual string GetInternalName()
-        {
-            return null;
-        }
-
         /// <summary>
         /// Deep-clone the code object.
         /// </summary>
@@ -81,9 +59,13 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The internal name of the <see cref="UnaryOperator"/>.
+        /// </summary>
+        public virtual string GetInternalName()
+        {
+            return null;
+        }
 
         protected UnaryOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -93,10 +75,6 @@ namespace Nova.CodeDOM
                 && !(_expression is Operator && ((Operator)_expression).GetPrecedence() > GetPrecedence()))
                 _expression.HasParens = false;
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// Determines if the code object only requires a single line for display.
@@ -124,7 +102,5 @@ namespace Nova.CodeDOM
             Expression expression = (Expression)field;
             expression.HasParens = (expression is Operator && ((Operator)expression).GetPrecedence() > GetPrecedence());
         }
-
-        #endregion
     }
 }

@@ -1,19 +1,17 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 using System.Reflection;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="EnumMemberDecl"/> (a member of an <see cref="EnumDecl"/> type declaration).
     /// </summary>
     public class EnumMemberRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="EnumMemberRef"/>.
         /// </summary>
@@ -45,10 +43,6 @@ namespace Nova.CodeDOM
             : this(fieldInfo, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// Always <c>true</c>.
         /// </summary>
@@ -64,10 +58,6 @@ namespace Nova.CodeDOM
         {
             get { return true; }
         }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Find the enum value with the specified name in the specified <see cref="EnumDecl"/>.
@@ -145,27 +135,6 @@ namespace Nova.CodeDOM
             return Find(typeRefBase, name, false);
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the declaring type of the referenced enum member.
-        /// </summary>
-        public override TypeRefBase GetDeclaringType()
-        {
-            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
-
-            // An enum member reference doesn't store any type arguments for a parent type instance, so any
-            // type arguments in any generic declaring type or its parent types will always default to
-            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
-            // so that they don't show up as Red in the GUI.
-            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
-                declaringTypeRef.ConvertOpenTypeParameters();
-
-            return declaringTypeRef;
-        }
-
         /// <summary>
         /// Get the declaring type of the specified enum member object.
         /// </summary>
@@ -184,6 +153,21 @@ namespace Nova.CodeDOM
             return declaringTypeRef;
         }
 
-        #endregion
+        /// <summary>
+        /// Get the declaring type of the referenced enum member.
+        /// </summary>
+        public override TypeRefBase GetDeclaringType()
+        {
+            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
+
+            // An enum member reference doesn't store any type arguments for a parent type instance, so any
+            // type arguments in any generic declaring type or its parent types will always default to
+            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
+            // so that they don't show up as Red in the GUI.
+            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
+                declaringTypeRef.ConvertOpenTypeParameters();
+
+            return declaringTypeRef;
+        }
     }
 }

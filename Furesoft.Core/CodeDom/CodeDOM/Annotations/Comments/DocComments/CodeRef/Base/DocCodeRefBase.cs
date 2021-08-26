@@ -1,12 +1,12 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of all documentation comment tags that have a 'cref' attribute (<see cref="DocSee"/>,
@@ -14,14 +14,8 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class DocCodeRefBase : DocComment
     {
-        #region /* FIELDS */
-
         // Should evaluate to a code object reference (Expression - SymbolicRef, Dot, Call), but can also be a string.
         protected object _codeRef;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected DocCodeRefBase(Expression codeRef, string text)
             : base(text)
@@ -35,10 +29,6 @@ namespace Nova.CodeDOM
             CodeRef = codeRef;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The associated <see cref="CodeObject"/> or string.
         /// </summary>
@@ -47,10 +37,6 @@ namespace Nova.CodeDOM
             get { return _codeRef; }
             set { SetField(ref _codeRef, value, true); }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Deep-clone the code object.
@@ -61,10 +47,6 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._codeRef, _codeRef);
             return clone;
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The name of the code-ref attribute.
@@ -125,10 +107,6 @@ namespace Nova.CodeDOM
             return base.ParseAttributeValue(parser, name);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// Determines if the code object only requires a single line for display.
         /// </summary>
@@ -151,10 +129,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
         {
             if (!flags.HasFlag(RenderFlags.Description))
@@ -172,7 +146,5 @@ namespace Nova.CodeDOM
             if (!flags.HasFlag(RenderFlags.Description))
                 writer.Write("\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
         }
-
-        #endregion
     }
 }

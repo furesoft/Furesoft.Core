@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -9,11 +9,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Declares a unit of independent code that belongs to the root-level namespace (also known as a "compilation unit").
@@ -41,7 +41,7 @@ namespace Nova.CodeDOM
         #region /* STATIC FIELDS */
 
         /// <summary>
-        /// Determines if changes are saved to a separate ".Nova.cs" file instead of the original.
+        /// Determines if changes are saved to a separate ".Furesoft.Core.CodeDom.cs" file instead of the original.
         /// </summary>
         public static bool SaveChangesToSeparateFile;
 
@@ -481,7 +481,7 @@ namespace Nova.CodeDOM
         public static string GetSaveFileName(string filePath)
         {
             if (SaveChangesToSeparateFile)
-                return Path.GetDirectoryName(filePath) + @"\" + Path.GetFileNameWithoutExtension(filePath) + ".Nova" + Path.GetExtension(filePath);
+                return Path.GetDirectoryName(filePath) + @"\" + Path.GetFileNameWithoutExtension(filePath) + ".Furesoft.Core.CodeDom" + Path.GetExtension(filePath);
             return filePath;
         }
 
@@ -549,7 +549,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public bool IsCompilerDirectiveSymbolDefined(string name)
         {
-            return (_compilerDirectiveSymbols.Contains(name) || name == "USING_NOVA" || name == "USING_NOVA_2");
+            return (_compilerDirectiveSymbols.Contains(name) || name == "USING_Furesoft.Core.CodeDom" || name == "USING_Furesoft.Core.CodeDom_2");
         }
 
         /// <summary>

@@ -1,12 +1,12 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents plain-text user documentation of code.
@@ -17,18 +17,12 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DocText : DocComment
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DocText"/>.
         /// </summary>
         public DocText(string text)
             : base(text)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The text content of the object.
@@ -37,10 +31,6 @@ namespace Nova.CodeDOM
         {
             get { return (string)_content; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add the specified text to the documentation comment.
@@ -58,27 +48,12 @@ namespace Nova.CodeDOM
             throw new Exception("Can't add DocComment objects to DocText objects (add them both to a parent DocComment instead).");
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the code object defaults to starting on a new line.
         /// </summary>
         public override bool IsFirstOnLineDefault
         {
             get { return false; }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
-        {
-            writer.EscapeUnicode = false;
-            AsTextText(writer, (string)_content, flags);
-            writer.EscapeUnicode = true;
         }
 
         public static void AsTextText(CodeWriter writer, string text, RenderFlags flags)
@@ -99,6 +74,11 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
+        {
+            writer.EscapeUnicode = false;
+            AsTextText(writer, (string)_content, flags);
+            writer.EscapeUnicode = true;
+        }
     }
 }

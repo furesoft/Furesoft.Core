@@ -1,20 +1,18 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Reflection;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="IndexerDecl"/> or a <see cref="PropertyInfo"/> for an indexer.
     /// </summary>
     public class IndexerRef : PropertyRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="IndexerRef"/>.
         /// </summary>
@@ -43,16 +41,10 @@ namespace Nova.CodeDOM
             : base(propertyInfo, false)
         { }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
             writer.Write(IndexerDecl.ParseToken);
         }
-
-        #endregion
     }
 }

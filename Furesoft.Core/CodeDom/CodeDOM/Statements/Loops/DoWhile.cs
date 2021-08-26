@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents the "while" portion of a <see cref="DoWhile"/> loop, and does NOT have
@@ -18,8 +18,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DoWhile : Statement
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DoWhile"/>.
         /// </summary>
@@ -27,10 +25,6 @@ namespace Nova.CodeDOM
         {
             _parent = parent;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The conditional <see cref="Expression"/>.
@@ -47,10 +41,6 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse the code object.
@@ -73,10 +63,6 @@ namespace Nova.CodeDOM
             MoveEOLComment(parser.LastToken);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has a terminator character by default.
         /// </summary>
@@ -85,17 +71,11 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             Expression conditional = Conditional;
             if (conditional != null)
                 conditional.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -6,9 +6,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a dictionary of <see cref="Namespace"/>s and types (<see cref="TypeDecl"/>s and/or <see cref="Type"/>s),
@@ -21,13 +21,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class NamespaceTypeDictionary : ICollection
     {
-        #region /* FIELDS */
-
         protected Dictionary<string, object> _dictionary = new Dictionary<string, object>();
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The number of items in the dictionary.
@@ -52,10 +46,6 @@ namespace Nova.CodeDOM
         {
             get { return this; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add a child <see cref="Namespace"/> to the dictionary.
@@ -82,89 +72,29 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Add the specified type or namespace object with the specified name to the dictionary.
-        /// </summary>
-        /// <param name="name">The name of the object.</param>
-        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object.</param>
-        protected void Add(string name, object obj)
-        {
-            // Protect against null names - shouldn't occur, but might in rare cases for code with parsing errors
-            if (name != null)
-            {
-                object existingObj;
-                if (_dictionary.TryGetValue(name, out existingObj))
-                {
-                    // If we had a name collision, add to any existing group, or create a new one
-                    if (existingObj is NamespaceTypeGroup)
-                        ((NamespaceTypeGroup)existingObj).Add(obj);
-                    else
-                    {
-                        _dictionary.Remove(name);
-                        _dictionary.Add(name, new NamespaceTypeGroup { existingObj, obj });
-                    }
-                }
-                else
-                    _dictionary.Add(name, obj);
-            }
-        }
-
-        /// <summary>
-        /// Remove the specified child <see cref="Namespace"/> from the dictionary.
-        /// </summary>
-        public void Remove(Namespace @namespace)
-        {
-            Remove(@namespace.Name, @namespace);
-        }
-
-        /// <summary>
-        /// Remove the specified <see cref="TypeDecl"/> from the dictionary.
-        /// </summary>
-        public void Remove(TypeDecl typeDecl)
-        {
-            Remove(typeDecl.Name, typeDecl);
-        }
-
-        /// <summary>
-        /// Remove the specified <see cref="Type"/> from the dictionary.
-        /// </summary>
-        public void Remove(Type type)
-        {
-            Remove(type.IsGenericType ? TypeUtil.NonGenericName(type) : type.Name, type);
-        }
-
-        /// <summary>
-        /// Remove the type or namespace object with the specified name from the dictionary.
-        /// </summary>
-        /// <param name="name">The name of the object.</param>
-        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object.</param>
-        protected void Remove(string name, object obj)
-        {
-            object existingObj;
-            if (_dictionary.TryGetValue(name, out existingObj))
-            {
-                if (existingObj is NamespaceTypeGroup)
-                {
-                    // If there's a group with the given name, remove the object from the group
-                    NamespaceTypeGroup group = (NamespaceTypeGroup)existingObj;
-                    group.Remove(obj);
-                    if (group.Count == 1)
-                    {
-                        // If only one object is left in the group, replace the group with the object
-                        _dictionary.Remove(name);
-                        _dictionary.Add(name, obj);
-                    }
-                }
-                else
-                    _dictionary.Remove(name);
-            }
-        }
-
-        /// <summary>
         /// Clear all members from the dictionary.
         /// </summary>
         public void Clear()
         {
             _dictionary.Clear();
+        }
+
+        /// <summary>
+        /// Copy the objects in the dictionary to the specified array, starting at the specified offset.
+        /// </summary>
+        /// <param name="array">The array to copy into.</param>
+        /// <param name="index">The starting index in the array.</param>
+        public virtual void CopyTo(Array array, int index)
+        {
+            if (array == null)
+                throw new ArgumentNullException("array", "Null array reference");
+            if (index < 0)
+                throw new ArgumentOutOfRangeException("index", "Index is out of range");
+            if (array.Rank > 1)
+                throw new ArgumentException("Array is multi-dimensional", "array");
+
+            foreach (object obj in this)
+                array.SetValue(obj, index++);
         }
 
         /// <summary>
@@ -213,23 +143,81 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Copy the objects in the dictionary to the specified array, starting at the specified offset.
+        /// Remove the specified child <see cref="Namespace"/> from the dictionary.
         /// </summary>
-        /// <param name="array">The array to copy into.</param>
-        /// <param name="index">The starting index in the array.</param>
-        public virtual void CopyTo(Array array, int index)
+        public void Remove(Namespace @namespace)
         {
-            if (array == null)
-                throw new ArgumentNullException("array", "Null array reference");
-            if (index < 0)
-                throw new ArgumentOutOfRangeException("index", "Index is out of range");
-            if (array.Rank > 1)
-                throw new ArgumentException("Array is multi-dimensional", "array");
-
-            foreach (object obj in this)
-                array.SetValue(obj, index++);
+            Remove(@namespace.Name, @namespace);
         }
 
-        #endregion
+        /// <summary>
+        /// Remove the specified <see cref="TypeDecl"/> from the dictionary.
+        /// </summary>
+        public void Remove(TypeDecl typeDecl)
+        {
+            Remove(typeDecl.Name, typeDecl);
+        }
+
+        /// <summary>
+        /// Remove the specified <see cref="Type"/> from the dictionary.
+        /// </summary>
+        public void Remove(Type type)
+        {
+            Remove(type.IsGenericType ? TypeUtil.NonGenericName(type) : type.Name, type);
+        }
+
+        /// <summary>
+        /// Add the specified type or namespace object with the specified name to the dictionary.
+        /// </summary>
+        /// <param name="name">The name of the object.</param>
+        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object.</param>
+        protected void Add(string name, object obj)
+        {
+            // Protect against null names - shouldn't occur, but might in rare cases for code with parsing errors
+            if (name != null)
+            {
+                object existingObj;
+                if (_dictionary.TryGetValue(name, out existingObj))
+                {
+                    // If we had a name collision, add to any existing group, or create a new one
+                    if (existingObj is NamespaceTypeGroup)
+                        ((NamespaceTypeGroup)existingObj).Add(obj);
+                    else
+                    {
+                        _dictionary.Remove(name);
+                        _dictionary.Add(name, new NamespaceTypeGroup { existingObj, obj });
+                    }
+                }
+                else
+                    _dictionary.Add(name, obj);
+            }
+        }
+
+        /// <summary>
+        /// Remove the type or namespace object with the specified name from the dictionary.
+        /// </summary>
+        /// <param name="name">The name of the object.</param>
+        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object.</param>
+        protected void Remove(string name, object obj)
+        {
+            object existingObj;
+            if (_dictionary.TryGetValue(name, out existingObj))
+            {
+                if (existingObj is NamespaceTypeGroup)
+                {
+                    // If there's a group with the given name, remove the object from the group
+                    NamespaceTypeGroup group = (NamespaceTypeGroup)existingObj;
+                    group.Remove(obj);
+                    if (group.Count == 1)
+                    {
+                        // If only one object is left in the group, replace the group with the object
+                        _dictionary.Remove(name);
+                        _dictionary.Add(name, obj);
+                    }
+                }
+                else
+                    _dictionary.Remove(name);
+            }
+        }
     }
 }

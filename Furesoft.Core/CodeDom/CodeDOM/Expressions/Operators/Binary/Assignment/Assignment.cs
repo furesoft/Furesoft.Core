@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Assigns the right <see cref="Expression"/> to the left <see cref="Expression"/>.
@@ -17,26 +17,12 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Assignment : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="Assignment"/> with the specified left and right expressions.
         /// </summary>
         public Assignment(Expression left, Expression right)
             : base(left, right)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
 
         /// <summary>
         /// True if the expression is const.
@@ -47,9 +33,18 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
+        }
 
-        #region /* PARSING */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = false;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -61,16 +56,9 @@ namespace Nova.CodeDOM
         /// </summary>
         public const int Precedence = 500;
 
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = false;
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 300 (FieldDecl uses 0, LocalDecl uses 100, MultiEnumMemberDecl uses 200)
-            Parser.AddOperatorParsePoint(ParseToken, 300, Precedence, LeftAssociative, false, Parse);
-        }
+        protected Assignment(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// Parse an <see cref="Assignment"/>.
@@ -80,10 +68,6 @@ namespace Nova.CodeDOM
             return new Assignment(parser, parent);
         }
 
-        protected Assignment(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -92,9 +76,11 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 300 (FieldDecl uses 0, LocalDecl uses 100, MultiEnumMemberDecl uses 200)
+            Parser.AddOperatorParsePoint(ParseToken, 300, Precedence, LeftAssociative, false, Parse);
+        }
 
         /// <summary>
         /// True if the expression should have parens by default.
@@ -103,7 +89,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }  // No parens for assignments by default
         }
-
-        #endregion
     }
 }

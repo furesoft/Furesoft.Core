@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Declares a property-like event, with add/remove accessors.
@@ -16,8 +16,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class EventDecl : PropertyDeclBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="EventDecl"/> with the specified name, type, and modifiers.
         /// </summary>
@@ -39,9 +37,23 @@ namespace Nova.CodeDOM
             : base(name, type, Modifiers.Event)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The 'adder' method for the event.
+        /// </summary>
+        public AdderDecl Adder
+        {
+            get { return _body.FindFirst<AdderDecl>(); }
+            set
+            {
+                if (_body != null)
+                {
+                    AdderDecl existing = _body.FindFirst<AdderDecl>();
+                    if (existing != null)
+                        _body.Remove(existing);
+                }
+                Insert(0, value);  // Always put the 'adder' first
+            }
+        }
 
         /// <summary>
         /// The descriptive category of the code object.
@@ -68,22 +80,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The 'adder' method for the event.
+        /// True if the event is readable.
         /// </summary>
-        public AdderDecl Adder
-        {
-            get { return _body.FindFirst<AdderDecl>(); }
-            set
-            {
-                if (_body != null)
-                {
-                    AdderDecl existing = _body.FindFirst<AdderDecl>();
-                    if (existing != null)
-                        _body.Remove(existing);
-                }
-                Insert(0, value);  // Always put the 'adder' first
-            }
-        }
+        public override bool IsReadable { get { return HasAdder; } }
+
+        /// <summary>
+        /// True if the event is writable.
+        /// </summary>
+        public override bool IsWritable { get { return HasRemover; } }
 
         /// <summary>
         /// The 'remover' method for the event.
@@ -102,20 +106,6 @@ namespace Nova.CodeDOM
                 Insert((_body != null ? _body.Count : 0), value);  // Always put the 'remover' after any 'adder'
             }
         }
-
-        /// <summary>
-        /// True if the event is readable.
-        /// </summary>
-        public override bool IsReadable { get { return HasAdder; } }
-
-        /// <summary>
-        /// True if the event is writable.
-        /// </summary>
-        public override bool IsWritable { get { return HasRemover; } }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Create a reference to the <see cref="EventDecl"/>.
@@ -168,10 +158,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// Parse an <see cref="EventDecl"/>.
         /// </summary>
@@ -180,7 +166,5 @@ namespace Nova.CodeDOM
         {
             _modifiers |= Modifiers.Event;
         }
-
-        #endregion
     }
 }

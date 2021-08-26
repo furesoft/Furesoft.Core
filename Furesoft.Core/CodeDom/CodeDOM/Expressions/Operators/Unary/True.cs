@@ -1,24 +1,18 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Determines if an expression evaluates to true.
     /// </summary>
     public class True : PreUnaryOperator
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name of the operator.
         /// </summary>
         public const string InternalName = NamePrefix + "True";
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="True"/> operator.
@@ -26,10 +20,6 @@ namespace Nova.CodeDOM
         public True(Expression expression)
             : base(expression)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -39,10 +29,6 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// The internal name of the <see cref="UnaryOperator"/>.
         /// </summary>
@@ -50,10 +36,6 @@ namespace Nova.CodeDOM
         {
             return InternalName;
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse the code object.
@@ -72,7 +54,5 @@ namespace Nova.CodeDOM
         {
             return Precedence;
         }
-
-        #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Indicates that execution should return from the current method, and has an optional <see cref="Expression"/>
@@ -13,13 +13,7 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Return : Statement
     {
-        #region /* FIELDS */
-
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Return"/>.
@@ -40,10 +34,6 @@ namespace Nova.CodeDOM
             : this(null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The return <see cref="Expression"/>.
         /// </summary>
@@ -61,10 +51,6 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Deep-clone the code object.
         /// </summary>
@@ -75,27 +61,10 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "return";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Return"/>.
-        /// </summary>
-        public static Return Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Return(parser, parent);
-        }
 
         protected Return(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -110,9 +79,18 @@ namespace Nova.CodeDOM
                 _expression.HasParens = false;
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="Return"/>.
+        /// </summary>
+        public static Return Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Return(parser, parent);
+        }
 
-        #region /* FORMATTING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -156,16 +134,10 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

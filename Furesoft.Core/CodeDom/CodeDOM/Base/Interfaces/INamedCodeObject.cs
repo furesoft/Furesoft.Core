@@ -1,8 +1,8 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all <see cref="CodeObject"/>s that have a Name property, and can be referenced symbolically.
@@ -18,14 +18,19 @@ namespace Nova.CodeDOM
     public interface INamedCodeObject
     {
         /// <summary>
+        /// The descriptive category of the <see cref="CodeObject"/>.
+        /// </summary>
+        string Category { get; }
+
+        /// <summary>
         /// The name of the <see cref="CodeObject"/>.
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// The descriptive category of the <see cref="CodeObject"/>.
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
         /// </summary>
-        string Category { get; }
+        void AddToDictionary(NamedCodeObjectDictionary dictionary);
 
         /// <summary>
         /// Create a reference to the <see cref="CodeObject"/>.
@@ -43,16 +48,6 @@ namespace Nova.CodeDOM
         T FindParent<T>() where T : CodeObject;
 
         /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
-        /// </summary>
-        void AddToDictionary(NamedCodeObjectDictionary dictionary);
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        void RemoveFromDictionary(NamedCodeObjectDictionary dictionary);
-
-        /// <summary>
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
         /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
@@ -62,5 +57,10 @@ namespace Nova.CodeDOM
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
         string GetFullName();
+
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
+        /// </summary>
+        void RemoveFromDictionary(NamedCodeObjectDictionary dictionary);
     }
 }

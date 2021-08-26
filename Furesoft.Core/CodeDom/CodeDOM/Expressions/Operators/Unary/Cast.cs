@@ -1,24 +1,18 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The Cast operator casts an Expression to the specified Type.
     /// </summary>
     public class Cast : PreUnaryOperator
     {
-        #region /* FIELDS */
-
         protected Expression _type;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Cast"/> operator.
@@ -31,10 +25,6 @@ namespace Nova.CodeDOM
             Type = type;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The cast target type.
         /// </summary>
@@ -42,18 +32,6 @@ namespace Nova.CodeDOM
         {
             get { return _type; }
             set { SetField(ref _type, value, true); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="UnaryOperator"/>.
-        /// </summary>
-        public override string GetInternalName()
-        {
-            return NamePrefix + Modifiers.Explicit;
         }
 
         /// <summary>
@@ -66,14 +44,18 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The internal name of the <see cref="UnaryOperator"/>.
+        /// </summary>
+        public override string GetInternalName()
+        {
+            return NamePrefix + Modifiers.Explicit;
+        }
 
         /// <summary>
-        /// The token used to parse the start of the <see cref="Cast"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public const string ParseTokenStart = ParseTokenStartGroup;
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the end of the <see cref="Cast"/> operator.
@@ -81,19 +63,29 @@ namespace Nova.CodeDOM
         public const string ParseTokenEnd = ParseTokenEndGroup;
 
         /// <summary>
+        /// The token used to parse the start of the <see cref="Cast"/> operator.
+        /// </summary>
+        public const string ParseTokenStart = ParseTokenStartGroup;
+
+        /// <summary>
         /// The precedence of the operator.
         /// </summary>
         public const int Precedence = 200;
 
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
+        protected Cast(Parser parser, CodeObject parent)
+            : base(parser, parent, true)
         {
-            // Use a parse-priority of 300 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Expression parens uses 400)
-            Parser.AddOperatorParsePoint(ParseTokenStart, 300, Precedence, LeftAssociative, true, Parse);
+            parser.NextToken();  // Move past '('
+            SetField(ref _type, Parse(parser, this, false, ParseTokenEnd, ParseFlags.Type), false);
+            ParseExpectedToken(parser, ParseTokenEnd);  // Move past ')'
+            SetField(ref _expression, Parse(parser, this), false);
+            if (_expression != null)
+            {
+                // Move any EOL or Postfix annotations from the expression up to the parent if there are no
+                // parens in the way - this "normalizes" the annotations to the highest node on the line.
+                if (_expression.HasEOLOrPostAnnotations && parent != parser.GetNormalizationBlocker())
+                    MoveEOLAndPostAnnotations(_expression);
+            }
         }
 
         /// <summary>
@@ -140,22 +132,6 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected Cast(Parser parser, CodeObject parent)
-            : base(parser, parent, true)
-        {
-            parser.NextToken();  // Move past '('
-            SetField(ref _type, Parse(parser, this, false, ParseTokenEnd, ParseFlags.Type), false);
-            ParseExpectedToken(parser, ParseTokenEnd);  // Move past ')'
-            SetField(ref _expression, Parse(parser, this), false);
-            if (_expression != null)
-            {
-                // Move any EOL or Postfix annotations from the expression up to the parent if there are no
-                // parens in the way - this "normalizes" the annotations to the highest node on the line.
-                if (_expression.HasEOLOrPostAnnotations && parent != parser.GetNormalizationBlocker())
-                    MoveEOLAndPostAnnotations(_expression);
-            }
-        }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -164,9 +140,11 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 300 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Expression parens uses 400)
+            Parser.AddOperatorParsePoint(ParseTokenStart, 300, Precedence, LeftAssociative, true, Parse);
+        }
 
         /// <summary>
         /// Determines if the code object only requires a single line for display.
@@ -185,10 +163,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextOperator(CodeWriter writer, RenderFlags flags)
         {
             RenderFlags passFlags = (flags & RenderFlags.PassMask);
@@ -197,7 +171,5 @@ namespace Nova.CodeDOM
                 _type.AsText(writer, passFlags);
             writer.Write(ParseTokenEnd);
         }
-
-        #endregion
     }
 }

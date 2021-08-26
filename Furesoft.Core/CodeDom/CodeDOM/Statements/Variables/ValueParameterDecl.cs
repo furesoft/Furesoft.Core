@@ -1,12 +1,12 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents the declaration of an implicit 'value' parameter for a <see cref="GetterDecl"/>, <see cref="AdderDecl"/>, or <see cref="RemoverDecl"/>.
@@ -17,16 +17,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ValueParameterDecl : ParameterDecl
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The hard-wired name of all <see cref="ValueParameterDecl"/>s.
         /// </summary>
         public const string FixedName = "value";
-
-        #endregion /* CONSTANTS */
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a value parameter declaration.
@@ -36,10 +30,6 @@ namespace Nova.CodeDOM
         {
             IsGenerated = true;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// Always 'value'.
@@ -61,17 +51,11 @@ namespace Nova.CodeDOM
             set { throw new Exception("You can't change the Type of a ValueParameterDecl."); }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
         {
             if (flags.HasFlag(RenderFlags.Description))
                 AsTextType(writer, flags);
             writer.Write(FixedName);
         }
-
-        #endregion
     }
 }

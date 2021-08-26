@@ -1,13 +1,13 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a user-overloaded operator.
@@ -20,13 +20,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class OperatorDecl : MethodDecl
     {
-        #region /* FIELDS */
-
         protected string _symbol;  // The overloaded operator's symbol (used for rendering)
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create an <see cref="OperatorDecl"/> for the specified operator symbol, return type, and modifiers.
@@ -44,10 +38,6 @@ namespace Nova.CodeDOM
             : this(symbol, returnType, modifiers, new Block(), parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
@@ -63,10 +53,6 @@ namespace Nova.CodeDOM
         {
             get { return _symbol; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Create a reference to the <see cref="OperatorDecl"/>.
@@ -92,34 +78,10 @@ namespace Nova.CodeDOM
             return name;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "operator";
-
-        internal static new void AddParsePoints()
-        {
-            // Operator declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse an <see cref="OperatorDecl"/>.
-        /// </summary>
-        public static new OperatorDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // Handle conversion operators
-            if (ModifiersHelpers.IsModifier(parser.LastUnusedTokenText))
-                return new ConversionOperatorDecl(parser, parent, flags);
-            // Handle other operators
-            return new OperatorDecl(parser, parent, true, flags);
-        }
 
         protected OperatorDecl(Parser parser, CodeObject parent, bool parse, ParseFlags flags)
             : base(parser, parent, false, flags)
@@ -147,9 +109,25 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Parse an <see cref="OperatorDecl"/>.
+        /// </summary>
+        public static new OperatorDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // Handle conversion operators
+            if (ModifiersHelpers.IsModifier(parser.LastUnusedTokenText))
+                return new ConversionOperatorDecl(parser, parent, flags);
+            // Handle other operators
+            return new OperatorDecl(parser, parent, true, flags);
+        }
 
-        #region /* RENDERING */
+        internal static new void AddParsePoints()
+        {
+            // Operator declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
@@ -171,26 +149,8 @@ namespace Nova.CodeDOM
             AsTextName(writer, flags);
         }
 
-        #endregion
-
-        #region /* SYMBOL-TO-INTERNAL-NAME MAPPING */
-
-        // Dictionaries for looking up operator names from their symbols and vice-versa
-        private static Dictionary<string, string> _symbolToInternalNameMap;
-        private static Dictionary<string, string> _internalNameToSymbolMap;
-
-        // Data arrays used to initialize the dictionaries above
-        private static readonly string[,] _unaryMapData =
-            {
-                { Not.ParseToken,        Not.InternalName        },
-                { Complement.ParseToken, Complement.InternalName },
-                { Positive.ParseToken,   Positive.InternalName   },
-                { Negative.ParseToken,   Negative.InternalName   },
-                { Increment.ParseToken,  Increment.InternalName  },
-                { Decrement.ParseToken,  Decrement.InternalName  }
-            };
         private static readonly string[,] _binaryMapData =
-            {
+                    {
                 { CodeDOM.Add.ParseToken,      CodeDOM.Add.InternalName      },
                 { Subtract.ParseToken,         Subtract.InternalName         },
                 { Multiply.ParseToken,         Multiply.InternalName         },
@@ -209,22 +169,21 @@ namespace Nova.CodeDOM
                 { RightShift.ParseToken,       RightShift.InternalName       }
             };
 
-        // Determine the internal name for an operator given its symbol and parameter count (1 or 2).
-        protected static string GetOperatorInternalName(string symbol, int parameterCount)
-        {
-            if (_symbolToInternalNameMap == null)
+        // Data arrays used to initialize the dictionaries above
+        private static readonly string[,] _unaryMapData =
             {
-                // If it hasn't been done yet, build the necessary dictionary
-                _symbolToInternalNameMap = new Dictionary<string, string>();
-                for (int i = 0; i < _unaryMapData.GetLength(0); ++i)
-                    _symbolToInternalNameMap.Add(_unaryMapData[i, 0] + "`1", _unaryMapData[i, 1]);
-                for (int i = 0; i < _binaryMapData.GetLength(0); ++i)
-                    _symbolToInternalNameMap.Add(_binaryMapData[i, 0] + "`2", _binaryMapData[i, 1]);
-            }
-            string name;
-            _symbolToInternalNameMap.TryGetValue(symbol + '`' + parameterCount, out name);
-            return name ?? symbol;
-        }
+                { Not.ParseToken,        Not.InternalName        },
+                { Complement.ParseToken, Complement.InternalName },
+                { Positive.ParseToken,   Positive.InternalName   },
+                { Negative.ParseToken,   Negative.InternalName   },
+                { Increment.ParseToken,  Increment.InternalName  },
+                { Decrement.ParseToken,  Decrement.InternalName  }
+            };
+
+        private static Dictionary<string, string> _internalNameToSymbolMap;
+
+        // Dictionaries for looking up operator names from their symbols and vice-versa
+        private static Dictionary<string, string> _symbolToInternalNameMap;
 
         /// <summary>
         /// Determine the symbol for an operator given its internal name.
@@ -245,6 +204,21 @@ namespace Nova.CodeDOM
             return symbol;
         }
 
-        #endregion
+        // Determine the internal name for an operator given its symbol and parameter count (1 or 2).
+        protected static string GetOperatorInternalName(string symbol, int parameterCount)
+        {
+            if (_symbolToInternalNameMap == null)
+            {
+                // If it hasn't been done yet, build the necessary dictionary
+                _symbolToInternalNameMap = new Dictionary<string, string>();
+                for (int i = 0; i < _unaryMapData.GetLength(0); ++i)
+                    _symbolToInternalNameMap.Add(_unaryMapData[i, 0] + "`1", _unaryMapData[i, 1]);
+                for (int i = 0; i < _binaryMapData.GetLength(0); ++i)
+                    _symbolToInternalNameMap.Add(_binaryMapData[i, 0] + "`2", _binaryMapData[i, 1]);
+            }
+            string name;
+            _symbolToInternalNameMap.TryGetValue(symbol + '`' + parameterCount, out name);
+            return name ?? symbol;
+        }
     }
 }

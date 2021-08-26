@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a special type of method used to remove from an event.
@@ -15,16 +15,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class RemoverDecl : AccessorDeclWithValue
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name prefix.
         /// </summary>
         public const string NamePrefix = ParseToken + "__";
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="RemoverDecl"/>.
@@ -40,10 +34,6 @@ namespace Nova.CodeDOM
             : base(NamePrefix, Modifiers.None)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
@@ -52,18 +42,15 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "remove";
 
-        internal static new void AddParsePoints()
+        protected RemoverDecl(Parser parser, CodeObject parent, ParseFlags flags)
+            : base(parser, parent, NamePrefix, flags)
         {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(EventDecl));
+            ParseAccessor(parser, flags);
         }
 
         /// <summary>
@@ -74,12 +61,9 @@ namespace Nova.CodeDOM
             return new RemoverDecl(parser, parent, flags);
         }
 
-        protected RemoverDecl(Parser parser, CodeObject parent, ParseFlags flags)
-            : base(parser, parent, NamePrefix, flags)
+        internal static new void AddParsePoints()
         {
-            ParseAccessor(parser, flags);
+            Parser.AddParsePoint(ParseToken, Parse, typeof(EventDecl));
         }
-
-        #endregion
     }
 }

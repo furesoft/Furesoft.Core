@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 using System.Collections.Generic;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="TypeParameter"/> (or <see cref="Type"/>) from <b>outside</b>
@@ -20,8 +20,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class OpenTypeParameterRef : TypeParameterRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="OpenTypeParameterRef"/> from a <see cref="TypeParameter"/>.
         /// </summary>
@@ -106,14 +104,6 @@ namespace Nova.CodeDOM
             : base(type, false, arrayRanks)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Convert into a <see cref="TypeParameterRef"/>.
         /// </summary>
@@ -124,7 +114,5 @@ namespace Nova.CodeDOM
                 return new TypeParameterRef((TypeParameter)reference, IsFirstOnLine, ArrayRanks);
             return new TypeParameterRef((Type)reference, IsFirstOnLine, ArrayRanks);
         }
-
-        #endregion
     }
 }

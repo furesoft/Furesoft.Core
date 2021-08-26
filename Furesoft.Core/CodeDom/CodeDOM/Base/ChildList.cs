@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a collection of child <see cref="CodeObject"/>s of a particular type.
@@ -13,13 +13,7 @@ namespace Nova.CodeDOM
     /// <typeparam name="T">The specific type of objects in the collection (must be <see cref="CodeObject"/> or a derived type).</typeparam>
     public class ChildList<T> : List<T> where T : CodeObject
     {
-        #region /* FIELDS */
-
         protected CodeObject _parent;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="ChildList{T}"/>, optionally using a specified <see cref="Parent"/> object.
@@ -68,9 +62,13 @@ namespace Nova.CodeDOM
             AddRange(enumerable);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Get the last item in the collection.
+        /// </summary>
+        public T Last
+        {
+            get { return (Count > 0 ? this[Count - 1] : null); }
+        }
 
         /// <summary>
         /// The Parent object of the collection.
@@ -92,16 +90,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the last item in the collection.
+        /// Create a <see cref="ChildList{T}"/> with the specified number of null entries.
         /// </summary>
-        public T Last
+        public static ChildList<T> CreateListOfNulls(int nullEntryCount)
         {
-            get { return (Count > 0 ? this[Count - 1] : null); }
+            ChildList<T> list = new ChildList<T>(nullEntryCount);
+            for (int i = 0; i < nullEntryCount; ++i)
+                list.Add((T)null);
+            return list;
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add an item to the collection, setting its Parent.
@@ -159,21 +156,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Create a <see cref="ChildList{T}"/> with the specified number of null entries.
-        /// </summary>
-        public static ChildList<T> CreateListOfNulls(int nullEntryCount)
-        {
-            ChildList<T> list = new ChildList<T>(nullEntryCount);
-            for (int i = 0; i < nullEntryCount; ++i)
-                list.Add((T)null);
-            return list;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
         /// Determines if the code object list only requires a single line for display.
         /// </summary>
         public bool IsSingleLine
@@ -208,11 +190,7 @@ namespace Nova.CodeDOM
                 }
             }
         }
-
-        #endregion
     }
-
-    #region /* STATIC HELPER METHODS */
 
     /// <summary>
     /// Static helper methods for ChildList - used in these cases so that the
@@ -220,14 +198,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public static class ChildListHelpers
     {
-        /// <summary>
-        /// Return the first object in the collection, or null if the collection is null or empty.
-        /// </summary>
-        public static T First<T>(ChildList<T> thisChildList) where T : CodeObject
-        {
-            return ((thisChildList != null && thisChildList.Count > 0) ? thisChildList[0] : null);
-        }
-
         /// <summary>
         /// Deep-clone the collection.
         /// </summary>
@@ -242,7 +212,13 @@ namespace Nova.CodeDOM
             }
             return null;
         }
-    }
 
-    #endregion
+        /// <summary>
+        /// Return the first object in the collection, or null if the collection is null or empty.
+        /// </summary>
+        public static T First<T>(ChildList<T> thisChildList) where T : CodeObject
+        {
+            return ((thisChildList != null && thisChildList.Count > 0) ? thisChildList[0] : null);
+        }
+    }
 }

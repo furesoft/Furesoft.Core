@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -6,10 +6,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents an alias to a <see cref="Namespace"/> or a type (<see cref="TypeDecl"/>, or <see cref="Type"/>).
@@ -21,10 +21,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Alias : Statement, INamedCodeObject, ITypeDecl, INamespace
     {
-        #region /* FIELDS */
-
-        protected string _name;
-
         /// <summary>
         /// The expression should be a <see cref="NamespaceRef"/>, <see cref="TypeRef"/>, or a <see cref="Dot"/> operator
         /// whose right-most operand evaluates to a <see cref="NamespaceRef"/> or <see cref="TypeRef"/>.  It can also be
@@ -32,9 +28,7 @@ namespace Nova.CodeDOM
         /// </summary>
         protected Expression _expression;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected string _name;
 
         /// <summary>
         /// Create an <see cref="Alias"/> with the specified name to the specified <see cref="Expression"/>.
@@ -43,19 +37,6 @@ namespace Nova.CodeDOM
         {
             _name = name;
             Expression = expression;
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="Alias"/>.
-        /// </summary>
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
         }
 
         /// <summary>
@@ -87,27 +68,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        /// <summary>
         /// True if this is a namespace alias.
         /// </summary>
         public bool IsNamespace
         {
             get { return _expression.SkipPrefixes() is NamespaceRef; }
-        }
-
-        /// <summary>
-        /// The namespace that this alias refers to (null if not a namespace alias).
-        /// </summary>
-        public NamespaceRef Namespace
-        {
-            get { return _expression.SkipPrefixes() as NamespaceRef; }
         }
 
         /// <summary>
@@ -119,25 +84,36 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// The name of the <see cref="Alias"/>.
+        /// </summary>
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
+
+        /// <summary>
+        /// The namespace that this alias refers to (null if not a namespace alias).
+        /// </summary>
+        public NamespaceRef Namespace
+        {
+            get { return _expression.SkipPrefixes() as NamespaceRef; }
+        }
+
+        /// <summary>
         /// The type that this alias refers to (null if not a type alias).
         /// </summary>
         public TypeRef Type
         {
             get { return _expression.SkipPrefixes() as TypeRef; }
-        }
-
-        #region /* ITYPEDECL PROPERTIES */
-
-        /// <summary>
-        /// Get the number of <see cref="TypeParameter"/>s in the aliased type (if any).
-        /// </summary>
-        public int TypeParameterCount
-        {
-            get
-            {
-                TypeRef typeRefBase = Type;
-                return (typeRefBase != null ? typeRefBase.TypeArgumentCount : 0);
-            }
         }
 
         /// <summary>
@@ -280,19 +256,15 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* INAMESPACE PROPERTIES */
-
         /// <summary>
-        /// The full name of the referenced <see cref="Namespace"/>, including any parent namespaces.
+        /// Get the number of <see cref="TypeParameter"/>s in the aliased type (if any).
         /// </summary>
-        public string FullName
+        public int TypeParameterCount
         {
             get
             {
-                NamespaceRef namespaceRef = Namespace;
-                return (namespaceRef != null ? namespaceRef.FullName : null);
+                TypeRef typeRefBase = Type;
+                return (typeRefBase != null ? typeRefBase.TypeArgumentCount : 0);
             }
         }
 
@@ -309,26 +281,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the referenced <see cref="Namespace"/> is root-level (global or extern alias).
+        /// The full name of the referenced <see cref="Namespace"/>, including any parent namespaces.
         /// </summary>
-        public bool IsRootLevel
+        public string FullName
         {
             get
             {
                 NamespaceRef namespaceRef = Namespace;
-                return (namespaceRef != null && namespaceRef.IsRootLevel);
-            }
-        }
-
-        /// <summary>
-        /// Determines if the referenced <see cref="Namespace"/> is the project-global namespace.
-        /// </summary>
-        public bool IsGlobal
-        {
-            get
-            {
-                NamespaceRef namespaceRef = Namespace;
-                return (namespaceRef != null && namespaceRef.IsGlobal);
+                return (namespaceRef != null ? namespaceRef.FullName : null);
             }
         }
 
@@ -345,11 +305,83 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Determines if the referenced <see cref="Namespace"/> is the project-global namespace.
+        /// </summary>
+        public bool IsGlobal
+        {
+            get
+            {
+                NamespaceRef namespaceRef = Namespace;
+                return (namespaceRef != null && namespaceRef.IsGlobal);
+            }
+        }
 
-        #endregion
+        /// <summary>
+        /// Determines if the referenced <see cref="Namespace"/> is root-level (global or extern alias).
+        /// </summary>
+        public bool IsRootLevel
+        {
+            get
+            {
+                NamespaceRef namespaceRef = Namespace;
+                return (namespaceRef != null && namespaceRef.IsRootLevel);
+            }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// </summary>
+        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Add(Name, this);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Alias clone = (Alias)base.Clone();
+            clone.CloneField(ref clone._expression, _expression);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="Alias"/>.
+        /// </summary>
+        /// <returns>An <see cref="AliasRef"/>.</returns>
+        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
+        {
+            return new AliasRef(this, isFirstOnLine, ranks);
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="Alias"/>.
+        /// </summary>
+        /// <returns>An <see cref="AliasRef"/>.</returns>
+        public TypeRef CreateArrayRef(params int[] ranks)
+        {
+            return new AliasRef(this, false, ranks);
+        }
+
+        /// <summary>
+        /// Create a nullable reference to this <see cref="Alias"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef(bool isFirstOnLine)
+        {
+            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
+        }
+
+        /// <summary>
+        /// Create a nullable reference to this <see cref="Alias"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef()
+        {
+            return TypeRef.CreateNullable(CreateRef());
+        }
 
         /// <summary>
         /// Create a reference to the <see cref="Alias"/>.
@@ -402,44 +434,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Create an array reference to this <see cref="Alias"/>.
-        /// </summary>
-        /// <returns>An <see cref="AliasRef"/>.</returns>
-        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
-        {
-            return new AliasRef(this, isFirstOnLine, ranks);
-        }
-
-        /// <summary>
-        /// Create an array reference to this <see cref="Alias"/>.
-        /// </summary>
-        /// <returns>An <see cref="AliasRef"/>.</returns>
-        public TypeRef CreateArrayRef(params int[] ranks)
-        {
-            return new AliasRef(this, false, ranks);
-        }
-
-        /// <summary>
-        /// Create a nullable reference to this <see cref="Alias"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef(bool isFirstOnLine)
-        {
-            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
-        }
-
-        /// <summary>
-        /// Create a nullable reference to this <see cref="Alias"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef()
-        {
-            return TypeRef.CreateNullable(CreateRef());
-        }
-
-        #region /* ITYPEDECL METHODS */
-
-        /// <summary>
         /// Get the base type of the aliased type.
         /// </summary>
         public TypeRef GetBaseType()
@@ -473,6 +467,33 @@ namespace Nova.CodeDOM
         {
             TypeRef typeRef = Type;
             return (typeRef != null ? typeRef.GetConstructors(false) : null);
+        }
+
+        /// <summary>
+        /// Get the delegate parameters (if any) of the aliased type.
+        /// </summary>
+        public ICollection GetDelegateParameters()
+        {
+            TypeRef typeRef = Type;
+            return (typeRef != null ? typeRef.GetDelegateParameters() : null);
+        }
+
+        /// <summary>
+        /// Get the delegate return type (if any) of the aliased type.
+        /// </summary>
+        public TypeRefBase GetDelegateReturnType()
+        {
+            TypeRef typeRef = Type;
+            return (typeRef != null ? typeRef.GetDelegateReturnType() : null);
+        }
+
+        /// <summary>
+        /// Get the field of the aliased type with the specified name.
+        /// </summary>
+        public FieldRef GetField(string name)
+        {
+            TypeRef typeRef = Type;
+            return (typeRef != null ? typeRef.GetField(name) : null);
         }
 
         /// <summary>
@@ -516,24 +537,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the property of the aliased type with the specified name.
-        /// </summary>
-        public PropertyRef GetProperty(string name)
-        {
-            TypeRef typeRef = Type;
-            return (typeRef != null ? typeRef.GetProperty(name) : null);
-        }
-
-        /// <summary>
-        /// Get the field of the aliased type with the specified name.
-        /// </summary>
-        public FieldRef GetField(string name)
-        {
-            TypeRef typeRef = Type;
-            return (typeRef != null ? typeRef.GetField(name) : null);
-        }
-
-        /// <summary>
         /// Get the nested type of the aliased type with the specified name.
         /// </summary>
         public TypeRef GetNestedType(string name)
@@ -543,21 +546,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the delegate parameters (if any) of the aliased type.
+        /// Get the property of the aliased type with the specified name.
         /// </summary>
-        public ICollection GetDelegateParameters()
+        public PropertyRef GetProperty(string name)
         {
             TypeRef typeRef = Type;
-            return (typeRef != null ? typeRef.GetDelegateParameters() : null);
-        }
-
-        /// <summary>
-        /// Get the delegate return type (if any) of the aliased type.
-        /// </summary>
-        public TypeRefBase GetDelegateReturnType()
-        {
-            TypeRef typeRef = Type;
-            return (typeRef != null ? typeRef.GetDelegateReturnType() : null);
+            return (typeRef != null ? typeRef.GetProperty(name) : null);
         }
 
         /// <summary>
@@ -570,15 +564,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the aliased type is a subclass of the specified type.
-        /// </summary>
-        public bool IsSubclassOf(TypeRef classTypeRef)
-        {
-            TypeRef typeRef = Type;
-            return (typeRef != null && typeRef.IsSubclassOf(classTypeRef));
-        }
-
-        /// <summary>
         /// Determine if the aliased type implements the specified interface type.
         /// </summary>
         public bool IsImplementationOf(TypeRef interfaceTypeRef)
@@ -587,9 +572,14 @@ namespace Nova.CodeDOM
             return (typeRef != null && typeRef.IsImplementationOf(interfaceTypeRef));
         }
 
-        #endregion
-
-        #region /* INAMESPACE METHODS */
+        /// <summary>
+        /// Determine if the aliased type is a subclass of the specified type.
+        /// </summary>
+        public bool IsSubclassOf(TypeRef classTypeRef)
+        {
+            TypeRef typeRef = Type;
+            return (typeRef != null && typeRef.IsSubclassOf(classTypeRef));
+        }
 
         /// <summary>
         /// Add a child <see cref="Namespace"/> to the referenced <see cref="Namespace"/>.
@@ -619,6 +609,25 @@ namespace Nova.CodeDOM
             NamespaceRef namespaceRef = Namespace;
             if (namespaceRef != null)
                 namespaceRef.Add(type);
+        }
+
+        /// <summary>
+        /// Find or create a child <see cref="Namespace"/>, including any missing parent namespaces.
+        /// </summary>
+        public Namespace FindOrCreateChildNamespace(string namespaceName)
+        {
+            NamespaceRef namespaceRef = Namespace;
+            return (namespaceRef != null ? namespaceRef.FindOrCreateChildNamespace(namespaceName) : null);
+        }
+
+        /// <summary>
+        /// Parse the specified name into a child <see cref="NamespaceRef"/> or <see cref="TypeRef"/> on the referenced namespace,
+        /// or a <see cref="Dot"/> expression that evaluates to one.
+        /// </summary>
+        public Expression ParseName(string name)
+        {
+            NamespaceRef namespaceRef = Namespace;
+            return (namespaceRef != null ? namespaceRef.ParseName(name) : null);
         }
 
         /// <summary>
@@ -662,27 +671,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Find or create a child <see cref="Namespace"/>, including any missing parent namespaces.
-        /// </summary>
-        public Namespace FindOrCreateChildNamespace(string namespaceName)
-        {
-            NamespaceRef namespaceRef = Namespace;
-            return (namespaceRef != null ? namespaceRef.FindOrCreateChildNamespace(namespaceName) : null);
-        }
-
-        /// <summary>
-        /// Parse the specified name into a child <see cref="NamespaceRef"/> or <see cref="TypeRef"/> on the referenced namespace,
-        /// or a <see cref="Dot"/> expression that evaluates to one.
-        /// </summary>
-        public Expression ParseName(string name)
-        {
-            NamespaceRef namespaceRef = Namespace;
-            return (namespaceRef != null ? namespaceRef.ParseName(name) : null);
-        }
-
-        #endregion
-
-        /// <summary>
         /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="Type"/> with
         /// the specified name.
         /// </summary>
@@ -694,32 +682,6 @@ namespace Nova.CodeDOM
             if (IsType)
                 return Type.GetNestedType(name).Reference;
             return null;
-        }
-
-        /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
-        /// </summary>
-        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Add(Name, this);
-        }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Remove(Name, this);
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Alias clone = (Alias)base.Clone();
-            clone.CloneField(ref clone._expression, _expression);
-            return clone;
         }
 
         /// <summary>
@@ -738,9 +700,13 @@ namespace Nova.CodeDOM
             return _name;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
+        /// </summary>
+        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Remove(Name, this);
+        }
 
         /// <summary>
         /// The token used to parse the code object.
@@ -752,10 +718,14 @@ namespace Nova.CodeDOM
         /// </summary>
         public const string ParseTokenSeparator = "=";
 
-        internal static void AddParsePoints()
+        protected Alias(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            // Use a parse-priority of 0 (UsingDirective uses 100, Using uses 200)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(NamespaceDecl));
+            parser.NextToken();                  // Move past 'using'
+            _name = parser.GetIdentifierText();  // Parse the name
+            parser.NextToken();                  // Move past '='
+            SetField(ref _expression, Expression.Parse(parser, this, true), false);
+            ParseTerminator(parser);
         }
 
         /// <summary>
@@ -769,19 +739,11 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected Alias(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            parser.NextToken();                  // Move past 'using'
-            _name = parser.GetIdentifierText();  // Parse the name
-            parser.NextToken();                  // Move past '='
-            SetField(ref _expression, Expression.Parse(parser, this, true), false);
-            ParseTerminator(parser);
+            // Use a parse-priority of 0 (UsingDirective uses 100, Using uses 200)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(NamespaceDecl));
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
@@ -797,6 +759,23 @@ namespace Nova.CodeDOM
         public override bool HasTerminatorDefault
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_expression == null || (!_expression.IsFirstOnLine && _expression.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value && _expression != null)
+                {
+                    _expression.IsFirstOnLine = false;
+                    _expression.IsSingleLine = true;
+                }
+            }
         }
 
         /// <summary>
@@ -834,27 +813,6 @@ namespace Nova.CodeDOM
             return 1;
         }
 
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_expression == null || (!_expression.IsFirstOnLine && _expression.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value && _expression != null)
-                {
-                    _expression.IsFirstOnLine = false;
-                    _expression.IsSingleLine = true;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             writer.WriteIdentifier(_name, flags);
@@ -862,7 +820,5 @@ namespace Nova.CodeDOM
             if (_expression != null)
                 _expression.AsText(writer, flags | RenderFlags.PrefixSpace);
         }
-
-        #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a user-defined conversion operator.
@@ -17,8 +17,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ConversionOperatorDecl : OperatorDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ConversionOperatorDecl"/>.
         /// </summary>
@@ -32,10 +30,6 @@ namespace Nova.CodeDOM
         public ConversionOperatorDecl(Expression destinationType, Modifiers modifiers, ParameterDecl parameter)
             : base(GetInternalName(modifiers), destinationType, modifiers, new[] { parameter })
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// True if the conversion is explicit.
@@ -53,20 +47,6 @@ namespace Nova.CodeDOM
             get { return _modifiers.HasFlag(Modifiers.Implicit); }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        private static string GetInternalName(Modifiers modifiers)
-        {
-            string name = Operator.NamePrefix;
-            if (modifiers.HasFlag(Modifiers.Implicit))
-                name += Modifiers.Implicit.ToString();
-            else if (modifiers.HasFlag(Modifiers.Explicit))
-                name += Modifiers.Explicit.ToString();
-            return name;
-        }
-
         /// <summary>
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
@@ -81,9 +61,15 @@ namespace Nova.CodeDOM
             return name;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        private static string GetInternalName(Modifiers modifiers)
+        {
+            string name = Operator.NamePrefix;
+            if (modifiers.HasFlag(Modifiers.Implicit))
+                name += Modifiers.Implicit.ToString();
+            else if (modifiers.HasFlag(Modifiers.Explicit))
+                name += Modifiers.Explicit.ToString();
+            return name;
+        }
 
         /// <summary>
         /// Parse a <see cref="ConversionOperatorDecl"/>.
@@ -99,10 +85,6 @@ namespace Nova.CodeDOM
             ParseParameters(parser);
             ParseTerminatorOrBody(parser, flags);
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
@@ -121,7 +103,5 @@ namespace Nova.CodeDOM
             }
             AsTextName(writer, flags);
         }
-
-        #endregion
     }
 }

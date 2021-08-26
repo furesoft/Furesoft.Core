@@ -1,27 +1,21 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Allows for documentation comments to be included from a separate file.
     /// </summary>
     public class DocInclude : DocComment
     {
-        #region /* FIELDS */
-
         protected string _file;
         protected string _path;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="DocInclude"/>.
@@ -31,10 +25,6 @@ namespace Nova.CodeDOM
             _file = file;
             _path = path;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         public string File
         {
@@ -48,32 +38,15 @@ namespace Nova.CodeDOM
             set { _path = value; }
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The file attribute name.
+        /// </summary>
+        public const string FileAttributeName = "file";
 
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "include";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="DocInclude"/>.
-        /// </summary>
-        public static new DocInclude Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DocInclude(parser, parent);
-        }
-
-        /// <summary>
-        /// The file attribute name.
-        /// </summary>
-        public const string FileAttributeName = "file";
 
         /// <summary>
         /// The path attribute name.
@@ -96,15 +69,17 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Parse a <see cref="DocInclude"/>.
+        /// </summary>
+        public static new DocInclude Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            // Note that the attributes for this tag use single quote delimiters instead of double
-            writer.Write("<" + TagName + " " + FileAttributeName + "='" + _file + "' "
-                + PathAttributeName + "='" + _path + "'" + (_content == null && !MissingEndTag ? " />" : ">"));
+            return new DocInclude(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         protected override void AsTextEnd(CodeWriter writer, RenderFlags flags)
@@ -113,6 +88,11 @@ namespace Nova.CodeDOM
                 base.AsTextEnd(writer, flags);
         }
 
-        #endregion
+        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
+        {
+            // Note that the attributes for this tag use single quote delimiters instead of double
+            writer.Write("<" + TagName + " " + FileAttributeName + "='" + _file + "' "
+                + PathAttributeName + "='" + _path + "'" + (_content == null && !MissingEndTag ? " />" : ">"));
+        }
     }
 }

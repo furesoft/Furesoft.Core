@@ -1,13 +1,13 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Defines an iteration variable and a collection (or array) plus a body (a statement or block) that is
@@ -23,14 +23,8 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ForEach : BlockStatement
     {
-        #region /* FIELDS */
-
-        protected LocalDecl _iteration;
         protected Expression _collection;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected LocalDecl _iteration;
 
         /// <summary>
         /// Create a <see cref="ForEach"/>.
@@ -52,9 +46,14 @@ namespace Nova.CodeDOM
             Collection = collection;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The collection being iterated over.
+        /// </summary>
+        public Expression Collection
+        {
+            get { return _collection; }
+            set { SetField(ref _collection, value, true); }
+        }
 
         /// <summary>
         /// The <see cref="LocalDecl"/> iteration variable.
@@ -71,25 +70,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The collection being iterated over.
-        /// </summary>
-        public Expression Collection
-        {
-            get { return _collection; }
-            set { SetField(ref _collection, value, true); }
-        }
-
-        /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
         public override string Keyword
         {
             get { return ParseToken; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Deep-clone the code object.
@@ -102,10 +88,6 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
@@ -115,19 +97,6 @@ namespace Nova.CodeDOM
         /// The token used to parse the 'in' part.
         /// </summary>
         public const string ParseTokenIn = "in";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="ForEach"/>.
-        /// </summary>
-        public static ForEach Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new ForEach(parser, parent);
-        }
 
         protected ForEach(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -142,9 +111,18 @@ namespace Nova.CodeDOM
             new Block(out _body, parser, this, false);  // Parse the body
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="ForEach"/>.
+        /// </summary>
+        public static ForEach Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new ForEach(parser, parent);
+        }
 
-        #region /* FORMATTING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -191,10 +169,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_iteration != null)
@@ -202,7 +176,5 @@ namespace Nova.CodeDOM
             writer.Write(ParseTokenIn);
             _collection.AsText(writer, flags | RenderFlags.PrefixSpace);
         }
-
-        #endregion
     }
 }

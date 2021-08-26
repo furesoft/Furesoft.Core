@@ -1,32 +1,26 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 using System.Xml;
 
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a project reference to a COM object.
     /// </summary>
     public class COMReference : Reference
     {
-        #region /* FIELDS */
-
+        protected bool? _embedInteropTypes;
         protected Guid _guid;
+        protected bool? _isolated;
+        protected int? _lcid;
         protected string _versionMajor;
         protected string _versionMinor;
-        protected int? _lcid;
         protected string _wrapperTool;
-        protected bool? _isolated;
-        protected bool? _embedInteropTypes;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a new <see cref="COMReference"/> with the specified name and other parameters.
@@ -39,9 +33,22 @@ namespace Nova.CodeDOM
             _versionMinor = versionMinor;
         }
 
-        #endregion
+        /// <summary>
+        /// The descriptive category of the code object.
+        /// </summary>
+        public override string Category
+        {
+            get { return "COM Object"; }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if interop types should be embedded, null if not used.
+        /// </summary>
+        public bool? EmbedInteropTypes
+        {
+            get { return _embedInteropTypes; }
+            set { _embedInteropTypes = value; }
+        }
 
         /// <summary>
         /// The unique identifier of the referenced COM object.
@@ -49,6 +56,24 @@ namespace Nova.CodeDOM
         public Guid Guid
         {
             get { return _guid; }
+        }
+
+        /// <summary>
+        /// True if isolated, null if not used.
+        /// </summary>
+        public bool? Isolated
+        {
+            get { return _isolated; }
+            set { _isolated = value; }
+        }
+
+        /// <summary>
+        /// The LC ID number, or null if not used.
+        /// </summary>
+        public int? Lcid
+        {
+            get { return _lcid; }
+            set { _lcid = value; }
         }
 
         /// <summary>
@@ -68,15 +93,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The LC ID number, or null if not used.
-        /// </summary>
-        public int? Lcid
-        {
-            get { return _lcid; }
-            set { _lcid = value; }
-        }
-
-        /// <summary>
         /// The name of an associated wrapper tool.
         /// </summary>
         public string WrapperTool
@@ -84,40 +100,6 @@ namespace Nova.CodeDOM
             get { return _wrapperTool; }
             set { _wrapperTool = value; }
         }
-
-        /// <summary>
-        /// True if isolated, null if not used.
-        /// </summary>
-        public bool? Isolated
-        {
-            get { return _isolated; }
-            set { _isolated = value; }
-        }
-
-        /// <summary>
-        /// True if interop types should be embedded, null if not used.
-        /// </summary>
-        public bool? EmbedInteropTypes
-        {
-            get { return _embedInteropTypes; }
-            set { _embedInteropTypes = value; }
-        }
-
-        /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public override string Category
-        {
-            get { return "COM Object"; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// Parse from the specified <see cref="XmlReader"/>.
@@ -166,10 +148,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// Write to the specified <see cref="XmlWriter"/>.
         /// </summary>
@@ -194,7 +172,5 @@ namespace Nova.CodeDOM
                 xmlWriter.WriteElementString("Aliases", _alias);
             xmlWriter.WriteEndElement();
         }
-
-        #endregion
     }
 }

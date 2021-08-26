@@ -1,24 +1,18 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Maintains a critical section on the provided object while the body of the statement is executing.
     /// </summary>
     public class Lock : BlockStatement
     {
-        #region /* FIELDS */
-
         protected Expression _target;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Lock"/>.
@@ -38,9 +32,13 @@ namespace Nova.CodeDOM
             Target = target;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The target <see cref="Expression"/> of the <see cref="Lock"/>.
@@ -52,18 +50,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -73,18 +59,15 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "lock";
 
-        internal static void AddParsePoints()
+        protected Lock(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+            ParseKeywordArgumentBody(parser, ref _target, false, false);
         }
 
         /// <summary>
@@ -95,15 +78,10 @@ namespace Nova.CodeDOM
             return new Lock(parser, parent);
         }
 
-        protected Lock(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            ParseKeywordArgumentBody(parser, ref _target, false, false);
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -138,15 +116,9 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             _target.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

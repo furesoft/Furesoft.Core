@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Provides for the definition of a "pre-processor" symbol - may only appear at the very top of a <see cref="CodeUnit"/> (file)!
     /// </summary>
     public class DefineSymbol : SymbolDirective
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DefineSymbol"/>.
         /// </summary>
@@ -20,27 +18,10 @@ namespace Nova.CodeDOM
             : base(symbol)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "define";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="DefineSymbol"/>.
-        /// </summary>
-        public static DefineSymbol Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DefineSymbol(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="DefineSymbol"/>.
@@ -52,9 +33,18 @@ namespace Nova.CodeDOM
             parser.CodeUnit.DefineCompilerDirectiveSymbol(_symbol);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="DefineSymbol"/>.
+        /// </summary>
+        public static DefineSymbol Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new DefineSymbol(parser, parent);
+        }
 
-        #region /* RENDERING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
 
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
@@ -63,7 +53,5 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
     }
 }

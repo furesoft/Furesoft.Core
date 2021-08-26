@@ -1,19 +1,17 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a conditional alternative portion of an <see cref="If"/> or <see cref="ElseIf"/> (as a child of one of those object types).
     /// </summary>
     public class ElseIf : IfBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="ElseIf"/>.
         /// </summary>
@@ -56,10 +54,6 @@ namespace Nova.CodeDOM
             : base(conditional, elseIf)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
@@ -67,10 +61,6 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken1 + " " + ParseToken2; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The first token used to parse the code object.
@@ -81,36 +71,6 @@ namespace Nova.CodeDOM
         /// The second token used to parse the code object.
         /// </summary>
         public const string ParseToken2 = "if";
-
-        internal static void AddParsePoints()
-        {
-            // Normally, an 'else if' is parsed by the 'if' parse logic (see IfBase).
-            // This parse-point exists only to catch an orphaned 'else if' statement.
-            // Use a parse-priority of 100 (Else uses 200)
-            Parser.AddParsePoint(ParseToken1, 100, ParseOrphan, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse an orphaned <see cref="ElseIf"/>.
-        /// </summary>
-        public static ElseIf ParseOrphan(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            Token token = parser.Token;
-            ElseIf elseIf = Parse(parser, parent);
-            if (elseIf != null)
-                parser.AttachMessage(elseIf, "Orphaned 'else if' - missing parent 'if'", token);
-            return elseIf;
-        }
-
-        /// <summary>
-        /// Parse an <see cref="ElseIf"/>.
-        /// </summary>
-        public static ElseIf Parse(Parser parser, CodeObject parent)
-        {
-            if (parser.PeekNextTokenText() == ParseToken2)
-                return new ElseIf(parser, parent);
-            return null;
-        }
 
         protected ElseIf(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -126,15 +86,39 @@ namespace Nova.CodeDOM
                 NewLines = 1;
         }
 
-        #endregion
+        /// <summary>
+        /// Parse an <see cref="ElseIf"/>.
+        /// </summary>
+        public static ElseIf Parse(Parser parser, CodeObject parent)
+        {
+            if (parser.PeekNextTokenText() == ParseToken2)
+                return new ElseIf(parser, parent);
+            return null;
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Parse an orphaned <see cref="ElseIf"/>.
+        /// </summary>
+        public static ElseIf ParseOrphan(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            Token token = parser.Token;
+            ElseIf elseIf = Parse(parser, parent);
+            if (elseIf != null)
+                parser.AttachMessage(elseIf, "Orphaned 'else if' - missing parent 'if'", token);
+            return elseIf;
+        }
+
+        internal static void AddParsePoints()
+        {
+            // Normally, an 'else if' is parsed by the 'if' parse logic (see IfBase).
+            // This parse-point exists only to catch an orphaned 'else if' statement.
+            // Use a parse-priority of 100 (Else uses 200)
+            Parser.AddParsePoint(ParseToken1, 100, ParseOrphan, typeof(IBlock));
+        }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             base.AsText(writer, flags | RenderFlags.IncreaseIndent);
         }
-
-        #endregion
     }
 }

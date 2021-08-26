@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -7,9 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents the declaration of the single valid member of an <see cref="EnumDecl"/>,
@@ -25,13 +25,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class MultiEnumMemberDecl : EnumMemberDecl, IMultiVariableDecl
     {
-        #region /* FIELDS */
-
         protected ChildList<EnumMemberDecl> _enumMemberDecls;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a multi enum member declaration.
@@ -71,9 +65,29 @@ namespace Nova.CodeDOM
                 Add(new EnumMemberDecl(name));
         }
 
-        #endregion
+        /// <summary>
+        /// The column number associated with the <see cref="MultiEnumMemberDecl"/> (actually, the first child <see cref="EnumMemberDecl"/>).
+        /// </summary>
+        public override int ColumnNumber
+        {
+            get { return _enumMemberDecls[0].ColumnNumber; }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The number of <see cref="EnumMemberDecl"/>s.
+        /// </summary>
+        public int Count
+        {
+            get { return _enumMemberDecls.Count; }
+        }
+
+        /// <summary>
+        /// The line number associated with the <see cref="MultiEnumMemberDecl"/> (actually, the first child <see cref="EnumMemberDecl"/>).
+        /// </summary>
+        public override int LineNumber
+        {
+            get { return _enumMemberDecls[0].LineNumber; }
+        }
 
         /// <summary>
         /// The list of <see cref="EnumMemberDecl"/>s.
@@ -81,6 +95,51 @@ namespace Nova.CodeDOM
         public ChildList<EnumMemberDecl> MemberDecls
         {
             get { return _enumMemberDecls; }
+        }
+
+        /// <summary>
+        /// Get the parent <see cref="EnumDecl"/>.
+        /// </summary>
+        public override EnumDecl ParentEnumDecl
+        {
+            get
+            {
+                // Our parent should be an EnumDecl
+                return (_parent is EnumDecl ? _parent as EnumDecl : null);
+            }
+        }
+
+        /// <summary>
+        /// The type of the parent <see cref="EnumDecl"/>.
+        /// </summary>
+        public override Expression Type
+        {
+            get { return (_parent is EnumDecl ? new TypeRef((EnumDecl)_parent) : null); }
+            set { throw new Exception("Can't change the Type of a MultiEnumMemberDecl - it's always the parent EnumDecl."); }
+        }
+
+        /// <summary>
+        /// Get the underlying type of the enum.
+        /// </summary>
+        public Expression UnderlyingType
+        {
+            get { return (_parent is EnumDecl ? ((EnumDecl)_parent).UnderlyingType : null); }
+        }
+
+        /// <summary>
+        /// Get the <see cref="EnumMemberDecl"/> at the specified index.
+        /// </summary>
+        public EnumMemberDecl this[int index]
+        {
+            get { return _enumMemberDecls[index]; }
+        }
+
+        /// <summary>
+        /// Get the <see cref="VariableDecl"/> at the specified index.
+        /// </summary>
+        VariableDecl IMultiVariableDecl.this[int index]
+        {
+            get { return _enumMemberDecls[index]; }
         }
 
         /// <summary>
@@ -105,79 +164,6 @@ namespace Nova.CodeDOM
         {
             return GetEnumerator();
         }
-
-        /// <summary>
-        /// The number of <see cref="EnumMemberDecl"/>s.
-        /// </summary>
-        public int Count
-        {
-            get { return _enumMemberDecls.Count; }
-        }
-
-        /// <summary>
-        /// Get the <see cref="EnumMemberDecl"/> at the specified index.
-        /// </summary>
-        public EnumMemberDecl this[int index]
-        {
-            get { return _enumMemberDecls[index]; }
-        }
-
-        /// <summary>
-        /// Get the <see cref="VariableDecl"/> at the specified index.
-        /// </summary>
-        VariableDecl IMultiVariableDecl.this[int index]
-        {
-            get { return _enumMemberDecls[index]; }
-        }
-
-        /// <summary>
-        /// The type of the parent <see cref="EnumDecl"/>.
-        /// </summary>
-        public override Expression Type
-        {
-            get { return (_parent is EnumDecl ? new TypeRef((EnumDecl)_parent) : null); }
-            set { throw new Exception("Can't change the Type of a MultiEnumMemberDecl - it's always the parent EnumDecl."); }
-        }
-
-        /// <summary>
-        /// Get the underlying type of the enum.
-        /// </summary>
-        public Expression UnderlyingType
-        {
-            get { return (_parent is EnumDecl ? ((EnumDecl)_parent).UnderlyingType : null); }
-        }
-
-        /// <summary>
-        /// Get the parent <see cref="EnumDecl"/>.
-        /// </summary>
-        public override EnumDecl ParentEnumDecl
-        {
-            get
-            {
-                // Our parent should be an EnumDecl
-                return (_parent is EnumDecl ? _parent as EnumDecl : null);
-            }
-        }
-
-        /// <summary>
-        /// The line number associated with the <see cref="MultiEnumMemberDecl"/> (actually, the first child <see cref="EnumMemberDecl"/>).
-        /// </summary>
-        public override int LineNumber
-        {
-            get { return _enumMemberDecls[0].LineNumber; }
-        }
-
-        /// <summary>
-        /// The column number associated with the <see cref="MultiEnumMemberDecl"/> (actually, the first child <see cref="EnumMemberDecl"/>).
-        /// </summary>
-        public override int ColumnNumber
-        {
-            get { return _enumMemberDecls[0].ColumnNumber; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add an <see cref="EnumMemberDecl"/>.
@@ -230,6 +216,16 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// </summary>
+        public override void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            // For MultiEnumMemberDecls, we need to add each individual EnumMemberDecl
+            foreach (EnumMemberDecl enumMemberDecl in _enumMemberDecls)
+                dictionary.Add(enumMemberDecl.Name, enumMemberDecl);
+        }
+
+        /// <summary>
         /// Attach an <see cref="Annotation"/> (<see cref="Comment"/>, <see cref="DocComment"/>, <see cref="Attribute"/>, <see cref="CompilerDirective"/>, or <see cref="Message"/>) to the <see cref="CodeObject"/>.
         /// </summary>
         /// <param name="annotation">The <see cref="Annotation"/>.</param>
@@ -245,13 +241,30 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// Deep-clone the code object.
         /// </summary>
-        public override void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        public override CodeObject Clone()
         {
-            // For MultiEnumMemberDecls, we need to add each individual EnumMemberDecl
-            foreach (EnumMemberDecl enumMemberDecl in _enumMemberDecls)
-                dictionary.Add(enumMemberDecl.Name, enumMemberDecl);
+            MultiEnumMemberDecl clone = (MultiEnumMemberDecl)base.Clone();
+            clone._enumMemberDecls = ChildListHelpers.Clone(_enumMemberDecls, clone);
+            return clone;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="EnumMemberDecl"/>, including the namespace name.
+        /// </summary>
+        public override string GetFullName(bool descriptive)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get the enum member with the specified name.
+        /// </summary>
+        public EnumMemberRef GetMember(string name)
+        {
+            EnumMemberDecl enumMemberDecl = _enumMemberDecls.Find(delegate (EnumMemberDecl e) { return e.Name == name; });
+            return (enumMemberDecl != null ? (EnumMemberRef)enumMemberDecl.CreateRef() : null);
         }
 
         /// <summary>
@@ -264,52 +277,25 @@ namespace Nova.CodeDOM
                 dictionary.Remove(enumMemberDecl.Name, enumMemberDecl);
         }
 
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            MultiEnumMemberDecl clone = (MultiEnumMemberDecl)base.Clone();
-            clone._enumMemberDecls = ChildListHelpers.Clone(_enumMemberDecls, clone);
-            return clone;
-        }
-
-        /// <summary>
-        /// Get the enum member with the specified name.
-        /// </summary>
-        public EnumMemberRef GetMember(string name)
-        {
-            EnumMemberDecl enumMemberDecl = _enumMemberDecls.Find(delegate(EnumMemberDecl e) { return e.Name == name; });
-            return (enumMemberDecl != null ? (EnumMemberRef)enumMemberDecl.CreateRef() : null);
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="EnumMemberDecl"/>, including the namespace name.
-        /// </summary>
-        public override string GetFullName(bool descriptive)
-        {
-            return null;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
         // Parsing of a MultiEnumMemberDecl is handled by EnumMemberDecl.
         // We can't just have EnumDecl do a forced parse of a single MultiEnumMemberDecl, because there
         // are things handled by the Block parser that we need, plus we need to handle stand-alone comments
         // and we'd like to keep open the possibility of additional enum members in the future.
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// True if the <see cref="Statement"/> has a terminator character by default.
+        /// </summary>
+        public override bool HasTerminatorDefault
+        {
+            get { return false; }
+        }
 
         /// <summary>
-        /// True if the code object only requires a single line for display by default.
+        /// True if the code object defaults to starting on a new line.
         /// </summary>
-        public override bool IsSingleLineDefault
+        public override bool IsFirstOnLineDefault
         {
-            get { return Enumerable.All(_enumMemberDecls, delegate(EnumMemberDecl enumMemberDecl) { return enumMemberDecl.IsSingleLineDefault; }); }
+            get { return (_enumMemberDecls != null && !_enumMemberDecls.IsSingleLine); }
         }
 
         /// <summary>
@@ -331,11 +317,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the code object defaults to starting on a new line.
+        /// True if the code object only requires a single line for display by default.
         /// </summary>
-        public override bool IsFirstOnLineDefault
+        public override bool IsSingleLineDefault
         {
-            get { return (_enumMemberDecls != null && !_enumMemberDecls.IsSingleLine); }
+            get { return Enumerable.All(_enumMemberDecls, delegate (EnumMemberDecl enumMemberDecl) { return enumMemberDecl.IsSingleLineDefault; }); }
         }
 
         /// <summary>
@@ -358,18 +344,6 @@ namespace Nova.CodeDOM
                 _enumMemberDecls.IsSingleLine = (value == 0);
             }
         }
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has a terminator character by default.
-        /// </summary>
-        public override bool HasTerminatorDefault
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -411,7 +385,5 @@ namespace Nova.CodeDOM
 
         public override void AsTextType(CodeWriter writer, RenderFlags flags)
         { }
-
-        #endregion
     }
 }

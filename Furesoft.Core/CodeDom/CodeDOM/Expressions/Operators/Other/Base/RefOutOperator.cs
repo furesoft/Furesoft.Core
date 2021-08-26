@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of the <see cref="Ref"/> and <see cref="Out"/> pseudo-operators.
     /// </summary>
     public abstract class RefOutOperator : SingleArgumentOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a Ref/Out operator instance.
         /// </summary>
@@ -28,17 +26,9 @@ namespace Nova.CodeDOM
             : base(variableDecl.CreateRef())
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected RefOutOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the argument has parens around it.
@@ -47,7 +37,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
     }
 }

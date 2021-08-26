@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a pre-processor directive symbol.
@@ -17,8 +17,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DirectiveSymbolRef : SymbolicRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DirectiveSymbolRef"/>.
         /// </summary>
@@ -35,10 +33,6 @@ namespace Nova.CodeDOM
             SetLineCol(token);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The name of the <see cref="SymbolicRef"/>.
         /// </summary>
@@ -47,16 +41,10 @@ namespace Nova.CodeDOM
             get { return (string)_reference; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
             writer.Write(Name);
         }
-
-        #endregion
     }
 }

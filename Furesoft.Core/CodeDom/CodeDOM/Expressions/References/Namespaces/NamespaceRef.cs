@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="Namespace"/>.
     /// </summary>
     public class NamespaceRef : SymbolicRef
     {
-        #region /* CONSTRUCTORS */
-        
         /// <summary>
         /// Create a <see cref="NamespaceRef"/> from a <see cref="Namespace"/>.
         /// </summary>
@@ -27,16 +25,12 @@ namespace Nova.CodeDOM
             : base(@namespace, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The referenced <see cref="Namespace"/>.
+        /// The children of the referenced <see cref="Namespace"/>.
         /// </summary>
-        public Namespace Namespace
+        public NamespaceTypeDictionary Children
         {
-            get { return (Namespace)_reference; }
+            get { return ((Namespace)_reference).Children; }
         }
 
         /// <summary>
@@ -48,19 +42,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The children of the referenced <see cref="Namespace"/>.
+        /// True if the referenced <see cref="Namespace"/> has <see cref="NamespaceDecl"/> declarations in the current
+        /// project, otherwise false (meaning items in the namespace exist only in imported assemblies and projects).
         /// </summary>
-        public NamespaceTypeDictionary Children
+        public bool HasDeclarationsInProject
         {
-            get { return ((Namespace)_reference).Children; }
-        }
-
-        /// <summary>
-        /// Determines if the referenced <see cref="Namespace"/> is root-level (global or extern alias).
-        /// </summary>
-        public bool IsRootLevel
-        {
-            get { return ((Namespace)_reference).IsRootLevel; }
+            get { return ((Namespace)_reference).HasDeclarationsInProject; }
         }
 
         /// <summary>
@@ -72,17 +59,20 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced <see cref="Namespace"/> has <see cref="NamespaceDecl"/> declarations in the current
-        /// project, otherwise false (meaning items in the namespace exist only in imported assemblies and projects).
+        /// Determines if the referenced <see cref="Namespace"/> is root-level (global or extern alias).
         /// </summary>
-        public bool HasDeclarationsInProject
+        public bool IsRootLevel
         {
-            get { return ((Namespace)_reference).HasDeclarationsInProject; }
+            get { return ((Namespace)_reference).IsRootLevel; }
         }
 
-        #endregion
-
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// The referenced <see cref="Namespace"/>.
+        /// </summary>
+        public Namespace Namespace
+        {
+            get { return (Namespace)_reference; }
+        }
 
         /// <summary>
         /// Find a child namespace in the specified <see cref="Namespace"/> with the specified name.
@@ -129,10 +119,6 @@ namespace Nova.CodeDOM
             return new UnresolvedRef(name, isFirstOnLine);
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Add a child <see cref="Namespace"/> to the namespace.
         /// </summary>
@@ -155,6 +141,41 @@ namespace Nova.CodeDOM
         public void Add(Type type)
         {
             ((Namespace)_reference).Add(type);
+        }
+
+        /// <summary>
+        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="Type"/> with
+        /// the specified name.
+        /// </summary>
+        /// <returns>The child object if found, otherwise null.</returns>
+        public object Find(string name)
+        {
+            return ((Namespace)_reference).Find(name);
+        }
+
+        /// <summary>
+        /// Find or create a child namespace, including any missing parent namespaces.
+        /// </summary>
+        public Namespace FindOrCreateChildNamespace(string namespaceName)
+        {
+            return ((Namespace)_reference).FindOrCreateChildNamespace(namespaceName);
+        }
+
+        /// <summary>
+        /// Determine if the current reference refers to the same code object as the specified reference.
+        /// </summary>
+        public override bool IsSameRef(SymbolicRef symbolicRef)
+        {
+            NamespaceRef namespaceRef = (symbolicRef is AliasRef ? ((AliasRef)symbolicRef).Namespace : symbolicRef as NamespaceRef);
+            return (namespaceRef != null && Reference == namespaceRef.Reference);
+        }
+
+        /// <summary>
+        /// Parse the specified name into a <see cref="NamespaceRef"/> or <see cref="TypeRef"/>, or a <see cref="Dot"/> expression that evaluates to one.
+        /// </summary>
+        public Expression ParseName(string name)
+        {
+            return ((Namespace)_reference).ParseName(name);
         }
 
         /// <summary>
@@ -190,45 +211,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Find or create a child namespace, including any missing parent namespaces.
-        /// </summary>
-        public Namespace FindOrCreateChildNamespace(string namespaceName)
-        {
-            return ((Namespace)_reference).FindOrCreateChildNamespace(namespaceName);
-        }
-
-        /// <summary>
-        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="Type"/> with
-        /// the specified name.
-        /// </summary>
-        /// <returns>The child object if found, otherwise null.</returns>
-        public object Find(string name)
-        {
-            return ((Namespace)_reference).Find(name);
-        }
-
-        /// <summary>
-        /// Determine if the current reference refers to the same code object as the specified reference.
-        /// </summary>
-        public override bool IsSameRef(SymbolicRef symbolicRef)
-        {
-            NamespaceRef namespaceRef = (symbolicRef is AliasRef ? ((AliasRef)symbolicRef).Namespace : symbolicRef as NamespaceRef);
-            return (namespaceRef != null && Reference == namespaceRef.Reference);
-        }
-
-        /// <summary>
-        /// Parse the specified name into a <see cref="NamespaceRef"/> or <see cref="TypeRef"/>, or a <see cref="Dot"/> expression that evaluates to one.
-        /// </summary>
-        public Expression ParseName(string name)
-        {
-            return ((Namespace)_reference).ParseName(name);
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
         /// Format the <see cref="NamespaceRef"/> as a string.
         /// </summary>
         public override string ToString()
@@ -236,7 +218,5 @@ namespace Nova.CodeDOM
             // Use full name in debugger
             return GetType().Name + ": " + Namespace.FullName;
         }
-
-        #endregion
     }
 }

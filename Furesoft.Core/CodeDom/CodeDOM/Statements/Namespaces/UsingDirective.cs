@@ -1,28 +1,22 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Imports the contents of a <see cref="Namespace"/> into the current scope.
     /// </summary>
     public class UsingDirective : Statement
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// The expression should be either a <see cref="NamespaceRef"/>, or a <see cref="Dot"/> operator whose right-most
         /// operand evaluates to a <see cref="NamespaceRef"/>.
         /// </summary>
         protected Expression _namespace;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="UsingDirective"/>.
@@ -30,19 +24,6 @@ namespace Nova.CodeDOM
         public UsingDirective(Expression expression)
         {
             Namespace = expression;
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The namespace <see cref="Expression"/>.
-        /// </summary>
-        public Expression Namespace
-        {
-            get { return _namespace; }
-            set { SetField(ref _namespace, value, true); }
         }
 
         /// <summary>
@@ -53,17 +34,13 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
-        /// Evaluate the namespace expression into the targeted <see cref="NamespaceRef"/>.
+        /// The namespace <see cref="Expression"/>.
         /// </summary>
-        public NamespaceRef GetNamespaceRef()
+        public Expression Namespace
         {
-            Expression expression = _namespace.SkipPrefixes();
-            return (expression is NamespaceRef ? (NamespaceRef)expression : (expression is AliasRef ? ((AliasRef)expression).Namespace : null));
+            get { return _namespace; }
+            set { SetField(ref _namespace, value, true); }
         }
 
         /// <summary>
@@ -76,19 +53,26 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Evaluate the namespace expression into the targeted <see cref="NamespaceRef"/>.
+        /// </summary>
+        public NamespaceRef GetNamespaceRef()
+        {
+            Expression expression = _namespace.SkipPrefixes();
+            return (expression is NamespaceRef ? (NamespaceRef)expression : (expression is AliasRef ? ((AliasRef)expression).Namespace : null));
+        }
 
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "using";
 
-        internal static void AddParsePoints()
+        protected UsingDirective(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            // Use a parse-priority of 100 (Alias uses 0, Using uses 200)
-            Parser.AddParsePoint(ParseToken, 100, Parse, typeof(NamespaceDecl));
+            parser.NextToken();  // Move past 'using'
+            SetField(ref _namespace, Expression.Parse(parser, this, true), false);
+            ParseTerminator(parser);
         }
 
         /// <summary>
@@ -101,17 +85,11 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected UsingDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            parser.NextToken();  // Move past 'using'
-            SetField(ref _namespace, Expression.Parse(parser, this, true), false);
-            ParseTerminator(parser);
+            // Use a parse-priority of 100 (Alias uses 0, Using uses 200)
+            Parser.AddParsePoint(ParseToken, 100, Parse, typeof(NamespaceDecl));
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
@@ -127,6 +105,23 @@ namespace Nova.CodeDOM
         public override bool HasTerminatorDefault
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_namespace == null || (!_namespace.IsFirstOnLine && _namespace.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value && _namespace != null)
+                {
+                    _namespace.IsFirstOnLine = false;
+                    _namespace.IsSingleLine = true;
+                }
+            }
         }
 
         /// <summary>
@@ -164,33 +159,10 @@ namespace Nova.CodeDOM
             return 1;
         }
 
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_namespace == null || (!_namespace.IsFirstOnLine && _namespace.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value && _namespace != null)
-                {
-                    _namespace.IsFirstOnLine = false;
-                    _namespace.IsSingleLine = true;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_namespace != null)
                 _namespace.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

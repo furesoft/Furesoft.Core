@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Documents how to use a code object.
     /// </summary>
     public class DocExample : DocComment
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DocExample"/>.
         /// </summary>
@@ -27,10 +25,6 @@ namespace Nova.CodeDOM
             : base(docComments)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The XML tag name for the documentation comment.
         /// </summary>
@@ -39,18 +33,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "example";
 
-        internal static void AddParsePoints()
+        /// <summary>
+        /// Parse a <see cref="DocExample"/>.
+        /// </summary>
+        public DocExample(Parser parser, CodeObject parent)
         {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
+            ParseTag(parser, parent);  // Ignore any attributes
         }
 
         /// <summary>
@@ -61,14 +54,9 @@ namespace Nova.CodeDOM
             return new DocExample(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocExample"/>.
-        /// </summary>
-        public DocExample(Parser parser, CodeObject parent)
+        internal static void AddParsePoints()
         {
-            ParseTag(parser, parent);  // Ignore any attributes
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
-
-        #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// This is a special class used for explicit interface implementations of indexers, and also
@@ -17,8 +17,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class UnresolvedThisRef : UnresolvedRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="UnresolvedThisRef"/>.
         /// </summary>
@@ -51,10 +49,6 @@ namespace Nova.CodeDOM
             SetLineCol(token);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
@@ -62,7 +56,5 @@ namespace Nova.CodeDOM
             AsTextTypeArguments(writer, _typeArguments, flags);
             AsTextArrayRanks(writer, flags);
         }
-
-        #endregion
     }
 }

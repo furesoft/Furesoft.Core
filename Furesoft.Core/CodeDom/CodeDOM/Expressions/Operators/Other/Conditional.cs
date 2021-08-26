@@ -1,28 +1,22 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a conditional if/then/else (ternary) expression.
     /// </summary>
     public class Conditional : Operator
     {
-        #region /* FIELDS */
-
+        protected Expression _else;
         protected Expression _if;
         protected Expression _then;
-        protected Expression _else;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Conditional"/> operator.
@@ -32,29 +26,6 @@ namespace Nova.CodeDOM
             If = @if;
             Then = then;
             Else = @else;
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The 'if' expression.
-        /// </summary>
-        public Expression If
-        {
-            get { return _if; }
-            set { SetField(ref _if, value, true); }
-        }
-
-        /// <summary>
-        /// The 'then' expression.
-        /// </summary>
-        public Expression Then
-        {
-            get { return _then; }
-            set { SetField(ref _then, value, true); }
-
         }
 
         /// <summary>
@@ -67,6 +38,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// The 'if' expression.
+        /// </summary>
+        public Expression If
+        {
+            get { return _if; }
+            set { SetField(ref _if, value, true); }
+        }
+
+        /// <summary>
         /// True if the expression is const.
         /// </summary>
         public override bool IsConst
@@ -75,9 +55,14 @@ namespace Nova.CodeDOM
             get { return (_then != null && _then.IsConst && _else != null && _else.IsConst); }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// The 'then' expression.
+        /// </summary>
+        public Expression Then
+        {
+            get { return _then; }
+            set { SetField(ref _then, value, true); }
+        }
 
         /// <summary>
         /// Deep-clone the code object.
@@ -91,9 +76,10 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = false;
 
         /// <summary>
         /// The token used to parse the 'then' part.
@@ -110,15 +96,55 @@ namespace Nova.CodeDOM
         /// </summary>
         public const int Precedence = 400;
 
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = false;
-
-        internal static new void AddParsePoints()
+        protected Conditional(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            // Use a parse-priority of 0 (TypeRef uses 100 for nullable types)
-            Parser.AddOperatorParsePoint(ParseToken1, Precedence, LeftAssociative, false, Parse);
+            IsFirstOnLine = false;
+            Expression conditional = parser.RemoveLastUnusedExpression();
+            if (conditional != null)
+            {
+                MoveFormatting(conditional);
+                SetField(ref _if, conditional, false);
+                if (conditional.IsFirstOnLine)
+                    IsFirstOnLine = true;
+                // Move any comments before the '?' to the conditional expression
+                conditional.MoveCommentsAsPost(parser.LastToken);
+            }
+
+            // If the '?' clause is indented less than the parent object, set the NoIndentation flag to prevent
+            // it from being formatted relative to the parent object.
+            if (parser.CurrentTokenIndentedLessThan(parser.ParentStartingToken))
+                SetFormatFlag(FormatFlags.NoIndentation, true);
+
+            Token ifToken = parser.Token;
+            parser.NextToken();  // Move past '?'
+            ++parser.ConditionalNestingLevel;
+            SetField(ref _then, Parse(parser, this, false, ParseToken2), false);
+            --parser.ConditionalNestingLevel;
+            if (_then != null)
+            {
+                if (ifToken.IsFirstOnLine)
+                    _then.IsFirstOnLine = true;
+                _then.MoveCommentsToLeftMost(ifToken, false);
+                // Move any comments before the ':' to the then expression
+                _then.MoveCommentsAsPost(parser.LastToken);
+            }
+
+            Token elseToken = parser.Token;
+            ParseExpectedToken(parser, ParseToken2);  // Move past ':'
+            SetField(ref _else, Parse(parser, this), false);
+            if (_else != null)
+            {
+                if (elseToken.IsFirstOnLine)
+                    _else.IsFirstOnLine = true;
+                _else.MoveCommentsToLeftMost(elseToken, false);
+                // Move any comments at the end to the else expression
+                _else.MoveCommentsAsPost(parser.LastToken);
+            }
+
+            // If the else clause isn't on a new line, set the NoIndentation flag
+            if ((!elseToken.IsFirstOnLine && (_else == null || !_else.IsFirstOnLine)))
+                SetFormatFlag(FormatFlags.NoIndentation, true);
         }
 
         /// <summary>
@@ -137,6 +163,31 @@ namespace Nova.CodeDOM
                 return new Conditional(parser, parent);
 
             return null;
+        }
+
+        /// <summary>
+        /// Get the precedence of the operator.
+        /// </summary>
+        public override int GetPrecedence()
+        {
+            return Precedence;
+        }
+
+        /// <summary>
+        /// Move any comments from the specified <see cref="Token"/> to the left-most sub-expression.
+        /// </summary>
+        public override void MoveCommentsToLeftMost(Token token, bool skipParens)
+        {
+            if ((HasParens && !skipParens) || _if == null)
+                MoveAllComments(token);
+            else
+                _if.MoveCommentsToLeftMost(token, false);
+        }
+
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 0 (TypeRef uses 100 for nullable types)
+            Parser.AddOperatorParsePoint(ParseToken1, Precedence, LeftAssociative, false, Parse);
         }
 
         protected static bool PeekConditional(Parser parser, CodeObject parent, int colonCount, ParseFlags flags)
@@ -158,7 +209,7 @@ namespace Nova.CodeDOM
                 Token next = parser.PeekNextToken();
                 if (next == null)
                     break;
-            check:
+                check:
                 if (next.IsSymbol)
                 {
                     // Abort if any invalid symbols appear immediately after the '?'
@@ -244,80 +295,6 @@ namespace Nova.CodeDOM
             return false;
         }
 
-        protected Conditional(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            IsFirstOnLine = false;
-            Expression conditional = parser.RemoveLastUnusedExpression();
-            if (conditional != null)
-            {
-                MoveFormatting(conditional);
-                SetField(ref _if, conditional, false);
-                if (conditional.IsFirstOnLine)
-                    IsFirstOnLine = true;
-                // Move any comments before the '?' to the conditional expression
-                conditional.MoveCommentsAsPost(parser.LastToken);
-            }
-
-            // If the '?' clause is indented less than the parent object, set the NoIndentation flag to prevent
-            // it from being formatted relative to the parent object.
-            if (parser.CurrentTokenIndentedLessThan(parser.ParentStartingToken))
-                SetFormatFlag(FormatFlags.NoIndentation, true);
-
-            Token ifToken = parser.Token;
-            parser.NextToken();  // Move past '?'
-            ++parser.ConditionalNestingLevel;
-            SetField(ref _then, Parse(parser, this, false, ParseToken2), false);
-            --parser.ConditionalNestingLevel;
-            if (_then != null)
-            {
-                if (ifToken.IsFirstOnLine)
-                    _then.IsFirstOnLine = true;
-                _then.MoveCommentsToLeftMost(ifToken, false);
-                // Move any comments before the ':' to the then expression
-                _then.MoveCommentsAsPost(parser.LastToken);
-            }
-
-            Token elseToken = parser.Token;
-            ParseExpectedToken(parser, ParseToken2);  // Move past ':'
-            SetField(ref _else, Parse(parser, this), false);
-            if (_else != null)
-            {
-                if (elseToken.IsFirstOnLine)
-                    _else.IsFirstOnLine = true;
-                _else.MoveCommentsToLeftMost(elseToken, false);
-                // Move any comments at the end to the else expression
-                _else.MoveCommentsAsPost(parser.LastToken);
-            }
-
-            // If the else clause isn't on a new line, set the NoIndentation flag
-            if ((!elseToken.IsFirstOnLine && (_else == null || !_else.IsFirstOnLine)))
-                SetFormatFlag(FormatFlags.NoIndentation, true);
-        }
-
-        /// <summary>
-        /// Get the precedence of the operator.
-        /// </summary>
-        public override int GetPrecedence()
-        {
-            return Precedence;
-        }
-
-        /// <summary>
-        /// Move any comments from the specified <see cref="Token"/> to the left-most sub-expression.
-        /// </summary>
-        public override void MoveCommentsToLeftMost(Token token, bool skipParens)
-        {
-            if ((HasParens && !skipParens) || _if == null)
-                MoveAllComments(token);
-            else
-                _if.MoveCommentsToLeftMost(token, false);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the expression should have parens by default.
         /// </summary>
@@ -358,10 +335,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             bool relativeToParent = (!HasNoIndentation && _then != null && _then.IsFirstOnLine && _if != null && _if.IsSingleLine);
@@ -401,7 +374,5 @@ namespace Nova.CodeDOM
             if (relativeToParent)
                 writer.EndIndentation(this);
         }
-
-        #endregion
     }
 }

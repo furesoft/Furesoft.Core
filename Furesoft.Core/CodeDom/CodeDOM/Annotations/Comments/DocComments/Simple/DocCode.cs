@@ -1,27 +1,21 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a block of code in a documentation comment.
     /// </summary>
     public class DocCode : DocComment, IBlock
     {
-        #region /* STATIC FIELDS */
-
         /// <summary>
         /// Determines if <see cref="DocCode"/> content is parsed as code or plain text.
         /// </summary>
         public static bool ParseContentAsCode = true;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="DocCode"/>.
@@ -30,26 +24,10 @@ namespace Nova.CodeDOM
             : base(content)
         { }
 
-        #endregion
-
-        #region /* STATIC CONSTRUCTOR */
-
         static DocCode()
         {
             // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
             ForceReference();
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The XML tag name for the documentation comment.
-        /// </summary>
-        public override string TagName
-        {
-            get { return ParseToken; }
         }
 
         /// <summary>
@@ -85,18 +63,12 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
-        /// Create a body if one doesn't exist yet.
+        /// The XML tag name for the documentation comment.
         /// </summary>
-        public Block CreateBody()
+        public override string TagName
         {
-            if (!(_content is Block))
-                Body = new Block();
-            return Body;
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -115,6 +87,26 @@ namespace Nova.CodeDOM
             CreateBody();
             foreach (CodeObject obj in objects)
                 Body.Add(obj);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            DocCode clone = (DocCode)base.Clone();
+            clone.CloneField(ref clone._content, _content);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create a body if one doesn't exist yet.
+        /// </summary>
+        public Block CreateBody()
+        {
+            if (!(_content is Block))
+                Body = new Block();
+            return Body;
         }
 
         /// <summary>
@@ -146,27 +138,16 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            DocCode clone = (DocCode)base.Clone();
-            clone.CloneField(ref clone._content, _content);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "code";
 
-        internal static void AddParsePoints()
+        /// <summary>
+        /// Parse a <see cref="DocCode"/>.
+        /// </summary>
+        public DocCode(Parser parser, CodeObject parent)
         {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
+            ParseTag(parser, parent);  // Ignore any attributes
         }
 
         /// <summary>
@@ -180,12 +161,9 @@ namespace Nova.CodeDOM
             return docCode;
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocCode"/>.
-        /// </summary>
-        public DocCode(Parser parser, CodeObject parent)
+        internal static void AddParsePoints()
         {
-            ParseTag(parser, parent);  // Ignore any attributes
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         protected override bool ParseContent(Parser parser)
@@ -214,10 +192,6 @@ namespace Nova.CodeDOM
             return base.ParseContent(parser);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// Reformat the <see cref="Block"/> body.
         /// </summary>
@@ -233,9 +207,15 @@ namespace Nova.CodeDOM
             field.DefaultFormat();
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        protected void AfterTextNewLine(CodeWriter writer)
+        {
+            // Render the '///' prefix at the starting indent level, followed by any additional indentation
+            int previousIndentPosition = writer.IndentOffset;
+            int startingIndentPosition = writer.GetIndentOffset(this);
+            writer.IndentOffset = startingIndentPosition - 4;  // Adjust for '/// ' prefix
+            writer.Write(DocComment.ParseToken + " " + new string(' ', previousIndentPosition - startingIndentPosition));
+            writer.IndentOffset = previousIndentPosition;
+        }
 
         protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
         {
@@ -253,17 +233,5 @@ namespace Nova.CodeDOM
             else
                 base.AsTextContent(writer, flags);
         }
-
-        protected void AfterTextNewLine(CodeWriter writer)
-        {
-            // Render the '///' prefix at the starting indent level, followed by any additional indentation
-            int previousIndentPosition = writer.IndentOffset;
-            int startingIndentPosition = writer.GetIndentOffset(this);
-            writer.IndentOffset = startingIndentPosition - 4;  // Adjust for '/// ' prefix
-            writer.Write(DocComment.ParseToken + " " + new string(' ', previousIndentPosition - startingIndentPosition));
-            writer.IndentOffset = previousIndentPosition;
-        }
-
-        #endregion
     }
 }

@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Embeds a reference to a type parameter in a documentation comment.
     /// </summary>
     public class DocTypeParamRef : DocNameBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DocTypeParamRef"/>.
         /// </summary>
@@ -27,10 +25,6 @@ namespace Nova.CodeDOM
             : base(typeParameter.CreateRef(), (string)null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The XML tag name for the documentation comment.
         /// </summary>
@@ -39,19 +33,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "typeparamref";
 
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
-        }
+        /// <summary>
+        /// Parse a <see cref="DocTypeParamRef"/>.
+        /// </summary>
+        public DocTypeParamRef(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// Parse a <see cref="DocTypeParamRef"/>.
@@ -61,16 +53,10 @@ namespace Nova.CodeDOM
             return new DocTypeParamRef(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocTypeParamRef"/>.
-        /// </summary>
-        public DocTypeParamRef(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* FORMATTING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
 
         /// <summary>
         /// True if the code object defaults to starting on a new line.
@@ -79,7 +65,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
     }
 }

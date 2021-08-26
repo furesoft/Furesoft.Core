@@ -1,26 +1,20 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Returns the remainder of the division of one <see cref="Expression"/> by another.
     /// </summary>
     public class Mod : BinaryArithmeticOperator
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name of the operator.
         /// </summary>
         public const string InternalName = NamePrefix + "Modulus";
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Mod"/> operator.
@@ -28,10 +22,6 @@ namespace Nova.CodeDOM
         public Mod(Expression left, Expression right)
             : base(left, right)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -41,10 +31,6 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// The internal name of the <see cref="BinaryOperator"/>.
         /// </summary>
@@ -53,9 +39,10 @@ namespace Nova.CodeDOM
             return InternalName;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -67,15 +54,9 @@ namespace Nova.CodeDOM
         /// </summary>
         public const int Precedence = 300;
 
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
-        }
+        protected Mod(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// Parse a <see cref="Mod"/> operator.
@@ -85,10 +66,6 @@ namespace Nova.CodeDOM
             return new Mod(parser, parent);
         }
 
-        protected Mod(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -97,6 +74,9 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

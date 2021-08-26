@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a "property" - a virtual field accessed only by calling get and/or set methods.
     /// </summary>
     public class PropertyDecl : PropertyDeclBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="PropertyDecl"/> with the specified name, type, and modifiers.
         /// </summary>
@@ -34,32 +32,12 @@ namespace Nova.CodeDOM
             : base(name, type, Modifiers.None)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public override string Category
         {
             get { return "property"; }
-        }
-
-        /// <summary>
-        /// True if the property has a getter method.
-        /// </summary>
-        public bool HasGetter
-        {
-            get { return (_body.FindFirst<GetterDecl>() != null); }
-        }
-
-        /// <summary>
-        /// True if the property has a setter method.
-        /// </summary>
-        public bool HasSetter
-        {
-            get { return (_body.FindFirst<SetterDecl>() != null); }
         }
 
         /// <summary>
@@ -81,6 +59,32 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if the property has a getter method.
+        /// </summary>
+        public bool HasGetter
+        {
+            get { return (_body.FindFirst<GetterDecl>() != null); }
+        }
+
+        /// <summary>
+        /// True if the property has a setter method.
+        /// </summary>
+        public bool HasSetter
+        {
+            get { return (_body.FindFirst<SetterDecl>() != null); }
+        }
+
+        /// <summary>
+        /// True if the property is readable.
+        /// </summary>
+        public override bool IsReadable { get { return HasGetter; } }
+
+        /// <summary>
+        /// True if the property is writable.
+        /// </summary>
+        public override bool IsWritable { get { return HasSetter; } }
+
+        /// <summary>
         /// The 'setter' method for the property.
         /// </summary>
         public SetterDecl Setter
@@ -98,20 +102,6 @@ namespace Nova.CodeDOM
                 Insert(pos, value);  // Always put the 'setter' after any 'getter'
             }
         }
-
-        /// <summary>
-        /// True if the property is readable.
-        /// </summary>
-        public override bool IsReadable { get { return HasGetter; } }
-
-        /// <summary>
-        /// True if the property is writable.
-        /// </summary>
-        public override bool IsWritable { get { return HasSetter; } }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Create a reference to the <see cref="PropertyDecl"/>.
@@ -164,17 +154,11 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// Parse a <see cref="PropertyDecl"/>.
         /// </summary>
         public PropertyDecl(Parser parser, CodeObject parent)
             : base(parser, parent, true)
         { }
-
-        #endregion
     }
 }

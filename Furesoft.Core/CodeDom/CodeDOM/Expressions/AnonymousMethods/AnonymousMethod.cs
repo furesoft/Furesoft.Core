@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents an un-named method that can be assigned to a delegate.
@@ -18,14 +18,8 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class AnonymousMethod : Expression, IParameters, IBlock
     {
-        #region /* FIELDS */
-
-        protected ChildList<ParameterDecl> _parameters;
         protected Block _body;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected ChildList<ParameterDecl> _parameters;
 
         /// <summary>
         /// Create an <see cref="AnonymousMethod"/>.
@@ -48,10 +42,6 @@ namespace Nova.CodeDOM
             : this(new Block(), parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The <see cref="Block"/> body.
         /// </summary>
@@ -70,11 +60,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The parameters of the anonymous method (if any).
+        /// Always <c>true</c>.
         /// </summary>
-        public ChildList<ParameterDecl> Parameters
+        public bool HasHeader
         {
-            get { return _parameters; }
+            get { return true; }
         }
 
         /// <summary>
@@ -86,6 +76,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Always <c>false</c>.
+        /// </summary>
+        public bool IsTopLevel
+        {
+            get { return false; }
+        }
+
+        /// <summary>
         /// The number of parameters the anonymous method has.
         /// </summary>
         public int ParameterCount
@@ -94,51 +92,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Always <c>true</c>.
+        /// The parameters of the anonymous method (if any).
         /// </summary>
-        public bool HasHeader
+        public ChildList<ParameterDecl> Parameters
         {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Always <c>false</c>.
-        /// </summary>
-        public bool IsTopLevel
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create a body if one doesn't exist yet.
-        /// </summary>
-        public Block CreateBody()
-        {
-            if (_body == null)
-                Body = new Block();
-            return _body;
-        }
-
-        /// <summary>
-        /// Create the list of <see cref="ParameterDecl"/>s, or return the existing one.
-        /// </summary>
-        public ChildList<ParameterDecl> CreateParameters()
-        {
-            if (_parameters == null)
-                _parameters = new ChildList<ParameterDecl>(this);
-            return _parameters;
-        }
-
-        /// <summary>
-        /// Add one or more <see cref="ParameterDecl"/>s.
-        /// </summary>
-        public void AddParameters(params ParameterDecl[] parameterDecls)
-        {
-            CreateParameters().AddRange(parameterDecls);
+            get { return _parameters; }
         }
 
         /// <summary>
@@ -171,60 +129,42 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Insert a <see cref="CodeObject"/> at the specified index.
+        /// Add one or more <see cref="ParameterDecl"/>s.
         /// </summary>
-        /// <param name="index">The index at which to insert.</param>
-        /// <param name="obj">The object to be inserted.</param>
-        public void Insert(int index, CodeObject obj)
+        public void AddParameters(params ParameterDecl[] parameterDecls)
         {
-            CreateBody().Insert(index, obj);
+            CreateParameters().AddRange(parameterDecls);
         }
 
         /// <summary>
-        /// Remove the specified <see cref="CodeObject"/> from the body.
+        /// Deep-clone the code object.
         /// </summary>
-        public void Remove(CodeObject obj)
+        public override CodeObject Clone()
         {
-            if (_body != null)
-                _body.Remove(obj);
+            AnonymousMethod clone = (AnonymousMethod)base.Clone();
+            clone._parameters = ChildListHelpers.Clone(_parameters, clone);
+            clone.CloneField(ref clone._body, _body);
+            return clone;
         }
 
         /// <summary>
-        /// Remove all objects from the body.
+        /// Create a body if one doesn't exist yet.
         /// </summary>
-        public void RemoveAll()
+        public Block CreateBody()
         {
-            if (_body != null)
-                _body.RemoveAll();
+            if (_body == null)
+                Body = new Block();
+            return _body;
         }
 
         /// <summary>
-        /// Determine the return type of the anonymous method (never null - will be 'void' instead).
+        /// Create the list of <see cref="ParameterDecl"/>s, or return the existing one.
         /// </summary>
-        public TypeRefBase GetReturnType()
+        public ChildList<ParameterDecl> CreateParameters()
         {
-            TypeRefBase returnTypeRef = null;
-            ScanReturnTypes(ref returnTypeRef, _body);
-            return (returnTypeRef ?? TypeRef.VoidRef);
-        }
-
-        protected void ScanReturnTypes(ref TypeRefBase returnTypeRef, Block body)
-        {
-            // Recursively scan all bodies for Return statements
-            if (body != null)
-            {
-                foreach (CodeObject codeObject in body)
-                {
-                    if (codeObject is Return)
-                    {
-                        Expression expression = ((Return)codeObject).Expression;
-                        TypeRefBase typeRef = (expression == null ? TypeRef.VoidRef : expression.SkipPrefixes() as TypeRefBase);
-                        returnTypeRef = (returnTypeRef == null ? typeRef : TypeRef.GetCommonType(returnTypeRef, typeRef));
-                    }
-                    else if (codeObject is BlockStatement)
-                        ScanReturnTypes(ref returnTypeRef, ((BlockStatement)codeObject).Body);
-                }
-            }
+            if (_parameters == null)
+                _parameters = new ChildList<ParameterDecl>(this);
+            return _parameters;
         }
 
         /// <summary>
@@ -296,19 +236,61 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
+        /// Determine the return type of the anonymous method (never null - will be 'void' instead).
         /// </summary>
-        public override CodeObject Clone()
+        public TypeRefBase GetReturnType()
         {
-            AnonymousMethod clone = (AnonymousMethod)base.Clone();
-            clone._parameters = ChildListHelpers.Clone(_parameters, clone);
-            clone.CloneField(ref clone._body, _body);
-            return clone;
+            TypeRefBase returnTypeRef = null;
+            ScanReturnTypes(ref returnTypeRef, _body);
+            return (returnTypeRef ?? TypeRef.VoidRef);
         }
 
-        #endregion
+        /// <summary>
+        /// Insert a <see cref="CodeObject"/> at the specified index.
+        /// </summary>
+        /// <param name="index">The index at which to insert.</param>
+        /// <param name="obj">The object to be inserted.</param>
+        public void Insert(int index, CodeObject obj)
+        {
+            CreateBody().Insert(index, obj);
+        }
 
-        #region /* PARSING */
+        /// <summary>
+        /// Remove the specified <see cref="CodeObject"/> from the body.
+        /// </summary>
+        public void Remove(CodeObject obj)
+        {
+            if (_body != null)
+                _body.Remove(obj);
+        }
+
+        /// <summary>
+        /// Remove all objects from the body.
+        /// </summary>
+        public void RemoveAll()
+        {
+            if (_body != null)
+                _body.RemoveAll();
+        }
+
+        protected void ScanReturnTypes(ref TypeRefBase returnTypeRef, Block body)
+        {
+            // Recursively scan all bodies for Return statements
+            if (body != null)
+            {
+                foreach (CodeObject codeObject in body)
+                {
+                    if (codeObject is Return)
+                    {
+                        Expression expression = ((Return)codeObject).Expression;
+                        TypeRefBase typeRef = (expression == null ? TypeRef.VoidRef : expression.SkipPrefixes() as TypeRefBase);
+                        returnTypeRef = (returnTypeRef == null ? typeRef : TypeRef.GetCommonType(returnTypeRef, typeRef));
+                    }
+                    else if (codeObject is BlockStatement)
+                        ScanReturnTypes(ref returnTypeRef, ((BlockStatement)codeObject).Body);
+                }
+            }
+        }
 
         /// <summary>
         /// The token used to parse the code object.
@@ -316,28 +298,14 @@ namespace Nova.CodeDOM
         public const string ParseToken = DelegateDecl.ParseToken;
 
         /// <summary>
-        /// The token used to parse the start of the parameter list of an anonymous method.
-        /// </summary>
-        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
-
-        /// <summary>
         /// The token used to parse the end of the parameter list of an anonymous method.
         /// </summary>
         public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
 
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 100 (DelegateDecl uses 0)
-            Parser.AddParsePoint(ParseToken, 100, Parse);
-        }
-
         /// <summary>
-        /// Parse an <see cref="AnonymousMethod"/>.
+        /// The token used to parse the start of the parameter list of an anonymous method.
         /// </summary>
-        public static AnonymousMethod Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new AnonymousMethod(parser, parent);
-        }
+        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
 
         protected AnonymousMethod(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -358,16 +326,18 @@ namespace Nova.CodeDOM
             new Block(out _body, parser, this, true);  // Parse the body
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
-        /// True if the anonymous method has braces by default.
+        /// Parse an <see cref="AnonymousMethod"/>.
         /// </summary>
-        public virtual bool HasBracesDefault
+        public static AnonymousMethod Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            get { return true; }
+            return new AnonymousMethod(parser, parent);
+        }
+
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (DelegateDecl uses 0)
+            Parser.AddParsePoint(ParseToken, 100, Parse);
         }
 
         /// <summary>
@@ -387,18 +357,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Reformat the <see cref="Block"/> body.
+        /// True if the anonymous method has braces by default.
         /// </summary>
-        public virtual void ReformatBlock()
+        public virtual bool HasBracesDefault
         {
-            if (_body != null)
-            {
-                if (!_body.IsGroupingSet)
-                    _body.SetFormatFlag(FormatFlags.Grouping, HasBracesDefault);
-                IsSingleLine = (IsSingleLineDefault && _body.IsSingleLineDefault && _body.Count < 2);
-                if (_body.Count == 0)
-                    _body.SetNewLines(0);
-            }
+            get { return true; }
         }
 
         /// <summary>
@@ -416,24 +379,18 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Reformat the <see cref="Block"/> body.
+        /// </summary>
+        public virtual void ReformatBlock()
         {
-            if (!flags.HasFlag(RenderFlags.Description))
+            if (_body != null)
             {
-                base.AsTextAfter(writer, flags);
-                if (_body != null)
-                {
-                    // Increase the indent level for the body (unless disabled)
-                    if (!HasNoIndentation)
-                        writer.BeginIndentOnNewLineRelativeToParentOffset(this, true);
-                    _body.AsText(writer, flags);
-                    if (!HasNoIndentation)
-                        writer.EndIndentation(this);
-                }
+                if (!_body.IsGroupingSet)
+                    _body.SetFormatFlag(FormatFlags.Grouping, HasBracesDefault);
+                IsSingleLine = (IsSingleLineDefault && _body.IsSingleLineDefault && _body.Count < 2);
+                if (_body.Count == 0)
+                    _body.SetNewLines(0);
             }
         }
 
@@ -512,6 +469,21 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
+        {
+            if (!flags.HasFlag(RenderFlags.Description))
+            {
+                base.AsTextAfter(writer, flags);
+                if (_body != null)
+                {
+                    // Increase the indent level for the body (unless disabled)
+                    if (!HasNoIndentation)
+                        writer.BeginIndentOnNewLineRelativeToParentOffset(this, true);
+                    _body.AsText(writer, flags);
+                    if (!HasNoIndentation)
+                        writer.EndIndentation(this);
+                }
+            }
+        }
     }
 }

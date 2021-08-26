@@ -1,16 +1,14 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="LocalDecl"/>.
     /// </summary>
     public class LocalRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="LocalRef"/>.
         /// </summary>
@@ -25,10 +23,6 @@ namespace Nova.CodeDOM
             : base(declaration, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// True if the referenced <see cref="LocalDecl"/> is const.
         /// </summary>
@@ -36,11 +30,5 @@ namespace Nova.CodeDOM
         {
             get { return ((LocalDecl)_reference).IsConst; }
         }
-
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
     }
 }

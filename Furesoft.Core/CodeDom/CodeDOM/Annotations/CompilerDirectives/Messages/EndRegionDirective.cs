@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents the end of a section of code that can be collapsed, and has optional descriptive text.
     /// </summary>
     public class EndRegionDirective : MessageDirective
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="EndRegionDirective"/>.
         /// </summary>
@@ -27,27 +25,10 @@ namespace Nova.CodeDOM
             : base(null)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "endregion";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="EndRegionDirective"/>.
-        /// </summary>
-        public static EndRegionDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new EndRegionDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse an <see cref="EndRegionDirective"/>.
@@ -63,6 +44,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Parse an <see cref="EndRegionDirective"/>.
+        /// </summary>
+        public static EndRegionDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new EndRegionDirective(parser, parent);
+        }
+
+        /// <summary>
         /// Determine if the specified comment should be associated with the current code object during parsing.
         /// </summary>
         public override bool AssociateCommentWhenParsing(CommentBase comment)
@@ -70,9 +59,18 @@ namespace Nova.CodeDOM
             return false;
         }
 
-        #endregion
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// Determines if the compiler directive should be indented.
+        /// </summary>
+        public override bool HasNoIndentationDefault
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
@@ -84,25 +82,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the compiler directive should be indented.
-        /// </summary>
-        public override bool HasNoIndentationDefault
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
         /// The keyword associated with the compiler directive (if any).
         /// </summary>
         public override string DirectiveKeyword
         {
             get { return ParseToken; }
         }
-
-        #endregion
     }
 }

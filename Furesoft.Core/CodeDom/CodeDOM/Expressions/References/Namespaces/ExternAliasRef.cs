@@ -1,8 +1,8 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="ExternAlias"/> namespace statement, or
@@ -10,8 +10,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ExternAliasRef : SymbolicRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="ExternAliasRef"/>.
         /// </summary>
@@ -26,9 +24,21 @@ namespace Nova.CodeDOM
             : base(externAlias, false)
         { }
 
-        #endregion
+        /// <summary>
+        /// The referenced ExternAlias code object.
+        /// </summary>
+        public ExternAlias ExternAlias
+        {
+            get { return (ExternAlias)_reference; }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the extern alias is 'global'.
+        /// </summary>
+        public bool IsGlobal
+        {
+            get { return ((ExternAlias)_reference).IsGlobal; }
+        }
 
         /// <summary>
         /// The name of the <see cref="ExternAliasRef"/>.
@@ -45,23 +55,5 @@ namespace Nova.CodeDOM
         {
             get { return ((ExternAlias)_reference).RootNamespaceRef.Reference as RootNamespace; }
         }
-
-        /// <summary>
-        /// True if the extern alias is 'global'.
-        /// </summary>
-        public bool IsGlobal
-        {
-            get { return ((ExternAlias)_reference).IsGlobal; }
-        }
-
-        /// <summary>
-        /// The referenced ExternAlias code object.
-        /// </summary>
-        public ExternAlias ExternAlias
-        {
-            get { return (ExternAlias)_reference; }
-        }
-
-        #endregion
     }
 }

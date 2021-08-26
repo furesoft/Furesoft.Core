@@ -20,7 +20,7 @@
           "lib/netstandard2.0/Newtonsoft.Json.dll": {}
         }
       },
-      "Furesoft.Core/1.0.4": {
+      "Furesoft.Core/1.0.5": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
@@ -137,7 +137,7 @@
         "packageIcon.png"
       ]
     },
-    "Furesoft.Core/1.0.4": {
+    "Furesoft.Core/1.0.5": {
       "type": "project",
       "path": "../Furesoft.Core/Furesoft.Core.csproj",
       "msbuildProject": "../Furesoft.Core/Furesoft.Core.csproj"
@@ -145,7 +145,7 @@
   },
   "projectFileDependencyGroups": {
     "net5.0": [
-      "Furesoft.Core >= 1.0.4"
+      "Furesoft.Core >= 1.0.5"
     ]
   },
   "packageFolders": {

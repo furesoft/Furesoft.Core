@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -6,24 +6,18 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="ClassConstraint"/>, <see cref="StructConstraint"/>, <see cref="NewConstraint"/>, and <see cref="TypeConstraint"/>.
     /// </summary>
     public abstract class TypeParameterConstraint : CodeObject
     {
-        #region /* CONSTRUCTORS */
-
         protected TypeParameterConstraint()
         { }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Create a collection of type parameter constraints for the specified type parameter.
@@ -43,10 +37,6 @@ namespace Nova.CodeDOM
             return typeParameterConstraints;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The attribute of the constraint.
         /// </summary>
@@ -54,10 +44,6 @@ namespace Nova.CodeDOM
         {
             get { return GenericParameterAttributes.None; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse between constraints.
@@ -79,22 +65,21 @@ namespace Nova.CodeDOM
                 case ClassConstraint.ParseToken:
                     constraint = new ClassConstraint(parser, parent);
                     break;
+
                 case StructConstraint.ParseToken:
                     constraint = new StructConstraint(parser, parent);
                     break;
+
                 case NewConstraint.ParseToken:
                     constraint = new NewConstraint(parser, parent);
                     break;
+
                 default:
                     constraint = new TypeConstraint(parser, parent);
                     break;
             }
             return constraint;
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the code object defaults to starting on a new line.
@@ -103,10 +88,6 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public virtual string ConstraintText
         {
@@ -130,7 +111,5 @@ namespace Nova.CodeDOM
         {
             writer.Write(ConstraintText);
         }
-
-        #endregion
     }
 }

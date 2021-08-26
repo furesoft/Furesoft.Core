@@ -1,28 +1,22 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Redirects execution to the specified <see cref="Label"/> or <see cref="SwitchItem"/> (<see cref="Case"/> or <see cref="Default"/>).
     /// </summary>
     public class Goto : Statement
     {
-        #region /* FIELDS */
-
-        // Should evaluate to a GotoTargetRef (LabelRef or a SwitchItemRef) or an UnresolvedRef
-        protected SymbolicRef _target;
-
         // The constant expression used by a "goto case ..."
         protected Expression _constantExpression;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        // Should evaluate to a GotoTargetRef (LabelRef or a SwitchItemRef) or an UnresolvedRef
+        protected SymbolicRef _target;
 
         /// <summary>
         /// Create a <see cref="Goto"/> to a <see cref="Label"/>.
@@ -55,19 +49,6 @@ namespace Nova.CodeDOM
         {
             ConstantExpression = constantExpression;
             Target = new UnresolvedRef(Case.ParseToken + " " + _constantExpression.AsString());
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The target <see cref="GotoTargetRef"/> (<see cref="LabelRef"/> or <see cref="SwitchItemRef"/>) or <see cref="UnresolvedRef"/>.
-        /// </summary>
-        public SymbolicRef Target
-        {
-            get { return _target; }
-            set { SetField(ref _target, value, true); }
         }
 
         /// <summary>
@@ -111,9 +92,14 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// The target <see cref="GotoTargetRef"/> (<see cref="LabelRef"/> or <see cref="SwitchItemRef"/>) or <see cref="UnresolvedRef"/>.
+        /// </summary>
+        public SymbolicRef Target
+        {
+            get { return _target; }
+            set { SetField(ref _target, value, true); }
+        }
 
         /// <summary>
         /// Deep-clone the code object.
@@ -126,27 +112,10 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "goto";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Goto"/>.
-        /// </summary>
-        public static Goto Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Goto(parser, parent);
-        }
 
         protected Goto(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -178,9 +147,18 @@ namespace Nova.CodeDOM
             ParseTerminator(parser);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="Goto"/>.
+        /// </summary>
+        public static Goto Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Goto(parser, parent);
+        }
 
-        #region /* FORMATTING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
@@ -215,10 +193,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             // If we have a constant expression ("goto case ..."), always render it instead of
@@ -231,7 +205,5 @@ namespace Nova.CodeDOM
             else
                 _target.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

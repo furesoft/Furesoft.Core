@@ -1,13 +1,13 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Enforces the disposal of an object when it's no longer needed.  It accepts either an <see cref="Expression"/> or a
@@ -16,17 +16,11 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Using : BlockStatement
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// Can be an Expression that evaluates to a VariableRef of a type that implements IDisposable, or
         /// a LocalDecl of a type that implements IDisposable.
         /// </summary>
         protected CodeObject _target;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Using"/>.
@@ -64,24 +58,6 @@ namespace Nova.CodeDOM
             Target = expression;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The target code object.
-        /// </summary>
-        public CodeObject Target
-        {
-            get { return _target; }
-            set
-            {
-                // If the target is a LocalDecl and it already has a parent, then assume it's an existing local
-                // and create a ref to it, otherwise assume it's a child-target local (or other expression).
-                SetField(ref _target, (value is LocalDecl && value.Parent != null ? value.CreateRef() : value), true);
-            }
-        }
-
         /// <summary>
         /// True if contains a single nested Using statement as a child.
         /// </summary>
@@ -106,9 +82,29 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
+        /// <summary>
+        /// The target code object.
+        /// </summary>
+        public CodeObject Target
+        {
+            get { return _target; }
+            set
+            {
+                // If the target is a LocalDecl and it already has a parent, then assume it's an existing local
+                // and create a ref to it, otherwise assume it's a child-target local (or other expression).
+                SetField(ref _target, (value is LocalDecl && value.Parent != null ? value.CreateRef() : value), true);
+            }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Using clone = (Using)base.Clone();
+            clone.CloneField(ref clone._target, _target);
+            return clone;
+        }
 
         protected override bool IsChildIndented(CodeObject obj)
         {
@@ -122,37 +118,9 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Using clone = (Using)base.Clone();
-            clone.CloneField(ref clone._target, _target);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
         /// True for multi-part statements, such as try/catch/finally or if/else.
         /// </summary>
         public const string ParseToken = "using";
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 200 (Alias uses 0, UsingDirective uses 100)
-            Parser.AddParsePoint(ParseToken, 200, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Pase a <see cref="Using"/>.
-        /// </summary>
-        public static Using Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Using(parser, parent);
-        }
 
         protected Using(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -171,9 +139,19 @@ namespace Nova.CodeDOM
             new Block(out _body, parser, this, false);  // Parse the body
         }
 
-        #endregion
+        /// <summary>
+        /// Pase a <see cref="Using"/>.
+        /// </summary>
+        public static Using Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Using(parser, parent);
+        }
 
-        #region /* FORMATTING */
+        internal static void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (Alias uses 0, UsingDirective uses 100)
+            Parser.AddParsePoint(ParseToken, 200, Parse, typeof(IBlock));
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -189,15 +167,6 @@ namespace Nova.CodeDOM
         public override bool HasBracesAlways
         {
             get { return false; }
-        }
-
-        /// <summary>
-        /// Determines if the body of the <see cref="BlockStatement"/> should be formatted with braces.
-        /// </summary>
-        public override bool ShouldHaveBraces()
-        {
-            // Turn off braces if we have a nested child using
-            return (base.ShouldHaveBraces() && !HasNestedUsing);
         }
 
         /// <summary>
@@ -218,9 +187,14 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// Determines if the body of the <see cref="BlockStatement"/> should be formatted with braces.
+        /// </summary>
+        public override bool ShouldHaveBraces()
+        {
+            // Turn off braces if we have a nested child using
+            return (base.ShouldHaveBraces() && !HasNestedUsing);
+        }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
         {
@@ -232,7 +206,5 @@ namespace Nova.CodeDOM
             if (_target != null)
                 _target.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

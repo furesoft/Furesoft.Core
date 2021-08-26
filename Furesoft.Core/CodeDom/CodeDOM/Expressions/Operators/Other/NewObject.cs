@@ -1,39 +1,33 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The NewObject operator is used to create new object instances of class, struct, or delegates.
     /// </summary>
     /// <remarks>
     /// Possible formats:
-    /// 
+    ///
     /// New Object:
     ///    new non-array-type(args)           // Type with constructor call (args is optional)
     /// With initializers (3.0):
     ///    new non-array-type(args) { init }  // Type/constructor call with object or collection initializer (args and init are optional)
     ///    new non-array-type { init }        // Type with default constructor with object or collection initializer (init is optional)
-    /// 
+    ///
     /// </remarks>
     public class NewObject : NewOperator
     {
-        #region /* FIELDS */
-
         // A NewObject has both a TypeRef and an implied, hidden ConstructorRef.  The syntax "new List<int>()" is actually
         // short-hand for "new List<int>.List()".  We store both references, display the TypeRef name, show the 'new' keyword
         // in the error or warning color if the hidden ConstructorRef has an error or warning, and display the hidden ConstructorRef
         // in the tooltip.  This is necessary to handle type aliases, because the TypeRef and ConstructorRef will have different
         // names in this case, and the aliased type can have type arguments while the alias itself can't.
         protected SymbolicRef _constructorRef;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="NewObject"/>.
@@ -64,10 +58,6 @@ namespace Nova.CodeDOM
             : base(typeDecl.CreateRef(), parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The hidden <see cref="ConstructorRef"/> (or <see cref="UnresolvedRef"/>) that represents the constructor being called.
         /// Will be null if the constructor is implied, such as for the default constructor of a value type.
@@ -76,10 +66,6 @@ namespace Nova.CodeDOM
         {
             get { return _constructorRef; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Determine the type of the parameter for the specified argument index.
@@ -96,19 +82,15 @@ namespace Nova.CodeDOM
             return TypeRef.IntRef;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The token used to parse the end of the arguments.
+        /// </summary>
+        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
 
         /// <summary>
         /// The token used to parse the start of the arguments.
         /// </summary>
         public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
-
-        /// <summary>
-        /// The token used to parse the end of the arguments.
-        /// </summary>
-        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
 
         /// <summary>
         /// Parse a <see cref="NewObject"/>.
@@ -135,27 +117,10 @@ namespace Nova.CodeDOM
             ParseInitializer(parser, this);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
-        {
-            UpdateLineCol(writer, flags);
-            writer.Write(ParseToken);
-            if (_expression != null)
-                _expression.AsText(writer, flags | RenderFlags.PrefixSpace);
-        }
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             // Suppress empty parens *if* we have an initializer
             base.AsTextExpression(writer, flags | (_initializer != null ? RenderFlags.NoParensIfEmpty : 0));
-        }
-
-        protected override void AsTextStartArguments(CodeWriter writer, RenderFlags flags)
-        {
-            writer.Write(ParseTokenStart);
         }
 
         protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)
@@ -165,6 +130,17 @@ namespace Nova.CodeDOM
             writer.Write(ParseTokenEnd);
         }
 
-        #endregion
+        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+            writer.Write(ParseToken);
+            if (_expression != null)
+                _expression.AsText(writer, flags | RenderFlags.PrefixSpace);
+        }
+
+        protected override void AsTextStartArguments(CodeWriter writer, RenderFlags flags)
+        {
+            writer.Write(ParseTokenStart);
+        }
     }
 }

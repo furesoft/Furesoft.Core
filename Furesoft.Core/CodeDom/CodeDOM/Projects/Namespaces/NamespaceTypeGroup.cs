@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -6,7 +6,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a group of types (<see cref="TypeDecl"/>s and/or <see cref="Type"/>s)
@@ -22,16 +22,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class NamespaceTypeGroup : INamedCodeObject, ICollection
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// The list of type objects with the same name.
         /// </summary>
         protected ArrayList _list = new ArrayList();
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create an empty <see cref="NamespaceTypeGroup"/>.
@@ -45,31 +39,6 @@ namespace Nova.CodeDOM
         public NamespaceTypeGroup(object obj)
         {
             Add(obj);
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="NamespaceTypeGroup"/>.
-        /// </summary>
-        public string Name
-        {
-            get
-            {
-                object obj;
-                lock (this)
-                    obj = _list[0];
-                string name;
-                if (obj is INamedCodeObject)
-                    name = ((INamedCodeObject)obj).Name;
-                else if (obj is MemberInfo)
-                    name = ((MemberInfo)obj).Name;
-                else
-                    name = null;
-                return name;
-            }
         }
 
         /// <summary>
@@ -117,6 +86,27 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// The name of the <see cref="NamespaceTypeGroup"/>.
+        /// </summary>
+        public string Name
+        {
+            get
+            {
+                object obj;
+                lock (this)
+                    obj = _list[0];
+                string name;
+                if (obj is INamedCodeObject)
+                    name = ((INamedCodeObject)obj).Name;
+                else if (obj is MemberInfo)
+                    name = ((MemberInfo)obj).Name;
+                else
+                    name = null;
+                return name;
+            }
+        }
+
+        /// <summary>
         /// Gets an object that can be used to synchronize access to the <see cref="ICollection"/>.
         /// </summary>
         public object SyncRoot
@@ -124,9 +114,19 @@ namespace Nova.CodeDOM
             get { return this; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// Get the object in the group at the specified index.
+        /// </summary>
+        public object this[int index]
+        {
+            get
+            {
+                object obj;
+                lock (this)
+                    obj = _list[index];
+                return obj;
+            }
+        }
 
         /// <summary>
         /// Add the specified <see cref="Namespace"/> to the group.
@@ -167,31 +167,12 @@ namespace Nova.CodeDOM
             }
         }
 
-        protected void AddRange(IEnumerable collection)
-        {
-            if (collection != null)
-            {
-                // Call the Add method for each member, allowing for nested
-                // arrays and/or collections.
-                foreach (object obj in collection)
-                    Add(obj);
-            }
-        }
-
         /// <summary>
-        /// This method is not supported for this type.
+        /// This method shouldn't be called on this type.
         /// </summary>
-        public SymbolicRef CreateRef(bool isFirstOnLine)
+        public void AddToDictionary(NamedCodeObjectDictionary dictionary)
         {
-            throw new Exception("Can't create a reference to a NamespaceTypeGroup!");
-        }
-
-        /// <summary>
-        /// This method is not supported for this type.
-        /// </summary>
-        public SymbolicRef CreateRef()
-        {
-            return CreateRef(false);
+            throw new Exception("Can't add a NamespaceTypeGroup to a NamedCodeObjectDictionary!");
         }
 
         /// <summary>
@@ -201,6 +182,19 @@ namespace Nova.CodeDOM
         {
             lock (this)
                 _list.Clear();
+        }
+
+        /// <summary>
+        /// Check if the group contains the specified code object.
+        /// </summary>
+        /// <param name="obj">The code object being searched for.</param>
+        /// <returns>True if the group contains the object, otherwise false.</returns>
+        public bool Contains(object obj)
+        {
+            bool contains;
+            lock (this)
+                contains = _list.Contains(obj);
+            return contains;
         }
 
         /// <summary>
@@ -225,16 +219,27 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Check if the group contains the specified code object.
+        /// This method is not supported for this type.
         /// </summary>
-        /// <param name="obj">The code object being searched for.</param>
-        /// <returns>True if the group contains the object, otherwise false.</returns>
-        public bool Contains(object obj)
+        public SymbolicRef CreateRef(bool isFirstOnLine)
         {
-            bool contains;
-            lock (this)
-                contains = _list.Contains(obj);
-            return contains;
+            throw new Exception("Can't create a reference to a NamespaceTypeGroup!");
+        }
+
+        /// <summary>
+        /// This method is not supported for this type.
+        /// </summary>
+        public SymbolicRef CreateRef()
+        {
+            return CreateRef(false);
+        }
+
+        /// <summary>
+        /// This method always returns null for this type.
+        /// </summary>
+        public T FindParent<T>() where T : CodeObject
+        {
+            return null;
         }
 
         /// <summary>
@@ -243,6 +248,22 @@ namespace Nova.CodeDOM
         public IEnumerator GetEnumerator()
         {
             return _list.GetEnumerator();
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName(bool descriptive)
+        {
+            return Name;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName()
+        {
+            return Name;
         }
 
         /// <summary>
@@ -264,28 +285,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the object in the group at the specified index.
-        /// </summary>
-        public object this[int index]
-        {
-            get
-            {
-                object obj;
-                lock (this)
-                    obj = _list[index];
-                return obj;
-            }
-        }
-
-        /// <summary>
-        /// This method shouldn't be called on this type.
-        /// </summary>
-        public void AddToDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            throw new Exception("Can't add a NamespaceTypeGroup to a NamedCodeObjectDictionary!");
-        }
-
-        /// <summary>
         /// This method shouldn't be called on this type.
         /// </summary>
         public void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
@@ -293,33 +292,16 @@ namespace Nova.CodeDOM
             throw new Exception("Can't remove a NamespaceTypeGroup from a NamedCodeObjectDictionary!");
         }
 
-        /// <summary>
-        /// This method always returns null for this type.
-        /// </summary>
-        public T FindParent<T>() where T : CodeObject
+        protected void AddRange(IEnumerable collection)
         {
-            return null;
+            if (collection != null)
+            {
+                // Call the Add method for each member, allowing for nested
+                // arrays and/or collections.
+                foreach (object obj in collection)
+                    Add(obj);
+            }
         }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        public string GetFullName(bool descriptive)
-        {
-            return Name;
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        public string GetFullName()
-        {
-            return Name;
-        }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Add a source object or group to a target object or group, converting the target into a group if necessary.
@@ -367,7 +349,5 @@ namespace Nova.CodeDOM
                 ((NamespaceTypeGroup)target).Add(source);
             }
         }
-
-        #endregion
     }
 }

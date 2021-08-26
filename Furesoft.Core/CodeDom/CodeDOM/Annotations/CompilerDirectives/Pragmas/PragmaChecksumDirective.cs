@@ -1,26 +1,20 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Used to manage checksum information for files.
     /// </summary>
     public class PragmaChecksumDirective : PragmaDirective
     {
-        #region /* FIELDS */
-
+        protected string _crc;
         protected string _fileName;
         protected string _guid;
-        protected string _crc;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="PragmaChecksumDirective"/>.
@@ -32,9 +26,14 @@ namespace Nova.CodeDOM
             CRC = crc;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The associated CRC value.
+        /// </summary>
+        public string CRC
+        {
+            get { return _crc; }
+            set { _crc = value; }
+        }
 
         /// <summary>
         /// The associated file name.
@@ -54,38 +53,12 @@ namespace Nova.CodeDOM
             set { _guid = value; }
         }
 
-        /// <summary>
-        /// The associated CRC value.
-        /// </summary>
-        public string CRC
-        {
-            get { return _crc; }
-            set { _crc = value; }
-        }
-
         public override string PragmaType { get { return ParseToken; } }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "checksum";
-
-        internal static new void AddParsePoints()
-        {
-            AddPragmaParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="PragmaChecksumDirective"/>.
-        /// </summary>
-        public static new PragmaChecksumDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new PragmaChecksumDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="PragmaChecksumDirective"/>.
@@ -116,16 +89,23 @@ namespace Nova.CodeDOM
             MoveEOLComment(parser.LastToken);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="PragmaChecksumDirective"/>.
+        /// </summary>
+        public static new PragmaChecksumDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new PragmaChecksumDirective(parser, parent);
+        }
 
-        #region /* RENDERING */
+        internal static new void AddParsePoints()
+        {
+            AddPragmaParsePoint(ParseToken, Parse);
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             base.AsTextArgument(writer, flags);
             writer.Write(" " + _fileName + " " + _guid + " " + _crc);
         }
-
-        #endregion
     }
 }

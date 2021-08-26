@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Signals the end of an iterator.
@@ -16,17 +16,11 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class YieldBreak : YieldStatement
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="YieldBreak"/>.
         /// </summary>
         public YieldBreak()
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
@@ -35,10 +29,6 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken1 + " " + ParseToken2; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The second token used to parse the code object.
@@ -56,10 +46,6 @@ namespace Nova.CodeDOM
             ParseTerminator(parser);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
@@ -67,7 +53,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
     }
 }

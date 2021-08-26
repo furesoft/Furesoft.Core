@@ -1,13 +1,13 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Text;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a literal value of a particular type (string, integer, boolean, etc).
@@ -19,13 +19,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Literal : Expression
     {
-        #region /* FIELDS */
-
         protected string _text;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a literal with the specified string representation.
@@ -199,7 +193,7 @@ namespace Nova.CodeDOM
                     case '\r': str = @"\r"; break;
                     case '\t': str = @"\t"; break;
                     case '\v': str = @"\v"; break;
-                    default:   str = string.Format("\\x{0:X2}", (int)ch); break;
+                    default: str = string.Format("\\x{0:X2}", (int)ch); break;
                 }
                 builder.Append(str);
             }
@@ -215,26 +209,6 @@ namespace Nova.CodeDOM
                     builder.Append("\\\"");
                 else
                     builder.Append(ch);
-            }
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The text content of the <see cref="Literal"/>.
-        /// </summary>
-        public string Text
-        {
-            get { return _text; }
-            set
-            {
-                _text = value;
-
-                // Normalize certain literals
-                if (_text == @"'\""'")
-                    _text = @"'""'";  // Change '\"' to '"'
             }
         }
 
@@ -254,13 +228,26 @@ namespace Nova.CodeDOM
             get { return (_text == ParseTokenNull); }
         }
 
-        #endregion
+        /// <summary>
+        /// The text content of the <see cref="Literal"/>.
+        /// </summary>
+        public string Text
+        {
+            get { return _text; }
+            set
+            {
+                _text = value;
 
-        #region /* METHODS */
+                // Normalize certain literals
+                if (_text == @"'\""'")
+                    _text = @"'""'";  // Change '\"' to '"'
+            }
+        }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The token used to parse a 'false' literal.
+        /// </summary>
+        public const string ParseTokenFalse = "false";
 
         /// <summary>
         /// The token used to parse a 'null' literal.
@@ -271,31 +258,6 @@ namespace Nova.CodeDOM
         /// The token used to parse a 'true' literal.
         /// </summary>
         public const string ParseTokenTrue = "true";
-
-        /// <summary>
-        /// The token used to parse a 'false' literal.
-        /// </summary>
-        public const string ParseTokenFalse = "false";
-
-        internal static new void AddParsePoints()
-        {
-            // NOTE: No parse-points are installed for string, char, or numeric literals - instead, the parser
-            //       calls the parsing constructor directly based upon the token type.  This is because we want
-            //       to parse literals into individual tokens within the parser itself to preserve whitespace.
-
-            // Install parse-points for 'null', 'true', and 'false' literals (without scope restrictions)
-            Parser.AddParsePoint(ParseTokenNull, Parse);
-            Parser.AddParsePoint(ParseTokenTrue, Parse);
-            Parser.AddParsePoint(ParseTokenFalse, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Literal"/>.
-        /// </summary>
-        public static Literal Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Literal(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="Literal"/>.
@@ -310,9 +272,25 @@ namespace Nova.CodeDOM
             MoveEOLComment(parser.LastToken);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="Literal"/>.
+        /// </summary>
+        public static Literal Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Literal(parser, parent);
+        }
 
-        #region /* RENDERING */
+        internal static new void AddParsePoints()
+        {
+            // NOTE: No parse-points are installed for string, char, or numeric literals - instead, the parser
+            //       calls the parsing constructor directly based upon the token type.  This is because we want
+            //       to parse literals into individual tokens within the parser itself to preserve whitespace.
+
+            // Install parse-points for 'null', 'true', and 'false' literals (without scope restrictions)
+            Parser.AddParsePoint(ParseTokenNull, Parse);
+            Parser.AddParsePoint(ParseTokenTrue, Parse);
+            Parser.AddParsePoint(ParseTokenFalse, Parse);
+        }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
@@ -321,7 +299,5 @@ namespace Nova.CodeDOM
             writer.Write(_text);
             writer.EscapeUnicode = true;
         }
-
-        #endregion
     }
 }

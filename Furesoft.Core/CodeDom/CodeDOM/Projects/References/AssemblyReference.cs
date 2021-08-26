@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -6,16 +6,45 @@ using System;
 using System.Collections.Generic;
 using System.Xml;
 
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a project reference to an external assembly.
     /// </summary>
     public class AssemblyReference : Reference
     {
-        #region /* STATIC MEMBERS */
+        /// <summary>
+        /// Types to be hidden from .NET 4.5 mscorlib 4.0 for older versions.
+        /// </summary>
+        protected static readonly HashSet<string> HideMscorlib45Types = new HashSet<string>
+            {
+                // Filter types that moved from System.Core 3.5 to mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
+                "System.Runtime.CompilerServices.ExtensionAttribute",
+                // Filter types that are new in mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
+                "System.Progress`1", "System.IProgress`1"
+            };
+
+        /// <summary>
+        /// Types to be hidden from .NET mscorlib 4.0 for older versions.
+        /// </summary>
+        protected static readonly HashSet<string> HideMscorlib4Types = new HashSet<string>
+            {
+                // The Action delegates with 0, 2, 3, 4 type parameters were moved from System.Core 3.5 to mscorlib for 4.0
+                "System.Action", "System.Action`2", "System.Action`3", "System.Action`4",
+                // The Func delegates with 1 to 5 type parameters were moved from System.Core 3.5 to mscorlib for 4.0
+                "System.Func`1", "System.Func`2", "System.Func`3", "System.Func`4", "System.Func`5",
+                // Other types moved from System.Core 3.5 to mscorlib 4.0
+                "System.TimeZoneInfo",
+                // Hide various types that are new in mscorlib 4.0
+                "System.Tuple",
+
+                // Filter types that moved from System.Core 3.5 to mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
+                "System.Runtime.CompilerServices.ExtensionAttribute",
+                // Filter types that are new in mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
+                "System.Progress`1", "System.IProgress`1"
+            };
 
         /// <summary>
         /// A dictionary of all framework assembly names across all platforms and versions.
@@ -170,54 +199,15 @@ namespace Nova.CodeDOM
             };
 
         /// <summary>
-        /// Types to be hidden from .NET mscorlib 4.0 for older versions.
-        /// </summary>
-        protected static readonly HashSet<string> HideMscorlib4Types = new HashSet<string>
-            {
-                // The Action delegates with 0, 2, 3, 4 type parameters were moved from System.Core 3.5 to mscorlib for 4.0
-                "System.Action", "System.Action`2", "System.Action`3", "System.Action`4",
-                // The Func delegates with 1 to 5 type parameters were moved from System.Core 3.5 to mscorlib for 4.0
-                "System.Func`1", "System.Func`2", "System.Func`3", "System.Func`4", "System.Func`5",
-                // Other types moved from System.Core 3.5 to mscorlib 4.0
-                "System.TimeZoneInfo",
-                // Hide various types that are new in mscorlib 4.0
-                "System.Tuple",
-
-                // Filter types that moved from System.Core 3.5 to mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
-                "System.Runtime.CompilerServices.ExtensionAttribute",
-                // Filter types that are new in mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
-                "System.Progress`1", "System.IProgress`1"
-            };
-
-        /// <summary>
-        /// Types to be hidden from .NET 4.5 mscorlib 4.0 for older versions.
-        /// </summary>
-        protected static readonly HashSet<string> HideMscorlib45Types = new HashSet<string>
-            {
-                // Filter types that moved from System.Core 3.5 to mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
-                "System.Runtime.CompilerServices.ExtensionAttribute",
-                // Filter types that are new in mscorlib 4.0 for .NET 4.5 (using NEW mscorlib 4.0!)
-                "System.Progress`1", "System.IProgress`1"
-            };
-
-        /// <summary>
         /// Types to be hidden from Silverlight mscorlib 4.0 for older versions.
         /// </summary>
         protected static HashSet<string> HideSilverlightMscorlib4Types;
 
-        #endregion
-
-        #region /* FIELDS */
-
-        protected string _requiredTargetFrameworkVersion;
-        protected bool _isSpecificVersion;
-        protected string _hintPath;
-        protected bool? _private;
         protected bool? _embedInteropTypes;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected string _hintPath;
+        protected bool _isSpecificVersion;
+        protected bool? _private;
+        protected string _requiredTargetFrameworkVersion;
 
         /// <summary>
         /// Create a new <see cref="AssemblyReference"/> with the specified name and other parameters.
@@ -315,43 +305,12 @@ namespace Nova.CodeDOM
             : this(name, null, null, false, null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The required target framework for the referenced assembly, if any (null if none).
+        /// The descriptive category of the code object.
         /// </summary>
-        public string RequiredTargetFramework
+        public override string Category
         {
-            get { return _requiredTargetFrameworkVersion; }
-        }
-
-        /// <summary>
-        /// True if the specified version for the referenced assembly is the only one allowed.
-        /// </summary>
-        public bool IsSpecificVersion
-        {
-            get { return _isSpecificVersion; }
-            set { _isSpecificVersion = value; }
-        }
-
-        /// <summary>
-        /// The hint path for the referenced assembly, if any (null if none).
-        /// </summary>
-        public string HintPath
-        {
-            get { return _hintPath; }
-            set { _hintPath = value; }
-        }
-
-        /// <summary>
-        /// True if the reference is private, null if not used.
-        /// </summary>
-        public bool? Private
-        {
-            get { return _private; }
-            set { _private = value; }
+            get { return "Assembly"; }
         }
 
         /// <summary>
@@ -364,20 +323,39 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The descriptive category of the code object.
+        /// The hint path for the referenced assembly, if any (null if none).
         /// </summary>
-        public override string Category
+        public string HintPath
         {
-            get { return "Assembly"; }
+            get { return _hintPath; }
+            set { _hintPath = value; }
         }
 
-        #endregion
+        /// <summary>
+        /// True if the specified version for the referenced assembly is the only one allowed.
+        /// </summary>
+        public bool IsSpecificVersion
+        {
+            get { return _isSpecificVersion; }
+            set { _isSpecificVersion = value; }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// True if the reference is private, null if not used.
+        /// </summary>
+        public bool? Private
+        {
+            get { return _private; }
+            set { _private = value; }
+        }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The required target framework for the referenced assembly, if any (null if none).
+        /// </summary>
+        public string RequiredTargetFramework
+        {
+            get { return _requiredTargetFrameworkVersion; }
+        }
 
         /// <summary>
         /// Parse from the specified <see cref="XmlReader"/>.
@@ -426,10 +404,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// Write to the specified <see cref="XmlWriter"/>.
         /// </summary>
@@ -451,7 +425,5 @@ namespace Nova.CodeDOM
                 xmlWriter.WriteElementString("Aliases", _alias);
             xmlWriter.WriteEndElement();
         }
-
-        #endregion
     }
 }

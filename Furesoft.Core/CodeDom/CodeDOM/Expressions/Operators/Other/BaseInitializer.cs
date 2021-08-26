@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a call to a constructor in the base class (constructor initializer).
     /// </summary>
     public class BaseInitializer : ConstructorInitializer
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="BaseInitializer"/> operator.
         /// </summary>
@@ -34,10 +32,6 @@ namespace Nova.CodeDOM
             : base(constructorDecl, parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The symbol associated with the operator.
         /// </summary>
@@ -45,10 +39,6 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse the code object.
@@ -61,7 +51,5 @@ namespace Nova.CodeDOM
         public BaseInitializer(Parser parser, CodeObject parent)
             : base(parser, parent, ParseToken)
         { }
-
-        #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all code objects that represent type declarations,
@@ -13,11 +13,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public interface ITypeDecl : INamedCodeObject
     {
-        /// <summary>
-        /// The parent <see cref="CodeObject"/>.
-        /// </summary>
-        CodeObject Parent { get; }
-
         /// <summary>
         /// True if the type is abstract.
         /// </summary>
@@ -80,29 +75,14 @@ namespace Nova.CodeDOM
         bool IsValueType { get; }
 
         /// <summary>
+        /// The parent <see cref="CodeObject"/>.
+        /// </summary>
+        CodeObject Parent { get; }
+
+        /// <summary>
         /// The number of <see cref="TypeParameter"/>s the type has.
         /// </summary>
         int TypeParameterCount { get; }
-
-        /// <summary>
-        /// Create a reference to the type.
-        /// </summary>
-        TypeRef CreateRef(bool isFirstOnLine, ChildList<Expression> typeArguments, List<int> arrayRanks);
-
-        /// <summary>
-        /// Create a reference to the type.
-        /// </summary>
-        TypeRef CreateRef(bool isFirstOnLine, ChildList<Expression> typeArguments);
-
-        /// <summary>
-        /// Create a reference to the type.
-        /// </summary>
-        TypeRef CreateRef(ChildList<Expression> typeArguments, List<int> arrayRanks);
-
-        /// <summary>
-        /// Create a reference to the type.
-        /// </summary>
-        TypeRef CreateRef(ChildList<Expression> typeArguments);
 
         /// <summary>
         /// Create an array reference to the type.
@@ -125,6 +105,26 @@ namespace Nova.CodeDOM
         TypeRef CreateNullableRef();
 
         /// <summary>
+        /// Create a reference to the type.
+        /// </summary>
+        TypeRef CreateRef(bool isFirstOnLine, ChildList<Expression> typeArguments, List<int> arrayRanks);
+
+        /// <summary>
+        /// Create a reference to the type.
+        /// </summary>
+        TypeRef CreateRef(bool isFirstOnLine, ChildList<Expression> typeArguments);
+
+        /// <summary>
+        /// Create a reference to the type.
+        /// </summary>
+        TypeRef CreateRef(ChildList<Expression> typeArguments, List<int> arrayRanks);
+
+        /// <summary>
+        /// Create a reference to the type.
+        /// </summary>
+        TypeRef CreateRef(ChildList<Expression> typeArguments);
+
+        /// <summary>
         /// Returns the first attribute expression (<see cref="Call"/> or <see cref="ConstructorRef"/>) with the specified name on the <see cref="CodeObject"/>.
         /// </summary>
         Expression GetAttribute(string attributeName);
@@ -133,11 +133,6 @@ namespace Nova.CodeDOM
         /// Get the base type.
         /// </summary>
         TypeRef GetBaseType();
-
-        /// <summary>
-        /// Get the <see cref="Namespace"/> for this <see cref="CodeObject"/>.
-        /// </summary>
-        Namespace GetNamespace();
 
         /// <summary>
         /// Get the non-static constructor with the specified parameters.
@@ -153,6 +148,21 @@ namespace Nova.CodeDOM
         /// Get all non-static constructors for this type.
         /// </summary>
         NamedCodeObjectGroup GetConstructors();
+
+        /// <summary>
+        /// Get the delegate parameters of the type (if any).
+        /// </summary>
+        ICollection GetDelegateParameters();
+
+        /// <summary>
+        /// Get the delegate return type of the type (if any).
+        /// </summary>
+        TypeRefBase GetDelegateReturnType();
+
+        /// <summary>
+        /// Get the field with the specified name.
+        /// </summary>
+        FieldRef GetField(string name);
 
         /// <summary>
         /// Get the method with the specified name and parameter types.
@@ -178,14 +188,9 @@ namespace Nova.CodeDOM
         void GetMethods(string name, bool searchBaseClasses, NamedCodeObjectGroup results);
 
         /// <summary>
-        /// Get the property with the specified name.
+        /// Get the <see cref="Namespace"/> for this <see cref="CodeObject"/>.
         /// </summary>
-        PropertyRef GetProperty(string name);
-
-        /// <summary>
-        /// Get the field with the specified name.
-        /// </summary>
-        FieldRef GetField(string name);
+        Namespace GetNamespace();
 
         /// <summary>
         /// Get the nested type with the specified name.
@@ -193,14 +198,9 @@ namespace Nova.CodeDOM
         TypeRef GetNestedType(string name);
 
         /// <summary>
-        /// Get the delegate parameters of the type (if any).
+        /// Get the property with the specified name.
         /// </summary>
-        ICollection GetDelegateParameters();
-
-        /// <summary>
-        /// Get the delegate return type of the type (if any).
-        /// </summary>
-        TypeRefBase GetDelegateReturnType();
+        PropertyRef GetProperty(string name);
 
         /// <summary>
         /// Determine if the type is assignable from the specified type.
@@ -208,13 +208,13 @@ namespace Nova.CodeDOM
         bool IsAssignableFrom(TypeRef typeRef);
 
         /// <summary>
-        /// Determine if the type is a subclass of the specified type.
-        /// </summary>
-        bool IsSubclassOf(TypeRef classTypeRef);
-
-        /// <summary>
         /// Determine if the type implements the specified interface type.
         /// </summary>
         bool IsImplementationOf(TypeRef interfaceTypeRef);
+
+        /// <summary>
+        /// Determine if the type is a subclass of the specified type.
+        /// </summary>
+        bool IsSubclassOf(TypeRef classTypeRef);
     }
 }

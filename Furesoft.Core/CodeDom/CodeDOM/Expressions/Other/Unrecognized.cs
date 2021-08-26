@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a list of one or more unrecognized identifiers or symbols (UnresolvedRefs).
@@ -13,15 +13,9 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Unrecognized : Expression
     {
-        #region /* FIELDS */
-
-        protected bool _parsingBlock;
-        protected bool _inDocComment;
         protected ChildList<Expression> _expressions;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected bool _inDocComment;
+        protected bool _parsingBlock;
 
         /// <summary>
         /// The total number of <see cref="Unrecognized"/> objects.
@@ -44,16 +38,12 @@ namespace Nova.CodeDOM
                 AddRight(expression);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// True if inside a <see cref="DocComment"/>.
+        /// The column number of the first contained <see cref="Expression"/>.
         /// </summary>
-        public bool InDocComment
+        public override int ColumnNumber
         {
-            get { return _inDocComment; }
+            get { return _expressions[0].ColumnNumber; }
         }
 
         /// <summary>
@@ -65,24 +55,20 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if inside a <see cref="DocComment"/>.
+        /// </summary>
+        public bool InDocComment
+        {
+            get { return _inDocComment; }
+        }
+
+        /// <summary>
         /// The line number of the first contained <see cref="Expression"/>.
         /// </summary>
         public override int LineNumber
         {
             get { return _expressions[0].LineNumber; }
         }
-
-        /// <summary>
-        /// The column number of the first contained <see cref="Expression"/>.
-        /// </summary>
-        public override int ColumnNumber
-        {
-            get { return _expressions[0].ColumnNumber; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add an <see cref="Expression"/> to the left side.
@@ -123,6 +109,16 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Unrecognized clone = (Unrecognized)base.Clone();
+            clone._expressions = ChildListHelpers.Clone(_expressions, clone);
+            return clone;
+        }
+
+        /// <summary>
         /// Update the attached error message with the current content.
         /// </summary>
         public void UpdateMessage()
@@ -139,20 +135,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Unrecognized clone = (Unrecognized)base.Clone();
-            clone._expressions = ChildListHelpers.Clone(_expressions, clone);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
         /// Determine if the specified comment should be associated with the current code object during parsing.
         /// </summary>
         public override bool AssociateCommentWhenParsing(CommentBase comment)
@@ -160,21 +142,11 @@ namespace Nova.CodeDOM
             return false;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             RenderFlags passFlags = (flags & RenderFlags.PassMask);
             UpdateLineCol(writer, flags);
             writer.WriteList(_expressions, passFlags | RenderFlags.NoItemSeparators, this);
         }
-
-        #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of all prefix unary operators (<see cref="Cast"/>, <see cref="Complement"/>,
@@ -13,15 +13,9 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class PreUnaryOperator : UnaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected PreUnaryOperator(Expression expression)
             : base(expression)
         { }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected PreUnaryOperator(Parser parser, CodeObject parent, bool skipParsing)
             : base(parser, parent)
@@ -38,10 +32,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
@@ -49,7 +39,5 @@ namespace Nova.CodeDOM
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

@@ -1,29 +1,22 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 using System.Xml;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a project reference to another project in the same solution.
     /// </summary>
     public class ProjectReference : Reference
     {
-        #region /* FIELDS */
-
-        protected string _projectFileName;
         protected Guid _guid;
         protected Guid? _package;
-
+        protected string _projectFileName;
         protected Project _referencedProject;
         protected bool _treatAsAssemblyReference;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a new <see cref="ProjectReference"/> with the specified name, file name, and GUID.
@@ -44,16 +37,12 @@ namespace Nova.CodeDOM
             _projectFileName = projectFileName;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The file name of the referenced <see cref="Project"/>.
+        /// The descriptive category of the code object.
         /// </summary>
-        public string ProjectFileName
+        public override string Category
         {
-            get { return _projectFileName; }
+            get { return "Project"; }
         }
 
         /// <summary>
@@ -73,6 +62,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// The file name of the referenced <see cref="Project"/>.
+        /// </summary>
+        public string ProjectFileName
+        {
+            get { return _projectFileName; }
+        }
+
+        /// <summary>
         /// The referenced <see cref="Project"/>.
         /// </summary>
         public Project ReferencedProject
@@ -88,22 +85,6 @@ namespace Nova.CodeDOM
         {
             get { return _treatAsAssemblyReference; }
         }
-
-        /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public override string Category
-        {
-            get { return "Project"; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// Parse from the specified <see cref="XmlReader"/>.
@@ -144,10 +125,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// Write to the specified <see cref="XmlWriter"/>.
         /// </summary>
@@ -163,7 +140,5 @@ namespace Nova.CodeDOM
                 xmlWriter.WriteElementString("Aliases", _alias);
             xmlWriter.WriteEndElement();
         }
-
-        #endregion
     }
 }

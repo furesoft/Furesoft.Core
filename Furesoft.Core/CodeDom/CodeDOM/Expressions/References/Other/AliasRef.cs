@@ -1,12 +1,12 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="Alias"/>, which can in turn refer to a <see cref="NamespaceRef"/>
@@ -22,8 +22,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class AliasRef : TypeRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="AliasRef"/> from an <see cref="Alias"/>.
         /// </summary>
@@ -59,20 +57,8 @@ namespace Nova.CodeDOM
             : this(aliasDecl, false, ((arrayRanks != null && arrayRanks.Length > 0) ? new List<int>(arrayRanks) : null))
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         // NOTE: We can't just override the Reference property, and have it refer to what the alias refers
         // to, because we want to treat the alias as a new type that can have array indexes, etc.
-
-        /// <summary>
-        /// The name of the <see cref="AliasRef"/>.
-        /// </summary>
-        public override string Name
-        {
-            get { return ((Alias)_reference).Name; }
-        }
 
         /// <summary>
         /// Get the referenced <see cref="Alias"/> object.
@@ -91,19 +77,27 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The <see cref="Namespace"/> of the referenced alias if it's a namespace alias (otherwise null).
-        /// </summary>
-        public NamespaceRef Namespace
-        {
-            get { return ((Alias)_reference).Namespace; }
-        }
-
-        /// <summary>
         /// True if the referenced <see cref="Alias"/> is a type alias.
         /// </summary>
         public bool IsType
         {
             get { return ((Alias)_reference).IsType; }
+        }
+
+        /// <summary>
+        /// The name of the <see cref="AliasRef"/>.
+        /// </summary>
+        public override string Name
+        {
+            get { return ((Alias)_reference).Name; }
+        }
+
+        /// <summary>
+        /// The <see cref="Namespace"/> of the referenced alias if it's a namespace alias (otherwise null).
+        /// </summary>
+        public NamespaceRef Namespace
+        {
+            get { return ((Alias)_reference).Namespace; }
         }
 
         /// <summary>
@@ -122,10 +116,6 @@ namespace Nova.CodeDOM
             get { return (IsType ? Type.TypeArguments : null); }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Get the actual type reference.
         /// </summary>
@@ -138,14 +128,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the current reference refers to the same code object as the specified reference.
-        /// </summary>
-        public override bool IsSameRef(SymbolicRef symbolicRef)
-        {
-            return (base.IsSameRef(symbolicRef) || (IsType && Type.IsSameRef(symbolicRef)) || (IsNamespace && Namespace.IsSameRef(symbolicRef)));
-        }
-
-        /// <summary>
         /// Determine if the specified <see cref="TypeRefBase"/> refers to the same generic type, regardless of actual type arguments.
         /// </summary>
         public override bool IsSameGenericType(TypeRefBase typeRefBase)
@@ -154,9 +136,13 @@ namespace Nova.CodeDOM
             return (typeRef != null && typeRef.IsSameGenericType(typeRefBase));
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// Determine if the current reference refers to the same code object as the specified reference.
+        /// </summary>
+        public override bool IsSameRef(SymbolicRef symbolicRef)
+        {
+            return (base.IsSameRef(symbolicRef) || (IsType && Type.IsSameRef(symbolicRef)) || (IsNamespace && Namespace.IsSameRef(symbolicRef)));
+        }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
@@ -165,7 +151,5 @@ namespace Nova.CodeDOM
             AsTextTypeArguments(writer, _typeArguments, flags);
             AsTextArrayRanks(writer, flags);
         }
-
-        #endregion
     }
 }

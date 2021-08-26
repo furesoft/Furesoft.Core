@@ -1,20 +1,18 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Reflection;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="EventDecl"/> or <see cref="EventInfo"/>.
     /// </summary>
     public class EventRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="EventRef"/>.
         /// </summary>
@@ -43,10 +41,6 @@ namespace Nova.CodeDOM
             : base(eventInfo, false)
         { }
 
-        #endregion
-
-        #region /* STATIC METHODS */
-
         /// <summary>
         /// Get any modifiers from the specified <see cref="EventInfo"/>.
         /// </summary>
@@ -74,27 +68,6 @@ namespace Nova.CodeDOM
             return modifiers;
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the declaring type of the referenced event.
-        /// </summary>
-        public override TypeRefBase GetDeclaringType()
-        {
-            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
-
-            // An event reference doesn't store any type arguments for a parent type instance, so any
-            // type arguments in any generic declaring type or its parent types will always default to
-            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
-            // so that they don't show up as Red in the GUI.
-            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
-                declaringTypeRef.ConvertOpenTypeParameters();
-
-            return declaringTypeRef;
-        }
-
         /// <summary>
         /// Get the declaring type of the specified event object.
         /// </summary>
@@ -113,9 +86,22 @@ namespace Nova.CodeDOM
             return declaringTypeRef;
         }
 
-        #endregion
+        /// <summary>
+        /// Get the declaring type of the referenced event.
+        /// </summary>
+        public override TypeRefBase GetDeclaringType()
+        {
+            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
 
-        #region /* RENDERING */
+            // An event reference doesn't store any type arguments for a parent type instance, so any
+            // type arguments in any generic declaring type or its parent types will always default to
+            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
+            // so that they don't show up as Red in the GUI.
+            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
+                declaringTypeRef.ConvertOpenTypeParameters();
+
+            return declaringTypeRef;
+        }
 
         public static void AsTextEventInfo(CodeWriter writer, EventInfo eventInfo, RenderFlags flags)
         {
@@ -128,7 +114,5 @@ namespace Nova.CodeDOM
             TypeRefBase.AsTextType(writer, eventInfo.DeclaringType, passFlags);
             writer.Write(Dot.ParseToken + eventInfo.Name);
         }
-
-        #endregion
     }
 }

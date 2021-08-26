@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="If"/> and <see cref="ElseIf"/>.
@@ -16,14 +16,8 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class IfBase : BlockStatement
     {
-        #region /* FIELDS */
-
         protected Expression _conditional;
         protected BlockStatement _elsePart;  // Must be an Else or an ElseIf
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected IfBase(Expression conditional, CodeObject body)
             : base(body, false)  // Don't allow null body for If/ElseIf
@@ -54,10 +48,6 @@ namespace Nova.CodeDOM
         protected IfBase(Expression conditional, ElseIf elseIf)
             : this(conditional, null, elseIf)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The conditional <see cref="Expression"/>.
@@ -93,9 +83,16 @@ namespace Nova.CodeDOM
             get { return HasElse; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            IfBase clone = (IfBase)base.Clone();
+            clone.CloneField(ref clone._conditional, _conditional);
+            clone.CloneField(ref clone._elsePart, _elsePart);
+            return clone;
+        }
 
         protected override bool IsChildIndented(CodeObject obj)
         {
@@ -109,21 +106,6 @@ namespace Nova.CodeDOM
             }
             return false;
         }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            IfBase clone = (IfBase)base.Clone();
-            clone.CloneField(ref clone._conditional, _conditional);
-            clone.CloneField(ref clone._elsePart, _elsePart);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected IfBase(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -156,10 +138,6 @@ namespace Nova.CodeDOM
                     parser.MoveUnusedToPostUnused();
             }
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -204,9 +182,12 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
+        {
+            base.AsTextAfter(writer, flags);
+            if (HasElse && !flags.HasFlag(RenderFlags.Description))
+                _elsePart.AsText(writer, flags | RenderFlags.PrefixSpace);
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
@@ -220,14 +201,5 @@ namespace Nova.CodeDOM
                 //writer.EndIndentation(this);
             }
         }
-
-        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
-        {
-            base.AsTextAfter(writer, flags);
-            if (HasElse && !flags.HasFlag(RenderFlags.Description))
-                _elsePart.AsText(writer, flags | RenderFlags.PrefixSpace);
-        }
-
-        #endregion
     }
 }

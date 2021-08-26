@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="SetterDecl"/>, <see cref="AdderDecl"/>, and <see cref="RemoverDecl"/>.
     /// </summary>
     public abstract class AccessorDeclWithValue : AccessorDecl
     {
-        #region /* CONSTRUCTORS */
-
         protected AccessorDeclWithValue(string namePrefix, Modifiers modifiers, CodeObject body)
             : base(namePrefix, TypeRef.VoidRef, modifiers, body)
         {
@@ -28,10 +26,6 @@ namespace Nova.CodeDOM
             : this(namePrefix, Modifiers.None, body)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The 'value' parameter.
         /// </summary>
@@ -40,17 +34,11 @@ namespace Nova.CodeDOM
             get { return _parameters.Last; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected AccessorDeclWithValue(Parser parser, CodeObject parent, string namePrefix, ParseFlags flags)
             : base(parser, parent, namePrefix, flags)
         {
             // Add the implicit 'value' parameter - the type is always the type of the Parent (null if no Parent exists yet)
             CreateParameters().Add(new ValueParameterDecl());
         }
-
-        #endregion
     }
 }

@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -7,9 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a compound local variable declaration - the declaration of multiple local variables of
@@ -23,13 +23,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class MultiLocalDecl : LocalDecl, IMultiVariableDecl
     {
-        #region /* FIELDS */
-
         protected ChildList<LocalDecl> _localDecls;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a multi local variable declaration from an array of LocalDecls.
@@ -67,39 +61,12 @@ namespace Nova.CodeDOM
                 Add(new LocalDecl(name, (Expression)type.Clone()));
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The list of <see cref="LocalDecl"/>s.
+        /// The column number associated with the <see cref="MultiLocalDecl"/> (actually, the first child <see cref="LocalDecl"/>).
         /// </summary>
-        public ChildList<LocalDecl> LocalDecls
+        public override int ColumnNumber
         {
-            get { return _localDecls; }
-        }
-
-        /// <summary>
-        /// Enumerate the child <see cref="FieldDecl"/>s.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<LocalDecl> GetEnumerator()
-        {
-            return ((IEnumerable<LocalDecl>)_localDecls).GetEnumerator();
-        }
-
-        /// <summary>
-        /// Enumerate the child <see cref="FieldDecl"/>s.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator<VariableDecl> IEnumerable<VariableDecl>.GetEnumerator()
-        {
-            return ((IEnumerable<LocalDecl>)_localDecls).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            get { return _localDecls[0].ColumnNumber; }
         }
 
         /// <summary>
@@ -111,19 +78,19 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the <see cref="LocalDecl"/> at the specified index.
+        /// The line number associated with the <see cref="MultiLocalDecl"/> (actually, the first child <see cref="LocalDecl"/>).
         /// </summary>
-        public LocalDecl this[int index]
+        public override int LineNumber
         {
-            get { return _localDecls[index]; }
+            get { return _localDecls[0].LineNumber; }
         }
 
         /// <summary>
-        /// Get the <see cref="VariableDecl"/> at the specified index.
+        /// The list of <see cref="LocalDecl"/>s.
         /// </summary>
-        VariableDecl IMultiVariableDecl.this[int index]
+        public ChildList<LocalDecl> LocalDecls
         {
-            get { return _localDecls[index]; }
+            get { return _localDecls; }
         }
 
         /// <summary>
@@ -157,24 +124,43 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The line number associated with the <see cref="MultiLocalDecl"/> (actually, the first child <see cref="LocalDecl"/>).
+        /// Get the <see cref="LocalDecl"/> at the specified index.
         /// </summary>
-        public override int LineNumber
+        public LocalDecl this[int index]
         {
-            get { return _localDecls[0].LineNumber; }
+            get { return _localDecls[index]; }
         }
 
         /// <summary>
-        /// The column number associated with the <see cref="MultiLocalDecl"/> (actually, the first child <see cref="LocalDecl"/>).
+        /// Get the <see cref="VariableDecl"/> at the specified index.
         /// </summary>
-        public override int ColumnNumber
+        VariableDecl IMultiVariableDecl.this[int index]
         {
-            get { return _localDecls[0].ColumnNumber; }
+            get { return _localDecls[index]; }
         }
 
-        #endregion
+        /// <summary>
+        /// Enumerate the child <see cref="FieldDecl"/>s.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<LocalDecl> GetEnumerator()
+        {
+            return ((IEnumerable<LocalDecl>)_localDecls).GetEnumerator();
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Enumerate the child <see cref="FieldDecl"/>s.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator<VariableDecl> IEnumerable<VariableDecl>.GetEnumerator()
+        {
+            return ((IEnumerable<LocalDecl>)_localDecls).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
 
         /// <summary>
         /// Add a <see cref="LocalDecl"/>.
@@ -185,15 +171,6 @@ namespace Nova.CodeDOM
             localDecl.Type = (Type != null ? (Expression)Type.Clone() : null);
             localDecl.Modifiers = _modifiers;
             AddInternal(localDecl);
-        }
-
-        protected void AddInternal(LocalDecl localDecl)
-        {
-            // Override the default newlines to 0 if it hasn't been explicitly set
-            if (!localDecl.IsNewLinesSet)
-                localDecl.SetNewLines(0);
-
-            _localDecls.Add(localDecl);
         }
 
         /// <summary>
@@ -230,14 +207,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// This method isn't supported for this type.
-        /// </summary>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
-        {
-            throw new Exception("CreateRef() isn't supported for MultiLocalDecls!");
-        }
-
-        /// <summary>
         /// Add the <see cref="CodeObject"/> to the specified dictionary.
         /// </summary>
         public override void AddToDictionary(NamedCodeObjectDictionary dictionary)
@@ -245,16 +214,6 @@ namespace Nova.CodeDOM
             // For MultiLocalDecls, we need to add each individual LocalDecl
             foreach (LocalDecl localDecl in _localDecls)
                 dictionary.Add(localDecl.Name, localDecl);
-        }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public override void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            // For MultiLocalDecls, we need to remove each individual LocalDecl
-            foreach (LocalDecl localDecl in _localDecls)
-                dictionary.Remove(localDecl.Name, localDecl);
         }
 
         /// <summary>
@@ -267,16 +226,31 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// This method isn't supported for this type.
+        /// </summary>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
+        {
+            throw new Exception("CreateRef() isn't supported for MultiLocalDecls!");
+        }
 
         /// <summary>
-        /// True if the code object only requires a single line for display by default.
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
         /// </summary>
-        public override bool IsSingleLineDefault
+        public override void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
         {
-            get { return Enumerable.All(_localDecls, delegate(LocalDecl localDecl) { return localDecl.IsSingleLineDefault; }); }
+            // For MultiLocalDecls, we need to remove each individual LocalDecl
+            foreach (LocalDecl localDecl in _localDecls)
+                dictionary.Remove(localDecl.Name, localDecl);
+        }
+
+        protected void AddInternal(LocalDecl localDecl)
+        {
+            // Override the default newlines to 0 if it hasn't been explicitly set
+            if (!localDecl.IsNewLinesSet)
+                localDecl.SetNewLines(0);
+
+            _localDecls.Add(localDecl);
         }
 
         /// <summary>
@@ -297,9 +271,13 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// True if the code object only requires a single line for display by default.
+        /// </summary>
+        public override bool IsSingleLineDefault
+        {
+            get { return Enumerable.All(_localDecls, delegate (LocalDecl localDecl) { return localDecl.IsSingleLineDefault; }); }
+        }
 
         protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
         {
@@ -318,7 +296,5 @@ namespace Nova.CodeDOM
         {
             // The terminator will be rendered by ChildList above, so don't do it here
         }
-
-        #endregion
     }
 }

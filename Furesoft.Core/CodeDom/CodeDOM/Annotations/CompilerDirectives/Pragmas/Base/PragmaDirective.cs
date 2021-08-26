@@ -1,35 +1,23 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of all pragma directives (<see cref="PragmaChecksumDirective"/>, <see cref="PragmaWarningDirective"/>).
     /// </summary>
     public abstract class PragmaDirective : CompilerDirective
     {
-        #region /* CONSTRUCTORS */
-
         protected PragmaDirective()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         public abstract string PragmaType { get; }
-
-        #endregion
-
-        #region /* PARSING */
-
-        #region /* PARSE-POINTS */
 
         // Map of parse-point tokens to callbacks
         private static readonly Dictionary<string, Parser.ParseDelegate> _parsePoints = new Dictionary<string, Parser.ParseDelegate>();
@@ -42,17 +30,14 @@ namespace Nova.CodeDOM
             _parsePoints.Add(token, callback);
         }
 
-        #endregion
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "pragma";
 
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
+        protected PragmaDirective(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// Parse a <see cref="PragmaDirective"/>.
@@ -72,13 +57,10 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected PragmaDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* RENDERING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
 
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
@@ -92,7 +74,5 @@ namespace Nova.CodeDOM
         {
             writer.Write(PragmaType);
         }
-
-        #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Includes a conditional expression plus a body (a statement or block) that is repeatedly executed
@@ -16,24 +16,18 @@ namespace Nova.CodeDOM
     /// When <see cref="IsDoWhile"/> is true, an instance of <see cref="DoWhile"/> is used internally to
     /// represent the 'while' at the bottom of the loop, allowing for separate EOL comments and formatting
     /// from the 'do' part of the loop.  This object can be accessed with the <see cref="DoWhile"/> property.
-    /// 
+    ///
     /// A "do { } while (true)" or "for (;;) { }" is equivalent to a "while (true) { }", and is converted to
     /// such upon parsing.  A "while (expr);" has a null body and HasTerminator is true.
     /// A "while (true) { }" statement is displayed as "do { }" in the GUI (an enhancement over standard C#).
     /// </remarks>
     public class While : BlockStatement
     {
-        #region /* FIELDS */
-
         protected Expression _conditional;
 
         // A separate object is used for do-while loops so that the 'while' clause can have
         // separate EOL comments and formatting (IsFirstOnLine) from the 'do'.
         protected DoWhile _doWhile;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="While"/>.
@@ -83,10 +77,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The conditional <see cref="Expression"/>.
         /// </summary>
@@ -102,20 +92,20 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if there is a conditional <see cref="Expression"/>.
-        /// </summary>
-        public bool HasCondition
-        {
-            get { return (_conditional != null); }
-        }
-
-        /// <summary>
         /// The <see cref="DoWhile"/> part if this is a 'do/while' loop.
         /// </summary>
         public DoWhile DoWhile
         {
             get { return _doWhile; }
             set { SetField(ref _doWhile, value, false); }
+        }
+
+        /// <summary>
+        /// True if there is a conditional <see cref="Expression"/>.
+        /// </summary>
+        public bool HasCondition
+        {
+            get { return (_conditional != null); }
         }
 
         /// <summary>
@@ -148,10 +138,6 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Deep-clone the code object.
         /// </summary>
@@ -163,10 +149,6 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
@@ -176,28 +158,6 @@ namespace Nova.CodeDOM
         /// The token used to parse a 'do' loop.
         /// </summary>
         public const string ParseTokenDo = "do";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-            Parser.AddParsePoint(ParseTokenDo, ParseDoWhile, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="While"/>.
-        /// </summary>
-        public static While Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new While(parser, parent, false);
-        }
-
-        /// <summary>
-        /// Parse a 'do/while' loop.
-        /// </summary>
-        public static While ParseDoWhile(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new While(parser, parent, true);
-        }
 
         protected While(Parser parser, CodeObject parent, bool isDoWhile)
             : base(parser, parent)
@@ -235,9 +195,27 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="While"/>.
+        /// </summary>
+        public static While Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new While(parser, parent, false);
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// Parse a 'do/while' loop.
+        /// </summary>
+        public static While ParseDoWhile(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new While(parser, parent, true);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+            Parser.AddParsePoint(ParseTokenDo, ParseDoWhile, typeof(IBlock));
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -284,9 +262,17 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
+        {
+            base.AsTextAfter(writer, flags);
+            if (IsDoWhile && !flags.HasFlag(RenderFlags.Description))
+                _doWhile.AsText(writer, flags | RenderFlags.PrefixSpace);
+        }
 
-        #region /* RENDERING */
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        {
+            _conditional.AsText(writer, flags);
+        }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
         {
@@ -299,19 +285,5 @@ namespace Nova.CodeDOM
                 writer.Write(ParseToken + " (true)");
             }
         }
-
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        {
-            _conditional.AsText(writer, flags);
-        }
-
-        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
-        {
-            base.AsTextAfter(writer, flags);
-            if (IsDoWhile && !flags.HasFlag(RenderFlags.Description))
-                _doWhile.AsText(writer, flags | RenderFlags.PrefixSpace);
-        }
-
-        #endregion
     }
 }

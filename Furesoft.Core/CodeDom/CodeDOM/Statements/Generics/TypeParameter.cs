@@ -1,27 +1,21 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections;
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a type parameter of a generic type or method declaration.
     /// </summary>
     public class TypeParameter : CodeObject, ITypeDecl
     {
-        #region /* FIELDS */
-
         protected string _name;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="TypeParameter"/> with the specified name.
@@ -31,33 +25,12 @@ namespace Nova.CodeDOM
             _name = name;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="TypeParameter"/>.
-        /// </summary>
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public string Category
         {
             get { return "type parameter"; }
-        }
-
-        /// <summary>
-        /// Always <c>0</c>.
-        /// </summary>
-        public int TypeParameterCount
-        {
-            get { return 0; }
         }
 
         /// <summary>
@@ -157,9 +130,66 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
+        /// <summary>
+        /// The name of the <see cref="TypeParameter"/>.
+        /// </summary>
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Always <c>0</c>.
+        /// </summary>
+        public int TypeParameterCount
+        {
+            get { return 0; }
+        }
+
+        /// <summary>
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// </summary>
+        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Add(Name, this);
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
+        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
+        {
+            return new TypeParameterRef(this, isFirstOnLine, ranks);
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
+        public TypeRef CreateArrayRef(params int[] ranks)
+        {
+            return new TypeParameterRef(this, false, ranks);
+        }
+
+        /// <summary>
+        /// Create a nullable reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef(bool isFirstOnLine)
+        {
+            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
+        }
+
+        /// <summary>
+        /// Create a nullable reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef()
+        {
+            return TypeRef.CreateNullable(CreateRef());
+        }
 
         /// <summary>
         /// Create a reference to the <see cref="TypeParameter"/>.
@@ -212,39 +242,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Create an array reference to this <see cref="TypeParameter"/>.
+        /// Get the base type - always a <see cref="TypeRef"/> to the 'object' type.
         /// </summary>
-        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
-        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
+        public TypeRef GetBaseType()
         {
-            return new TypeParameterRef(this, isFirstOnLine, ranks);
-        }
-
-        /// <summary>
-        /// Create an array reference to this <see cref="TypeParameter"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
-        public TypeRef CreateArrayRef(params int[] ranks)
-        {
-            return new TypeParameterRef(this, false, ranks);
-        }
-
-        /// <summary>
-        /// Create a nullable reference to this <see cref="TypeParameter"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef(bool isFirstOnLine)
-        {
-            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
-        }
-
-        /// <summary>
-        /// Create a nullable reference to this <see cref="TypeParameter"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef()
-        {
-            return TypeRef.CreateNullable(CreateRef());
+            return TypeRef.ObjectRef;
         }
 
         /// <summary>
@@ -253,40 +255,6 @@ namespace Nova.CodeDOM
         public List<TypeParameterConstraint> GetConstraints()
         {
             return ((ITypeParameters)_parent).GetTypeParameterConstraints(this);
-        }
-
-        /// <summary>
-        /// Get the main constraining type (if any - not including interfaces).
-        /// </summary>
-        public TypeRef GetTypeConstraint()
-        {
-            List<TypeParameterConstraint> constraints = GetConstraints();
-            if (constraints != null)
-            {
-                foreach (TypeParameterConstraint constraint in constraints)
-                {
-                    if (constraint is TypeConstraint)
-                    {
-                        // Ignore if an UnresolvedRef, because we can't distinguish class vs interface
-                        TypeRef typeRef = ((TypeConstraint)constraint).Type.SkipPrefixes() as TypeRef;
-                        if (typeRef != null && typeRef.IsClass)
-                            return typeRef;
-                    }
-                    else if (constraint is ClassConstraint)
-                        return TypeRef.ObjectRef;
-                    else if (constraint is StructConstraint)
-                        return TypeRef.ValueTypeRef;
-                }
-            }
-            return TypeRef.ObjectRef;
-        }
-
-        /// <summary>
-        /// Get the base type - always a <see cref="TypeRef"/> to the 'object' type.
-        /// </summary>
-        public TypeRef GetBaseType()
-        {
-            return TypeRef.ObjectRef;
         }
 
         /// <summary>
@@ -311,6 +279,51 @@ namespace Nova.CodeDOM
         public NamedCodeObjectGroup GetConstructors()
         {
             return null;
+        }
+
+        /// <summary>
+        /// Get the delegate parameters of the constraining type (if any).
+        /// </summary>
+        public ICollection GetDelegateParameters()
+        {
+            return GetTypeConstraint().GetDelegateParameters();
+        }
+
+        /// <summary>
+        /// Get the delegate return type of the constraining type (if any).
+        /// </summary>
+        public TypeRefBase GetDelegateReturnType()
+        {
+            return GetTypeConstraint().GetDelegateReturnType();
+        }
+
+        /// <summary>
+        /// Always returns <c>null</c>.
+        /// </summary>
+        public FieldRef GetField(string name)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
+        public string GetFullName(bool descriptive)
+        {
+            if (Parent is TypeDecl)
+                return ((TypeDecl)Parent).GetFullName(descriptive) + "." + _name;
+            if (Parent is GenericMethodDecl)
+                return ((GenericMethodDecl)Parent).GetFullName(descriptive) + "." + _name;
+            return _name;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName()
+        {
+            return GetFullName(false);
         }
 
         /// <summary>
@@ -349,41 +362,43 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Always returns <c>null</c>.
         /// </summary>
-        public PropertyRef GetProperty(string name)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Always returns <c>null</c>.
-        /// </summary>
-        public FieldRef GetField(string name)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Always returns <c>null</c>.
-        /// </summary>
         public TypeRef GetNestedType(string name)
         {
             return null;
         }
 
         /// <summary>
-        /// Get the delegate parameters of the constraining type (if any).
+        /// Always returns <c>null</c>.
         /// </summary>
-        public ICollection GetDelegateParameters()
+        public PropertyRef GetProperty(string name)
         {
-            return GetTypeConstraint().GetDelegateParameters();
+            return null;
         }
 
         /// <summary>
-        /// Get the delegate return type of the constraining type (if any).
+        /// Get the main constraining type (if any - not including interfaces).
         /// </summary>
-        public TypeRefBase GetDelegateReturnType()
+        public TypeRef GetTypeConstraint()
         {
-            return GetTypeConstraint().GetDelegateReturnType();
+            List<TypeParameterConstraint> constraints = GetConstraints();
+            if (constraints != null)
+            {
+                foreach (TypeParameterConstraint constraint in constraints)
+                {
+                    if (constraint is TypeConstraint)
+                    {
+                        // Ignore if an UnresolvedRef, because we can't distinguish class vs interface
+                        TypeRef typeRef = ((TypeConstraint)constraint).Type.SkipPrefixes() as TypeRef;
+                        if (typeRef != null && typeRef.IsClass)
+                            return typeRef;
+                    }
+                    else if (constraint is ClassConstraint)
+                        return TypeRef.ObjectRef;
+                    else if (constraint is StructConstraint)
+                        return TypeRef.ValueTypeRef;
+                }
+            }
+            return TypeRef.ObjectRef;
         }
 
         /// <summary>
@@ -395,14 +410,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the constraining type is a subclass of the specified type.
-        /// </summary>
-        public bool IsSubclassOf(TypeRef classTypeRef)
-        {
-            return GetTypeConstraint().IsSubclassOf(classTypeRef);
-        }
-
-        /// <summary>
         /// Determine if the constraining type implements the specified interface type.
         /// </summary>
         public bool IsImplementationOf(TypeRef interfaceTypeRef)
@@ -411,11 +418,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// Determine if the constraining type is a subclass of the specified type.
         /// </summary>
-        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        public bool IsSubclassOf(TypeRef classTypeRef)
         {
-            dictionary.Add(Name, this);
+            return GetTypeConstraint().IsSubclassOf(classTypeRef);
         }
 
         /// <summary>
@@ -427,34 +434,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// The alternate token used to parse the end of a list of type parameters inside a documentation comment.
         /// </summary>
-        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
-        public string GetFullName(bool descriptive)
-        {
-            if (Parent is TypeDecl)
-                return ((TypeDecl)Parent).GetFullName(descriptive) + "." + _name;
-            if (Parent is GenericMethodDecl)
-                return ((GenericMethodDecl)Parent).GetFullName(descriptive) + "." + _name;
-            return _name;
-        }
+        public const string ParseTokenAltEnd = TypeRefBase.ParseTokenAltArgumentEnd;
 
         /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// The alternate token used to parse the start of a list of type parameters inside a documentation comment.
         /// </summary>
-        public string GetFullName()
-        {
-            return GetFullName(false);
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of a list of type parameters.
-        /// </summary>
-        public const string ParseTokenStart = TypeRefBase.ParseTokenArgumentStart;
+        public const string ParseTokenAltStart = TypeRefBase.ParseTokenAltArgumentStart;
 
         /// <summary>
         /// The token used to parse the end of a list of type parameters.
@@ -462,9 +449,9 @@ namespace Nova.CodeDOM
         public const string ParseTokenEnd = TypeRefBase.ParseTokenArgumentEnd;
 
         /// <summary>
-        /// The token used to parse between type parameters.
+        /// The token used to parse an 'in' type parameter.
         /// </summary>
-        public const string ParseTokenSeparator = ParameterDecl.ParseTokenSeparator;
+        public const string ParseTokenIn = "in";
 
         /// <summary>
         /// The token used to parse an 'out' type parameter.
@@ -472,9 +459,14 @@ namespace Nova.CodeDOM
         public const string ParseTokenOut = "out";
 
         /// <summary>
-        /// The token used to parse an 'in' type parameter.
+        /// The token used to parse between type parameters.
         /// </summary>
-        public const string ParseTokenIn = "in";
+        public const string ParseTokenSeparator = ParameterDecl.ParseTokenSeparator;
+
+        /// <summary>
+        /// The token used to parse the start of a list of type parameters.
+        /// </summary>
+        public const string ParseTokenStart = TypeRefBase.ParseTokenArgumentStart;
 
         // Alternate type argument delimiters allowed for code embedded inside documentation comments.
         // The C# style delimiters are also allowed in doc comments, although they shouldn't show up
@@ -483,17 +475,6 @@ namespace Nova.CodeDOM
         // but the open and close delimiters must match for each pair.  Note that in the case of a
         // type declaration, the alternate type argument delimiters are ambiguous with block delimiters -
         // this is handled by looking for a type argument pattern.
-
-        /// <summary>
-        /// The alternate token used to parse the start of a list of type parameters inside a documentation comment.
-        /// </summary>
-        public const string ParseTokenAltStart = TypeRefBase.ParseTokenAltArgumentStart;
-
-        /// <summary>
-        /// The alternate token used to parse the end of a list of type parameters inside a documentation comment.
-        /// </summary>
-        public const string ParseTokenAltEnd = TypeRefBase.ParseTokenAltArgumentEnd;
-
         protected TypeParameter(Parser parser, CodeObject parent)
             : base(parser, parent)
         {
@@ -541,10 +522,6 @@ namespace Nova.CodeDOM
             return parameters;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the code object defaults to starting on a new line.
         /// </summary>
@@ -576,9 +553,14 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        public static void AsTextTypeParameters(CodeWriter writer, ChildList<TypeParameter> typeParameters, RenderFlags flags)
+        {
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            // Render the angle brackets as braces if we're inside a documentation comment
+            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltStart : ParseTokenStart);
+            writer.WriteList(typeParameters, passFlags, typeParameters.Parent);
+            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltEnd : ParseTokenEnd);
+        }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -589,16 +571,5 @@ namespace Nova.CodeDOM
             UpdateLineCol(writer, flags);
             writer.WriteIdentifier(_name, flags);
         }
-
-        public static void AsTextTypeParameters(CodeWriter writer, ChildList<TypeParameter> typeParameters, RenderFlags flags)
-        {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            // Render the angle brackets as braces if we're inside a documentation comment
-            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltStart : ParseTokenStart);
-            writer.WriteList(typeParameters, passFlags, typeParameters.Parent);
-            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltEnd : ParseTokenEnd);
-        }
-
-        #endregion
     }
 }

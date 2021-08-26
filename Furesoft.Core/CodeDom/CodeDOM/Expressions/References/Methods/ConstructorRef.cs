@@ -1,14 +1,14 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 using System.Reflection;
 
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="ConstructorDecl"/> or <see cref="ConstructorInfo"/>.
@@ -20,8 +20,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ConstructorRef : MethodRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ConstructorRef"/> from a <see cref="ConstructorDecl"/>.
         /// </summary>
@@ -49,10 +47,6 @@ namespace Nova.CodeDOM
         public ConstructorRef(ConstructorInfo constructorInfo)
             : base(constructorInfo, false)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The name of the <see cref="ConstructorRef"/>.
@@ -85,10 +79,6 @@ namespace Nova.CodeDOM
                     throw new Exception("A ConstructorRef can't have type arguments!");
             }
         }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Find the constructor of the specified <see cref="TypeDecl"/> with the specified signature.
@@ -199,18 +189,6 @@ namespace Nova.CodeDOM
             return Find(typeRefBase, false, parameterTypes);
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the return type of the constructor (never null).
-        /// </summary>
-        public override TypeRefBase GetReturnType()
-        {
-            return GetReturnType(this, _reference);
-        }
-
         /// <summary>
         /// Get the return type of the constructor (never null).
         /// </summary>
@@ -260,25 +238,12 @@ namespace Nova.CodeDOM
             return base.GetDeclaringType();
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Get the return type of the constructor (never null).
+        /// </summary>
+        public override TypeRefBase GetReturnType()
         {
-            // Display constructors as their declaring type name, including any type arguments (this
-            // is the easy way to display them with the proper type arguments and any enclosing types,
-            // if appropriate).
-            UpdateLineCol(writer, flags);
-            TypeRefBase typeRef = GetDeclaringType();
-            if (typeRef != null)
-                typeRef.AsText(writer, flags &~ RenderFlags.UpdateLineCol);
-            else if (_reference is ConstructorDecl)
-            {
-                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
-                // go ahead and display it's name.
-                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
-            }
+            return GetReturnType(this, _reference);
         }
 
         public static void AsTextConstructorInfo(CodeWriter writer, ConstructorInfo constructorInfo, RenderFlags flags)
@@ -296,6 +261,21 @@ namespace Nova.CodeDOM
             AsTextMethodParameters(writer, constructorInfo, flags);
         }
 
-        #endregion
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            // Display constructors as their declaring type name, including any type arguments (this
+            // is the easy way to display them with the proper type arguments and any enclosing types,
+            // if appropriate).
+            UpdateLineCol(writer, flags);
+            TypeRefBase typeRef = GetDeclaringType();
+            if (typeRef != null)
+                typeRef.AsText(writer, flags & ~RenderFlags.UpdateLineCol);
+            else if (_reference is ConstructorDecl)
+            {
+                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
+                // go ahead and display it's name.
+                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
+            }
+        }
     }
 }

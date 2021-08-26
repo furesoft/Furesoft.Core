@@ -1,25 +1,19 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Contains a body of code that is scoped to one or more <see cref="Catch"/> statements and/or a <see cref="Finally"/> statement.
     /// </summary>
     public class Try : BlockStatement
     {
-        #region /* FIELDS */
-
         protected ChildList<Catch> _catches;
         protected Finally _finally;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Try"/>.
@@ -52,10 +46,6 @@ namespace Nova.CodeDOM
             : this(body, null, catches)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// A collection of <see cref="Catch"/>es.
         /// </summary>
@@ -65,20 +55,20 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if there are any <see cref="Catch"/>es.
-        /// </summary>
-        public bool HasCatches
-        {
-            get { return (_catches != null && _catches.Count > 0); }
-        }
-
-        /// <summary>
         /// An optional <see cref="Finally"/>.
         /// </summary>
         public Finally Finally
         {
             get { return _finally; }
             set { SetField(ref _finally, value, false); }
+        }
+
+        /// <summary>
+        /// True if there are any <see cref="Catch"/>es.
+        /// </summary>
+        public bool HasCatches
+        {
+            get { return (_catches != null && _catches.Count > 0); }
         }
 
         /// <summary>
@@ -105,9 +95,16 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Try clone = (Try)base.Clone();
+            clone._catches = ChildListHelpers.Clone(_catches, clone);
+            clone.CloneField(ref clone._finally, _finally);
+            return clone;
+        }
 
         /// <summary>
         /// Create the list of <see cref="Catch"/>s, or return the existing one.
@@ -120,37 +117,9 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Try clone = (Try)base.Clone();
-            clone._catches = ChildListHelpers.Clone(_catches, clone);
-            clone.CloneField(ref clone._finally, _finally);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "try";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Try"/>.
-        /// </summary>
-        public static Try Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Try(parser, parent);
-        }
 
         protected Try(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -188,9 +157,18 @@ namespace Nova.CodeDOM
                 parser.MoveUnusedToPostUnused();
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="Try"/>.
+        /// </summary>
+        public static Try Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Try(parser, parent);
+        }
 
-        #region /* FORMATTING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -226,10 +204,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
         {
             base.AsTextAfter(writer, flags);
@@ -241,7 +215,5 @@ namespace Nova.CodeDOM
             if (HasFinally && !flags.HasFlag(RenderFlags.Description))
                 _finally.AsText(writer, flags | RenderFlags.PrefixSpace);
         }
-
-        #endregion
     }
 }

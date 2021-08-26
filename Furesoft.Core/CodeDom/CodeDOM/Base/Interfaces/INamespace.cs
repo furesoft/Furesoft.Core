@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all code objects that represent namespace declarations
@@ -13,9 +13,9 @@ namespace Nova.CodeDOM
     public interface INamespace : INamedCodeObject
     {
         /// <summary>
-        /// The parent <see cref="CodeObject"/>.
+        /// The dictionary of child types and namespaces in the <see cref="Namespace"/>.
         /// </summary>
-        CodeObject Parent { get; }
+        NamespaceTypeDictionary Children { get; }
 
         /// <summary>
         /// The full name of the <see cref="Namespace"/>, including any parent namespaces.
@@ -23,14 +23,10 @@ namespace Nova.CodeDOM
         string FullName { get; }
 
         /// <summary>
-        /// The dictionary of child types and namespaces in the <see cref="Namespace"/>.
+        /// True if this <see cref="Namespace"/> has <see cref="NamespaceDecl"/> declarations in the current project, otherwise
+        /// false (meaning items in the namespace exist only in imported assemblies and projects).
         /// </summary>
-        NamespaceTypeDictionary Children { get; }
-
-        /// <summary>
-        /// Determines if this <see cref="Namespace"/> is root-level (global or extern alias).
-        /// </summary>
-        bool IsRootLevel { get; }
+        bool HasDeclarationsInProject { get; }
 
         /// <summary>
         /// Determines if this <see cref="Namespace"/> is the project-global namespace.
@@ -38,10 +34,14 @@ namespace Nova.CodeDOM
         bool IsGlobal { get; }
 
         /// <summary>
-        /// True if this <see cref="Namespace"/> has <see cref="NamespaceDecl"/> declarations in the current project, otherwise
-        /// false (meaning items in the namespace exist only in imported assemblies and projects).
+        /// Determines if this <see cref="Namespace"/> is root-level (global or extern alias).
         /// </summary>
-        bool HasDeclarationsInProject { get; }
+        bool IsRootLevel { get; }
+
+        /// <summary>
+        /// The parent <see cref="CodeObject"/>.
+        /// </summary>
+        CodeObject Parent { get; }
 
         /// <summary>
         /// Add a child <see cref="Namespace"/> to the <see cref="Namespace"/>.
@@ -57,6 +57,22 @@ namespace Nova.CodeDOM
         /// Add a <see cref="Type"/> to the <see cref="Namespace"/>.
         /// </summary>
         void Add(Type type);
+
+        /// <summary>
+        /// Find a child <see cref="Namespace"/>, <see cref="Type"/>, or <see cref="TypeDecl"/> with the specified name.
+        /// </summary>
+        object Find(string name);
+
+        /// <summary>
+        /// Find or create a child <see cref="Namespace"/>, including any missing parent namespaces.
+        /// </summary>
+        Namespace FindOrCreateChildNamespace(string namespaceName);
+
+        /// <summary>
+        /// Parse the specified name into a child <see cref="NamespaceRef"/> or <see cref="TypeRef"/> on the current namespace,
+        /// or a <see cref="Dot"/> expression that evaluates to one.
+        /// </summary>
+        Expression ParseName(string name);
 
         /// <summary>
         /// Remove a child <see cref="Namespace"/> from the <see cref="Namespace"/>.
@@ -77,21 +93,5 @@ namespace Nova.CodeDOM
         /// Remove all items from the <see cref="Namespace"/>.
         /// </summary>
         void RemoveAll();
-
-        /// <summary>
-        /// Find or create a child <see cref="Namespace"/>, including any missing parent namespaces.
-        /// </summary>
-        Namespace FindOrCreateChildNamespace(string namespaceName);
-
-        /// <summary>
-        /// Find a child <see cref="Namespace"/>, <see cref="Type"/>, or <see cref="TypeDecl"/> with the specified name.
-        /// </summary>
-        object Find(string name);
-
-        /// <summary>
-        /// Parse the specified name into a child <see cref="NamespaceRef"/> or <see cref="TypeRef"/> on the current namespace,
-        /// or a <see cref="Dot"/> expression that evaluates to one.
-        /// </summary>
-        Expression ParseName(string name);
     }
 }

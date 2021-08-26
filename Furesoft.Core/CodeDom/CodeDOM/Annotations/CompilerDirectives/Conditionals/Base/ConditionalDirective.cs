@@ -1,35 +1,25 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="IfDirective"/>, <see cref="ElIfDirective"/>, and <see cref="ElseDirective"/>.
     /// </summary>
     public abstract class ConditionalDirective : ConditionalDirectiveBase
     {
-        #region /* FIELDS */
-
         protected bool _isActive;
         protected string _skippedText;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         protected ConditionalDirective()
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// True if this part of a chain of conditional directives is the active one.
@@ -50,10 +40,6 @@ namespace Nova.CodeDOM
                 _skippedText = value.Replace("\r\n", "\n");  // Normalize newlines
             }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected ConditionalDirective(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -152,10 +138,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             base.AsText(writer, flags);
@@ -174,7 +156,5 @@ namespace Nova.CodeDOM
                 }
             }
         }
-
-        #endregion
     }
 }

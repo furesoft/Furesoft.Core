@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents one or more contraints on a type parameter.
@@ -22,14 +22,8 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ConstraintClause : CodeObject
     {
-        #region /* FIELDS */
-
-        protected SymbolicRef _typeParameter;
         protected ChildList<TypeParameterConstraint> _constraints;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected SymbolicRef _typeParameter;
 
         /// <summary>
         /// Create a <see cref="ConstraintClause"/>.
@@ -54,19 +48,6 @@ namespace Nova.CodeDOM
             : this(typeParameter.CreateRef(), constraints)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The <see cref="TypeParameter"/> being constrained.
-        /// </summary>
-        public SymbolicRef TypeParameter
-        {
-            get { return _typeParameter; }
-            set { SetField(ref _typeParameter, value, true); }
-        }
-
         /// <summary>
         /// The list of <see cref="TypeParameterConstraint"/>s.
         /// </summary>
@@ -75,18 +56,13 @@ namespace Nova.CodeDOM
             get { return _constraints; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
-        /// Create the list of <see cref="TypeParameterConstraint"/>s, or return the existing one.
+        /// The <see cref="TypeParameter"/> being constrained.
         /// </summary>
-        public ChildList<TypeParameterConstraint> CreateConstraints()
+        public SymbolicRef TypeParameter
         {
-            if (_constraints == null)
-                _constraints = new ChildList<TypeParameterConstraint>(this);
-            return _constraints;
+            get { return _typeParameter; }
+            set { SetField(ref _typeParameter, value, true); }
         }
 
         /// <summary>
@@ -100,9 +76,15 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Create the list of <see cref="TypeParameterConstraint"/>s, or return the existing one.
+        /// </summary>
+        public ChildList<TypeParameterConstraint> CreateConstraints()
+        {
+            if (_constraints == null)
+                _constraints = new ChildList<TypeParameterConstraint>(this);
+            return _constraints;
+        }
 
         /// <summary>
         /// The token used to parse the code object.
@@ -160,10 +142,6 @@ namespace Nova.CodeDOM
             return constraints;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the code object defaults to starting on a new line.
         /// </summary>
@@ -201,9 +179,11 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        public static void AsTextConstraints(CodeWriter writer, ChildList<ConstraintClause> constraints, RenderFlags flags)
+        {
+            if (constraints != null && constraints.Count > 0)
+                writer.WriteList(constraints, flags | RenderFlags.NoItemSeparators | (constraints[0].IsFirstOnLine ? 0 : RenderFlags.PrefixSpace), constraints.Parent);
+        }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -239,13 +219,5 @@ namespace Nova.CodeDOM
 
             AsTextAfter(writer, passFlags | (flags & RenderFlags.NoPostAnnotations));
         }
-
-        public static void AsTextConstraints(CodeWriter writer, ChildList<ConstraintClause> constraints, RenderFlags flags)
-        {
-            if (constraints != null && constraints.Count > 0)
-                writer.WriteList(constraints, flags | RenderFlags.NoItemSeparators | (constraints[0].IsFirstOnLine ? 0 : RenderFlags.PrefixSpace), constraints.Parent);
-        }
-
-        #endregion
     }
 }

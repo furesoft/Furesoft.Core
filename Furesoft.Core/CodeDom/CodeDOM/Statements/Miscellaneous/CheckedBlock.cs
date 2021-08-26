@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Contains a body of code for which overflow checking is explicitly turned on.
     /// </summary>
     public class CheckedBlock : BlockStatement
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="CheckedBlock"/>.
         /// </summary>
@@ -27,10 +25,6 @@ namespace Nova.CodeDOM
             : base(null, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
@@ -39,19 +33,16 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = Checked.ParseToken;
 
-        internal static void AddParsePoints()
+        protected CheckedBlock(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            // Use a parse-priority of 0 (Checked uses 100)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+            parser.NextToken();                        // Move past 'checked'
+            new Block(out _body, parser, this, true);  // Parse the body
         }
 
         /// <summary>
@@ -65,16 +56,11 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected CheckedBlock(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            parser.NextToken();                        // Move past 'checked'
-            new Block(out _body, parser, this, true);  // Parse the body
+            // Use a parse-priority of 0 (Checked uses 100)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -83,7 +69,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
     }
 }

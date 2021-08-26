@@ -1,28 +1,22 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Returns the system type object for the specified type.
     /// </summary>
     public class TypeOf : TypeOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="TypeOf"/> operator - the expression must evaluate to a <see cref="TypeRef"/> in valid code.
         /// </summary>
         public TypeOf(Expression type)
             : base(type)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -32,9 +26,10 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -46,14 +41,10 @@ namespace Nova.CodeDOM
         /// </summary>
         public const int Precedence = 100;
 
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
+        protected TypeOf(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+            ParseKeywordAndArgument(parser, ParseFlags.Type);
         }
 
         /// <summary>
@@ -64,12 +55,6 @@ namespace Nova.CodeDOM
             return new TypeOf(parser, parent);
         }
 
-        protected TypeOf(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            ParseKeywordAndArgument(parser, ParseFlags.Type);
-        }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -78,6 +63,9 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

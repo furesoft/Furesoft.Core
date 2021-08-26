@@ -1,16 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.CodeDOM;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.CodeDOM;
+using Furesoft.Core.CodeDom.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Attribute = Nova.CodeDOM.Attribute;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Attribute;
 
-namespace Nova.Rendering
+namespace Furesoft.Core.CodeDom.Rendering
 {
     /// <summary>
     /// Used to format code objects as text and write them into a string or a file.

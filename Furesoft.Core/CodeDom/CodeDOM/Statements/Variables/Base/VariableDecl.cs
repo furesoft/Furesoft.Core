@@ -1,26 +1,20 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="FieldDecl"/>, <see cref="LocalDecl"/>, <see cref="ParameterDecl"/>, and <see cref="EnumMemberDecl"/>.
     /// </summary>
     public abstract class VariableDecl : Statement, IVariableDecl
     {
-        #region /* FIELDS */
-
+        protected Expression _initialization;
         protected string _name;
         protected Expression _type;
-        protected Expression _initialization;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected VariableDecl(string name, Expression type, Expression initialization)
         {
@@ -30,31 +24,17 @@ namespace Nova.CodeDOM
             Initialization = initialization;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the variable.
-        /// </summary>
-        public virtual string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public abstract string Category { get; }
 
         /// <summary>
-        /// The type of the variable declaration.
+        /// True if the variable has an initialization <see cref="Expression"/>.
         /// </summary>
-        public virtual Expression Type
+        public bool HasInitialization
         {
-            get { return _type; }
-            set { SetField(ref _type, value, true); }
+            get { return (_initialization != null); }
         }
 
         /// <summary>
@@ -67,14 +47,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the variable has an initialization <see cref="Expression"/>.
-        /// </summary>
-        public bool HasInitialization
-        {
-            get { return (_initialization != null); }
-        }
-
-        /// <summary>
         /// True if the variable is const.
         /// </summary>
         public abstract bool IsConst { get; set; }
@@ -84,9 +56,23 @@ namespace Nova.CodeDOM
         /// </summary>
         public abstract bool IsStatic { get; set; }
 
-        #endregion
+        /// <summary>
+        /// The name of the variable.
+        /// </summary>
+        public virtual string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// The type of the variable declaration.
+        /// </summary>
+        public virtual Expression Type
+        {
+            get { return _type; }
+            set { SetField(ref _type, value, true); }
+        }
 
         /// <summary>
         /// Add the <see cref="CodeObject"/> to the specified dictionary.
@@ -94,14 +80,6 @@ namespace Nova.CodeDOM
         public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
         {
             dictionary.Add(Name, this);
-        }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Remove(Name, this);
         }
 
         /// <summary>
@@ -132,32 +110,26 @@ namespace Nova.CodeDOM
             return GetFullName(false);
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
+        /// </summary>
+        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Remove(Name, this);
+        }
 
         protected VariableDecl(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
 
         /// <summary>
-        /// This method is used when parsing forwards starting with the type is possible.
+        /// Move NewLines, LineNumber, Column, and any EOL comment from the specified <see cref="Token"/>.
         /// </summary>
-        protected void ParseType(Parser parser)
+        protected void MoveLocationAndComment(Token token)
         {
-            Expression expression = Expression.Parse(parser, this, true, ParseFlags.Type);
-            MoveFormatting(expression);
-            SetField(ref _type, expression, false);
-        }
-
-        protected void ParseName(Parser parser, string parseTokenEnd)
-        {
-            if (parser.TokenText != Expression.ParseTokenSeparator && parser.TokenText != parseTokenEnd)
-            {
-                Token token = parser.Token;
-                _name = parser.GetIdentifierText();  // Parse the name
-                SetLineCol(token);
-            }
+            NewLines = token.NewLines;
+            SetLineCol(token);
+            MoveEOLComment(token);
         }
 
         /// <summary>
@@ -188,19 +160,25 @@ namespace Nova.CodeDOM
             }
         }
 
-        /// <summary>
-        /// Move NewLines, LineNumber, Column, and any EOL comment from the specified <see cref="Token"/>.
-        /// </summary>
-        protected void MoveLocationAndComment(Token token)
+        protected void ParseName(Parser parser, string parseTokenEnd)
         {
-            NewLines = token.NewLines;
-            SetLineCol(token);
-            MoveEOLComment(token);
+            if (parser.TokenText != Expression.ParseTokenSeparator && parser.TokenText != parseTokenEnd)
+            {
+                Token token = parser.Token;
+                _name = parser.GetIdentifierText();  // Parse the name
+                SetLineCol(token);
+            }
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// This method is used when parsing forwards starting with the type is possible.
+        /// </summary>
+        protected void ParseType(Parser parser)
+        {
+            Expression expression = Expression.Parse(parser, this, true, ParseFlags.Type);
+            MoveFormatting(expression);
+            SetField(ref _type, expression, false);
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -224,14 +202,6 @@ namespace Nova.CodeDOM
         public override bool HasTerminatorDefault
         {
             get { return true; }
-        }
-
-        /// <summary>
-        /// True if the code object only requires a single line for display by default.
-        /// </summary>
-        public override bool IsSingleLineDefault
-        {
-            get { return !HasFirstOnLineAnnotations; }
         }
 
         /// <summary>
@@ -264,9 +234,13 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// True if the code object only requires a single line for display by default.
+        /// </summary>
+        public override bool IsSingleLineDefault
+        {
+            get { return !HasFirstOnLineAnnotations; }
+        }
 
         public virtual void AsTextType(CodeWriter writer, RenderFlags flags)
         {
@@ -278,19 +252,17 @@ namespace Nova.CodeDOM
             }
         }
 
-        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
-        {
-            AsTextType(writer, flags);
-            UpdateLineCol(writer, flags);
-            writer.WriteIdentifier(_name, flags);
-        }
-
         protected void AsTextInitialization(CodeWriter writer, RenderFlags flags)
         {
             writer.Write(" " + Assignment.ParseToken);
             _initialization.AsText(writer, flags | RenderFlags.PrefixSpace);
         }
 
-        #endregion
+        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        {
+            AsTextType(writer, flags);
+            UpdateLineCol(writer, flags);
+            writer.WriteIdentifier(_name, flags);
+        }
     }
 }

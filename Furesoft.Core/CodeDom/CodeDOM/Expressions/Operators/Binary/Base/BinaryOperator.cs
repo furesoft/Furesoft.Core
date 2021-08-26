@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of all binary operators (<see cref="BinaryArithmeticOperator"/>, <see cref="BinaryBitwiseOperator"/>,
@@ -14,18 +14,13 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class BinaryOperator : Operator
     {
-        #region /* FIELDS */
-
         protected Expression _left;
-        protected Expression _right;
 
         // If the operator is overloaded, a hidden reference (OperatorRef) to the overloaded
         // operator declaration is stored here.
         protected SymbolicRef _operatorRef;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected Expression _right;
 
         protected BinaryOperator(Expression left, Expression right)
         {
@@ -36,9 +31,22 @@ namespace Nova.CodeDOM
         protected BinaryOperator()
         { }
 
-        #endregion
+        /// <summary>
+        /// A hidden OperatorRef to an overloaded operator declaration (if any).
+        /// </summary>
+        public override SymbolicRef HiddenRef
+        {
+            get { return _operatorRef; }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the expression is const.
+        /// </summary>
+        public override bool IsConst
+        {
+            // If both sides are const, then the result will be const
+            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
+        }
 
         /// <summary>
         /// The left-side <see cref="Expression"/>.
@@ -59,35 +67,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// A hidden OperatorRef to an overloaded operator declaration (if any).
-        /// </summary>
-        public override SymbolicRef HiddenRef
-        {
-            get { return _operatorRef; }
-        }
-
-        /// <summary>
-        /// True if the expression is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            // If both sides are const, then the result will be const
-            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="BinaryOperator"/>.
-        /// </summary>
-        public virtual string GetInternalName()
-        {
-            return null;
-        }
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -99,9 +78,13 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The internal name of the <see cref="BinaryOperator"/>.
+        /// </summary>
+        public virtual string GetInternalName()
+        {
+            return null;
+        }
 
         protected BinaryOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -184,16 +167,32 @@ namespace Nova.CodeDOM
                 _left.MoveCommentsToLeftMost(token, false);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the expression should have parens by default.
         /// </summary>
         public override bool HasParensDefault
         {
             get { return true; }  // Default to using parens for binary operators
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get
+            {
+                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
+                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_left != null)
+                    _left.IsSingleLine = value;
+                if (_right != null)
+                    _right.IsSingleLine = value;
+            }
         }
 
         protected override void DefaultFormatField(CodeObject field)
@@ -232,30 +231,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
-                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_left != null)
-                    _left.IsSingleLine = value;
-                if (_right != null)
-                    _right.IsSingleLine = value;
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             // Increase the indent level for any binary operator expressions that wrap, unless the parent
@@ -275,7 +250,5 @@ namespace Nova.CodeDOM
             if (_right != null)
                 _right.AsText(writer, passFlags | RenderFlags.PrefixSpace);
         }
-
-        #endregion
     }
 }

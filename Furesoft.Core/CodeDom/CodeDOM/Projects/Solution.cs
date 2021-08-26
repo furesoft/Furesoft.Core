@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -11,64 +11,62 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a collection of <see cref="Project"/> objects that are logically grouped (and compiled) together.
     /// </summary>
     public class Solution : CodeObject, INamedCodeObject, IFile
     {
-        #region /* CONSTANTS */
-
+        public const string HideSolutionNodeProperty = "HideSolutionNode";
+        public const string NestedProjectsGlobalSection = "NestedProjects";
+        public const string PlatformAnyCPU = "Any CPU";
+        public const string PlatformDotNet = ".NET";
+        public const string PlatformMixed = "Mixed Platforms";
+        public const string ProjectConfigurationPlatformsGlobalSection = "ProjectConfigurationPlatforms";
+        public const string SolutionConfigurationPlatformsGlobalSection = "SolutionConfigurationPlatforms";
         public const string SolutionFileExtension = ".sln";
-        public const string SolutionOptionsExtension = ".nuo";
-
         public const string SolutionItems = "Solution Items";
         public const string SolutionItemsProjectSection = "SolutionItems";
-        public const string WebsitePropertiesProjectSection = "WebsiteProperties";
-        public const string SourceCodeControlGlobalSection = "SourceCodeControl";
-        public const string SolutionConfigurationPlatformsGlobalSection = "SolutionConfigurationPlatforms";
-        public const string ProjectConfigurationPlatformsGlobalSection = "ProjectConfigurationPlatforms";
+        public const string SolutionOptionsExtension = ".nuo";
         public const string SolutionPropertiesGlobalSection = "SolutionProperties";
-        public const string NestedProjectsGlobalSection = "NestedProjects";
-        public const string HideSolutionNodeProperty = "HideSolutionNode";
-
-        public const string PlatformDotNet = ".NET";
-        public const string PlatformAnyCPU = "Any CPU";
-        public const string PlatformMixed = "Mixed Platforms";
-
-        protected const string VisualStudioSolutionFileHeader = "Microsoft Visual Studio Solution File";
-        protected const string ProductReleasePrefix = "# ";
-        protected const string ProjectStart = "Project(";
-        protected const string ProjectEnd = "EndProject";
-        protected const string ProjectSectionStart = "ProjectSection(";
-        protected const string ProjectSectionEnd = "EndProjectSection";
-        protected const string PreProject = "preProject";
-        protected const string PostProject = "postProject";
-        protected const string GlobalStart = "Global";
+        public const string SourceCodeControlGlobalSection = "SourceCodeControl";
+        public const string WebsitePropertiesProjectSection = "WebsiteProperties";
         protected const string GlobalEnd = "EndGlobal";
-        protected const string GlobalSectionStart = "GlobalSection(";
         protected const string GlobalSectionEnd = "EndGlobalSection";
-        protected const string PreSolution = "preSolution";
+        protected const string GlobalSectionStart = "GlobalSection(";
+        protected const string GlobalStart = "Global";
+        protected const string PostProject = "postProject";
         protected const string PostSolution = "postSolution";
-
-        #endregion
-
-        #region /* FIELDS */
+        protected const string PreProject = "preProject";
+        protected const string PreSolution = "preSolution";
+        protected const string ProductReleasePrefix = "# ";
+        protected const string ProjectEnd = "EndProject";
+        protected const string ProjectSectionEnd = "EndProjectSection";
+        protected const string ProjectSectionStart = "ProjectSection(";
+        protected const string ProjectStart = "Project(";
+        protected const string VisualStudioSolutionFileHeader = "Microsoft Visual Studio Solution File";
 
         /// <summary>
-        /// The name of the <see cref="Solution"/>.
+        /// The active configuration (usually 'Debug' or 'Release').
         /// </summary>
-        protected string _name;
+        protected string _activeConfiguration;
 
         /// <summary>
-        /// True if the <see cref="Solution"/> is newly created and hasn't been saved yet.
+        /// The active platform (usually 'Any CPU', 'x86', or 'Mixed Platforms').
         /// </summary>
-        protected bool _isNew;
+        protected string _activePlatform;
+
+        /// <summary>
+        /// All 'listed' annotations (<see cref="Message"/>s and special <see cref="Comment"/>s) in this <see cref="Solution"/>.
+        /// </summary>
+        protected ObservableCollection<CodeAnnotation> _codeAnnotations = new ObservableCollection<CodeAnnotation>();
+
+        protected Dictionary<Annotation, CodeAnnotation> _codeAnnotationsDictionary = new Dictionary<Annotation, CodeAnnotation>();
 
         /// <summary>
         /// The full file name.
@@ -82,25 +80,25 @@ namespace Nova.CodeDOM
         protected string _formatVersion;
 
         /// <summary>
+        /// Global sections (blocks of configuration data).
+        /// </summary>
+        protected List<GlobalSection> _globalSections = new List<GlobalSection>();
+
+        /// <summary>
+        /// True if the <see cref="Solution"/> is newly created and hasn't been saved yet.
+        /// </summary>
+        protected bool _isNew;
+
+        /// <summary>
+        /// The name of the <see cref="Solution"/>.
+        /// </summary>
+        protected string _name;
+
+        /// <summary>
         /// The product release.
         /// (Visual Studio 2010, Visual C# Express 2008, etc.)
         /// </summary>
         protected string _productRelease;
-
-        /// <summary>
-        /// The active configuration (usually 'Debug' or 'Release').
-        /// </summary>
-        protected string _activeConfiguration;
-
-        /// <summary>
-        /// The active platform (usually 'Any CPU', 'x86', or 'Mixed Platforms').
-        /// </summary>
-        protected string _activePlatform;
-
-        /// <summary>
-        /// All projects in this solution (will be sorted alphabetically).
-        /// </summary>
-        protected ChildList<Project> _projects;
 
         /// <summary>
         /// Project entries (these represent the entries in the solution file).
@@ -108,24 +106,14 @@ namespace Nova.CodeDOM
         protected List<ProjectEntry> _projectEntries = new List<ProjectEntry>();
 
         /// <summary>
-        /// Global sections (blocks of configuration data).
+        /// All projects in this solution (will be sorted alphabetically).
         /// </summary>
-        protected List<GlobalSection> _globalSections = new List<GlobalSection>();
-
-        /// <summary>
-        /// All 'listed' annotations (<see cref="Message"/>s and special <see cref="Comment"/>s) in this <see cref="Solution"/>.
-        /// </summary>
-        protected ObservableCollection<CodeAnnotation> _codeAnnotations = new ObservableCollection<CodeAnnotation>();
-        protected Dictionary<Annotation, CodeAnnotation> _codeAnnotationsDictionary = new Dictionary<Annotation, CodeAnnotation>();
+        protected ChildList<Project> _projects;
 
         /// <summary>
         /// Callback used to indicate status changes to the UI while loading.
         /// </summary>
         protected Action<LoadStatus, CodeObject> _statusCallback;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a new <see cref="Solution"/> object.
@@ -169,87 +157,10 @@ namespace Nova.CodeDOM
             : this(fileName, null)
         { }
 
-        #endregion
-
-        #region /* STATIC CONSTRUCTOR */
-
         static Solution()
         {
             // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
             ForceReference();
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="Solution"/> (does not include the file path or extension).
-        /// </summary>
-        public string Name
-        {
-            get { return _name; }
-            set { _name = value; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="Solution"/> is newly created and hasn't been saved yet.
-        /// </summary>
-        public bool IsNew
-        {
-            get { return _isNew; }
-        }
-
-        /// <summary>
-        /// The associated file name of the <see cref="Solution"/>.
-        /// </summary>
-        public string FileName
-        {
-            get { return _fileName; }
-            set { _fileName = value; }
-        }
-
-        /// <summary>
-        /// True if the associated file exists.
-        /// </summary>
-        public bool FileExists
-        {
-            get { return File.Exists(_fileName); }
-        }
-
-        /// <summary>
-        /// The encoding of the file (normally UTF8).
-        /// </summary>
-        public Encoding FileEncoding { get; set; }
-
-        /// <summary>
-        /// True if the file has a UTF8 byte-order-mark.
-        /// </summary>
-        public bool FileHasUTF8BOM { get; set; }
-
-        /// <summary>
-        /// Always <c>true</c> for a <see cref="Solution"/>.
-        /// </summary>
-        public bool FileUsingTabs
-        {
-            get { return true; }
-            set { throw new Exception("Solution files always use tabs!"); }
-        }
-
-        /// <summary>
-        /// The version number of the solution file format.
-        /// </summary>
-        public string FormatVersion
-        {
-            get { return _formatVersion; }
-        }
-
-        /// <summary>
-        /// The product release number.
-        /// </summary>
-        public string ProductRelease
-        {
-            get { return _productRelease; }
         }
 
         /// <summary>
@@ -281,30 +192,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The child <see cref="Project"/>s.
-        /// </summary>
-        public ChildList<Project> Projects
-        {
-            get { return _projects; }
-        }
-
-        /// <summary>
-        /// The <see cref="ProjectEntry"/>s of the associated '.sln' file.
-        /// </summary>
-        public List<ProjectEntry> ProjectEntries
-        {
-            get { return _projectEntries; }
-        }
-
-        /// <summary>
-        /// The <see cref="GlobalSection"/>s of the associated '.sln' file.
-        /// </summary>
-        public List<GlobalSection> GlobalSections
-        {
-            get { return _globalSections; }
-        }
-
-        /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public string Category
@@ -320,241 +207,97 @@ namespace Nova.CodeDOM
             get { return _codeAnnotations; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// The encoding of the file (normally UTF8).
+        /// </summary>
+        public Encoding FileEncoding { get; set; }
 
         /// <summary>
-        /// Add a <see cref="Project"/> to the <see cref="Solution"/>, keeping the <see cref="Projects"/> collection sorted alphabetically.
+        /// True if the associated file exists.
         /// </summary>
-        public void AddProject(Project project)
+        public bool FileExists
         {
-            if (project != null)
-            {
-                // Insert the Project at the proper index according to its name.
-                // Duplicate names shouldn't exist, but technically could, so just insert any duplicate matches following the existing one.
-                int index = _projects.BinarySearch(project);
-                _projects.Insert((index < 0 ? ~index : index + 1), project);
-
-                // Add to the Solution's configuration platforms
-                foreach (Project.Configuration configuration in project.Configurations)
-                    AddProjectConfiguration(configuration);
-            }
+            get { return File.Exists(_fileName); }
         }
 
         /// <summary>
-        /// Add the configuration and platform from the specified <see cref="Project.Configuration"/>.
+        /// True if the file has a UTF8 byte-order-mark.
         /// </summary>
-        public void AddProjectConfiguration(Project.Configuration configuration)
-        {
-            // Add to the Solution's configuration platform section
-            string platform = (configuration.Platform ?? PlatformAnyCPU);
-            if (platform == Project.PlatformAnyCPU)
-                platform = PlatformAnyCPU;
-            string configurationPlatform = configuration.Name + "|" + platform;
-            FindGlobalSection(SolutionConfigurationPlatformsGlobalSection).AddKeyValue(configurationPlatform, configurationPlatform);
+        public bool FileHasUTF8BOM { get; set; }
 
-            // Add default mappings to the Project's configuration platform mappings
-            GlobalSection globalSection = FindGlobalSection(ProjectConfigurationPlatformsGlobalSection);
-            Project project = (Project)configuration.Parent;
-            string projectGuid = project.ProjectGuid.ToString("B").ToUpper();
-            string projectConfigurationPlatform = configuration.Name;
-            if (project.TypeGuid != Project.SetupProjectType)
-                projectConfigurationPlatform += "|" + platform;
-            string prefix = projectGuid + "." + configurationPlatform;
-            globalSection.AddKeyValue(prefix + ".ActiveCfg", projectConfigurationPlatform);
-            if (platform != PlatformDotNet)
-                globalSection.AddKeyValue(prefix + ".Build.0", projectConfigurationPlatform);
-            if (project.ProjectTypeGuids != null && project.ProjectTypeGuids.Count > 0 && project.ProjectTypeGuids.Contains(Project.VisualDBToolsProjectType))
-                globalSection.AddKeyValue(prefix + ".Deploy.0", projectConfigurationPlatform);
+        /// <summary>
+        /// The associated file name of the <see cref="Solution"/>.
+        /// </summary>
+        public string FileName
+        {
+            get { return _fileName; }
+            set { _fileName = value; }
         }
 
         /// <summary>
-        /// Create and add a new <see cref="Project"/> to the solution by filename.
+        /// Always <c>true</c> for a <see cref="Solution"/>.
         /// </summary>
-        public Project CreateProject(string fileName)
+        public bool FileUsingTabs
         {
-            Project project = new Project(fileName, this);
-            AddProject(project);
-            _projectEntries.Add(new ProjectEntry(Project.CSProjectType, project));
-            return project;
+            get { return true; }
+            set { throw new Exception("Solution files always use tabs!"); }
         }
 
         /// <summary>
-        /// Get any Solution folders for the specified Project.
+        /// The version number of the solution file format.
         /// </summary>
-        public string GetSolutionFolders(Project project)
+        public string FormatVersion
         {
-            string solutionFolders = null;
-            GlobalSection nestedProjects = FindGlobalSection(NestedProjectsGlobalSection);
-            if (nestedProjects != null)
-            {
-                Guid projectGuid = project.ProjectGuid;
-                while (true)
-                {
-                    string parentGuid = nestedProjects.FindValue(projectGuid.ToString("B").ToUpper());
-                    if (parentGuid == null)
-                        break;
-                    ProjectEntry parentProject = FindProjectEntry(Guid.Parse(parentGuid));
-                    if (parentProject == null)
-                        break;
-                    solutionFolders = (string.IsNullOrEmpty(solutionFolders) ? parentProject.Name : parentProject.Name + "\\" + solutionFolders);
-                    projectGuid = parentProject.Guid;
-                }
-            }
-            return solutionFolders;
+            get { return _formatVersion; }
         }
 
         /// <summary>
-        /// Find a project by name.
+        /// The <see cref="GlobalSection"/>s of the associated '.sln' file.
         /// </summary>
-        public Project FindProject(string name)
+        public List<GlobalSection> GlobalSections
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return StringUtil.NNEqualsIgnoreCase(project.Name, name); });
+            get { return _globalSections; }
         }
 
         /// <summary>
-        /// Find a project by its assembly name.
+        /// True if the <see cref="Solution"/> is newly created and hasn't been saved yet.
         /// </summary>
-        public Project FindProjectByAssemblyName(string assemblyName)
+        public bool IsNew
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return StringUtil.NNEqualsIgnoreCase(project.AssemblyName, assemblyName); });
+            get { return _isNew; }
         }
 
         /// <summary>
-        /// Find a project by its full file name.
+        /// The name of the <see cref="Solution"/> (does not include the file path or extension).
         /// </summary>
-        public Project FindProjectByFileName(string fullFileName)
+        public string Name
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return StringUtil.NNEqualsIgnoreCase(project.FileName, fullFileName); });
+            get { return _name; }
+            set { _name = value; }
         }
 
         /// <summary>
-        /// Find a project by its GUID.
+        /// The product release number.
         /// </summary>
-        public Project FindProject(Guid projectGuid)
+        public string ProductRelease
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return project.ProjectGuid == projectGuid; });
+            get { return _productRelease; }
         }
 
         /// <summary>
-        /// Add a listed annotation to the <see cref="Solution"/>.
+        /// The <see cref="ProjectEntry"/>s of the associated '.sln' file.
         /// </summary>
-        public void AnnotationAdded(Annotation annotation, Project project, CodeUnit codeUnit, bool sendStatus)
+        public List<ProjectEntry> ProjectEntries
         {
-            try
-            {
-                CodeAnnotation codeAnnotation = new CodeAnnotation(annotation, project, codeUnit);
-                // The following line has been seen to throw an exception when the LOST COMMENT logic in the Token finalizer is
-                // triggered, complaining that this is executed during the processing of a CollectionChanged event on the same
-                // collection, even though this situation couldn't be found in any thread in the debugger.  So, we wrap this
-                // method in a try/catch and swallow any such (very-low frequency) event - we'll still get a Log message for
-                // the lost comment in the Output window (lost comments are also only tracked in Debug builds).
-                lock (this)
-                {
-                    _codeAnnotations.Add(codeAnnotation);
-                    _codeAnnotationsDictionary.Add(annotation, codeAnnotation);
-                }
-
-                // Send a status change if loading and an annotation (message) is added to a file (solution, project, reference,
-                // or code unit), so that the UI can indicate any errors in the file tree.
-                if (sendStatus && _statusCallback != null)
-                    _statusCallback(LoadStatus.ObjectAnnotated, annotation.Parent);
-            }
-            catch { }
+            get { return _projectEntries; }
         }
 
         /// <summary>
-        /// Remove a listed annotation from the <see cref="Solution"/>.
+        /// The child <see cref="Project"/>s.
         /// </summary>
-        public void AnnotationRemoved(Annotation annotation)
+        public ChildList<Project> Projects
         {
-            lock (this)
-            {
-                CodeAnnotation codeAnnotation;
-                if (_codeAnnotationsDictionary.TryGetValue(annotation, out codeAnnotation))
-                {
-                    _codeAnnotations.Remove(codeAnnotation);
-                    _codeAnnotationsDictionary.Remove(annotation);
-                }
-            }
-        }
-
-        protected override void NotifyListedAnnotationAdded(Annotation annotation)
-        {
-            AnnotationAdded(annotation, null, null, true);
-        }
-
-        protected override void NotifyListedAnnotationRemoved(Annotation annotation)
-        {
-            AnnotationRemoved(annotation);
-        }
-
-        /// <summary>
-        /// Log the specified text message with the specified severity level.
-        /// </summary>
-        public void LogMessage(string message, MessageSeverity severity, string toolTip)
-        {
-            string prefix = (severity == MessageSeverity.Error ? "ERROR: " : (severity == MessageSeverity.Warning ? "Warning: " : ""));
-            Log.WriteLine(prefix + "Solution '" + _name + "': " + message, toolTip != null ? toolTip.TrimEnd() : null);
-        }
-
-        /// <summary>
-        /// Log the specified text message with the specified severity level.
-        /// </summary>
-        public void LogMessage(string message, MessageSeverity severity)
-        {
-            LogMessage(message, severity, null);
-        }
-
-        /// <summary>
-        /// Log the specified exception and message.
-        /// </summary>
-        public string LogException(Exception ex, string message)
-        {
-            return Log.Exception(ex, message + " solution '" + _name + "'");
-        }
-
-        /// <summary>
-        /// Log the specified text message and also attach it as an annotation.
-        /// </summary>
-        public void LogAndAttachMessage(string message, MessageSeverity severity, MessageSource source, string toolTip)
-        {
-            LogMessage(message, severity, toolTip);
-            AttachMessage(message, severity, source);
-        }
-
-        /// <summary>
-        /// Log the specified text message and also attach it as an annotation.
-        /// </summary>
-        public void LogAndAttachMessage(string message, MessageSeverity severity, MessageSource source)
-        {
-            LogAndAttachMessage(message, severity, source, null);
-        }
-
-        /// <summary>
-        /// Log the specified exception and message and also attach it as an annotation.
-        /// </summary>
-        public void LogAndAttachException(Exception ex, string message, MessageSource source)
-        {
-            message = LogException(ex, message);
-            AttachMessage(message, MessageSeverity.Error, source);
-        }
-
-        /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
-        /// </summary>
-        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Add(_name, this);
-        }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Remove(_name, this);
+            get { return _projects; }
         }
 
         /// <summary>
@@ -749,118 +492,110 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Calculate message counts.
+        /// Add a <see cref="Project"/> to the <see cref="Solution"/>, keeping the <see cref="Projects"/> collection sorted alphabetically.
         /// </summary>
-        public void GetMessageCounts(out int errorCount, out int warningCount, out int commentCount)
+        public void AddProject(Project project)
         {
-            // Calculate message counts
-            errorCount = warningCount = commentCount = 0;
-            foreach (CodeAnnotation codeAnnotation in _codeAnnotations)
+            if (project != null)
             {
-                if (codeAnnotation.Annotation is Message)
-                {
-                    Message message = (Message)codeAnnotation.Annotation;
-                    if (message.Severity == MessageSeverity.Error)
-                        ++errorCount;
-                    else if (message.Severity == MessageSeverity.Warning)
-                        ++warningCount;
-                }
-                else if (codeAnnotation.Annotation is Comment)
-                    ++commentCount;
+                // Insert the Project at the proper index according to its name.
+                // Duplicate names shouldn't exist, but technically could, so just insert any duplicate matches following the existing one.
+                int index = _projects.BinarySearch(project);
+                _projects.Insert((index < 0 ? ~index : index + 1), project);
+
+                // Add to the Solution's configuration platforms
+                foreach (Project.Configuration configuration in project.Configurations)
+                    AddProjectConfiguration(configuration);
             }
         }
 
         /// <summary>
-        /// Log message counts, and optionally errors and warnings (or all messages if detail logging is on).
+        /// Add the configuration and platform from the specified <see cref="Project.Configuration"/>.
         /// </summary>
-        public void LogMessageCounts(bool logMessages)
+        public void AddProjectConfiguration(Project.Configuration configuration)
         {
-            // Calculate and log message counts
-            int errorCount, warningCount, commentCount;
-            GetMessageCounts(out errorCount, out warningCount, out commentCount);
-            Log.WriteLine(string.Format("{0:N0} messages ({1:N0} errors; {2:N0} warnings; {3:N0} comments)", _codeAnnotations.Count, errorCount, warningCount, commentCount));
+            // Add to the Solution's configuration platform section
+            string platform = (configuration.Platform ?? PlatformAnyCPU);
+            if (platform == Project.PlatformAnyCPU)
+                platform = PlatformAnyCPU;
+            string configurationPlatform = configuration.Name + "|" + platform;
+            FindGlobalSection(SolutionConfigurationPlatformsGlobalSection).AddKeyValue(configurationPlatform, configurationPlatform);
 
-            // Log errors and warnings if requested
-            if (logMessages)
-            {
-                foreach (CodeAnnotation codeAnnotation in _codeAnnotations)
-                {
-                    // Log all messages if the LogLevel is Detailed, log Warnings if Normal, and Errors if Minimal
-                    Message message = codeAnnotation.Annotation as Message;
-                    if (Log.LogLevel >= Log.Level.Detailed || (message != null
-                        && ((Log.LogLevel >= Log.Level.Normal && message.Severity == MessageSeverity.Warning)
-                        || (Log.LogLevel >= Log.Level.Minimal && message.Severity == MessageSeverity.Error))))
-                        Log.WriteLine(codeAnnotation.ToString());
-                }
-            }
+            // Add default mappings to the Project's configuration platform mappings
+            GlobalSection globalSection = FindGlobalSection(ProjectConfigurationPlatformsGlobalSection);
+            Project project = (Project)configuration.Parent;
+            string projectGuid = project.ProjectGuid.ToString("B").ToUpper();
+            string projectConfigurationPlatform = configuration.Name;
+            if (project.TypeGuid != Project.SetupProjectType)
+                projectConfigurationPlatform += "|" + platform;
+            string prefix = projectGuid + "." + configurationPlatform;
+            globalSection.AddKeyValue(prefix + ".ActiveCfg", projectConfigurationPlatform);
+            if (platform != PlatformDotNet)
+                globalSection.AddKeyValue(prefix + ".Build.0", projectConfigurationPlatform);
+            if (project.ProjectTypeGuids != null && project.ProjectTypeGuids.Count > 0 && project.ProjectTypeGuids.Contains(Project.VisualDBToolsProjectType))
+                globalSection.AddKeyValue(prefix + ".Deploy.0", projectConfigurationPlatform);
         }
 
         /// <summary>
-        /// Unload the <see cref="Solution"/> - unload all <see cref="Project"/>s, clear all <see cref="CodeAnnotation"/>s, etc.
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
         /// </summary>
-        public void Unload()
+        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Add(_name, this);
+        }
+
+        /// <summary>
+        /// Add a listed annotation to the <see cref="Solution"/>.
+        /// </summary>
+        public void AnnotationAdded(Annotation annotation, Project project, CodeUnit codeUnit, bool sendStatus)
+        {
+            try
+            {
+                CodeAnnotation codeAnnotation = new CodeAnnotation(annotation, project, codeUnit);
+                // The following line has been seen to throw an exception when the LOST COMMENT logic in the Token finalizer is
+                // triggered, complaining that this is executed during the processing of a CollectionChanged event on the same
+                // collection, even though this situation couldn't be found in any thread in the debugger.  So, we wrap this
+                // method in a try/catch and swallow any such (very-low frequency) event - we'll still get a Log message for
+                // the lost comment in the Output window (lost comments are also only tracked in Debug builds).
+                lock (this)
+                {
+                    _codeAnnotations.Add(codeAnnotation);
+                    _codeAnnotationsDictionary.Add(annotation, codeAnnotation);
+                }
+
+                // Send a status change if loading and an annotation (message) is added to a file (solution, project, reference,
+                // or code unit), so that the UI can indicate any errors in the file tree.
+                if (sendStatus && _statusCallback != null)
+                    _statusCallback(LoadStatus.ObjectAnnotated, annotation.Parent);
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Remove a listed annotation from the <see cref="Solution"/>.
+        /// </summary>
+        public void AnnotationRemoved(Annotation annotation)
         {
             lock (this)
             {
-                _codeAnnotations.Clear();
-                _codeAnnotationsDictionary.Clear();
-                foreach (Project project in _projects)
-                    project.Unload();
+                CodeAnnotation codeAnnotation;
+                if (_codeAnnotationsDictionary.TryGetValue(annotation, out codeAnnotation))
+                {
+                    _codeAnnotations.Remove(codeAnnotation);
+                    _codeAnnotationsDictionary.Remove(annotation);
+                }
             }
         }
 
         /// <summary>
-        /// Save the <see cref="Solution"/> to the specified file name.
+        /// Create and add a new <see cref="Project"/> to the solution by filename.
         /// </summary>
-        public void SaveAs(string fileName)
+        public Project CreateProject(string fileName)
         {
-            Log.WriteLine("Saving solution to '" + fileName + "' ...");
-
-            // VS solution files use tabs, but this is handled by the rendering routines.
-            try
-            {
-                using (CodeWriter writer = new CodeWriter(fileName, FileEncoding, FileHasUTF8BOM, false))
-                    AsText(writer, RenderFlags.None);
-            }
-            catch (Exception ex)
-            {
-                LogException(ex, "writing");
-            }
-            _isNew = false;
-        }
-
-        /// <summary>
-        /// Save the <see cref="Solution"/>.
-        /// </summary>
-        public void Save()
-        {
-            SaveAs(CodeUnit.GetSaveFileName(_fileName));
-        }
-
-        /// <summary>
-        /// Save the <see cref="Solution"/> plus all <see cref="Project"/>s and all <see cref="CodeUnit"/>s.
-        /// </summary>
-        public void SaveAll()
-        {
-            Save();
-            foreach (Project project in Projects)
-                project.SaveAll();
-        }
-
-        /// <summary>
-        /// Find any ProjectEntry with the specified name.
-        /// </summary>
-        public ProjectEntry FindProjectEntry(string name)
-        {
-            return Enumerable.FirstOrDefault(_projectEntries, delegate(ProjectEntry projectEntry) { return projectEntry.Name == name; });
-        }
-
-        /// <summary>
-        /// Find any ProjectEntry with the specified Guid.
-        /// </summary>
-        public ProjectEntry FindProjectEntry(Guid guid)
-        {
-            return Enumerable.FirstOrDefault(_projectEntries, delegate(ProjectEntry projectEntry) { return projectEntry.Guid == guid; });
+            Project project = new Project(fileName, this);
+            AddProject(project);
+            _projectEntries.Add(new ProjectEntry(Project.CSProjectType, project));
+            return project;
         }
 
         /// <summary>
@@ -868,30 +603,55 @@ namespace Nova.CodeDOM
         /// </summary>
         public GlobalSection FindGlobalSection(string name)
         {
-            return Enumerable.FirstOrDefault(_globalSections, delegate(GlobalSection globalSection) { return globalSection.Name == name; });
+            return Enumerable.FirstOrDefault(_globalSections, delegate (GlobalSection globalSection) { return globalSection.Name == name; });
         }
 
         /// <summary>
-        /// Get the directory for the specified web site project.
+        /// Find a project by name.
         /// </summary>
-        public string GetWebSiteDirectory(string projectName)
+        public Project FindProject(string name)
         {
-            ProjectEntry projectEntry = FindProjectEntry(projectName);
-            if (projectEntry != null)
-            {
-                string relativePath = null;
-                if (projectEntry.FileName.StartsWith("http:"))
-                {
-                    ProjectSection projectSection = projectEntry.FindProjectSection(WebsitePropertiesProjectSection);
-                    if (projectSection != null)
-                        relativePath = projectSection.FindValue("SlnRelativePath").Trim('"');
-                }
-                else
-                    relativePath = projectEntry.FileName;
-                if (relativePath != null)
-                    return Path.Combine(Path.GetDirectoryName(FileName) ?? "", relativePath.TrimEnd('\\'));
-            }
-            return null;
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return StringUtil.NNEqualsIgnoreCase(project.Name, name); });
+        }
+
+        /// <summary>
+        /// Find a project by its GUID.
+        /// </summary>
+        public Project FindProject(Guid projectGuid)
+        {
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return project.ProjectGuid == projectGuid; });
+        }
+
+        /// <summary>
+        /// Find a project by its assembly name.
+        /// </summary>
+        public Project FindProjectByAssemblyName(string assemblyName)
+        {
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return StringUtil.NNEqualsIgnoreCase(project.AssemblyName, assemblyName); });
+        }
+
+        /// <summary>
+        /// Find a project by its full file name.
+        /// </summary>
+        public Project FindProjectByFileName(string fullFileName)
+        {
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return StringUtil.NNEqualsIgnoreCase(project.FileName, fullFileName); });
+        }
+
+        /// <summary>
+        /// Find any ProjectEntry with the specified name.
+        /// </summary>
+        public ProjectEntry FindProjectEntry(string name)
+        {
+            return Enumerable.FirstOrDefault(_projectEntries, delegate (ProjectEntry projectEntry) { return projectEntry.Name == name; });
+        }
+
+        /// <summary>
+        /// Find any ProjectEntry with the specified Guid.
+        /// </summary>
+        public ProjectEntry FindProjectEntry(Guid guid)
+        {
+            return Enumerable.FirstOrDefault(_projectEntries, delegate (ProjectEntry projectEntry) { return projectEntry.Guid == guid; });
         }
 
         /// <summary>
@@ -918,6 +678,44 @@ namespace Nova.CodeDOM
                 configurations = uniqueConfigurations;
             if (uniquePlatforms.Count > 0)
                 platforms = uniquePlatforms;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName(bool descriptive)
+        {
+            return _name;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName()
+        {
+            return _name;
+        }
+
+        /// <summary>
+        /// Calculate message counts.
+        /// </summary>
+        public void GetMessageCounts(out int errorCount, out int warningCount, out int commentCount)
+        {
+            // Calculate message counts
+            errorCount = warningCount = commentCount = 0;
+            foreach (CodeAnnotation codeAnnotation in _codeAnnotations)
+            {
+                if (codeAnnotation.Annotation is Message)
+                {
+                    Message message = (Message)codeAnnotation.Annotation;
+                    if (message.Severity == MessageSeverity.Error)
+                        ++errorCount;
+                    else if (message.Severity == MessageSeverity.Warning)
+                        ++warningCount;
+                }
+                else if (codeAnnotation.Annotation is Comment)
+                    ++commentCount;
+            }
         }
 
         /// <summary>
@@ -954,69 +752,197 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// Get any Solution folders for the specified Project.
         /// </summary>
-        public string GetFullName(bool descriptive)
+        public string GetSolutionFolders(Project project)
         {
-            return _name;
+            string solutionFolders = null;
+            GlobalSection nestedProjects = FindGlobalSection(NestedProjectsGlobalSection);
+            if (nestedProjects != null)
+            {
+                Guid projectGuid = project.ProjectGuid;
+                while (true)
+                {
+                    string parentGuid = nestedProjects.FindValue(projectGuid.ToString("B").ToUpper());
+                    if (parentGuid == null)
+                        break;
+                    ProjectEntry parentProject = FindProjectEntry(Guid.Parse(parentGuid));
+                    if (parentProject == null)
+                        break;
+                    solutionFolders = (string.IsNullOrEmpty(solutionFolders) ? parentProject.Name : parentProject.Name + "\\" + solutionFolders);
+                    projectGuid = parentProject.Guid;
+                }
+            }
+            return solutionFolders;
         }
 
         /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// Get the directory for the specified web site project.
         /// </summary>
-        public string GetFullName()
+        public string GetWebSiteDirectory(string projectName)
         {
-            return _name;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// Parse a solution from a file.
-        /// </summary>
-        /// <param name="fileName">The solution file name.</param>
-        /// <param name="activeConfiguration">The active configuration to be used (will default if null).</param>
-        /// <param name="activePlatform">The active platform to be used (will default if null).</param>
-        /// <param name="statusCallback">An action to be executed as status changes occur during processing.</param>
-        public static Solution Parse(string fileName, string activeConfiguration, string activePlatform, Action<LoadStatus, CodeObject> statusCallback)
-        {
-            if (File.Exists(fileName))
-                return new Solution(fileName, activeConfiguration, activePlatform, statusCallback);
-
-            Log.WriteLine("ERROR: Solution file '" + fileName + "' does not exist.");
+            ProjectEntry projectEntry = FindProjectEntry(projectName);
+            if (projectEntry != null)
+            {
+                string relativePath = null;
+                if (projectEntry.FileName.StartsWith("http:"))
+                {
+                    ProjectSection projectSection = projectEntry.FindProjectSection(WebsitePropertiesProjectSection);
+                    if (projectSection != null)
+                        relativePath = projectSection.FindValue("SlnRelativePath").Trim('"');
+                }
+                else
+                    relativePath = projectEntry.FileName;
+                if (relativePath != null)
+                    return Path.Combine(Path.GetDirectoryName(FileName) ?? "", relativePath.TrimEnd('\\'));
+            }
             return null;
         }
 
         /// <summary>
-        /// Parse a solution from a file.
+        /// Log the specified exception and message and also attach it as an annotation.
         /// </summary>
-        /// <param name="fileName">The solution file name.</param>
-        /// <param name="activeConfiguration">The active configuration to be used (will default if null).</param>
-        /// <param name="activePlatform">The active platform to be used (will default if null).</param>
-        public static Solution Parse(string fileName, string activeConfiguration, string activePlatform)
+        public void LogAndAttachException(Exception ex, string message, MessageSource source)
         {
-            return Parse(fileName, activeConfiguration, activePlatform, null);
+            message = LogException(ex, message);
+            AttachMessage(message, MessageSeverity.Error, source);
         }
 
         /// <summary>
-        /// Parse a solution from a file.
+        /// Log the specified text message and also attach it as an annotation.
         /// </summary>
-        /// <param name="fileName">The solution file name.</param>
-        /// <param name="activeConfiguration">The active configuration to be used (will default if null).</param>
-        public static Solution Parse(string fileName, string activeConfiguration)
+        public void LogAndAttachMessage(string message, MessageSeverity severity, MessageSource source, string toolTip)
         {
-            return Parse(fileName, activeConfiguration, null, null);
+            LogMessage(message, severity, toolTip);
+            AttachMessage(message, severity, source);
         }
 
         /// <summary>
-        /// Parse a solution from a file.
+        /// Log the specified text message and also attach it as an annotation.
         /// </summary>
-        /// <param name="fileName">The solution file name.</param>
-        public static Solution Parse(string fileName)
+        public void LogAndAttachMessage(string message, MessageSeverity severity, MessageSource source)
         {
-            return Parse(fileName, null, null, null);
+            LogAndAttachMessage(message, severity, source, null);
+        }
+
+        /// <summary>
+        /// Log the specified exception and message.
+        /// </summary>
+        public string LogException(Exception ex, string message)
+        {
+            return Log.Exception(ex, message + " solution '" + _name + "'");
+        }
+
+        /// <summary>
+        /// Log the specified text message with the specified severity level.
+        /// </summary>
+        public void LogMessage(string message, MessageSeverity severity, string toolTip)
+        {
+            string prefix = (severity == MessageSeverity.Error ? "ERROR: " : (severity == MessageSeverity.Warning ? "Warning: " : ""));
+            Log.WriteLine(prefix + "Solution '" + _name + "': " + message, toolTip != null ? toolTip.TrimEnd() : null);
+        }
+
+        /// <summary>
+        /// Log the specified text message with the specified severity level.
+        /// </summary>
+        public void LogMessage(string message, MessageSeverity severity)
+        {
+            LogMessage(message, severity, null);
+        }
+
+        /// <summary>
+        /// Log message counts, and optionally errors and warnings (or all messages if detail logging is on).
+        /// </summary>
+        public void LogMessageCounts(bool logMessages)
+        {
+            // Calculate and log message counts
+            int errorCount, warningCount, commentCount;
+            GetMessageCounts(out errorCount, out warningCount, out commentCount);
+            Log.WriteLine(string.Format("{0:N0} messages ({1:N0} errors; {2:N0} warnings; {3:N0} comments)", _codeAnnotations.Count, errorCount, warningCount, commentCount));
+
+            // Log errors and warnings if requested
+            if (logMessages)
+            {
+                foreach (CodeAnnotation codeAnnotation in _codeAnnotations)
+                {
+                    // Log all messages if the LogLevel is Detailed, log Warnings if Normal, and Errors if Minimal
+                    Message message = codeAnnotation.Annotation as Message;
+                    if (Log.LogLevel >= Log.Level.Detailed || (message != null
+                        && ((Log.LogLevel >= Log.Level.Normal && message.Severity == MessageSeverity.Warning)
+                        || (Log.LogLevel >= Log.Level.Minimal && message.Severity == MessageSeverity.Error))))
+                        Log.WriteLine(codeAnnotation.ToString());
+                }
+            }
+        }
+
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
+        /// </summary>
+        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Remove(_name, this);
+        }
+
+        /// <summary>
+        /// Save the <see cref="Solution"/>.
+        /// </summary>
+        public void Save()
+        {
+            SaveAs(CodeUnit.GetSaveFileName(_fileName));
+        }
+
+        /// <summary>
+        /// Save the <see cref="Solution"/> plus all <see cref="Project"/>s and all <see cref="CodeUnit"/>s.
+        /// </summary>
+        public void SaveAll()
+        {
+            Save();
+            foreach (Project project in Projects)
+                project.SaveAll();
+        }
+
+        /// <summary>
+        /// Save the <see cref="Solution"/> to the specified file name.
+        /// </summary>
+        public void SaveAs(string fileName)
+        {
+            Log.WriteLine("Saving solution to '" + fileName + "' ...");
+
+            // VS solution files use tabs, but this is handled by the rendering routines.
+            try
+            {
+                using (CodeWriter writer = new CodeWriter(fileName, FileEncoding, FileHasUTF8BOM, false))
+                    AsText(writer, RenderFlags.None);
+            }
+            catch (Exception ex)
+            {
+                LogException(ex, "writing");
+            }
+            _isNew = false;
+        }
+
+        /// <summary>
+        /// Unload the <see cref="Solution"/> - unload all <see cref="Project"/>s, clear all <see cref="CodeAnnotation"/>s, etc.
+        /// </summary>
+        public void Unload()
+        {
+            lock (this)
+            {
+                _codeAnnotations.Clear();
+                _codeAnnotationsDictionary.Clear();
+                foreach (Project project in _projects)
+                    project.Unload();
+            }
+        }
+
+        protected override void NotifyListedAnnotationAdded(Annotation annotation)
+        {
+            AnnotationAdded(annotation, null, null, true);
+        }
+
+        protected override void NotifyListedAnnotationRemoved(Annotation annotation)
+        {
+            AnnotationRemoved(annotation);
         }
 
         /// <summary>
@@ -1132,43 +1058,109 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse a project.
+        /// Parse a solution from a file.
         /// </summary>
-        protected void ParseProject(StreamReader reader, string line)
+        /// <param name="fileName">The solution file name.</param>
+        /// <param name="activeConfiguration">The active configuration to be used (will default if null).</param>
+        /// <param name="activePlatform">The active platform to be used (will default if null).</param>
+        /// <param name="statusCallback">An action to be executed as status changes occur during processing.</param>
+        public static Solution Parse(string fileName, string activeConfiguration, string activePlatform, Action<LoadStatus, CodeObject> statusCallback)
+        {
+            if (File.Exists(fileName))
+                return new Solution(fileName, activeConfiguration, activePlatform, statusCallback);
+
+            Log.WriteLine("ERROR: Solution file '" + fileName + "' does not exist.");
+            return null;
+        }
+
+        /// <summary>
+        /// Parse a solution from a file.
+        /// </summary>
+        /// <param name="fileName">The solution file name.</param>
+        /// <param name="activeConfiguration">The active configuration to be used (will default if null).</param>
+        /// <param name="activePlatform">The active platform to be used (will default if null).</param>
+        public static Solution Parse(string fileName, string activeConfiguration, string activePlatform)
+        {
+            return Parse(fileName, activeConfiguration, activePlatform, null);
+        }
+
+        /// <summary>
+        /// Parse a solution from a file.
+        /// </summary>
+        /// <param name="fileName">The solution file name.</param>
+        /// <param name="activeConfiguration">The active configuration to be used (will default if null).</param>
+        public static Solution Parse(string fileName, string activeConfiguration)
+        {
+            return Parse(fileName, activeConfiguration, null, null);
+        }
+
+        /// <summary>
+        /// Parse a solution from a file.
+        /// </summary>
+        /// <param name="fileName">The solution file name.</param>
+        public static Solution Parse(string fileName)
+        {
+            return Parse(fileName, null, null, null);
+        }
+
+        /// <summary>
+        /// Load user options (such as active configuration/platform) from any '.nuo' file.
+        /// </summary>
+        public void LoadUserOptions()
         {
             try
             {
-                int start = ProjectStart.Length;
-                int end = line.IndexOf(')', start);
-                if (end > 0)
+                if (File.Exists(FileName))
                 {
-                    // Parse the ProjectEntry object
-                    Guid typeGuid = Guid.Parse(line.Substring(start, end - start).Trim().Trim('"'));
-                    string[] args = line.Substring(end + 3).Split(',');
-                    string projectName = (args.Length > 0 ? args[0].Trim().Trim('"') : null);
-                    string projectFileName = (args.Length > 1 ? args[1].Trim().Trim('"') : null);
-                    Guid projectGuid = Guid.Parse(args.Length > 2 ? args[2].Trim().Trim('"') : "");
-                    ProjectEntry projectEntry = new ProjectEntry(reader, typeGuid, projectName, projectFileName, projectGuid, this);
-                    _projectEntries.Add(projectEntry);
+                    using (XmlTextReader xmlReader = new XmlTextReader(Path.ChangeExtension(FileName, SolutionOptionsExtension)))
+                    {
+                        bool firstElement = true;
+                        //int version = 0;
+
+                        // Read the next node
+                        while (xmlReader.Read())
+                        {
+                            if (xmlReader.NodeType == XmlNodeType.Element)
+                            {
+                                if (firstElement)
+                                {
+                                    firstElement = false;
+                                    if (xmlReader.Name != "Furesoft.Core.CodeDomSolutionOptions")
+                                        return;
+                                    //if (xmlReader.MoveToAttribute("Version"))
+                                    //    version = xmlReader.Value.ParseInt();
+                                }
+                                else if (xmlReader.Name == "ActiveConfiguration" && !xmlReader.IsEmptyElement)
+                                    ActiveConfiguration = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "ActivePlatform" && !xmlReader.IsEmptyElement)
+                                    ActivePlatform = xmlReader.ReadString().Trim();
+                            }
+                        }
+                    }
                 }
             }
-            catch (Exception ex)
+            catch { }
+        }
+
+        /// <summary>
+        /// Save user options (such as active configuration/platform) to a '.nuo' file.
+        /// </summary>
+        public void SaveUserOptions()
+        {
+            try
             {
-                LogAndAttachException(ex, "parsing Project entry for", MessageSource.Parse);
+                using (XmlTextWriter xmlWriter = new XmlTextWriter(Path.ChangeExtension(FileName, SolutionOptionsExtension), Encoding.ASCII))
+                {
+                    xmlWriter.Formatting = Formatting.Indented;
+                    xmlWriter.WriteStartDocument();
+                    xmlWriter.WriteStartElement("Furesoft.Core.CodeDomSolutionOptions");
+                    xmlWriter.WriteAttributeString("Version", "1");
+                    xmlWriter.WriteElementString("ActiveConfiguration", ActiveConfiguration);
+                    xmlWriter.WriteElementString("ActivePlatform", ActivePlatform);
+                    xmlWriter.WriteEndDocument();
+                }
             }
-        }
-
-        protected void UnrecognizedLine(string line)
-        {
-            LogAndAttachMessage("Unrecognized line while parsing: '" + line + "'", MessageSeverity.Error, MessageSource.Parse);
-        }
-
-        protected string ReadLine(StreamReader reader)
-        {
-            string line = reader.ReadLine();
-            if (!string.IsNullOrEmpty(line))
-                line = line.Trim();
-            return line;
+            catch { }
         }
 
         /// <summary>
@@ -1216,68 +1208,44 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Save user options (such as active configuration/platform) to a '.nuo' file.
+        /// Parse a project.
         /// </summary>
-        public void SaveUserOptions()
+        protected void ParseProject(StreamReader reader, string line)
         {
             try
             {
-                using (XmlTextWriter xmlWriter = new XmlTextWriter(Path.ChangeExtension(FileName, SolutionOptionsExtension), Encoding.ASCII))
+                int start = ProjectStart.Length;
+                int end = line.IndexOf(')', start);
+                if (end > 0)
                 {
-                    xmlWriter.Formatting = Formatting.Indented;
-                    xmlWriter.WriteStartDocument();
-                    xmlWriter.WriteStartElement("NovaSolutionOptions");
-                    xmlWriter.WriteAttributeString("Version", "1");
-                    xmlWriter.WriteElementString("ActiveConfiguration", ActiveConfiguration);
-                    xmlWriter.WriteElementString("ActivePlatform", ActivePlatform);
-                    xmlWriter.WriteEndDocument();
+                    // Parse the ProjectEntry object
+                    Guid typeGuid = Guid.Parse(line.Substring(start, end - start).Trim().Trim('"'));
+                    string[] args = line.Substring(end + 3).Split(',');
+                    string projectName = (args.Length > 0 ? args[0].Trim().Trim('"') : null);
+                    string projectFileName = (args.Length > 1 ? args[1].Trim().Trim('"') : null);
+                    Guid projectGuid = Guid.Parse(args.Length > 2 ? args[2].Trim().Trim('"') : "");
+                    ProjectEntry projectEntry = new ProjectEntry(reader, typeGuid, projectName, projectFileName, projectGuid, this);
+                    _projectEntries.Add(projectEntry);
                 }
             }
-            catch { }
-        }
-
-        /// <summary>
-        /// Load user options (such as active configuration/platform) from any '.nuo' file.
-        /// </summary>
-        public void LoadUserOptions()
-        {
-            try
+            catch (Exception ex)
             {
-                if (File.Exists(FileName))
-                {
-                    using (XmlTextReader xmlReader = new XmlTextReader(Path.ChangeExtension(FileName, SolutionOptionsExtension)))
-                    {
-                        bool firstElement = true;
-                        //int version = 0;
-
-                        // Read the next node
-                        while (xmlReader.Read())
-                        {
-                            if (xmlReader.NodeType == XmlNodeType.Element)
-                            {
-                                if (firstElement)
-                                {
-                                    firstElement = false;
-                                    if (xmlReader.Name != "NovaSolutionOptions")
-                                        return;
-                                    //if (xmlReader.MoveToAttribute("Version"))
-                                    //    version = xmlReader.Value.ParseInt();
-                                }
-                                else if (xmlReader.Name == "ActiveConfiguration" && !xmlReader.IsEmptyElement)
-                                    ActiveConfiguration = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "ActivePlatform" && !xmlReader.IsEmptyElement)
-                                    ActivePlatform = xmlReader.ReadString().Trim();
-                            }
-                        }
-                    }
-                }
+                LogAndAttachException(ex, "parsing Project entry for", MessageSource.Parse);
             }
-            catch { }
         }
 
-        #endregion
+        protected string ReadLine(StreamReader reader)
+        {
+            string line = reader.ReadLine();
+            if (!string.IsNullOrEmpty(line))
+                line = line.Trim();
+            return line;
+        }
 
-        #region /* RENDERING */
+        protected void UnrecognizedLine(string line)
+        {
+            LogAndAttachMessage("Unrecognized line while parsing: '" + line + "'", MessageSeverity.Error, MessageSource.Parse);
+        }
 
         /// <summary>
         /// Always <c>false</c>.
@@ -1332,7 +1300,7 @@ namespace Nova.CodeDOM
                 if (uniquePlatforms.Count > (hasNullPlatform ? 2 : 1) && Projects.Count > 1)
                     uniquePlatforms.Add(PlatformMixed);
                 List<string> uniqueConfigurationPlatforms = Enumerable.ToList((Enumerable.SelectMany<string, string, string>(uniqueConfigurations,
-                    delegate(string configuration) { return uniquePlatforms; }, delegate(string configuration, string platform) { return configuration + "|" + platform; })));
+                    delegate (string configuration) { return uniquePlatforms; }, delegate (string configuration, string platform) { return configuration + "|" + platform; })));
                 uniqueConfigurationPlatforms.Sort();
 
                 // Write out all global sections
@@ -1355,42 +1323,33 @@ namespace Nova.CodeDOM
             }
         }
 
+        protected void AsTextProjectEnd(CodeWriter writer)
+        {
+            writer.WriteLine(ProjectEnd);
+        }
+
         protected void AsTextProjectStart(CodeWriter writer, Guid typeGuid, string name, string fileName, Guid projectGuid)
         {
             writer.WriteLine(ProjectStart + "\"" + typeGuid.ToString("B").ToUpper() + "\") = \"" + name + "\", \""
                 + FileUtil.MakeRelative(FileName, fileName) + "\", \"" + projectGuid.ToString("B").ToUpper() + "\"");
         }
 
-        protected void AsTextProjectEnd(CodeWriter writer)
-        {
-            writer.WriteLine(ProjectEnd);
-        }
-
-        #endregion
-
-        #region /* PROJECT ENTRY */
-
         /// <summary>
         /// Represents a project entry in a <see cref="Solution"/> file.
         /// </summary>
         public class ProjectEntry : CodeObject
         {
-            #region /* FIELDS */
-
-            public Guid TypeGuid;
-            public string Name;
             public string FileName;
             public Guid Guid;
-            public List<ProjectSection> ProjectSections = new List<ProjectSection>();
+            public string Name;
 
             /// <summary>
             /// The associated <see cref="Project"/> object.
             /// </summary>
             public Project Project;
 
-            #endregion
-
-            #region /* CONSTRUCTORS */
+            public List<ProjectSection> ProjectSections = new List<ProjectSection>();
+            public Guid TypeGuid;
 
             /// <summary>
             /// Create a <see cref="ProjectEntry"/>.
@@ -1404,10 +1363,6 @@ namespace Nova.CodeDOM
                 Project = project;
                 Parent = project.Solution;
             }
-
-            #endregion
-
-            #region /* PROPERTIES */
 
             /// <summary>
             /// Determine if the ProjectEntry represents a folder instead of an actual project.
@@ -1425,21 +1380,13 @@ namespace Nova.CodeDOM
                 get { return _parent as Solution; }
             }
 
-            #endregion
-
-            #region /* METHODS */
-
             /// <summary>
             /// Find any ProjectSection with the specified name.
             /// </summary>
             public ProjectSection FindProjectSection(string name)
             {
-                return Enumerable.FirstOrDefault(ProjectSections, delegate(ProjectSection projectSection) { return projectSection.Name == name; });
+                return Enumerable.FirstOrDefault(ProjectSections, delegate (ProjectSection projectSection) { return projectSection.Name == name; });
             }
-
-            #endregion
-
-            #region /* PARSING */
 
             /// <summary>
             /// Parse from the specified <see cref="StreamReader"/>.
@@ -1464,10 +1411,6 @@ namespace Nova.CodeDOM
                 while (true);
             }
 
-            #endregion
-
-            #region /* RENDERING */
-
             /// <summary>
             /// Write to the specified <see cref="CodeWriter"/>.
             /// </summary>
@@ -1478,28 +1421,16 @@ namespace Nova.CodeDOM
                     projectSection.AsText(writer);
                 ParentSolution.AsTextProjectEnd(writer);
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region /* PROJECT SECTION */
 
         /// <summary>
         /// Represents a project-level section of configuration data in a solution file.
         /// </summary>
         public class ProjectSection
         {
-            #region /* FIELDS */
-
-            public string Name;
             public bool IsPreProject;
             public List<KeyValuePair<string, string>> KeyValues = new List<KeyValuePair<string, string>>();
-
-            #endregion
-
-            #region /* CONSTRUCTORS */
+            public string Name;
 
             /// <summary>
             /// Create a <see cref="ProjectSection"/>.
@@ -1510,21 +1441,13 @@ namespace Nova.CodeDOM
                 IsPreProject = isPreProject;
             }
 
-            #endregion
-
-            #region /* METHODS */
-
             /// <summary>
             /// Find the value with the specified key.
             /// </summary>
             public string FindValue(string key)
             {
-                return Enumerable.FirstOrDefault(KeyValues, delegate(KeyValuePair<string, string> keyValue) { return keyValue.Key == key; }).Value;
+                return Enumerable.FirstOrDefault(KeyValues, delegate (KeyValuePair<string, string> keyValue) { return keyValue.Key == key; }).Value;
             }
-
-            #endregion
-
-            #region /* PARSING */
 
             /// <summary>
             /// Parse a <see cref="ProjectSection"/>.
@@ -1556,9 +1479,15 @@ namespace Nova.CodeDOM
                 }
             }
 
-            #endregion
+            public static void AsTextFooter(CodeWriter writer)
+            {
+                writer.WriteLine("\t" + ProjectSectionEnd);
+            }
 
-            #region /* RENDERING */
+            public static void AsTextHeader(CodeWriter writer, string name, bool isPreProject)
+            {
+                writer.WriteLine("\t" + ProjectSectionStart + name + ") = " + (isPreProject ? PreProject : PostProject));
+            }
 
             public void AsText(CodeWriter writer)
             {
@@ -1567,51 +1496,30 @@ namespace Nova.CodeDOM
                     writer.WriteLine("\t\t" + keyValuePair.Key + " = " + keyValuePair.Value);
                 AsTextFooter(writer);
             }
-
-            public static void AsTextHeader(CodeWriter writer, string name, bool isPreProject)
-            {
-                writer.WriteLine("\t" + ProjectSectionStart + name + ") = " + (isPreProject ? PreProject : PostProject));
-            }
-
-            public static void AsTextFooter(CodeWriter writer)
-            {
-                writer.WriteLine("\t" + ProjectSectionEnd);
-            }
-
-            #endregion
         }
-
-        #endregion
-
-        #region /* GLOBAL SECTION */
 
         /// <summary>
         /// Represents a global-level section of configuration data in a solution file.
         /// </summary>
         public class GlobalSection
         {
-            #region /* FIELDS */
+            /// <summary>
+            /// True if the <see cref="GlobalSection"/> is 'pre-solution' (otherwise, it is 'post-solution').
+            /// </summary>
+            public bool IsPreSolution;
 
             /// <summary>
             /// The name of the <see cref="GlobalSection"/>.
             /// </summary>
             public string Name;
 
-            /// <summary>
-            /// True if the <see cref="GlobalSection"/> is 'pre-solution' (otherwise, it is 'post-solution').
-            /// </summary>
-            public bool IsPreSolution;
-
             // Store the key/values in a Dictionary (for quick lookups and no duplicates), but also keep a List of KeyValuePairs
             // to preserve the order.  Also, the stupid VSS data has duplicate keys (appears to be a mistake, such as 'CanCheckoutShared'
             // missing a number on the end), so we ignore collisions when adding to the dictionary and such duplicate keys are ony
             // accessible via the List.
             private readonly Dictionary<string, string> _dictionary = new Dictionary<string, string>();
+
             private readonly List<KeyValuePair<string, string>> _keyValuePairs = new List<KeyValuePair<string, string>>();
-
-            #endregion
-
-            #region /* CONSTRUCTORS */
 
             /// <summary>
             /// Create a <see cref="GlobalSection"/>.
@@ -1623,10 +1531,6 @@ namespace Nova.CodeDOM
                 foreach (KeyValuePair<string, string> keyValuePair in keyValuePairs)
                     AddKeyValue(keyValuePair.Key, keyValuePair.Value);
             }
-
-            #endregion
-
-            #region /* METHODS */
 
             /// <summary>
             /// The list of key/value pairs ordered as they appear in the solution file.
@@ -1677,13 +1581,9 @@ namespace Nova.CodeDOM
                 if (_dictionary.TryGetValue(key, out value))
                 {
                     _dictionary.Remove(key);
-                    _keyValuePairs.RemoveAll(delegate(KeyValuePair<string, string> keyValuePair) { return keyValuePair.Key == key && keyValuePair.Value == value; });
+                    _keyValuePairs.RemoveAll(delegate (KeyValuePair<string, string> keyValuePair) { return keyValuePair.Key == key && keyValuePair.Value == value; });
                 }
             }
-
-            #endregion
-
-            #region /* PARSING */
 
             /// <summary>
             /// Parse a <see cref="GlobalSection"/> from the specified <see cref="StreamReader"/>.
@@ -1718,9 +1618,15 @@ namespace Nova.CodeDOM
                 }
             }
 
-            #endregion
+            public static void AsTextFooter(CodeWriter writer)
+            {
+                writer.WriteLine("\t" + GlobalSectionEnd);
+            }
 
-            #region /* RENDERING */
+            public static void AsTextHeader(CodeWriter writer, string name, bool isPreSolution)
+            {
+                writer.WriteLine("\t" + GlobalSectionStart + name + ") = " + (isPreSolution ? PreSolution : PostSolution));
+            }
 
             public void AsText(CodeWriter writer)
             {
@@ -1729,24 +1635,8 @@ namespace Nova.CodeDOM
                     writer.WriteLine("\t\t" + keyValuePair.Key + " = " + keyValuePair.Value);
                 AsTextFooter(writer);
             }
-
-            public static void AsTextHeader(CodeWriter writer, string name, bool isPreSolution)
-            {
-                writer.WriteLine("\t" + GlobalSectionStart + name + ") = " + (isPreSolution ? PreSolution : PostSolution));
-            }
-
-            public static void AsTextFooter(CodeWriter writer)
-            {
-                writer.WriteLine("\t" + GlobalSectionEnd);
-            }
-
-            #endregion
         }
-
-        #endregion
     }
-
-    #region /* CODE ANNOTATION */
 
     /// <summary>
     /// Represents a 'listed' code <see cref="Annotation"/> and its location (<see cref="Project"/> and <see cref="CodeUnit"/>).
@@ -1758,15 +1648,9 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class CodeAnnotation
     {
-        #region /* FIELDS */
-
         private readonly Annotation _annotation;
-        private readonly Project _project;
         private readonly CodeUnit _codeUnit;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        private readonly Project _project;
 
         /// <summary>
         /// Create a <see cref="CodeAnnotation"/>.
@@ -1778,18 +1662,6 @@ namespace Nova.CodeDOM
             _codeUnit = codeUnit;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public string Category
-        {
-            get { return (_annotation is Message ? ((Message)_annotation).Category : "ToDo"); }
-        }
-
         /// <summary>
         /// The associated <see cref="Annotation"/>.
         /// </summary>
@@ -1799,11 +1671,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The associated <see cref="Project"/>.
+        /// The descriptive category of the code object.
         /// </summary>
-        public Project Project
+        public string Category
         {
-            get { return _project; }
+            get { return (_annotation is Message ? ((Message)_annotation).Category : "ToDo"); }
         }
 
         /// <summary>
@@ -1826,9 +1698,13 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// The associated <see cref="Project"/>.
+        /// </summary>
+        public Project Project
+        {
+            get { return _project; }
+        }
 
         /// <summary>
         /// Format the <see cref="CodeAnnotation"/> as a string.
@@ -1860,13 +1736,7 @@ namespace Nova.CodeDOM
             result += _annotation.AsString();
             return result;
         }
-
-        #endregion
     }
-
-    #endregion
-
-    #region /* LOAD OPTIONS */
 
     /// <summary>
     /// Load options - used when loading a Solution, Project, or CodeUnit.
@@ -1910,10 +1780,6 @@ namespace Nova.CodeDOM
         LoadOnly = None
     }
 
-    #endregion
-
-    #region /* LOAD STATUS */
-
     /// <summary>
     /// Used for status callbacks during the load process to monitor progress and update any UI.
     /// </summary>
@@ -1943,6 +1809,4 @@ namespace Nova.CodeDOM
         /// <summary>Starting logging of message counts, and messages (if requested).</summary>
         LoggingResults
     }
-
-    #endregion
 }

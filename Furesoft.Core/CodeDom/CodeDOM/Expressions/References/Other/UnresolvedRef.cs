@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a symbolic reference that hasn't been resolved to a direct reference (includes references that
@@ -14,8 +14,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class UnresolvedRef : TypeRefBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="UnresolvedRef"/>.
         /// </summary>
@@ -83,24 +81,30 @@ namespace Nova.CodeDOM
             _reference = name;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="UnresolvedRef"/>.
-        /// </summary>
-        public override string Name
-        {
-            get { return (string)_reference; }
-        }
-
         /// <summary>
         /// The descriptive category of the <see cref="SymbolicRef"/>.
         /// </summary>
         public override string Category
         {
             get { return "unresolved"; }
+        }
+
+        /// <summary>
+        /// Returns true if the UnresolvedRef represents an explicit interface implementation.
+        /// </summary>
+        public bool IsExplicitInterfaceImplementation
+        {
+            get
+            {
+                if (Parent is Dot)
+                {
+                    if (Parent.Parent is MethodDeclBase)
+                        return (((MethodDeclBase)Parent.Parent).ExplicitInterfaceExpression == Parent);
+                    if (Parent.Parent is PropertyDeclBase)
+                        return (((PropertyDeclBase)Parent.Parent).ExplicitInterfaceExpression == Parent);
+                }
+                return false;
+            }
         }
 
         /// <summary>
@@ -131,26 +135,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Returns true if the UnresolvedRef represents an explicit interface implementation.
+        /// The name of the <see cref="UnresolvedRef"/>.
         /// </summary>
-        public bool IsExplicitInterfaceImplementation
+        public override string Name
         {
-            get
-            {
-                if (Parent is Dot)
-                {
-                    if (Parent.Parent is MethodDeclBase)
-                        return (((MethodDeclBase)Parent.Parent).ExplicitInterfaceExpression == Parent);
-                    if (Parent.Parent is PropertyDeclBase)
-                        return (((PropertyDeclBase)Parent.Parent).ExplicitInterfaceExpression == Parent);
-                }
-                return false;
-            }
+            get { return (string)_reference; }
         }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Create an <see cref="UnresolvedRef"/> from the specified <see cref="Token"/>.
@@ -159,10 +149,6 @@ namespace Nova.CodeDOM
         {
             return (identifier != null ? new UnresolvedRef(identifier) : null);
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Always <c>true</c>.
@@ -173,21 +159,19 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the current reference refers to the same code object as the specified reference.
+        /// Dispose the <see cref="UnresolvedRef"/>.
         /// </summary>
-        public override bool IsSameRef(SymbolicRef symbolicRef)
+        public override void Dispose()
         {
-            UnresolvedRef unresolvedRef = (symbolicRef is AliasRef ? ((AliasRef)symbolicRef).Alias.Expression.SkipPrefixes() : symbolicRef) as UnresolvedRef;
-            if (unresolvedRef == null || (string)Reference != (string)unresolvedRef.Reference)
-                return false;
+            _parent = null;
+        }
 
-            // The strings of the UnresolvedRefs match, but we have to also verify that any Dot prefixes
-            // match - if either side has one, they must match, otherwise neither side can have one.
-            Dot parentDot = _parent as Dot;
-            Dot parentDot2 = symbolicRef.Parent as Dot;
-            SymbolicRef dotPrefix = (parentDot != null && parentDot.Right == this ? parentDot.Left as SymbolicRef : null);
-            SymbolicRef dotPrefix2 = (parentDot2 != null && parentDot2.Right == this ? parentDot2.Left as SymbolicRef : null);
-            return (dotPrefix == null || dotPrefix2 == null || dotPrefix.IsSameRef(dotPrefix2));
+        /// <summary>
+        /// Get the full name of the object, including the namespace name.
+        /// </summary>
+        public override string GetFullName()
+        {
+            return Reference as string;
         }
 
         /// <summary>
@@ -212,39 +196,62 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Dispose the <see cref="UnresolvedRef"/>.
+        /// Determine if the current reference refers to the same code object as the specified reference.
         /// </summary>
-        public override void Dispose()
+        public override bool IsSameRef(SymbolicRef symbolicRef)
         {
-            _parent = null;
+            UnresolvedRef unresolvedRef = (symbolicRef is AliasRef ? ((AliasRef)symbolicRef).Alias.Expression.SkipPrefixes() : symbolicRef) as UnresolvedRef;
+            if (unresolvedRef == null || (string)Reference != (string)unresolvedRef.Reference)
+                return false;
+
+            // The strings of the UnresolvedRefs match, but we have to also verify that any Dot prefixes
+            // match - if either side has one, they must match, otherwise neither side can have one.
+            Dot parentDot = _parent as Dot;
+            Dot parentDot2 = symbolicRef.Parent as Dot;
+            SymbolicRef dotPrefix = (parentDot != null && parentDot.Right == this ? parentDot.Left as SymbolicRef : null);
+            SymbolicRef dotPrefix2 = (parentDot2 != null && parentDot2.Right == this ? parentDot2.Left as SymbolicRef : null);
+            return (dotPrefix == null || dotPrefix2 == null || dotPrefix.IsSameRef(dotPrefix2));
         }
 
         /// <summary>
-        /// Get the full name of the object, including the namespace name.
+        /// Construct an unresolved reference to an array type, or generic type.
         /// </summary>
-        public override string GetFullName()
+        protected UnresolvedRef(Parser parser, CodeObject parent, bool isArray, bool isGeneric)
+            : base(parser, parent)
         {
-            return Reference as string;
+            Token token = parser.RemoveLastUnusedToken();
+            _reference = token.NonVerbatimText;  // Get the type name
+            NewLines = token.NewLines;
+            SetLineCol(token);
+
+            if (isArray)
+            {
+                MoveCommentsAsPost(token);   // Get any comments after the identifier
+                ParseArrayRanks(parser);     // Parse the array ranks
+            }
+            else if (isGeneric)
+            {
+                MoveCommentsAsPost(token);   // Get any comments after the identifier
+                _typeArguments = ParseTypeArgumentList(parser, this);  // Parse the type arguments
+
+                // Check for array ranks on the generic type
+                if (parser.TokenText == ParseTokenArrayStart && PeekArrayRanks(parser))
+                    ParseArrayRanks(parser);
+            }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        internal static new void AddParsePoints()
+        /// <summary>
+        /// Parse type arguments using the alternate delimiters.
+        /// </summary>
+        public static Expression ParseAltTypeArguments(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            // Parse generic type and method references and arrays here in UnresolvedRef, because they may
-            // or may not parse as resolved.  Built-in types and '?' nullable types are parsed in TypeRef,
-            // because they will parse as resolved.
-
-            // Use a parse-priority of 100 (IndexerDecl uses 0, Index uses 200, Attribute uses 300)
-            Parser.AddParsePoint(ParseTokenArrayStart, 100, ParseArrayRanks);
-
-            // Use a parse-priority of 100 (GenericMethodDecl uses 0, LessThan uses 200)
-            Parser.AddParsePoint(ParseTokenArgumentStart, 100, ParseTypeArguments);
-            // Support alternate symbols for doc comments:
-            // Use a parse-priority of 100 (GenericMethodDecl uses 0, PropertyDeclBase uses 200, BlockDecl uses 300, Initializer uses 400)
-            Parser.AddParsePoint(ParseTokenAltArgumentStart, 100, ParseAltTypeArguments);
+            // Verify that we seem to match a type argument list pattern
+            // (otherwise abort so that PropertyDeclBase will get a chance to parse it)
+            // Only supported inside documentation comments - subroutines will look for the
+            // appropriate delimiters according to the parser state.
+            if (parser.InDocComment && parser.HasUnusedIdentifier && PeekTypeArguments(parser, ParseTokenAltArgumentEnd, flags))
+                return new UnresolvedRef(parser, parent, false, true);
+            return null;
         }
 
         /// <summary>
@@ -271,50 +278,21 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        /// <summary>
-        /// Parse type arguments using the alternate delimiters.
-        /// </summary>
-        public static Expression ParseAltTypeArguments(Parser parser, CodeObject parent, ParseFlags flags)
+        internal static new void AddParsePoints()
         {
-            // Verify that we seem to match a type argument list pattern
-            // (otherwise abort so that PropertyDeclBase will get a chance to parse it)
-            // Only supported inside documentation comments - subroutines will look for the
-            // appropriate delimiters according to the parser state.
-            if (parser.InDocComment && parser.HasUnusedIdentifier && PeekTypeArguments(parser, ParseTokenAltArgumentEnd, flags))
-                return new UnresolvedRef(parser, parent, false, true);
-            return null;
+            // Parse generic type and method references and arrays here in UnresolvedRef, because they may
+            // or may not parse as resolved.  Built-in types and '?' nullable types are parsed in TypeRef,
+            // because they will parse as resolved.
+
+            // Use a parse-priority of 100 (IndexerDecl uses 0, Index uses 200, Attribute uses 300)
+            Parser.AddParsePoint(ParseTokenArrayStart, 100, ParseArrayRanks);
+
+            // Use a parse-priority of 100 (GenericMethodDecl uses 0, LessThan uses 200)
+            Parser.AddParsePoint(ParseTokenArgumentStart, 100, ParseTypeArguments);
+            // Support alternate symbols for doc comments:
+            // Use a parse-priority of 100 (GenericMethodDecl uses 0, PropertyDeclBase uses 200, BlockDecl uses 300, Initializer uses 400)
+            Parser.AddParsePoint(ParseTokenAltArgumentStart, 100, ParseAltTypeArguments);
         }
-
-        /// <summary>
-        /// Construct an unresolved reference to an array type, or generic type.
-        /// </summary>
-        protected UnresolvedRef(Parser parser, CodeObject parent, bool isArray, bool isGeneric)
-            : base(parser, parent)
-        {
-            Token token = parser.RemoveLastUnusedToken();
-            _reference = token.NonVerbatimText;  // Get the type name
-            NewLines = token.NewLines;
-            SetLineCol(token);
-            
-            if (isArray)
-            {
-                MoveCommentsAsPost(token);   // Get any comments after the identifier
-                ParseArrayRanks(parser);     // Parse the array ranks
-            }
-            else if (isGeneric)
-            {
-                MoveCommentsAsPost(token);   // Get any comments after the identifier
-                _typeArguments = ParseTypeArgumentList(parser, this);  // Parse the type arguments
-
-                // Check for array ranks on the generic type
-                if (parser.TokenText == ParseTokenArrayStart && PeekArrayRanks(parser))
-                    ParseArrayRanks(parser);
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
@@ -323,7 +301,5 @@ namespace Nova.CodeDOM
             AsTextTypeArguments(writer, _typeArguments, flags);
             AsTextArrayRanks(writer, flags);
         }
-
-        #endregion
     }
 }

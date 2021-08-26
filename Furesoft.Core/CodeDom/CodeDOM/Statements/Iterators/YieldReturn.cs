@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Yields the current value of an iterator.
@@ -19,13 +19,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class YieldReturn : YieldStatement
     {
-        #region /* FIELDS */
-
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="YieldReturn"/>.
@@ -34,10 +28,6 @@ namespace Nova.CodeDOM
         {
             Expression = expression;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The return <see cref="Expression"/>.
@@ -56,10 +46,6 @@ namespace Nova.CodeDOM
             get { return ParseToken1 + " " + ParseToken2; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Deep-clone the code object.
         /// </summary>
@@ -69,10 +55,6 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._expression, _expression);
             return clone;
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The second token used to parse the code object.
@@ -90,10 +72,6 @@ namespace Nova.CodeDOM
             SetField(ref _expression, Expression.Parse(parser, this, true), false);
             ParseTerminator(parser);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -136,16 +114,10 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

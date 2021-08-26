@@ -1,8 +1,8 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all code objects that can have a <see cref="Block"/> for a body
@@ -19,6 +19,11 @@ namespace Nova.CodeDOM
         /// True if the <see cref="Block"/> has a header.
         /// </summary>
         bool HasHeader { get; }
+
+        /// <summary>
+        /// True if the <see cref="Block"/> is formatted on a single line.
+        /// </summary>
+        bool IsSingleLine { get; set; }
 
         /// <summary>
         /// True if the <see cref="Block"/> is at the top-level.
@@ -41,6 +46,11 @@ namespace Nova.CodeDOM
         void Insert(int index, CodeObject codeObject);
 
         /// <summary>
+        /// Reformat the <see cref="Block"/> body.
+        /// </summary>
+        void ReformatBlock();
+
+        /// <summary>
         /// Remove the specified <see cref="CodeObject"/>.
         /// </summary>
         void Remove(CodeObject codeObject);
@@ -49,15 +59,5 @@ namespace Nova.CodeDOM
         /// Remove all objects from the <see cref="Block"/>.
         /// </summary>
         void RemoveAll();
-
-        /// <summary>
-        /// Reformat the <see cref="Block"/> body.
-        /// </summary>
-        void ReformatBlock();
-
-        /// <summary>
-        /// True if the <see cref="Block"/> is formatted on a single line.
-        /// </summary>
-        bool IsSingleLine { get; set; }
     }
 }

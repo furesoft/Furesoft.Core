@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents conditional flow control, and includes a conditional expression, a body, and an optional <see cref="Else"/> or <see cref="ElseIf"/> statement.
     /// </summary>
     public class If : IfBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="If"/>.
         /// </summary>
@@ -55,10 +53,6 @@ namespace Nova.CodeDOM
             : base(conditional, elseIf)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
@@ -67,18 +61,15 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "if";
 
-        internal static void AddParsePoints()
+        protected If(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+            ParseIf(parser, parent);  // Delegate to base class to parse 'if'
         }
 
         /// <summary>
@@ -89,12 +80,9 @@ namespace Nova.CodeDOM
             return new If(parser, parent);
         }
 
-        protected If(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            ParseIf(parser, parent);  // Delegate to base class to parse 'if'
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
-
-        #endregion
     }
 }

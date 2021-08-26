@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a named <see cref="Block"/> of code used to destruct the instance of a class.
@@ -14,8 +14,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DestructorDecl : MethodDeclBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DestructorDecl"/>.
         /// </summary>
@@ -23,9 +21,13 @@ namespace Nova.CodeDOM
             : base(null, null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The descriptive category of the code object.
+        /// </summary>
+        public override string Category
+        {
+            get { return "destructor"; }
+        }
 
         /// <summary>
         /// The name of the <see cref="DestructorDecl"/>.
@@ -43,18 +45,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public override string Category
-        {
-            get { return "destructor"; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
         /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
@@ -68,28 +58,10 @@ namespace Nova.CodeDOM
             return name;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "~";
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 0 (Complement uses 100)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(TypeDecl));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="DestructorDecl"/>.
-        /// </summary>
-        public static DestructorDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DestructorDecl(parser, parent, flags);
-        }
 
         protected DestructorDecl(Parser parser, CodeObject parent, ParseFlags flags)
             : base(parser, parent)
@@ -102,15 +74,23 @@ namespace Nova.CodeDOM
             ParseTerminatorOrBody(parser, flags);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="DestructorDecl"/>.
+        /// </summary>
+        public static DestructorDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new DestructorDecl(parser, parent, flags);
+        }
 
-        #region /* RENDERING */
+        internal static void AddParsePoints()
+        {
+            // Use a parse-priority of 0 (Complement uses 100)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(TypeDecl));
+        }
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
             writer.Write(ParseToken + Name);
         }
-
-        #endregion
     }
 }

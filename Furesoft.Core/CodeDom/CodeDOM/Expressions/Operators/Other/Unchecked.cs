@@ -1,28 +1,22 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Explicitly turns OFF overflow checking (exceptions) for an <see cref="Expression"/>.
     /// </summary>
     public class Unchecked : CheckedOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="Unchecked"/> operator.
         /// </summary>
         public Unchecked(Expression expression)
             : base(expression)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -32,9 +26,10 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -46,15 +41,10 @@ namespace Nova.CodeDOM
         /// </summary>
         public const int Precedence = 100;
 
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
+        protected Unchecked(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            // Use a parse-priority of 100 (UncheckedBlock uses 0)
-            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
+            ParseKeywordAndArgument(parser, ParseFlags.NotAType);
         }
 
         /// <summary>
@@ -65,12 +55,6 @@ namespace Nova.CodeDOM
             return new Unchecked(parser, parent);
         }
 
-        protected Unchecked(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            ParseKeywordAndArgument(parser, ParseFlags.NotAType);
-        }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -79,6 +63,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (UncheckedBlock uses 0)
+            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

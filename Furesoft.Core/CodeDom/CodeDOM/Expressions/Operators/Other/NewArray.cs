@@ -1,18 +1,18 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The NewArray operator is used to create new array instances.
     /// </summary>
     /// <remarks>
     /// Possible formats:
-    /// 
+    ///
     /// New Array:
     ///    new non-array-type[size,...]           // Create a new array type
     ///    new non-array-type[size,...][,...]...  // Create a new jagged array type
@@ -20,19 +20,17 @@ namespace Nova.CodeDOM
     ///    new array-type { init }                // Create array instance and initialize (init is optional), inferring the sizes
     ///    new non-array-type[size,...] { init }  // Create array and initialize, sizes must match init values
     ///    new non-array-type[size,...][,...]... { init }  // Create jagged array and initialize, sizes must match init values
-    /// 
+    ///
     /// In the case of jagged arrays, the first set of array dimensions are arguments to the
     /// base ArgumentsOperator class, while the optional sets of brackets without dimensions
     /// (array ranks) to the right are actually a part of the Type on the left.  For example,
     /// "new int[10][]" represents a parameter of "10" and a TypeRef to an "int[]" type.
     /// The parsing and display of the type must be split up to allow the "[10]" in the middle.
     /// Also, the dimension sizes can be full expressions in addition to literals.
-    /// 
+    ///
     /// </remarks>
     public class NewArray : NewOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="NewArray"/>.
         /// </summary>
@@ -42,14 +40,6 @@ namespace Nova.CodeDOM
             : base(type, (parameters ?? new Expression[] { null }))  // Treat null as a single null parameter
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Determine the type of the parameter for the specified argument index.
         /// </summary>
@@ -58,19 +48,15 @@ namespace Nova.CodeDOM
             return TypeRef.IntRef;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The token used to parse the end of the array ranks.
+        /// </summary>
+        public const string ParseTokenEnd = TypeRefBase.ParseTokenArrayEnd;
 
         /// <summary>
         /// The token used to parse the start of the array ranks.
         /// </summary>
         public const string ParseTokenStart = TypeRefBase.ParseTokenArrayStart;
-
-        /// <summary>
-        /// The token used to parse the end of the array ranks.
-        /// </summary>
-        public const string ParseTokenEnd = TypeRefBase.ParseTokenArrayEnd;
 
         /// <summary>
         /// Parse a <see cref="NewArray"/>.
@@ -110,29 +96,10 @@ namespace Nova.CodeDOM
             ParseInitializer(parser, this);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             // Suppress empty brackets (they'll be included as a part of the type)
             base.AsTextExpression(writer, flags | RenderFlags.NoParensIfEmpty);
-        }
-
-        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
-        {
-            UpdateLineCol(writer, flags);
-            writer.Write(ParseToken);
-
-            // Omit any brackets (they will be rendered later)
-            if (_expression != null)
-                _expression.AsText(writer, flags | RenderFlags.SuppressBrackets | RenderFlags.PrefixSpace);
-        }
-
-        protected override void AsTextStartArguments(CodeWriter writer, RenderFlags flags)
-        {
-            writer.Write(ParseTokenStart);
         }
 
         protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)
@@ -156,6 +123,19 @@ namespace Nova.CodeDOM
             base.AsTextInitializer(writer, flags);
         }
 
-        #endregion
+        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+            writer.Write(ParseToken);
+
+            // Omit any brackets (they will be rendered later)
+            if (_expression != null)
+                _expression.AsText(writer, flags | RenderFlags.SuppressBrackets | RenderFlags.PrefixSpace);
+        }
+
+        protected override void AsTextStartArguments(CodeWriter writer, RenderFlags flags)
+        {
+            writer.Write(ParseTokenStart);
+        }
     }
 }

@@ -1,13 +1,13 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The action of a <see cref="PragmaWarningDirective"/>.
@@ -19,14 +19,8 @@ namespace Nova.CodeDOM
     /// </summary>
     public class PragmaWarningDirective : PragmaDirective
     {
-        #region /* FIELDS */
-
         protected PragmaWarningAction _pragmaWarningAction;
         protected List<int> _warningNumbers;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="PragmaWarningDirective"/> with the specified action.
@@ -45,9 +39,15 @@ namespace Nova.CodeDOM
             CreateNumbers().AddRange(warningNumbers);
         }
 
-        #endregion
+        /// <summary>
+        /// True if there are any warning numbers.
+        /// </summary>
+        public bool HasWarningNumbers
+        {
+            get { return (_warningNumbers != null && _warningNumbers.Count > 0); }
+        }
 
-        #region /* PROPERTIES */
+        public override string PragmaType { get { return ParseToken; } }
 
         /// <summary>
         /// The associated <see cref="PragmaWarningAction"/>.
@@ -67,30 +67,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if there are any warning numbers.
-        /// </summary>
-        public bool HasWarningNumbers
-        {
-            get { return (_warningNumbers != null && _warningNumbers.Count > 0); }
-        }
-
-        public override string PragmaType { get { return ParseToken; } }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create the list of warning numbers, or return the existing one.
-        /// </summary>
-        public List<int> CreateNumbers()
-        {
-            if (_warningNumbers == null)
-                _warningNumbers = new List<int>();
-            return _warningNumbers;
-        }
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -101,9 +77,15 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Create the list of warning numbers, or return the existing one.
+        /// </summary>
+        public List<int> CreateNumbers()
+        {
+            if (_warningNumbers == null)
+                _warningNumbers = new List<int>();
+            return _warningNumbers;
+        }
 
         /// <summary>
         /// The token used to parse the code object.
@@ -124,19 +106,6 @@ namespace Nova.CodeDOM
         /// The token used to separate warning numbers.
         /// </summary>
         public const string ParseTokenSeparator = Expression.ParseTokenSeparator;
-
-        internal static new void AddParsePoints()
-        {
-            AddPragmaParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="PragmaWarningDirective"/>.
-        /// </summary>
-        public static new PragmaWarningDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new PragmaWarningDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="PragmaWarningDirective"/>.
@@ -175,6 +144,19 @@ namespace Nova.CodeDOM
             MoveEOLComment(parser.LastToken);
         }
 
+        /// <summary>
+        /// Parse a <see cref="PragmaWarningDirective"/>.
+        /// </summary>
+        public static new PragmaWarningDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new PragmaWarningDirective(parser, parent);
+        }
+
+        internal static new void AddParsePoints()
+        {
+            AddPragmaParsePoint(ParseToken, Parse);
+        }
+
         protected static PragmaWarningAction ParseAction(string actionName)
         {
             PragmaWarningAction action;
@@ -182,14 +164,10 @@ namespace Nova.CodeDOM
             {
                 case ParseTokenDisable: action = PragmaWarningAction.Disable; break;
                 case ParseTokenRestore: action = PragmaWarningAction.Restore; break;
-                default:                action = PragmaWarningAction.Invalid; break;
+                default: action = PragmaWarningAction.Invalid; break;
             }
             return action;
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         /// <summary>
         /// Format a <see cref="PragmaWarningAction"/> as a string.
@@ -221,7 +199,5 @@ namespace Nova.CodeDOM
                 }
             }
         }
-
-        #endregion
     }
 }

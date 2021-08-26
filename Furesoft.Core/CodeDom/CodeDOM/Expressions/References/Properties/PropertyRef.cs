@@ -1,22 +1,20 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 using System.Reflection;
 
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="PropertyDecl"/> or <see cref="PropertyInfo"/>.
     /// </summary>
     public class PropertyRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="PropertyRef"/>.
         /// </summary>
@@ -34,13 +32,6 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Create a <see cref="PropertyRef"/>.
         /// </summary>
-        protected PropertyRef(PropertyDeclBase declaration, bool isFirstOnLine)
-            : base(declaration, isFirstOnLine)
-        { }
-
-        /// <summary>
-        /// Create a <see cref="PropertyRef"/>.
-        /// </summary>
         public PropertyRef(PropertyInfo propertyInfo, bool isFirstOnLine)
             : base(propertyInfo, isFirstOnLine)
         { }
@@ -52,9 +43,12 @@ namespace Nova.CodeDOM
             : base(propertyInfo, false)
         { }
 
-        #endregion
-
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// Create a <see cref="PropertyRef"/>.
+        /// </summary>
+        protected PropertyRef(PropertyDeclBase declaration, bool isFirstOnLine)
+            : base(declaration, isFirstOnLine)
+        { }
 
         /// <summary>
         /// Construct a <see cref="PropertyRef"/> (or <see cref="IndexerRef"/>) from a <see cref="PropertyInfo"/>.
@@ -223,33 +217,16 @@ namespace Nova.CodeDOM
             return TypeRef.Create(((PropertyInfo)reference).PropertyType);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// True if the referenced property is static.
+        /// True if the referenced property has internal access.
         /// </summary>
-        public override bool IsStatic
+        public bool IsInternal
         {
             get
             {
                 if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsStatic;
-                return PropertyInfoUtil.IsStatic((PropertyInfo)_reference);
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced property has public access.
-        /// </summary>
-        public bool IsPublic
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsPublic;
-                return PropertyInfoUtil.IsPublic((PropertyInfo)_reference);
+                    return ((PropertyDeclBase)_reference).IsInternal;
+                return PropertyInfoUtil.IsInternal((PropertyInfo)_reference);
             }
         }
 
@@ -280,15 +257,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced property has internal access.
+        /// True if the referenced property has public access.
         /// </summary>
-        public bool IsInternal
+        public bool IsPublic
         {
             get
             {
                 if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsInternal;
-                return PropertyInfoUtil.IsInternal((PropertyInfo)_reference);
+                    return ((PropertyDeclBase)_reference).IsPublic;
+                return PropertyInfoUtil.IsPublic((PropertyInfo)_reference);
             }
         }
 
@@ -306,6 +283,19 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if the referenced property is static.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsStatic;
+                return PropertyInfoUtil.IsStatic((PropertyInfo)_reference);
+            }
+        }
+
+        /// <summary>
         /// True if the referenced property is writable.
         /// </summary>
         public bool IsWritable
@@ -316,23 +306,6 @@ namespace Nova.CodeDOM
                     return ((PropertyDeclBase)_reference).IsWritable;
                 return ((PropertyInfo)_reference).CanRead;
             }
-        }
-
-        /// <summary>
-        /// Get the declaring type of the referenced property.
-        /// </summary>
-        public override TypeRefBase GetDeclaringType()
-        {
-            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
-
-            // A property reference doesn't store any type arguments for a parent type instance, so any
-            // type arguments in any generic declaring type or its parent types will always default to
-            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
-            // so that they don't show up as Red in the GUI.
-            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
-                declaringTypeRef.ConvertOpenTypeParameters();
-
-            return declaringTypeRef;
         }
 
         /// <summary>
@@ -353,9 +326,22 @@ namespace Nova.CodeDOM
             return declaringTypeRef;
         }
 
-        #endregion
+        /// <summary>
+        /// Get the declaring type of the referenced property.
+        /// </summary>
+        public override TypeRefBase GetDeclaringType()
+        {
+            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
 
-        #region /* METHODS */
+            // A property reference doesn't store any type arguments for a parent type instance, so any
+            // type arguments in any generic declaring type or its parent types will always default to
+            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
+            // so that they don't show up as Red in the GUI.
+            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
+                declaringTypeRef.ConvertOpenTypeParameters();
+
+            return declaringTypeRef;
+        }
 
         /// <summary>
         /// Get the type of the referenced property.
@@ -364,10 +350,6 @@ namespace Nova.CodeDOM
         {
             return GetPropertyType(_reference);
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public static void AsTextPropertyInfo(CodeWriter writer, PropertyInfo propertyInfo, RenderFlags flags)
         {
@@ -393,7 +375,5 @@ namespace Nova.CodeDOM
             else
                 writer.Write(propertyInfo.Name);
         }
-
-        #endregion
     }
 }

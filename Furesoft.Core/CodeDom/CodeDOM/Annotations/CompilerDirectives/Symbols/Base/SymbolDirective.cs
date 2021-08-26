@@ -1,33 +1,23 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="DefineSymbol"/> and <see cref="UnDefSymbol"/>.
     /// </summary>
     public abstract class SymbolDirective : CompilerDirective
     {
-        #region /* FIELDS */
-
         protected string _symbol;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected SymbolDirective(string symbol)
         {
             _symbol = symbol;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The associated symbol name.
@@ -37,10 +27,6 @@ namespace Nova.CodeDOM
             get { return _symbol; }
             set { _symbol = value; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected SymbolDirective(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -56,15 +42,9 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             writer.Write(_symbol);
         }
-
-        #endregion
     }
 }

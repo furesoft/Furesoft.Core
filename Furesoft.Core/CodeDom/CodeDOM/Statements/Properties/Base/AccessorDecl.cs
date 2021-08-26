@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="GetterDecl"/>, <see cref="SetterDecl"/>, <see cref="AdderDecl"/>,
@@ -21,8 +21,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public abstract class AccessorDecl : MethodDecl
     {
-        #region /* CONSTRUCTORS */
-
         protected AccessorDecl(string namePrefix, Expression returnType, Modifiers modifiers, CodeObject body)
             : base(namePrefix, returnType, modifiers, body)
         { }
@@ -34,10 +32,6 @@ namespace Nova.CodeDOM
         protected AccessorDecl(string namePrefix, Expression returnType, CodeObject body)
             : base(namePrefix, returnType, body)
         { }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected AccessorDecl(Parser parser, CodeObject parent, string namePrefix, ParseFlags flags)
             : base(parser, parent, false, flags)
@@ -66,10 +60,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
@@ -95,19 +85,13 @@ namespace Nova.CodeDOM
             return 1;
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        { }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
             writer.Write(Keyword);
         }
-
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        { }
-
-        #endregion
     }
 }

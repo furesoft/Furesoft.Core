@@ -1,34 +1,24 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of all operations (binary, unary, or other).
     /// </summary>
     public abstract class Operator : Expression
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// Name prefix used for overloadable operator names.
         /// </summary>
         public const string NamePrefix = "op_";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         protected Operator()
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -37,10 +27,6 @@ namespace Nova.CodeDOM
         {
             get { return null; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected Operator(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -51,10 +37,6 @@ namespace Nova.CodeDOM
         /// </summary>
         public abstract int GetPrecedence();
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// Convert operator to text.
         /// </summary>
@@ -62,8 +44,6 @@ namespace Nova.CodeDOM
         {
             writer.Write(Symbol);
         }
-
-        #endregion
     }
 
     // OPERATOR PRECEDENCE AND ASSOCIATIVITY:

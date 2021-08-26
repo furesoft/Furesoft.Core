@@ -1,26 +1,20 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Performs a one's complement (toggles all bits) on an <see cref="Expression"/>.
     /// </summary>
     public class Complement : PreUnaryOperator
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name of the operator.
         /// </summary>
         public const string InternalName = NamePrefix + "OnesComplement";
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Complement"/> operator.
@@ -28,10 +22,6 @@ namespace Nova.CodeDOM
         public Complement(Expression expression)
             : base(expression)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -41,10 +31,6 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// The internal name of the <see cref="UnaryOperator"/>.
         /// </summary>
@@ -53,9 +39,10 @@ namespace Nova.CodeDOM
             return InternalName;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -67,16 +54,9 @@ namespace Nova.CodeDOM
         /// </summary>
         public const int Precedence = 200;
 
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 100 (DestructorDecl uses 0)
-            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, true, Parse);
-        }
+        protected Complement(Parser parser, CodeObject parent)
+            : base(parser, parent, false)
+        { }
 
         /// <summary>
         /// Parse a <see cref="Complement"/>.
@@ -86,10 +66,6 @@ namespace Nova.CodeDOM
             return new Complement(parser, parent);
         }
 
-        protected Complement(Parser parser, CodeObject parent)
-            : base(parser, parent, false)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -98,6 +74,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (DestructorDecl uses 0)
+            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, true, Parse);
+        }
     }
 }

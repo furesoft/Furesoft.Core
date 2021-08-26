@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Used for optional compilation of code, must be preceeded by an <see cref="IfDirective"/> or <see cref="ElIfDirective"/>, and
@@ -12,8 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ElIfDirective : ConditionalExpressionDirective
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="ElIfDirective"/> with the specified <see cref="Expression"/>.
         /// </summary>
@@ -21,19 +19,17 @@ namespace Nova.CodeDOM
             : base(expression)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "elif";
 
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
+        /// <summary>
+        /// Parse an <see cref="ElIfDirective"/>.
+        /// </summary>
+        public ElIfDirective(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// Parse an <see cref="ElIfDirective"/>.
@@ -43,16 +39,10 @@ namespace Nova.CodeDOM
             return new ElIfDirective(parser, parent);
         }
 
-        /// <summary>
-        /// Parse an <see cref="ElIfDirective"/>.
-        /// </summary>
-        public ElIfDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* RENDERING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
 
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
@@ -61,7 +51,5 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
     }
 }

@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Constrains the type that a <see cref="TypeParameter"/> can represent to the specified type (or a derived type).
@@ -13,16 +13,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class TypeConstraint : TypeParameterConstraint
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// Should evaluate to a reference to a class type, interface type, or type parameter type.
         /// </summary>
         protected Expression _type;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="TypeConstraint"/> instance.
@@ -33,10 +27,6 @@ namespace Nova.CodeDOM
             Type = type;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The type <see cref="Expression"/>.
         /// </summary>
@@ -45,10 +35,6 @@ namespace Nova.CodeDOM
             get { return _type; }
             set { SetField(ref _type, value, true); }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Deep-clone the code object.
@@ -60,10 +46,6 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// Parse a <see cref="TypeConstraint"/>.
         /// </summary>
@@ -72,10 +54,6 @@ namespace Nova.CodeDOM
         {
             SetField(ref _type, Expression.Parse(parser, this), true);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// Determines if the code object only requires a single line for display.
@@ -94,15 +72,9 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextConstraint(CodeWriter writer, RenderFlags flags)
         {
             _type.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

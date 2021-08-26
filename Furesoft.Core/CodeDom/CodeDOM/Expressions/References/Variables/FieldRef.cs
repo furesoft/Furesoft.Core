@@ -1,21 +1,19 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 using System.Reflection;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="FieldDecl"/> or a <see cref="FieldInfo"/>.
     /// </summary>
     public class FieldRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="FieldRef"/>.
         /// </summary>
@@ -44,10 +42,6 @@ namespace Nova.CodeDOM
             : base(fieldInfo, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// True if the referenced field is const.
         /// </summary>
@@ -62,28 +56,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced field is static.
+        /// True if the referenced field has internal access.
         /// </summary>
-        public override bool IsStatic
+        public bool IsInternal
         {
             get
             {
                 if (_reference is FieldDecl)
-                    return ((FieldDecl)_reference).IsStatic;
-                return ((FieldInfo)_reference).IsStatic;
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced field has public access.
-        /// </summary>
-        public bool IsPublic
-        {
-            get
-            {
-                if (_reference is FieldDecl)
-                    return ((FieldDecl)_reference).IsPublic;
-                return ((FieldInfo)_reference).IsPublic;
+                    return ((FieldDecl)_reference).IsInternal;
+                return ((FieldInfo)_reference).IsAssembly;
             }
         }
 
@@ -114,21 +95,30 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced field has internal access.
+        /// True if the referenced field has public access.
         /// </summary>
-        public bool IsInternal
+        public bool IsPublic
         {
             get
             {
                 if (_reference is FieldDecl)
-                    return ((FieldDecl)_reference).IsInternal;
-                return ((FieldInfo)_reference).IsAssembly;
+                    return ((FieldDecl)_reference).IsPublic;
+                return ((FieldInfo)_reference).IsPublic;
             }
         }
 
-        #endregion
-
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// True if the referenced field is static.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get
+            {
+                if (_reference is FieldDecl)
+                    return ((FieldDecl)_reference).IsStatic;
+                return ((FieldInfo)_reference).IsStatic;
+            }
+        }
 
         /// <summary>
         /// Find a field on the specified <see cref="TypeDecl"/> with the specified name.
@@ -261,27 +251,6 @@ namespace Nova.CodeDOM
             return modifiers;
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the declaring type of the referenced field.
-        /// </summary>
-        public override TypeRefBase GetDeclaringType()
-        {
-            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
-
-            // A field reference doesn't store any type arguments for a parent type instance, so any
-            // type arguments in any generic declaring type or its parent types will always default to
-            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
-            // so that they don't show up as Red in the GUI.
-            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
-                declaringTypeRef.ConvertOpenTypeParameters();
-
-            return declaringTypeRef;
-        }
-
         /// <summary>
         /// Get the declaring type of the specified field object.
         /// </summary>
@@ -300,9 +269,22 @@ namespace Nova.CodeDOM
             return declaringTypeRef;
         }
 
-        #endregion
+        /// <summary>
+        /// Get the declaring type of the referenced field.
+        /// </summary>
+        public override TypeRefBase GetDeclaringType()
+        {
+            TypeRefBase declaringTypeRef = GetDeclaringType(_reference);
 
-        #region /* RENDERING */
+            // A field reference doesn't store any type arguments for a parent type instance, so any
+            // type arguments in any generic declaring type or its parent types will always default to
+            // the declared type arguments.  Convert them from OpenTypeParameterRefs to TypeParameterRefs
+            // so that they don't show up as Red in the GUI.
+            if (declaringTypeRef != null && declaringTypeRef.HasTypeArguments)
+                declaringTypeRef.ConvertOpenTypeParameters();
+
+            return declaringTypeRef;
+        }
 
         public static void AsTextFieldInfo(CodeWriter writer, FieldInfo fieldInfo, RenderFlags flags)
         {
@@ -322,7 +304,5 @@ namespace Nova.CodeDOM
             }
             writer.Write(fieldInfo.Name);
         }
-
-        #endregion
     }
 }

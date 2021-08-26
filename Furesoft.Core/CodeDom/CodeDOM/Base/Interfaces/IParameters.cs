@@ -1,8 +1,8 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all code objects that have parameters
@@ -12,11 +12,6 @@ namespace Nova.CodeDOM
     public interface IParameters
     {
         /// <summary>
-        /// A collection of <see cref="ParameterDecl"/>s.
-        /// </summary>
-        ChildList<ParameterDecl> Parameters { get; }
-
-        /// <summary>
         /// True if the there are any parameters.
         /// </summary>
         bool HasParameters { get; }
@@ -25,5 +20,10 @@ namespace Nova.CodeDOM
         /// The number of parameters.
         /// </summary>
         int ParameterCount { get; }
+
+        /// <summary>
+        /// A collection of <see cref="ParameterDecl"/>s.
+        /// </summary>
+        ChildList<ParameterDecl> Parameters { get; }
     }
 }

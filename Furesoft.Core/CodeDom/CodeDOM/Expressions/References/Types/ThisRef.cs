@@ -1,18 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a reference to the current object instance.
     /// </summary>
     public class ThisRef : SelfRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="BaseRef"/>.
         /// </summary>
@@ -26,10 +24,6 @@ namespace Nova.CodeDOM
         public ThisRef()
             : base(false)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The name of the <see cref="SymbolicRef"/>.
@@ -52,20 +46,15 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "this";
 
-        internal static new void AddParsePoints()
+        protected ThisRef(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            // When 'this' is used for constructor initializers, it's not at Block scope, and is
-            // parsed by the ConstructorInitializer base class of ThisInitializer instead of here.
-            Parser.AddParsePoint(ParseToken, Parse);
+            parser.NextToken();  // Move past 'this'
         }
 
         /// <summary>
@@ -86,15 +75,12 @@ namespace Nova.CodeDOM
             return new ThisRef(parser, parent);
         }
 
-        protected ThisRef(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static new void AddParsePoints()
         {
-            parser.NextToken();  // Move past 'this'
+            // When 'this' is used for constructor initializers, it's not at Block scope, and is
+            // parsed by the ConstructorInitializer base class of ThisInitializer instead of here.
+            Parser.AddParsePoint(ParseToken, Parse);
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         /// <summary>
         /// The keyword associated with the <see cref="SelfRef"/>.
@@ -103,7 +89,5 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
     }
 }

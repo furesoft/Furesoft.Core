@@ -1,28 +1,22 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a list in a documentation comment.
     /// </summary>
     public class DocList : DocComment
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// The type of the <see cref="DocList"/> (should be 'bullet', 'number', or 'table').
         /// </summary>
         protected string _type;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="DocList"/> with the specified type.
@@ -42,9 +36,13 @@ namespace Nova.CodeDOM
             Add("\n");
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The XML tag name for the documentation comment.
+        /// </summary>
+        public override string TagName
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The type of the <see cref="DocList"/> (should be 'bullet', 'number', or 'table').
@@ -56,30 +54,18 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The XML tag name for the documentation comment.
+        /// The name of the list 'type' attribute.
         /// </summary>
-        public override string TagName
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const string AttributeName = "type";
 
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "list";
 
-        /// <summary>
-        /// The name of the list 'type' attribute.
-        /// </summary>
-        public const string AttributeName = "type";
-
-        internal static void AddParsePoints()
+        protected DocList(Parser parser, CodeObject parent)
         {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
+            ParseTag(parser, parent);
         }
 
         /// <summary>
@@ -90,9 +76,9 @@ namespace Nova.CodeDOM
             return new DocList(parser, parent);
         }
 
-        protected DocList(Parser parser, CodeObject parent)
+        internal static void AddParsePoints()
         {
-            ParseTag(parser, parent);
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         protected override object ParseAttributeValue(Parser parser, string name)
@@ -103,16 +89,10 @@ namespace Nova.CodeDOM
             return value;
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
         {
             if (!flags.HasFlag(RenderFlags.Description))
                 writer.Write("<" + TagName + " " + AttributeName + "=\"" + _type + "\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
         }
-
-        #endregion
     }
 }

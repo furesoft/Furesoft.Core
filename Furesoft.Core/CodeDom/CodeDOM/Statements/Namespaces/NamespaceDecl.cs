@@ -1,13 +1,13 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Declares a namespace plus a body of declarations that belong to it.
@@ -21,16 +21,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class NamespaceDecl : BlockStatement
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// The expression should evaluate to a NamespaceRef (whether pre-existing or created by this statement).
         /// </summary>
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="NamespaceDecl"/>.
@@ -48,24 +42,6 @@ namespace Nova.CodeDOM
             : this(expression, null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The parent <see cref="CodeObject"/>.
-        /// </summary>
-        public override CodeObject Parent
-        {
-            set
-            {
-                base.Parent = value;
-
-                // Resolve and create any missing namespaces when our parent is set
-                ResolveNamespaces();
-            }
-        }
-
         /// <summary>
         /// The namespace <see cref="Expression"/>.
         /// </summary>
@@ -82,6 +58,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
         /// The associated <see cref="Namespace"/>.
         /// </summary>
         public Namespace Namespace
@@ -94,16 +78,18 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
+        /// The parent <see cref="CodeObject"/>.
         /// </summary>
-        public override string Keyword
+        public override CodeObject Parent
         {
-            get { return ParseToken; }
+            set
+            {
+                base.Parent = value;
+
+                // Resolve and create any missing namespaces when our parent is set
+                ResolveNamespaces();
+            }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add a <see cref="CodeObject"/> to the <see cref="Block"/> body.
@@ -178,27 +164,10 @@ namespace Nova.CodeDOM
             return GetTypeDecls(false, false);
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "namespace";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(NamespaceDecl));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="NamespaceDecl"/>.
-        /// </summary>
-        public static NamespaceDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new NamespaceDecl(parser, parent);
-        }
 
         protected NamespaceDecl(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -209,6 +178,19 @@ namespace Nova.CodeDOM
 
             // Parse the body, and add all TypeDecls to the Namespace
             new Block(out _body, parser, this, true);
+        }
+
+        /// <summary>
+        /// Parse a <see cref="NamespaceDecl"/>.
+        /// </summary>
+        public static NamespaceDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new NamespaceDecl(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(NamespaceDecl));
         }
 
         protected virtual void ResolveNamespaces()
@@ -240,10 +222,6 @@ namespace Nova.CodeDOM
             return expression;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
@@ -258,15 +236,6 @@ namespace Nova.CodeDOM
         public override bool HasArgumentParens
         {
             get { return false; }
-        }
-
-        /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
-        /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
-        {
-            // Always default to a blank line before a namespace declaration
-            return 2;
         }
 
         /// <summary>
@@ -286,16 +255,19 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Always default to a blank line before a namespace declaration
+            return 2;
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             RenderFlags passFlags = (flags & RenderFlags.PassMask);
             _expression.AsText(writer, passFlags);
         }
-
-        #endregion
     }
 }

@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a named <see cref="Block"/> of code with optional parameters and an optional return value.
@@ -12,8 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class MethodDecl : MethodDeclBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="MethodDecl"/> with the specified name, return type, and modifiers.
         /// </summary>
@@ -56,10 +54,6 @@ namespace Nova.CodeDOM
             : base(name, returnType, new Block(), parameters)
         { }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Create a reference to the <see cref="MethodDecl"/>.
         /// </summary>
@@ -70,17 +64,16 @@ namespace Nova.CodeDOM
             return new MethodRef(this, isFirstOnLine);
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        internal static void AddParsePoints()
+        protected MethodDecl(Parser parser, CodeObject parent, bool parse, ParseFlags flags)
+            : base(parser, parent)
         {
-            // Methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            // Use a parse-priority of 50 (ConstructorDecl uses 0, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400).
-            Parser.AddParsePoint(ParseTokenStart, 50, Parse, typeof(IBlock));
+            if (parse)
+            {
+                ParseMethodNameAndType(parser, parent, true, false);
+                ParseParameters(parser);
+                ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
+                ParseTerminatorOrBody(parser, flags);
+            }
         }
 
         /// <summary>
@@ -107,18 +100,13 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected MethodDecl(Parser parser, CodeObject parent, bool parse, ParseFlags flags)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            if (parse)
-            {
-                ParseMethodNameAndType(parser, parent, true, false);
-                ParseParameters(parser);
-                ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
-                ParseTerminatorOrBody(parser, flags);
-            }
+            // Methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            // Use a parse-priority of 50 (ConstructorDecl uses 0, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400).
+            Parser.AddParsePoint(ParseTokenStart, 50, Parse, typeof(IBlock));
         }
-
-        #endregion
     }
 }

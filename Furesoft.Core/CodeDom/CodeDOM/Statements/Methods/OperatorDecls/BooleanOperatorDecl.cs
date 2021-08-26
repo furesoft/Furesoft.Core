@@ -1,10 +1,10 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a user-overloaded 'true' or 'false' operator.
@@ -14,8 +14,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class BooleanOperatorDecl : OperatorDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="BooleanOperatorDecl"/>.
         /// </summary>
@@ -30,17 +28,11 @@ namespace Nova.CodeDOM
             : base(symbol, (TypeRef)TypeRef.BoolRef.Clone(), modifiers, new[] { parameter })
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// Parse a <see cref="BooleanOperatorDecl"/>.
         /// </summary>
         public BooleanOperatorDecl(Parser parser, CodeObject parent, ParseFlags flags)
             : base(parser, parent, true, flags)
         { }
-
-        #endregion
     }
 }

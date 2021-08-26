@@ -1,12 +1,12 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
 
-using Nova.Parsing;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a special type of method used to read the value of a property.
@@ -17,16 +17,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class GetterDecl : AccessorDecl
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name prefix.
         /// </summary>
         public const string NamePrefix = ParseToken + "_";
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="GetterDecl"/>.
@@ -56,9 +50,13 @@ namespace Nova.CodeDOM
             : base(NamePrefix, null, body)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The return type of the method (never null - will be type 'void' instead).
@@ -71,27 +69,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "get";
 
-        internal static new void AddParsePoints()
+        protected GetterDecl(Parser parser, CodeObject parent, ParseFlags flags)
+            : base(parser, parent, NamePrefix, flags)
         {
-            // Parse 'get' for Properties, Indexers, and Events
-            // (analysis will complain in the last case that it should be 'add' instead)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(PropertyDeclBase));
+            ParseAccessor(parser, flags);
         }
 
         /// <summary>
@@ -102,12 +87,11 @@ namespace Nova.CodeDOM
             return new GetterDecl(parser, parent, flags);
         }
 
-        protected GetterDecl(Parser parser, CodeObject parent, ParseFlags flags)
-            : base(parser, parent, NamePrefix, flags)
+        internal static new void AddParsePoints()
         {
-            ParseAccessor(parser, flags);
+            // Parse 'get' for Properties, Indexers, and Events
+            // (analysis will complain in the last case that it should be 'add' instead)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(PropertyDeclBase));
         }
-
-        #endregion
     }
 }

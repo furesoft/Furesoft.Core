@@ -1,4 +1,4 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
@@ -7,9 +7,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Represents a compound field declaration - the declaration of multiple fields of the same type in
@@ -23,13 +23,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class MultiFieldDecl : FieldDecl, IMultiVariableDecl
     {
-        #region /* FIELDS */
-
         protected ChildList<FieldDecl> _fieldDecls;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a multi field declaration from an array of FieldDecls.
@@ -84,39 +78,12 @@ namespace Nova.CodeDOM
             : this(type, Modifiers.None, names)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The list of <see cref="FieldDecl"/>s.
+        /// The column number associated with the <see cref="MultiFieldDecl"/> (actually, the first child <see cref="FieldDecl"/>).
         /// </summary>
-        public ChildList<FieldDecl> FieldDecls
+        public override int ColumnNumber
         {
-            get { return _fieldDecls; }
-        }
-
-        /// <summary>
-        /// Enumerate the child <see cref="FieldDecl"/>s.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<FieldDecl> GetEnumerator()
-        {
-            return ((IEnumerable<FieldDecl>)_fieldDecls).GetEnumerator();
-        }
-
-        /// <summary>
-        /// Enumerate the child <see cref="FieldDecl"/>s.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator<VariableDecl> IEnumerable<VariableDecl>.GetEnumerator()
-        {
-            return ((IEnumerable<FieldDecl>)_fieldDecls).GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            get { return _fieldDecls[0].ColumnNumber; }
         }
 
         /// <summary>
@@ -128,19 +95,19 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the <see cref="FieldDecl"/> at the specified index.
+        /// The list of <see cref="FieldDecl"/>s.
         /// </summary>
-        public FieldDecl this[int index]
+        public ChildList<FieldDecl> FieldDecls
         {
-            get { return _fieldDecls[index]; }
+            get { return _fieldDecls; }
         }
 
         /// <summary>
-        /// Get the <see cref="VariableDecl"/> at the specified index.
+        /// The line number associated with the <see cref="MultiFieldDecl"/> (actually, the first child <see cref="FieldDecl"/>).
         /// </summary>
-        VariableDecl IMultiVariableDecl.this[int index]
+        public override int LineNumber
         {
-            get { return _fieldDecls[index]; }
+            get { return _fieldDecls[0].LineNumber; }
         }
 
         /// <summary>
@@ -174,25 +141,44 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The line number associated with the <see cref="MultiFieldDecl"/> (actually, the first child <see cref="FieldDecl"/>).
+        /// Get the <see cref="FieldDecl"/> at the specified index.
         /// </summary>
-        public override int LineNumber
+        public FieldDecl this[int index]
         {
-            get { return _fieldDecls[0].LineNumber; }
+            get { return _fieldDecls[index]; }
         }
 
         /// <summary>
-        /// The column number associated with the <see cref="MultiFieldDecl"/> (actually, the first child <see cref="FieldDecl"/>).
+        /// Get the <see cref="VariableDecl"/> at the specified index.
         /// </summary>
-        public override int ColumnNumber
+        VariableDecl IMultiVariableDecl.this[int index]
         {
-            get { return _fieldDecls[0].ColumnNumber; }
+            get { return _fieldDecls[index]; }
         }
 
-        #endregion
+        /// <summary>
+        /// Enumerate the child <see cref="FieldDecl"/>s.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerator<FieldDecl> GetEnumerator()
+        {
+            return ((IEnumerable<FieldDecl>)_fieldDecls).GetEnumerator();
+        }
 
-        #region /* METHODS */
-        
+        /// <summary>
+        /// Enumerate the child <see cref="FieldDecl"/>s.
+        /// </summary>
+        /// <returns></returns>
+        IEnumerator<VariableDecl> IEnumerable<VariableDecl>.GetEnumerator()
+        {
+            return ((IEnumerable<FieldDecl>)_fieldDecls).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
         /// <summary>
         /// Add a <see cref="FieldDecl"/>.
         /// </summary>
@@ -203,15 +189,6 @@ namespace Nova.CodeDOM
             fieldDecl.Modifiers = Modifiers;
 
             AddInternal(fieldDecl);
-        }
-
-        protected void AddInternal(FieldDecl fieldDecl)
-        {
-            // Override the default newlines to 0 if it hasn't been explicitly set
-            if (!fieldDecl.IsNewLinesSet)
-                fieldDecl.SetNewLines(0);
-
-            _fieldDecls.Add(fieldDecl);
         }
 
         /// <summary>
@@ -248,14 +225,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// This method isn't supported for this type.
-        /// </summary>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
-        {
-            throw new Exception("CreateRef() isn't supported for MultiFieldDecls!");
-        }
-
-        /// <summary>
         /// Add the <see cref="CodeObject"/> to the specified dictionary.
         /// </summary>
         public override void AddToDictionary(NamedCodeObjectDictionary dictionary)
@@ -263,16 +232,6 @@ namespace Nova.CodeDOM
             // For MultiFieldDecls, we need to add each individual FieldDecl
             foreach (FieldDecl fieldDecl in _fieldDecls)
                 dictionary.Add(fieldDecl.Name, fieldDecl);
-        }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public override void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            // For MultiFieldDecls, we need to remove each individual FieldDecl
-            foreach (FieldDecl fieldDecl in _fieldDecls)
-                dictionary.Remove(fieldDecl.Name, fieldDecl);
         }
 
         /// <summary>
@@ -286,6 +245,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// This method isn't supported for this type.
+        /// </summary>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
+        {
+            throw new Exception("CreateRef() isn't supported for MultiFieldDecls!");
+        }
+
+        /// <summary>
         /// Get the full name of the <see cref="FieldDecl"/>, including the namespace name.
         /// </summary>
         public override string GetFullName(bool descriptive)
@@ -293,16 +260,23 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
-        /// True if the code object only requires a single line for display by default.
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
         /// </summary>
-        public override bool IsSingleLineDefault
+        public override void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
         {
-            get { return Enumerable.All(_fieldDecls, delegate(FieldDecl fieldDecl) { return fieldDecl.IsSingleLineDefault; }); }
+            // For MultiFieldDecls, we need to remove each individual FieldDecl
+            foreach (FieldDecl fieldDecl in _fieldDecls)
+                dictionary.Remove(fieldDecl.Name, fieldDecl);
+        }
+
+        protected void AddInternal(FieldDecl fieldDecl)
+        {
+            // Override the default newlines to 0 if it hasn't been explicitly set
+            if (!fieldDecl.IsNewLinesSet)
+                fieldDecl.SetNewLines(0);
+
+            _fieldDecls.Add(fieldDecl);
         }
 
         /// <summary>
@@ -323,9 +297,13 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// True if the code object only requires a single line for display by default.
+        /// </summary>
+        public override bool IsSingleLineDefault
+        {
+            get { return Enumerable.All(_fieldDecls, delegate (FieldDecl fieldDecl) { return fieldDecl.IsSingleLineDefault; }); }
+        }
 
         protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
         {
@@ -344,7 +322,5 @@ namespace Nova.CodeDOM
         {
             // The terminator will be rendered by ChildList above, so don't do it here
         }
-
-        #endregion
     }
 }

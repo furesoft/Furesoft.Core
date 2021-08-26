@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of all operators with a fixed single argument (<see cref="Ref"/>, <see cref="Out"/>,
@@ -13,22 +13,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class SingleArgumentOperator : Operator
     {
-        #region /* FIELDS */
-
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected SingleArgumentOperator(Expression expression)
         {
             Expression = expression;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The <see cref="Expression"/> being operated on.
@@ -39,10 +29,6 @@ namespace Nova.CodeDOM
             set { SetField(ref _expression, value, true); }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Deep-clone the code object.
         /// </summary>
@@ -52,10 +38,6 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._expression, _expression);
             return clone;
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected SingleArgumentOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -83,10 +65,6 @@ namespace Nova.CodeDOM
             parser.ParentStartingToken = startingToken;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the argument has parens around it.
         /// </summary>
@@ -112,10 +90,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             RenderFlags passFlags = (flags & RenderFlags.PassMask);
@@ -128,7 +102,5 @@ namespace Nova.CodeDOM
             if (hasParens)
                 writer.Write(ParseTokenEndGroup);
         }
-
-        #endregion
     }
 }

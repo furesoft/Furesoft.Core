@@ -1,11 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
+﻿// The Furesoft.Core.CodeDom Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="RegionDirective"/>, <see cref="EndRegionDirective"/>, <see cref="ErrorDirective"/>,
@@ -13,22 +13,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class MessageDirective : CompilerDirective
     {
-        #region /* FIELDS */
-
         protected string _message;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected MessageDirective(string message)
         {
             _message = message;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The text content of the message.
@@ -38,10 +28,6 @@ namespace Nova.CodeDOM
             get { return _message; }
             set { _message = value; }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected MessageDirective(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -56,10 +42,6 @@ namespace Nova.CodeDOM
                 _message = parser.GetTokenToEOL();
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the compiler directive has an argument.
         /// </summary>
@@ -68,15 +50,9 @@ namespace Nova.CodeDOM
             get { return !string.IsNullOrEmpty(_message); }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             writer.Write(_message);
         }
-
-        #endregion
     }
 }
