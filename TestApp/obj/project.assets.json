@@ -149,36 +149,39 @@
     ]
   },
   "packageFolders": {
-    "/home/filmee24/.nuget/packages/": {},
-    "/usr/share/dotnet/sdk/NuGetFallbackFolder": {}
+    "C:\\Users\\chris\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/TestApp/TestApp.csproj",
+      "projectUniqueName": "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\TestApp\\TestApp.csproj",
       "projectName": "TestApp",
-      "projectPath": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/TestApp/TestApp.csproj",
-      "packagesPath": "/home/filmee24/.nuget/packages/",
-      "outputPath": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/TestApp/obj/",
+      "projectPath": "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\TestApp\\TestApp.csproj",
+      "packagesPath": "C:\\Users\\chris\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\TestApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "/usr/share/dotnet/sdk/NuGetFallbackFolder"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "/home/filmee24/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\chris\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net5.0"
       ],
       "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net5.0": {
           "targetAlias": "net5.0",
           "projectReferences": {
-            "/home/filmee24/Dokumente/Projekte/Furesoft.Core/Furesoft.Core/Furesoft.Core.csproj": {
-              "projectPath": "/home/filmee24/Dokumente/Projekte/Furesoft.Core/Furesoft.Core/Furesoft.Core.csproj"
+            "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core\\Furesoft.Core.csproj": {
+              "projectPath": "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core\\Furesoft.Core.csproj"
             }
           }
         }
@@ -207,7 +210,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/5.0.202/RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.400\\RuntimeIdentifierGraph.json"
       }
     }
   }

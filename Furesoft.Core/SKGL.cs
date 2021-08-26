@@ -132,7 +132,7 @@ namespace Furesoft.Core
 			// checking if the key already have been decoded.
 			if (string.IsNullOrEmpty(_res) | _res == null)
 			{
-				string _stageOne = "";
+				var _stageOne = "";
 
 				Key = Key.Replace("-", "");
 
@@ -149,7 +149,7 @@ namespace Furesoft.Core
 					//if no value "secretPhase" given, the code will directly decrypt without using somekind of encryption
 					//if some kind of value is assigned to the variable "secretPhase", the code will execute it FIRST.
 					//the secretPhase shall only consist of digits!
-					System.Text.RegularExpressions.Regex reg = new System.Text.RegularExpressions.Regex("^\\d$");
+					var reg = new System.Text.RegularExpressions.Regex("^\\d$");
 					//cheking the string
 					if (reg.IsMatch(secretPhase))
 					{
@@ -182,8 +182,8 @@ namespace Furesoft.Core
 				}
 				decodeKeyToString();
 
-				string _decodedHash = _res.Substring(0, 9);
-				string _calculatedHash = _a.getEightByteHash(_res.Substring(9, 19)).ToString().Substring(0, 9);
+				var _decodedHash = _res.Substring(0, 9);
+				var _calculatedHash = _a.getEightByteHash(_res.Substring(9, 19)).ToString().Substring(0, 9);
 				// changed Math.Abs(_res.Substring(0, 17).GetHashCode).ToString.Substring(0, 8)
 
 				//When the hashcode is calculated, it cannot be taken for sure,
@@ -238,7 +238,7 @@ namespace Furesoft.Core
 		private System.DateTime _CreationDay()
 		{
 			decodeKeyToString();
-			System.DateTime _date = new System.DateTime();
+			var _date = new System.DateTime();
 			_date = new DateTime(Convert.ToInt32(_res.Substring(9, 4)), Convert.ToInt32(_res.Substring(13, 2)), Convert.ToInt32(_res.Substring(15, 2)));
 
 			return _date;
@@ -255,7 +255,7 @@ namespace Furesoft.Core
 		private int _DaysLeft()
 		{
 			decodeKeyToString();
-			int _setDays = SetTime;
+			var _setDays = SetTime;
 			return Convert.ToInt32(((TimeSpan)(ExpireDate - DateTime.Today)).TotalDays); //or viseversa
 		}
 
@@ -284,7 +284,7 @@ namespace Furesoft.Core
 		private System.DateTime _ExpireDate()
 		{
 			decodeKeyToString();
-			System.DateTime _date = new System.DateTime();
+			var _date = new System.DateTime();
 			_date = CreationDate;
 			return _date.AddDays(SetTime);
 		}
@@ -326,7 +326,7 @@ namespace Furesoft.Core
 			// This function will store information in Artem's ISF-2
 			//Random variable was moved because of the same key generation at the same time.
 
-			int _retInt = Convert.ToInt32(_creationDate.ToString("yyyyMMdd"));
+			var _retInt = Convert.ToInt32(_creationDate.ToString("yyyyMMdd"));
 			// today
 
 			decimal result = 0;
@@ -373,7 +373,7 @@ namespace Furesoft.Core
 			else
 			{
 				// if password is set, return an encrypted
-				string usefulInformation = base26ToBase10(_key);
+				var usefulInformation = base26ToBase10(_key);
 				return usefulInformation.Substring(0, 9) + _decText(usefulInformation.Substring(9), _secretPhase);
 			}
 		}
@@ -383,13 +383,13 @@ namespace Furesoft.Core
 		//Convertions, et cetera.----------------
 		protected internal int booleanToInt(bool[] _booleanArray)
 		{
-			int _aVector = 0;
+			var _aVector = 0;
 			//
 			//In this function we are converting a binary value array to a int
 			//A binary array can max contain 4 values.
 			//Ex: new boolean(){1,1,1,1}
 
-			for (int _i = 0; _i < _booleanArray.Length; _i++)
+			for (var _i = 0; _i < _booleanArray.Length; _i++)
 			{
 				switch (_booleanArray[_i])
 				{
@@ -406,11 +406,11 @@ namespace Furesoft.Core
 		{
 			//In this function we are converting an integer (created with privious function) to a binary array
 
-			int _bReturn = Convert.ToInt32(Convert.ToString(_num, 2));
-			string _aReturn = Return_Lenght(_bReturn.ToString(), 8);
-			bool[] _cReturn = new bool[8];
+			var _bReturn = Convert.ToInt32(Convert.ToString(_num, 2));
+			var _aReturn = Return_Lenght(_bReturn.ToString(), 8);
+			var _cReturn = new bool[8];
 
-			for (int i = 0; i <= 7; i++)
+			for (var i = 0; i <= 7; i++)
 			{
 				_cReturn[i] = _aReturn.ToString().Substring(i, 1) == "1" ? true : false;
 			}
@@ -420,9 +420,9 @@ namespace Furesoft.Core
 		protected internal string _encText(string _inputPhase, string _secretPhase)
 		{
 			//in this class we are encrypting the integer array.
-			string _res = "";
+			var _res = "";
 
-			for (int i = 0; i <= _inputPhase.Length - 1; i++)
+			for (var i = 0; i <= _inputPhase.Length - 1; i++)
 			{
 				_res += modulo(Convert.ToInt32(_inputPhase.Substring(i, 1)) + Convert.ToInt32(_secretPhase.Substring(modulo(i, _secretPhase.Length), 1)), 10);
 			}
@@ -433,9 +433,9 @@ namespace Furesoft.Core
 		protected internal string _decText(string _encryptedPhase, string _secretPhase)
 		{
 			//in this class we are decrypting the text encrypted with the function above.
-			string _res = "";
+			var _res = "";
 
-			for (int i = 0; i <= _encryptedPhase.Length - 1; i++)
+			for (var i = 0; i <= _encryptedPhase.Length - 1; i++)
 			{
 				_res += modulo(Convert.ToInt32(_encryptedPhase.Substring(i, 1)) - Convert.ToInt32(_secretPhase.Substring(modulo(i, _secretPhase.Length), 1)), 10);
 			}
@@ -468,8 +468,8 @@ namespace Furesoft.Core
 
 		protected internal string twentyfiveByteHash(string s)
 		{
-			int amountOfBlocks = s.Length / 5;
-			string[] preHash = new string[amountOfBlocks + 1];
+			var amountOfBlocks = s.Length / 5;
+			var preHash = new string[amountOfBlocks + 1];
 
 			if (s.Length <= 5)
 			{
@@ -479,7 +479,7 @@ namespace Furesoft.Core
 			else if (s.Length > 5)
 			{
 				//if the input is more than 5, there is a need of dividing it into blocks.
-				for (int i = 0; i <= amountOfBlocks - 2; i++)
+				for (var i = 0; i <= amountOfBlocks - 2; i++)
 				{
 					preHash[i] = getEightByteHash(s.Substring(i * 5, 5)).ToString();
 				}
@@ -498,7 +498,7 @@ namespace Furesoft.Core
 			//to any length you want
 			uint hash = 0;
 
-			foreach (byte b in System.Text.Encoding.Unicode.GetBytes(s))
+			foreach (var b in System.Text.Encoding.Unicode.GetBytes(s))
 			{
 				hash += b;
 				hash += (hash << 10);
@@ -509,8 +509,8 @@ namespace Furesoft.Core
 			hash ^= (hash >> 11);
 			hash += (hash << 15);
 
-			int result = (int)(hash % MUST_BE_LESS_THAN);
-			int check = MUST_BE_LESS_THAN / result;
+			var result = (int)(hash % MUST_BE_LESS_THAN);
+			var check = MUST_BE_LESS_THAN / result;
 
 			if (check > 1)
 			{
@@ -528,13 +528,13 @@ namespace Furesoft.Core
 			//
 			// Note that this method will still work, even though you only
 			// can add, subtract numbers in range of 15 digits.
-			char[] allowedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
+			var allowedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray();
 
-			decimal num = Convert.ToDecimal(s);
-			int reminder = 0;
+			var num = Convert.ToDecimal(s);
+			var reminder = 0;
 
-			char[] result = new char[s.ToString().Length + 1];
-			int j = 0;
+			var result = new char[s.ToString().Length + 1];
+			var j = 0;
 
 			while ((num >= 26))
 			{
@@ -547,9 +547,9 @@ namespace Furesoft.Core
 			result[j] = allowedLetters[Convert.ToInt32(num)];
 			// final calculation
 
-			string returnNum = "";
+			var returnNum = "";
 
-			for (int k = j; k >= 0; k -= 1)  // not sure
+			for (var k = j; k >= 0; k -= 1)  // not sure
 			{
 				returnNum += result[k];
 			}
@@ -563,12 +563,12 @@ namespace Furesoft.Core
 			//
 			// This function requieres Mega Math to work correctly.
 
-			string allowedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			System.Numerics.BigInteger result = new System.Numerics.BigInteger();
+			var allowedLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+			var result = new System.Numerics.BigInteger();
 
-			for (int i = 0; i <= s.Length - 1; i += 1)
+			for (var i = 0; i <= s.Length - 1; i += 1)
 			{
-				BigInteger pow = powof(26, (s.Length - i - 1));
+				var pow = powof(26, (s.Length - i - 1));
 
 				result = result + allowedLetters.IndexOf(s.Substring(i, 1)) * pow;
 			}
@@ -595,7 +595,7 @@ namespace Furesoft.Core
 			}
 			else
 			{
-				for (int i = 0; i <= y - 1; i++)
+				for (var i = 0; i <= y - 1; i++)
 				{
 					newNum = newNum * x;
 				}

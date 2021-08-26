@@ -56,7 +56,7 @@ namespace Furesoft.Core.Measure
 
 			public MeasureUnit GetResult(MeasureContext ctx)
 			{
-				int count = _normM.Count;
+				var count = _normM.Count;
 				if (count == 0)
 				{
 					if (_dimensionLessFactor.IsNeutral) return None;
@@ -72,7 +72,7 @@ namespace Furesoft.Core.Measure
 								: ctx.RegisterExponent(exp, _normM[0]));
 				}
 				var result = new List<ExponentMeasureUnit>(count);
-				for (int i = 0; i < count; ++i)
+				for (var i = 0; i < count; ++i)
 				{
 					var exp = _normE[i];
 					if (exp != 0) result.Add(exp == 1 ? _normM[i] : ctx.RegisterExponent(exp, _normM[i]));
