@@ -5,7 +5,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities.Reflection
 {
     /// <summary>
     /// Static helper methods for <see cref="ParameterInfo"/>.

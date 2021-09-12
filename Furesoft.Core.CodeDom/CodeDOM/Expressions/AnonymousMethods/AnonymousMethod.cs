@@ -6,13 +6,32 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
 {
     /// <summary>
     /// Represents an un-named method that can be assigned to a delegate.

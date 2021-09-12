@@ -5,12 +5,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
 {
     /// <summary>
     /// Represents user documentation of code, and is also the common base class of <see cref="DocText"/>,

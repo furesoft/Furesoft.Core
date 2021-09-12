@@ -3,11 +3,17 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
 
-using Nova.Parsing;
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
 {
     /// <summary>
     /// Performs a one's complement (toggles all bits) on an <see cref="Expression"/>.

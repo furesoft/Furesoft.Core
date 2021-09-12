@@ -1,10 +1,5 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
-
-using Nova.CodeDOM;
-
-namespace Nova.Resolving
+﻿
+namespace Furesoft.Core.CodeDom.Resolving
 {
     /// <summary>
     /// The resolve category is used to restrict <see cref="UnresolvedRef"/>s to a particular sub-category when resolving them.

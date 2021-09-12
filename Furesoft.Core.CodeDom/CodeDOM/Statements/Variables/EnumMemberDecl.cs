@@ -4,12 +4,24 @@
 
 using System;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 {
     /// <summary>
     /// Represents the declaration of an individual enum member.
@@ -21,8 +33,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class EnumMemberDecl : VariableDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an enum member declaration.
         /// </summary>
@@ -40,25 +50,24 @@ namespace Nova.CodeDOM
             : base(name, null, null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The type of the parent <see cref="EnumDecl"/>.
-        /// </summary>
-        public override Expression Type
-        {
-            get { return (_parent is MultiEnumMemberDecl ? ((MultiEnumMemberDecl)_parent).Type : null); }
-            set { throw new Exception("Can't change the Type of an EnumMemberDecl - it's always the parent EnumDecl."); }
-        }
-
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public override string Category
         {
             get { return "enum"; }
+        }
+
+        /// <summary>
+        /// True if this is a member of a bit-flag enum.
+        /// </summary>
+        public bool IsBitFlag
+        {
+            get
+            {
+                EnumDecl enumDecl = ParentEnumDecl;
+                return (enumDecl != null && enumDecl.IsBitFlags);
+            }
         }
 
         /// <summary>
@@ -92,20 +101,13 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if this is a member of a bit-flag enum.
+        /// The type of the parent <see cref="EnumDecl"/>.
         /// </summary>
-        public bool IsBitFlag
+        public override Expression Type
         {
-            get
-            {
-                EnumDecl enumDecl = ParentEnumDecl;
-                return (enumDecl != null && enumDecl.IsBitFlags);
-            }
+            get { return (_parent is MultiEnumMemberDecl ? ((MultiEnumMemberDecl)_parent).Type : null); }
+            set { throw new Exception("Can't change the Type of an EnumMemberDecl - it's always the parent EnumDecl."); }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Create a reference to the <see cref="EnumMemberDecl"/>.
@@ -129,26 +131,33 @@ namespace Nova.CodeDOM
             return _name;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        internal static void AddParsePoints()
+        /// <summary>
+        /// Parse an <see cref="EnumMemberDecl"/>.
+        /// </summary>
+        public EnumMemberDecl(Parser parser, CodeObject parent, bool unusedName)
+            : base(parser, parent)
         {
-            // We detect enum member declarations by '=' or ',' at the top level of an EnumDecl block.
-            // We parse backwards from the parse-point, and then parse forwards to complete the parsing.
-            // This is consistent with how we parse LocalDecls, but it doesn't handle a single-name enum,
-            // so we do a special check for that in EnumDecl/Parser.  Unlike LocalDecls and FieldDecls,
-            // EnumMemberDecls can't exist independently, but only as part of a MultiEnumMemberDecl.
-            // However, we parse them here to be consistent with how the others work, and to avoid the
-            // issue of a parse constructor for MultiEnumMemberDecl having to call the EnumMemberDecl
-            // parse constructor.
+            Token token;
+            if (unusedName)
+            {
+                // Get the name from the Unused list
+                token = parser.RemoveLastUnusedToken();
+                _name = token.NonVerbatimText;
+            }
+            else
+            {
+                // Parse the name
+                _name = parser.GetIdentifierText();
+                token = parser.LastToken;
+            }
+            MoveLocationAndComment(token);
 
-            // Use a parse-priority of 200 (FieldDecl uses 0, LocalDecl uses 100, Assignment uses 300)
-            Parser.AddParsePoint(Assignment.ParseToken, 200, Parse, typeof(EnumDecl));
+            ParseUnusedAnnotations(parser, this, true);  // Parse any annotations from the Unused list
+            ParseInitialization(parser, parent);         // Parse the initialization (if any)
 
-            // Use a parse-priority of 200 (FieldDecl uses 0, LocalDecl uses 100)
-            Parser.AddParsePoint(Expression.ParseTokenSeparator, 200, Parse, typeof(EnumDecl));
+            // Move any EOL or Postfix annotations on the init expression to the parent
+            if (_initialization != null)
+                MoveEOLAndPostAnnotations(_initialization);
         }
 
         /// <summary>
@@ -216,68 +225,22 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        /// <summary>
-        /// Parse an <see cref="EnumMemberDecl"/>.
-        /// </summary>
-        public EnumMemberDecl(Parser parser, CodeObject parent, bool unusedName)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            Token token;
-            if (unusedName)
-            {
-                // Get the name from the Unused list
-                token = parser.RemoveLastUnusedToken();
-                _name = token.NonVerbatimText;
-            }
-            else
-            {
-                // Parse the name
-                _name = parser.GetIdentifierText();
-                token = parser.LastToken;
-            }
-            MoveLocationAndComment(token);
+            // We detect enum member declarations by '=' or ',' at the top level of an EnumDecl block.
+            // We parse backwards from the parse-point, and then parse forwards to complete the parsing.
+            // This is consistent with how we parse LocalDecls, but it doesn't handle a single-name enum,
+            // so we do a special check for that in EnumDecl/Parser.  Unlike LocalDecls and FieldDecls,
+            // EnumMemberDecls can't exist independently, but only as part of a MultiEnumMemberDecl.
+            // However, we parse them here to be consistent with how the others work, and to avoid the
+            // issue of a parse constructor for MultiEnumMemberDecl having to call the EnumMemberDecl
+            // parse constructor.
 
-            ParseUnusedAnnotations(parser, this, true);  // Parse any annotations from the Unused list
-            ParseInitialization(parser, parent);         // Parse the initialization (if any)
+            // Use a parse-priority of 200 (FieldDecl uses 0, LocalDecl uses 100, Assignment uses 300)
+            Parser.AddParsePoint(Assignment.ParseToken, 200, Parse, typeof(EnumDecl));
 
-            // Move any EOL or Postfix annotations on the init expression to the parent
-            if (_initialization != null)
-                MoveEOLAndPostAnnotations(_initialization);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-            {
-                // Resolve the type before the Initialization, so it can be used to avoid ambiguities
-                // while resolving the Initialization (such as for method groups).
-                if (_type != null)
-                    _type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-            }
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                ResolveAttributes(flags);
-                if (_initialization != null)
-                    _initialization = (Expression)_initialization.Resolve(ResolveCategory.Expression, flags);
-                ResolveDocComments(flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public virtual void ResolveRef(string name, Resolver resolver)
-        {
-            if (Name == name)
-                resolver.AddMatch(this);
+            // Use a parse-priority of 200 (FieldDecl uses 0, LocalDecl uses 100)
+            Parser.AddParsePoint(Expression.ParseTokenSeparator, 200, Parse, typeof(EnumDecl));
         }
 
         /// <summary>
@@ -346,13 +309,13 @@ namespace Nova.CodeDOM
                         switch (System.Type.GetTypeCode(type))
                         {
                             case TypeCode.UInt64: value = (ulong)value + 1; break;
-                            case TypeCode.Int64:  value = (long)value + 1; break;
+                            case TypeCode.Int64: value = (long)value + 1; break;
                             case TypeCode.UInt32: value = (uint)value + 1; break;
-                            case TypeCode.Int32:  value = (int)value + 1; break;
+                            case TypeCode.Int32: value = (int)value + 1; break;
                             case TypeCode.UInt16: value = (ushort)((ushort)value + 1); break;
-                            case TypeCode.Int16:  value = (short)((short)value + 1); break;
-                            case TypeCode.Byte:   value = (byte)((byte)value + 1); break;
-                            case TypeCode.SByte:  value = (sbyte)((sbyte)value + 1); break;
+                            case TypeCode.Int16: value = (short)((short)value + 1); break;
+                            case TypeCode.Byte: value = (byte)((byte)value + 1); break;
+                            case TypeCode.SByte: value = (sbyte)((sbyte)value + 1); break;
                         }
                         ++preIndex;
                     }
@@ -362,32 +325,35 @@ namespace Nova.CodeDOM
             return base.GetValue();
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
-        /// True if the code object only requires a single line for display by default.
+        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
         /// </summary>
-        public override bool IsSingleLineDefault
+        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
         {
-            get { return !HasFirstOnLineAnnotations; }
+            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
+            {
+                // Resolve the type before the Initialization, so it can be used to avoid ambiguities
+                // while resolving the Initialization (such as for method groups).
+                if (_type != null)
+                    _type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
+            }
+            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
+            {
+                ResolveAttributes(flags);
+                if (_initialization != null)
+                    _initialization = (Expression)_initialization.Resolve(ResolveCategory.Expression, flags);
+                ResolveDocComments(flags);
+            }
+            return this;
         }
 
         /// <summary>
-        /// True if the code object defaults to starting on a new line.
+        /// Resolve child code objects that match the specified name.
         /// </summary>
-        public override bool IsFirstOnLineDefault
+        public virtual void ResolveRef(string name, Resolver resolver)
         {
-            get { return HasFirstOnLineAnnotations; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has a terminator character by default.
-        /// </summary>
-        public override bool HasTerminatorDefault
-        {
-            get { return false; }
+            if (Name == name)
+                resolver.AddMatch(this);
         }
 
         /// <summary>
@@ -401,15 +367,27 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// True if the <see cref="Statement"/> has a terminator character by default.
         /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
+        public override bool HasTerminatorDefault
         {
-            // Default to a preceeding blank line if the object has first-on-line annotations, or if
-            // it's not another enum member declaration.
-            if (HasFirstOnLineAnnotations || !(previous is EnumMemberDecl))
-                return 2;
-            return 1;
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return HasFirstOnLineAnnotations; }
+        }
+
+        /// <summary>
+        /// True if the code object only requires a single line for display by default.
+        /// </summary>
+        public override bool IsSingleLineDefault
+        {
+            get { return !HasFirstOnLineAnnotations; }
         }
 
         /// <summary>
@@ -435,9 +413,17 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Default to a preceeding blank line if the object has first-on-line annotations, or if
+            // it's not another enum member declaration.
+            if (HasFirstOnLineAnnotations || !(previous is EnumMemberDecl))
+                return 2;
+            return 1;
+        }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
         {
@@ -471,7 +457,5 @@ namespace Nova.CodeDOM
                 AsTextInitialization(writer, passFlags);
             }
         }
-
-        #endregion
     }
 }

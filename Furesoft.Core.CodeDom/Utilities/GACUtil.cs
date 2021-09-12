@@ -6,8 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.Utilities;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities
 {
     /// <summary>
     /// GAC is a utility class for accessing the Global Assembly Cache.

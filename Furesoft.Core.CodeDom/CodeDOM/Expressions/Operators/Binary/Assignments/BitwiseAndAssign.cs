@@ -1,23 +1,23 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
-using Nova.Parsing;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
 {
     /// <summary>
-    /// Divides one <see cref="Expression"/> by another, and assigns the result to the left <see cref="Expression"/>.
+    /// Performs a boolean AND operation on two <see cref="Expression"/>s, and assigns the result to the left <see cref="Expression"/>.
     /// The left <see cref="Expression"/> must be an assignable object ("lvalue").
     /// </summary>
-    public class DivideAssign : Assignment
+    public class BitwiseAndAssign : Assignment
     {
         #region /* CONSTRUCTORS */
 
         /// <summary>
-        /// Create a <see cref="DivideAssign"/> operator.
+        /// Create a <see cref="BitwiseAndAssign"/> operator.
         /// </summary>
-        public DivideAssign(Expression left, Expression right)
+        public BitwiseAndAssign(Expression left, Expression right)
             : base(left, right)
         { }
 
@@ -42,7 +42,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public override string GetInternalName()
         {
-            return Divide.InternalName;
+            return BitwiseAnd.InternalName;
         }
 
         #endregion
@@ -52,7 +52,7 @@ namespace Nova.CodeDOM
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
-        public new const string ParseToken = "/=";
+        public new const string ParseToken = "&=";
 
         internal static new void AddParsePoints()
         {
@@ -60,14 +60,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse a <see cref="DivideAssign"/> operator.
+        /// Parse a <see cref="BitwiseAndAssign"/> operator.
         /// </summary>
-        public static new DivideAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public static new BitwiseAndAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            return new DivideAssign(parser, parent);
+            return new BitwiseAndAssign(parser, parent);
         }
 
-        protected DivideAssign(Parser parser, CodeObject parent)
+        protected BitwiseAndAssign(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
 

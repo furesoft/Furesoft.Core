@@ -4,7 +4,7 @@
 
 using System.Text;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
 {
     /// <summary>
     /// This interface is implemented by all code objects that can be stored as files, which includes

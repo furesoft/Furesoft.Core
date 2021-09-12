@@ -6,10 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.Utilities;
 
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies
 {
     /// <summary>
     /// Represents an <see cref="Assembly"/> that has been loaded into memory using .NET reflection.

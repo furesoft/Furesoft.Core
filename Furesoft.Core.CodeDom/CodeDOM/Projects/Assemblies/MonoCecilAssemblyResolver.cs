@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Generic;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies
 {
     /// <summary>
     /// Derives from a Mono Cecil <see cref="BaseAssemblyResolver"/> in order to resolve assemblies on demand

@@ -3,8 +3,15 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
 {
     /// <summary>
     /// Represents the top-level namespace (either a project's global namespace, or an extern alias namespace).

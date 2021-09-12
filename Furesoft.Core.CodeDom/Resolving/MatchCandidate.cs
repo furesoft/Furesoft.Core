@@ -9,10 +9,25 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Collections.Generic;
-using Nova.CodeDOM;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Loops;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
 
-namespace Nova.Resolving
+namespace Furesoft.Core.CodeDom.Resolving
 {
     /// <summary>
     /// Represents a possible match for an <see cref="UnresolvedRef"/>.

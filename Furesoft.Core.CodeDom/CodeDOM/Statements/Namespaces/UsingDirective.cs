@@ -1,12 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
 {
     /// <summary>
     /// Imports the contents of a <see cref="Namespace"/> into the current scope.

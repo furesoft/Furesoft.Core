@@ -1,10 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
-using Nova.Parsing;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
 {
     /// <summary>
     /// Assigns the right <see cref="Expression"/> to the left <see cref="Expression"/>.

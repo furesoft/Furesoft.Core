@@ -4,7 +4,7 @@
 
 using Mono.Cecil;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities.Mono.Cecil
 {
     /// <summary>
     /// Static helper methods for <see cref="EventDefinition"/>.

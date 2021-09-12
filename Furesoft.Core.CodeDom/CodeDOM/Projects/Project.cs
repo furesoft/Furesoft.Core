@@ -10,13 +10,35 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.References;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.Utilities;
+using static Furesoft.Core.CodeDom.CodeDOM.Projects.Solution;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects
 {
     /// <summary>
     /// Represents a collection of <see cref="CodeUnit"/> objects (files) that
@@ -24,6 +46,92 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Project : CodeObject, INamedCodeObject, IFile, IComparable<Project>
     {
+        public const string ConfigurationDebug = "Debug";
+
+        public const string ConfigurationRelease = "Release";
+
+        public const string CSharpFileExtension = ".cs";
+
+        public const string CSharpProjectFileExtension = ".csproj";
+
+        public const int DefaultBaseAddress = 0x400000;
+
+        public const int DefaultFileAlignment = 512;
+
+        public const string DefaultFramework = FrameworkContext.DotNetFramework;
+
+        public const string DesignerCSharpGeneratedExtension = DesignerGeneratedExtension + CSharpFileExtension;
+
+        public const string DesignerGeneratedExtension = ".Designer";
+
+        public const string GeneratedFileExtension = ".g";
+
+        public const string MsCorLib = "mscorlib";
+
+        public const string PlatformAnyCPU = "AnyCPU";
+
+        public const string PlatformX64 = "x64";
+
+        public const string PlatformX86 = "x86";
+
+        public const string PropertiesFolder = "Properties";
+
+        public const string ReferencesFolder = "References";
+
+        public const string SystemCore = "System.Core";
+
+        public const string VBFileExtension = ".vb";
+
+        public const string VBProjectFileExtension = ".vbproj";
+
+        public const string WorkflowCodeBesideFileExtension = ".xoml";
+
+        public const string WorkflowCSharpCodeBesideFileExtension = WorkflowCodeBesideFileExtension + CSharpFileExtension;
+
+        public const string XamlCSharpCodeBehindExtension = XamlFileExtension + CSharpFileExtension;
+
+        public const string XamlCSharpGeneratedExtension = GeneratedFileExtension + CSharpFileExtension;
+
+        public const string XamlFileExtension = ".xaml";
+
+        public static readonly Guid ASPMVCProjectType = new Guid("{603C0E0B-DB56-11DC-BE95-000D561079B0}");
+
+        public static readonly Guid CPPProjectType = new Guid("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}");
+
+        public static readonly Guid CSProjectType = new Guid("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}");
+
+        public static readonly Guid CSSharePointProjectType = new Guid("{593B0543-81F6-4436-BA1E-4747859CAAE2}");
+
+        public static readonly Guid CSWorkflowProjectType = new Guid("{14822709-B5A1-4724-98CA-57A101D1B079}");
+
+        public static readonly Guid FolderType = new Guid("{2150E333-8FDC-42A3-9474-1A3956D46DE8}");
+
+        public static readonly Guid MvcProjectType = new Guid("{F85E285D-A4E0-4152-9332-AB1D724D3325}");
+
+        public static readonly Guid SetupProjectType = new Guid("{54435603-DBB4-11D2-8724-00A0C9A8B90C}");
+
+        public static readonly Guid SilverlightProjectType = new Guid("{A1591282-1198-4647-A2B1-27E5FF5F6F3B}");
+
+        public static readonly Guid TestProjectType = new Guid("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
+
+        public static readonly Guid VBProjectType = new Guid("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}");
+
+        public static readonly Guid VBSharePointProjectType = new Guid("{EC05E597-79D4-47f3-ADA0-324C4F7C7484}");
+
+        public static readonly Guid VBWorkflowProjectType = new Guid("{D59BE175-2ED0-4C54-BE3D-CDAA9F3214C8}");
+
+        public static readonly Guid VisualDBToolsProjectType = new Guid("{C252FEB5-A946-4202-B1D4-9916A0590387}");
+
+        public static readonly Guid VstoProjectType = new Guid("{BAA0C2D2-18E2-41B9-852F-F413020CAA33}");
+
+        public static readonly Guid WCFProjectType = new Guid("{3D9AD99F-2412-4246-B90B-4EAA41C64699}");
+
+        public static readonly Guid WebApplicationProjectType = new Guid("{349C5851-65DF-11DA-9384-00065B846F21}");
+
+        public static readonly Guid WebSiteProjectType = new Guid("{E24C65DC-7377-472B-9ABA-BC803B73C61A}");
+
+        public static readonly Guid WPFProjectType = new Guid("{60DC8134-EBA5-43B8-BCC9-BB4BC16C2548}");
+
         /// <summary>
         /// Set to load internal types in addition to public types when loading types from referenced assemblies and
         /// projects, even when there isn't any InternalsVisibleTo attribute.  This allows resolving namespaces and types
@@ -31,50 +139,6 @@ namespace Nova.CodeDOM
         /// This option will slow things down a bit and use up more memory.
         /// </summary>
         public static bool LoadInternalTypes;
-
-        public const string ConfigurationDebug = "Debug";
-        public const string ConfigurationRelease = "Release";
-        public const string CSharpFileExtension = ".cs";
-        public const string CSharpProjectFileExtension = ".csproj";
-        public const int DefaultBaseAddress = 0x400000;
-        public const int DefaultFileAlignment = 512;
-        public const string DefaultFramework = FrameworkContext.DotNetFramework;
-        public const string DesignerCSharpGeneratedExtension = DesignerGeneratedExtension + CSharpFileExtension;
-        public const string DesignerGeneratedExtension = ".Designer";
-        public const string GeneratedFileExtension = ".g";
-        public const string MsCorLib = "mscorlib";
-        public const string PlatformAnyCPU = "AnyCPU";
-        public const string PlatformX64 = "x64";
-        public const string PlatformX86 = "x86";
-        public const string PropertiesFolder = "Properties";
-        public const string ReferencesFolder = "References";
-        public const string SystemCore = "System.Core";
-        public const string VBFileExtension = ".vb";
-        public const string VBProjectFileExtension = ".vbproj";
-        public const string WorkflowCodeBesideFileExtension = ".xoml";
-        public const string WorkflowCSharpCodeBesideFileExtension = WorkflowCodeBesideFileExtension + CSharpFileExtension;
-        public const string XamlCSharpCodeBehindExtension = XamlFileExtension + CSharpFileExtension;
-        public const string XamlCSharpGeneratedExtension = GeneratedFileExtension + CSharpFileExtension;
-        public const string XamlFileExtension = ".xaml";
-        public static readonly Guid ASPMVCProjectType = new Guid("{603C0E0B-DB56-11DC-BE95-000D561079B0}");
-        public static readonly Guid CPPProjectType = new Guid("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}");
-        public static readonly Guid CSProjectType = new Guid("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}");
-        public static readonly Guid CSSharePointProjectType = new Guid("{593B0543-81F6-4436-BA1E-4747859CAAE2}");
-        public static readonly Guid CSWorkflowProjectType = new Guid("{14822709-B5A1-4724-98CA-57A101D1B079}");
-        public static readonly Guid FolderType = new Guid("{2150E333-8FDC-42A3-9474-1A3956D46DE8}");
-        public static readonly Guid MvcProjectType = new Guid("{F85E285D-A4E0-4152-9332-AB1D724D3325}");
-        public static readonly Guid SetupProjectType = new Guid("{54435603-DBB4-11D2-8724-00A0C9A8B90C}");
-        public static readonly Guid SilverlightProjectType = new Guid("{A1591282-1198-4647-A2B1-27E5FF5F6F3B}");
-        public static readonly Guid TestProjectType = new Guid("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
-        public static readonly Guid VBProjectType = new Guid("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}");
-        public static readonly Guid VBSharePointProjectType = new Guid("{EC05E597-79D4-47f3-ADA0-324C4F7C7484}");
-        public static readonly Guid VBWorkflowProjectType = new Guid("{D59BE175-2ED0-4C54-BE3D-CDAA9F3214C8}");
-        public static readonly Guid VisualDBToolsProjectType = new Guid("{C252FEB5-A946-4202-B1D4-9916A0590387}");
-        public static readonly Guid VstoProjectType = new Guid("{BAA0C2D2-18E2-41B9-852F-F413020CAA33}");
-        public static readonly Guid WCFProjectType = new Guid("{3D9AD99F-2412-4246-B90B-4EAA41C64699}");
-        public static readonly Guid WebApplicationProjectType = new Guid("{349C5851-65DF-11DA-9384-00065B846F21}");
-        public static readonly Guid WebSiteProjectType = new Guid("{E24C65DC-7377-472B-9ABA-BC803B73C61A}");
-        public static readonly Guid WPFProjectType = new Guid("{60DC8134-EBA5-43B8-BCC9-BB4BC16C2548}");
 
         protected string _appDesignerFolder;
         protected string _assemblyName;
@@ -251,6 +315,12 @@ namespace Nova.CodeDOM
         protected string _xapFilename;
         protected bool? _xapOutputs;
 
+        static Project()
+        {
+            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
+            ForceReference();
+        }
+
         /// <summary>
         /// Create a new <see cref="Project"/> with the specified file name and parent <see cref="Solution"/>.
         /// </summary>
@@ -288,11 +358,361 @@ namespace Nova.CodeDOM
             _currentConfiguration = FindConfiguration(_configurationName, _platform);
         }
 
-        static Project()
+        /// <summary>
+        /// Parse a project from a standard VS project file.
+        /// </summary>
+        protected Project(string name, string fileName, Guid typeGuid, Guid projectGuid, Solution solution, bool isSupported, Action<LoadStatus, CodeObject> statusCallback)
         {
-            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
-            ForceReference();
+            Log.DetailWriteLine("Loading project '" + name + "' ...");
+
+            // Initialize the project object
+            _parent = solution;
+            _name = name;
+            _fileName = fileName;
+            _typeGuid = typeGuid;
+            _projectGuid = projectGuid;
+            _notSupported = !(isSupported || IsWebSiteProject);
+            _configurations = new ChildList<Configuration>(this);
+            Initialize();
+            if (statusCallback != null)
+                statusCallback(LoadStatus.ObjectCreated, this);
+
+            // Special handling for web site projects
+            if (IsWebSiteProject)
+            {
+                ParseWebSiteProject(name, solution, statusCallback);
+                return;
+            }
+
+            // Check that the file exists (to avoid an exception)
+            if (!File.Exists(_fileName))
+            {
+                LogAndAttachMessage("Project file '" + _fileName + "' doesn't exist!", MessageSeverity.Error, MessageSource.Parse);
+                return;
+            }
+
+            try
+            {
+                // Parse the project file
+                bool firstElement = true;
+
+                // Open the file and store the encoding and BOM status for use when saving
+                FileStream fileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                byte[] bom = new byte[3];
+                fileStream.Read(bom, 0, 3);
+                if (bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF)
+                    FileHasUTF8BOM = true;
+                fileStream.Position = 0;
+                StreamReader streamReader = new StreamReader(fileStream);
+                streamReader.Peek();  // Peek at the first char so that the encoding is determined
+                FileEncoding = streamReader.CurrentEncoding;
+
+                // Parse the file using an XmlReader
+                using (XmlReader xmlReader = XmlReader.Create(streamReader))
+                {
+                    string projectPath = Path.GetDirectoryName(_fileName);
+                    string xmlns = null;
+                    Locations location = Locations.BeforeProperties;
+                    bool lastElementWasItemGroupHeader = false;
+                    string unhandledData = null;
+                    HashSet<string> generatedFiles = new HashSet<string>();
+
+                    // Read the next node
+                    while (xmlReader.Read())
+                    {
+                        if (xmlReader.NodeType == XmlNodeType.XmlDeclaration)
+                        {
+                            // Ignore the declaration node for now
+                        }
+                        else if (xmlReader.NodeType == XmlNodeType.Element)
+                        {
+                            if (firstElement)
+                            {
+                                firstElement = false;
+                                if (xmlReader.Name == "VisualStudioProject")
+                                {
+                                    LogAndAttachMessage("Project files prior to VS 2005 aren't supported - upgrade the project file with VS first.", MessageSeverity.Error, MessageSource.Parse);
+                                    return;
+                                }
+                                if (xmlReader.Name != "Project")
+                                {
+                                    LogAndAttachMessage("Project file format not recognized or not supported!", MessageSeverity.Error, MessageSource.Parse);
+                                    return;
+                                }
+                                if (xmlReader.MoveToAttribute("ToolsVersion"))
+                                    _toolsVersion = xmlReader.Value;
+                                if (xmlReader.MoveToAttribute("DefaultTargets"))
+                                    _defaultTargets = xmlReader.Value;
+                                if (xmlReader.MoveToAttribute("xmlns"))
+                                {
+                                    _namespace = xmlReader.Value;
+                                    xmlns = " xmlns=\"" + _namespace + "\"";
+                                }
+                            }
+                            else if (xmlReader.Name == "PropertyGroup" && !xmlReader.IsEmptyElement)
+                            {
+                                if (!xmlReader.HasAttributes)
+                                    location = Locations.MainProperties;
+                                else
+                                {
+                                    xmlReader.MoveToFirstAttribute();
+                                    if (xmlReader.Name == "Condition" && xmlReader.Value.Contains("$(Configuration)"))
+                                    {
+                                        AddConfiguration(new Configuration(xmlReader, this));
+                                        string configurationName;
+                                        string platform;
+                                        solution.GetProjectConfiguration(solution.ActiveConfiguration, solution.ActivePlatform, this, out configurationName, out platform);
+                                        _currentConfiguration = FindConfiguration(configurationName ?? _configurationName, platform ?? _platform);
+                                    }
+                                    else if (xmlReader.Name == "Label" && xmlReader.Value == "Globals")  // Used by C++ projects (.vcxproj)
+                                        location = Locations.MainProperties;
+                                    else
+                                    {
+                                        xmlReader.MoveToElement();
+                                        unhandledData = xmlReader.ReadOuterXml();
+                                    }
+                                }
+                            }
+                            else if (xmlReader.Name == "ItemGroup" && !xmlReader.IsEmptyElement)
+                            {
+                                location = Locations.Items;
+                                lastElementWasItemGroupHeader = true;
+                                continue;
+                            }
+                            else if (location == Locations.MainProperties)
+                            {
+                                if (xmlReader.Name == "Configuration" && _configurationName == null)
+                                    _configurationName = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "Platform" && _platform == null)
+                                    _platform = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "ProductVersion")
+                                    _productVersion = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "SchemaVersion")
+                                    _schemaVersion = xmlReader.ReadString().Trim();
+                                else if (StringUtil.NNEqualsIgnoreCase(xmlReader.Name, "ProjectGuid"))  // C++ uses 'ProjectGUID'
+                                    _projectGuid = Guid.Parse(xmlReader.ReadString().Trim());
+                                else if (xmlReader.Name == "ProjectTypeGuids")
+                                {
+                                    string[] guids = xmlReader.ReadString().Trim().Split(';');
+                                    if (guids != null)
+                                    {
+                                        _projectTypeGuids = new List<Guid>();
+                                        foreach (string guid in guids)
+                                            _projectTypeGuids.Add(Guid.Parse(guid));
+                                    }
+                                }
+                                else if (xmlReader.Name == "OutputType")
+                                    _outputType = StringUtil.ParseEnum(xmlReader.ReadString(), OutputTypes.Library);
+                                else if (xmlReader.Name == "OutputPath" && _outputPath == null)
+                                    _outputPath = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "StartupObject")
+                                    _startupObject = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "NoStandardLibraries")
+                                    _noStandardLibraries = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "AppDesignerFolder")
+                                    _appDesignerFolder = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "RootNamespace")
+                                    _rootNamespace = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "AssemblyName")
+                                    _assemblyName = xmlReader.ReadString().Trim();
+                                else if (xmlReader.Name == "DeploymentDirectory")
+                                    _deploymentDirectory = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "StartArguments")
+                                    _startArguments = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "TargetFrameworkIdentifier")
+                                    _targetFrameworkIdentifier = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "TargetFrameworkVersion")
+                                    _targetFrameworkVersion = xmlReader.ReadString().Substring(1);  // Skip "v"
+                                else if (xmlReader.Name == "TargetFrameworkProfile")
+                                    _targetFrameworkProfile = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "FileAlignment")
+                                    _fileAlignment = StringUtil.ParseInt(xmlReader.ReadString());
+                                else if (xmlReader.Name == "WarningLevel")
+                                    _warningLevel = StringUtil.ParseInt(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SignAssembly")
+                                    _signAssembly = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "AssemblyOriginatorKeyFile")
+                                    _assemblyOriginatorKeyFile = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "ReferencePath")
+                                    _referencePath = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SccProjectName")
+                                    _sccProjectName = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SccLocalPath")
+                                    _sccLocalPath = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SccAuxPath")
+                                    _sccAuxPath = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SccProvider")
+                                    _sccProvider = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "FileUpgradeFlags")
+                                    _fileUpgradeFlags = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "OldToolsVersion")
+                                    _oldToolsVersion = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "UpgradeBackupLocation")
+                                    _upgradeBackupLocation = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "ProjectType")
+                                    _projectType = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SilverlightVersion")
+                                    _silverlightVersion = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SilverlightApplication")
+                                    _silverlightApplication = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SupportedCultures")
+                                    _supportedCultures = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "XapOutputs")
+                                    _xapOutputs = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "GenerateSilverlightManifest")
+                                    _generateSilverlightManifest = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "XapFilename")
+                                    _xapFilename = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SilverlightManifestTemplate")
+                                    _silverlightManifestTemplate = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SilverlightAppEntry")
+                                    _silverlightAppEntry = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "TestPageFileName")
+                                    _testPageFileName = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "CreateTestPage")
+                                    _createTestPage = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "ValidateXaml")
+                                    _validateXaml = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "EnableOutOfBrowser")
+                                    _enableOutOfBrowser = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "OutOfBrowserSettingsFile")
+                                    _outOfBrowserSettingsFile = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "UsePlatformExtensions")
+                                    _usePlatformExtensions = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "ThrowErrorsInValidation")
+                                    _throwErrorsInValidation = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "LinkedServerProject")
+                                    _linkedServerProject = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "MvcBuildViews")
+                                    _mvcBuildViews = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "UseIISExpress")
+                                    _useIISExpress = StringUtil.ParseBool(xmlReader.ReadString());
+                                else if (xmlReader.Name == "SilverlightApplicationList")
+                                    _silverlightApplicationList = StringUtil.EmptyAsNull(xmlReader.ReadString());
+                                else if (xmlReader.Name == "Nonshipping")
+                                    _nonShipping = StringUtil.ParseBool(xmlReader.ReadString());
+                                else
+                                {
+                                    if (_configurations.Count == 0)
+                                        unhandledData = xmlReader.ReadOuterXml();
+                                    else
+                                    {
+                                        unhandledData = "<PropertyGroup>" + xmlReader.ReadOuterXml();
+                                        while (xmlReader.NodeType != XmlNodeType.EndElement || xmlReader.Name != "PropertyGroup")
+                                            unhandledData += xmlReader.ReadOuterXml();
+                                        unhandledData += "</PropertyGroup>";
+                                        location = (_codeUnits.Count == 0 ? Locations.AfterProperties : Locations.AfterItems);
+                                    }
+                                }
+                            }
+                            else if (location == Locations.Items)
+                            {
+                                if (xmlReader.Name == "Reference")
+                                    AddReference(new AssemblyReference(xmlReader, this), statusCallback);
+                                else if (xmlReader.Name == "ProjectReference")
+                                    AddReference(new ProjectReference(xmlReader, this), statusCallback);
+                                else
+                                {
+                                    BuildActions buildAction = StringUtil.ParseEnum(xmlReader.Name, BuildActions.Unrecognized);
+                                    if (buildAction != BuildActions.Unrecognized && xmlReader.HasAttributes)
+                                    {
+                                        xmlReader.MoveToFirstAttribute();
+                                        if (xmlReader.Name == "Include")
+                                            ParseFileItem(xmlReader, buildAction, lastElementWasItemGroupHeader, projectPath, generatedFiles, statusCallback);
+                                        else
+                                        {
+                                            xmlReader.MoveToElement();
+                                            unhandledData = xmlReader.ReadOuterXml();
+                                        }
+                                    }
+                                    else
+                                        unhandledData = xmlReader.ReadOuterXml();
+                                }
+                            }
+                            else
+                                unhandledData = xmlReader.ReadOuterXml();
+                            lastElementWasItemGroupHeader = false;
+                        }
+                        else if (xmlReader.NodeType == XmlNodeType.EndElement)
+                        {
+                            if (xmlReader.Name == "PropertyGroup")
+                                location = (_codeUnits.Count == 0 ? Locations.AfterProperties : Locations.AfterItems);
+                            else if (xmlReader.Name == "ItemGroup")
+                                location = Locations.AfterItems;
+                        }
+                        else if (xmlReader.NodeType == XmlNodeType.Comment)
+                            _unhandledData.Add(new UnhandledData("  <!--" + xmlReader.Value + "-->", location));
+                        else if (xmlReader.NodeType != XmlNodeType.Whitespace && xmlReader.NodeType != XmlNodeType.SignificantWhitespace)
+                            unhandledData = xmlReader.ReadOuterXml();
+                        if (unhandledData != null)
+                        {
+                            string rawData = unhandledData.Replace(xmlns, "");
+                            if (!string.IsNullOrEmpty(rawData))
+                                _unhandledData.Add(new UnhandledData("  " + rawData, location));
+                            unhandledData = null;
+                        }
+                    }
+                }
+
+                // Add an implicit reference to System.Core under the proper circumstances
+                AddImplicitSystemCoreReferenceIfNecessary();
+            }
+            catch (Exception ex)
+            {
+                LogAndAttachException(ex, "parsing", MessageSource.Parse);
+            }
         }
+
+        /// <summary>
+        /// Enumeration of build actions.
+        /// </summary>
+        public enum BuildActions
+        {
+            Unrecognized,
+            None,
+            Compile,
+            Content,
+            EmbeddedResource,
+            Resource,
+            ApplicationDefinition,
+            Page,
+            SplashScreen,
+            DesignData,
+            DesignDataWithDesignTimeCreatableTypes,
+            EntityDeploy,
+
+            // Used internally (not in VS UI)
+            AppDesigner,
+
+            Folder
+        }
+
+        /// <summary>
+        /// Enumeration of copy actions.
+        /// </summary>
+        public enum CopyActions { None, Always, PreserveNewest }
+
+        /// <summary>
+        /// Enumeration of debug types.
+        /// </summary>
+        public enum DebugTypes { none, full, pdbonly }
+
+        /// <summary>
+        /// Enumeration of error reporting types.
+        /// </summary>
+        public enum ErrorReporting { none, prompt, send, queue }
+
+        /// <summary>
+        /// Enumeration of types of serialization generation.
+        /// </summary>
+        public enum GenerateSerializationTypes { Auto, Off, On }
+
+        public enum Locations { BeforeProperties, MainProperties, ConfigurationProperties, AfterProperties, Items, AfterItems }
+
+        /// <summary>
+        /// Enumeration of output types.
+        /// </summary>
+        public enum OutputTypes { WinExe, Exe, Library }
 
         public string AppDesignerFolder
         {
@@ -484,6 +904,14 @@ namespace Nova.CodeDOM
         public bool IsNew
         {
             get { return _isNew; }
+        }
+
+        /// <summary>
+        /// Always <c>false</c>.
+        /// </summary>
+        public override bool IsRenderable
+        {
+            get { return false; }
         }
 
         /// <summary>
@@ -1078,6 +1506,73 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Parse a project from a file.
+        /// </summary>
+        public static Project Parse(string fileName, Solution solution, Action<LoadStatus, CodeObject> statusCallback)
+        {
+            // Determine the project type GUID
+            Guid typeGuid;
+            if (fileName.EndsWith(CSharpProjectFileExtension))
+                typeGuid = CSProjectType;
+            else if (fileName.EndsWith(VBProjectFileExtension))
+                typeGuid = VBProjectType;
+            else
+                typeGuid = new Guid();
+
+            return Parse(Path.GetFileNameWithoutExtension(fileName), fileName, typeGuid, Guid.Empty, solution, statusCallback);
+        }
+
+        /// <summary>
+        /// Parse a project from a file.
+        /// </summary>
+        public static Project Parse(string fileName, Solution solution)
+        {
+            return Parse(fileName, solution, null);
+        }
+
+        /// <summary>
+        /// Parse a project from a file.
+        /// </summary>
+        public static Project Parse(string name, string fileName, Guid typeGuid, Guid projectGuid, Solution solution, Action<LoadStatus, CodeObject> statusCallback)
+        {
+            // Create the project object
+            Project project;
+            if (typeGuid == CSProjectType)
+                project = new Project(name, fileName, typeGuid, projectGuid, solution, true, statusCallback);
+            else if (typeGuid == VBProjectType)
+            {
+                // VB projects aren't fully supported, but we parse the project file in order to get the OutputPath
+                // and AssemblyName, which are needed to find and load the output assembly in order to resolve symbols.
+                project = new Project(name, fileName, typeGuid, projectGuid, solution, false, statusCallback);
+            }
+            else
+            {
+                // We also parse other project file types in order to get the OutputPath and AssemblyName if possible,
+                // so we can find and load the output assembly in order to resolve symbols.
+                project = new Project(name, fileName, typeGuid, projectGuid, solution, false, statusCallback);
+            }
+
+            if (project.NotSupported)
+                project.AttachMessage("Project type isn't fully supported (source files won't be parsed)", MessageSeverity.Warning, MessageSource.Parse);
+            else
+            {
+                // Load user settings from any ".csproj.user" file
+                string userSettingsFile = Path.ChangeExtension(fileName, ".csproj.user");
+                project.ParseUserSettings(userSettingsFile);
+            }
+
+            return project;
+        }
+
+        /// <summary>
+        /// Parse a project from a file.
+        /// </summary>
+        public static Project Parse(string name, string fileName, Guid typeGuid, Guid projectGuid, Solution solution)
+        {
+            return Parse(name, fileName, typeGuid, projectGuid, solution, null);
+        }
+
+        /// <summary>
         /// Add an assembly reference by name.
         /// </summary>
         /// <param name="name">The short name or display name of the assembly.</param>
@@ -1283,10 +1778,10 @@ namespace Nova.CodeDOM
         public void AnnotationAdded(Annotation annotation, CodeUnit codeUnit, bool sendStatus)
         {
             // Update the list of assembly-level attributes
-            if (annotation is Attribute)
+            if (annotation is Annotations.Attribute an)
             {
                 lock (this)
-                    _globalAttributes.Add((Attribute)annotation);
+                    _globalAttributes.Add(an);
             }
             // Pass the annotation to the solution
             else if (_parent != null)
@@ -1299,7 +1794,7 @@ namespace Nova.CodeDOM
         public void AnnotationRemoved(Annotation annotation)
         {
             // Update the list of assembly-level attributes
-            if (annotation is Attribute)
+            if (annotation is Annotations.Attribute)
             {
                 lock (this)
                     _globalAttributes.Remove((Attribute)annotation);
@@ -1319,10 +1814,196 @@ namespace Nova.CodeDOM
             try
             {
                 lock (this)
-                    visibleTo = Enumerable.Any(_globalAttributes, delegate (Attribute attribute) { return attribute.Target == AttributeTarget.Assembly && GetInternalsVisibleToProject(attribute) == project; });
+                    visibleTo = _globalAttributes.Any(delegate (Annotations.Attribute attribute) { return attribute.Target == AttributeTarget.Assembly && GetInternalsVisibleToProject(attribute) == project; });
             }
             catch { }
             return visibleTo;
+        }
+
+        public override void AsText(CodeWriter writer, RenderFlags flags)
+        {
+            if (flags.HasFlag(RenderFlags.Description))
+                writer.Write(GetRenderName());
+            else
+                base.AsText(writer, flags);
+        }
+
+        public void AsText(XmlWriter xmlWriter)
+        {
+            xmlWriter.WriteStartElement(null, "Project", _namespace);
+            if (_toolsVersion != null)
+                xmlWriter.WriteAttributeString("ToolsVersion", _toolsVersion);
+            xmlWriter.WriteAttributeString("DefaultTargets", _defaultTargets);
+
+            WriteUnhandledData(xmlWriter, Locations.BeforeProperties);
+
+            xmlWriter.WriteStartElement("PropertyGroup");
+
+            xmlWriter.WriteStartElement("Configuration");
+            xmlWriter.WriteAttributeString("Condition", " '$(Configuration)' == '' ");
+            xmlWriter.WriteValue(ConfigurationName);
+            xmlWriter.WriteEndElement();
+
+            string platform = ConfigurationPlatform;
+            if (platform != null)
+            {
+                xmlWriter.WriteStartElement("Platform");
+                xmlWriter.WriteAttributeString("Condition", " '$(Platform)' == '' ");
+                xmlWriter.WriteValue(_platform);
+                xmlWriter.WriteEndElement();
+            }
+
+            if (_productVersion != null)
+                xmlWriter.WriteElementString("ProductVersion", _productVersion);
+            if (_schemaVersion != null)
+                xmlWriter.WriteElementString("SchemaVersion", _schemaVersion);
+            xmlWriter.WriteElementString("ProjectGuid", _projectGuid.ToString("B").ToUpper());
+            if (_projectTypeGuids != null)
+            {
+                string guids = "";
+                foreach (Guid guid in _projectTypeGuids)
+                    guids = StringUtil.Append(guids, ";", guid.ToString("B").ToUpper());
+                xmlWriter.WriteElementString("ProjectTypeGuids", guids);
+            }
+            xmlWriter.WriteElementString("OutputType", _outputType.ToString());
+            if (_startupObject != null)
+                xmlWriter.WriteElementString("StartupObject", _startupObject);
+            if (_noStandardLibraries.HasValue)
+                xmlWriter.WriteElementString("NoStandardLibraries", _noStandardLibraries.ToString().ToLower());
+            if (_appDesignerFolder != null)
+                xmlWriter.WriteElementString("AppDesignerFolder", _appDesignerFolder);
+            if (_rootNamespace != null)
+                xmlWriter.WriteElementString("RootNamespace", _rootNamespace);
+            xmlWriter.WriteElementString("AssemblyName", _assemblyName);
+            if (_deploymentDirectory != null)
+                xmlWriter.WriteElementString("DeploymentDirectory", _deploymentDirectory);
+            if (_startArguments != null)
+                xmlWriter.WriteElementString("StartArguments", _startArguments);
+            if (_targetFrameworkIdentifier != null)
+                xmlWriter.WriteElementString("TargetFrameworkIdentifier", _targetFrameworkIdentifier);
+            if (_targetFrameworkVersion != null)
+                xmlWriter.WriteElementString("TargetFrameworkVersion", "v" + _targetFrameworkVersion);
+            if (_targetFrameworkProfile != null)
+                xmlWriter.WriteElementString("TargetFrameworkProfile", _targetFrameworkProfile);
+            if (_fileAlignment > 0)
+                xmlWriter.WriteElementString("FileAlignment", _fileAlignment.ToString());
+            if (_warningLevel.HasValue)
+                xmlWriter.WriteElementString("WarningLevel", _warningLevel.GetValueOrDefault().ToString());
+            if (_signAssembly.HasValue)
+                xmlWriter.WriteElementString("SignAssembly", _signAssembly.ToString().ToLower());
+            if (_assemblyOriginatorKeyFile != null)
+                xmlWriter.WriteElementString("AssemblyOriginatorKeyFile", _assemblyOriginatorKeyFile);
+            if (_referencePath != null)
+                xmlWriter.WriteElementString("ReferencePath", _referencePath);
+            if (_sccProjectName != null)
+                xmlWriter.WriteElementString("SccProjectName", _sccProjectName);
+            if (_sccLocalPath != null)
+                xmlWriter.WriteElementString("SccLocalPath", _sccLocalPath);
+            if (_sccAuxPath != null)
+                xmlWriter.WriteElementString("SccAuxPath", _sccAuxPath);
+            if (_sccProvider != null)
+                xmlWriter.WriteElementString("SccProvider", _sccProvider);
+            if (_fileUpgradeFlags != null)
+                xmlWriter.WriteElementString("FileUpgradeFlags", _fileUpgradeFlags);
+            if (_oldToolsVersion != null)
+                xmlWriter.WriteElementString("OldToolsVersion", _oldToolsVersion);
+            if (_upgradeBackupLocation != null)
+                xmlWriter.WriteElementString("UpgradeBackupLocation", _upgradeBackupLocation);
+            if (_projectType != null)
+                xmlWriter.WriteElementString("ProjectType", _projectType);
+            if (_silverlightVersion != null)
+            {
+                xmlWriter.WriteElementString("SilverlightVersion", _silverlightVersion);
+                xmlWriter.WriteElementString("SilverlightApplication", _silverlightApplication.ToString().ToLower());
+            }
+            if (_supportedCultures != null)
+                xmlWriter.WriteElementString("SupportedCultures", _supportedCultures);
+            if (_xapOutputs.HasValue)
+                xmlWriter.WriteElementString("XapOutputs", _xapOutputs.ToString().ToLower());
+            if (_generateSilverlightManifest.HasValue)
+                xmlWriter.WriteElementString("GenerateSilverlightManifest", _generateSilverlightManifest.ToString().ToLower());
+            if (_xapFilename != null)
+                xmlWriter.WriteElementString("XapFilename", _xapFilename);
+            if (_silverlightManifestTemplate != null)
+                xmlWriter.WriteElementString("SilverlightManifestTemplate", _silverlightManifestTemplate);
+            if (_silverlightAppEntry != null)
+                xmlWriter.WriteElementString("SilverlightAppEntry", _silverlightAppEntry);
+            if (_testPageFileName != null)
+                xmlWriter.WriteElementString("TestPageFileName", _testPageFileName);
+            if (_createTestPage.HasValue)
+                xmlWriter.WriteElementString("CreateTestPage", _createTestPage.ToString().ToLower());
+            if (_validateXaml.HasValue)
+                xmlWriter.WriteElementString("ValidateXaml", _validateXaml.ToString().ToLower());
+            if (_enableOutOfBrowser.HasValue)
+                xmlWriter.WriteElementString("EnableOutOfBrowser", _enableOutOfBrowser.ToString().ToLower());
+            if (_outOfBrowserSettingsFile != null)
+                xmlWriter.WriteElementString("OutOfBrowserSettingsFile", _outOfBrowserSettingsFile);
+            if (_usePlatformExtensions.HasValue)
+                xmlWriter.WriteElementString("UsePlatformExtensions", _usePlatformExtensions.ToString().ToLower());
+            if (_throwErrorsInValidation.HasValue)
+                xmlWriter.WriteElementString("ThrowErrorsInValidation", _throwErrorsInValidation.ToString().ToLower());
+            if (_linkedServerProject != null)
+                xmlWriter.WriteElementString("LinkedServerProject", _linkedServerProject);
+            if (_mvcBuildViews.HasValue)
+                xmlWriter.WriteElementString("MvcBuildViews", _mvcBuildViews.ToString().ToLower());
+            if (_useIISExpress.HasValue)
+                xmlWriter.WriteElementString("UseIISExpress", _useIISExpress.ToString().ToLower());
+            if (_silverlightApplicationList != null)
+                xmlWriter.WriteElementString("SilverlightApplicationList", _silverlightApplicationList);
+            if (_nonShipping.HasValue)
+                xmlWriter.WriteElementString("Nonshipping", _nonShipping.ToString().ToLower());
+
+            WriteUnhandledData(xmlWriter, Locations.MainProperties);
+
+            xmlWriter.WriteEndElement();
+
+            // Write project configurations
+            foreach (Configuration projectConfiguration in _configurations)
+                projectConfiguration.AsText(xmlWriter);
+
+            WriteUnhandledData(xmlWriter, Locations.AfterProperties);
+
+            // Write all references
+            if (Enumerable.Any(_references, delegate (Reference reference) { return !reference.IsHidden; }))
+            {
+                xmlWriter.WriteStartElement("ItemGroup");
+                foreach (Reference reference in _references)
+                {
+                    if (!reference.IsHidden)
+                        reference.AsText(xmlWriter);
+                }
+                xmlWriter.WriteEndElement();
+            }
+
+            // Write all file items
+            if (_fileItems.Count > 0)
+            {
+                xmlWriter.WriteStartElement("ItemGroup");
+                bool first = true;
+                foreach (FileItem fileItem in _fileItems)
+                {
+                    if (fileItem.IsFirstInGroup && !first)
+                    {
+                        xmlWriter.WriteEndElement();
+                        xmlWriter.WriteStartElement("ItemGroup");
+                    }
+                    fileItem.AsText(xmlWriter);
+                    first = false;
+                }
+                xmlWriter.WriteEndElement();
+            }
+
+            // Write any unhandled file items
+            if (Enumerable.Any(_unhandledData, delegate (UnhandledData unhandledData) { return unhandledData.Location == Locations.Items; }))
+            {
+                xmlWriter.WriteStartElement("ItemGroup");
+                WriteUnhandledData(xmlWriter, Locations.Items);
+                xmlWriter.WriteEndElement();
+            }
+
+            WriteUnhandledData(xmlWriter, Locations.AfterItems);
+
+            xmlWriter.WriteEndElement();
         }
 
         /// <summary>
@@ -1510,6 +2191,30 @@ namespace Nova.CodeDOM
             return outputPath;
         }
 
+        public string GetRenderName()
+        {
+            if (IsWebSiteProject)
+            {
+                string name = _fileName;
+                if (name.StartsWith("http:"))
+                {
+                    if (!name.EndsWith("/"))
+                        name += "/";
+                }
+                else if (Path.IsPathRooted(name))
+                {
+                    if (name.EndsWith("\\"))
+                        name = name.Substring(0, name.Length - 1);
+                    int index = name.LastIndexOf('\\');
+                    if (index > 0)
+                        name = Path.GetPathRoot(name) + "..." + name.Substring(index);
+                    name += "\\";
+                }
+                return name;
+            }
+            return _name;
+        }
+
         /// <summary>
         /// Get any Solution folders for this Project.
         /// </summary>
@@ -1528,10 +2233,10 @@ namespace Nova.CodeDOM
             {
                 if (_parent != null)
                 {
-                    Solution.ProjectEntry projectEntry = Solution.FindProjectEntry(_name);
+                    ProjectEntry projectEntry = Solution.FindProjectEntry(_name);
                     if (projectEntry != null)
                     {
-                        Solution.ProjectSection projectSection = projectEntry.FindProjectSection(Solution.WebsitePropertiesProjectSection);
+                        ProjectSection projectSection = projectEntry.FindProjectSection(Solution.WebsitePropertiesProjectSection);
                         if (projectSection != null)
                         {
                             string targetFrameworkMoniker = projectSection.FindValue("TargetFrameworkMoniker");
@@ -1826,6 +2531,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Parse all <see cref="CodeUnit"/>s in the <see cref="Project"/>.
+        /// </summary>
+        public void ParseCodeUnits(ParseFlags flags)
+        {
+            foreach (CodeUnit codeUnit in _codeUnits)
+                codeUnit.Parse(flags);
+        }
+
+        /// <summary>
         /// Parse the specified name into a <see cref="NamespaceRef"/> or <see cref="TypeRef"/>, or a <see cref="Dot"/> or <see cref="Lookup"/> expression that evaluates to one.
         /// </summary>
         public Expression ParseName(string fullName)
@@ -1869,6 +2583,38 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Resolve all <see cref="CodeUnit"/>s in the <see cref="Project"/>.
+        /// </summary>
+        public void ResolveCodeUnits(ResolveFlags flags)
+        {
+            // Do a 3-phase resolve if a specific phase wasn't specified by a higher level (the first phase stops at base lists
+            // of type decls, the second at method/property bodies, and the third does the bodies - this resolves all base classes
+            // and signatures first in order to resolve all references in a single attempt).
+            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2 | ResolveFlags.Phase3)) == 0)
+            {
+                foreach (CodeUnit codeUnit in _codeUnits)
+                    codeUnit.Resolve(flags | ResolveFlags.Phase1);
+                foreach (CodeUnit codeUnit in _codeUnits)
+                    codeUnit.Resolve(flags | ResolveFlags.Phase2);
+                foreach (CodeUnit codeUnit in _codeUnits)
+                    codeUnit.Resolve(flags | ResolveFlags.Phase3);
+            }
+            else
+            {
+                foreach (CodeUnit codeUnit in _codeUnits)
+                    codeUnit.Resolve(flags);
+            }
+        }
+
+        /// <summary>
+        /// Resolve all <see cref="CodeUnit"/>s in the <see cref="Project"/>.
+        /// </summary>
+        public void ResolveCodeUnits()
+        {
+            ResolveCodeUnits(ResolveFlags.None);
+        }
+
+        /// <summary>
         /// Resolve all references.
         /// </summary>
         public void ResolveReferences()
@@ -1876,6 +2622,14 @@ namespace Nova.CodeDOM
             // Resolve references to other projects and assembly files
             foreach (Reference reference in _references)
                 reference.Resolve();
+        }
+
+        /// <summary>
+        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
+        /// </summary>
+        public override void ResolveRefUp(string name, Resolver resolver)
+        {
+            // Stop at the project level - there's nothing to resolve from here up
         }
 
         /// <summary>
@@ -2061,435 +2815,6 @@ namespace Nova.CodeDOM
         {
             if (_parent != null)
                 Solution.AnnotationRemoved(annotation);
-        }
-
-        private void AddDependencies(Project project)
-        {
-            foreach (Reference reference in project.References)
-            {
-                if (reference is ProjectReference)
-                {
-                    Project referencedProject = ((ProjectReference)reference).ReferencedProject;
-                    if (referencedProject != null)
-                    {
-                        _dependsOn.Add(referencedProject);
-                        AddDependencies(referencedProject);
-                    }
-                }
-            }
-        }
-
-        // Get a friend Project from an InternalsVisibleTo attribute
-        private Project GetInternalsVisibleToProject(Attribute attribute)
-        {
-            if (_parent != null)
-            {
-                // Find the attribute call expression
-                Call internalsCall = attribute.FindAttributeExpression(AssemblyUtil.InternalsVisibleToAttributeName) as Call;
-                if (internalsCall != null && internalsCall.ArgumentCount > 0)
-                {
-                    // The parameter should be a string constant - however, it might be built using a string concatenation
-                    // operator, and we want this code to work without resolving or evaluating expressions.  We only need
-                    // the assembly name, which should always be a string literal, so check for an Add operator and if we've
-                    // got one, just grab the left side.  Treat the result as a Literal, and trim leading '"'s.
-                    Expression expression = internalsCall.Arguments[0];
-                    if (expression is Add)
-                        expression = ((Add)expression).Left;
-                    Literal literal = expression as Literal;
-                    if (literal != null)
-                    {
-                        string friendAssemblyName = literal.Text.Trim('"');
-                        // Ignore any strong-name key
-                        int commaIndex = friendAssemblyName.IndexOf(',');
-                        if (commaIndex > 0)
-                            friendAssemblyName = friendAssemblyName.Substring(0, commaIndex);
-                        // Find the project by its assembly name
-                        return Solution.FindProjectByAssemblyName(friendAssemblyName);
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Parse a project from a standard VS project file.
-        /// </summary>
-        protected Project(string name, string fileName, Guid typeGuid, Guid projectGuid, Solution solution, bool isSupported, Action<LoadStatus, CodeObject> statusCallback)
-        {
-            Log.DetailWriteLine("Loading project '" + name + "' ...");
-
-            // Initialize the project object
-            _parent = solution;
-            _name = name;
-            _fileName = fileName;
-            _typeGuid = typeGuid;
-            _projectGuid = projectGuid;
-            _notSupported = !(isSupported || IsWebSiteProject);
-            _configurations = new ChildList<Configuration>(this);
-            Initialize();
-            if (statusCallback != null)
-                statusCallback(LoadStatus.ObjectCreated, this);
-
-            // Special handling for web site projects
-            if (IsWebSiteProject)
-            {
-                ParseWebSiteProject(name, solution, statusCallback);
-                return;
-            }
-
-            // Check that the file exists (to avoid an exception)
-            if (!File.Exists(_fileName))
-            {
-                LogAndAttachMessage("Project file '" + _fileName + "' doesn't exist!", MessageSeverity.Error, MessageSource.Parse);
-                return;
-            }
-
-            try
-            {
-                // Parse the project file
-                bool firstElement = true;
-
-                // Open the file and store the encoding and BOM status for use when saving
-                FileStream fileStream = new FileStream(_fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
-                byte[] bom = new byte[3];
-                fileStream.Read(bom, 0, 3);
-                if (bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF)
-                    FileHasUTF8BOM = true;
-                fileStream.Position = 0;
-                StreamReader streamReader = new StreamReader(fileStream);
-                streamReader.Peek();  // Peek at the first char so that the encoding is determined
-                FileEncoding = streamReader.CurrentEncoding;
-
-                // Parse the file using an XmlReader
-                using (XmlReader xmlReader = XmlReader.Create(streamReader))
-                {
-                    string projectPath = Path.GetDirectoryName(_fileName);
-                    string xmlns = null;
-                    Locations location = Locations.BeforeProperties;
-                    bool lastElementWasItemGroupHeader = false;
-                    string unhandledData = null;
-                    HashSet<string> generatedFiles = new HashSet<string>();
-
-                    // Read the next node
-                    while (xmlReader.Read())
-                    {
-                        if (xmlReader.NodeType == XmlNodeType.XmlDeclaration)
-                        {
-                            // Ignore the declaration node for now
-                        }
-                        else if (xmlReader.NodeType == XmlNodeType.Element)
-                        {
-                            if (firstElement)
-                            {
-                                firstElement = false;
-                                if (xmlReader.Name == "VisualStudioProject")
-                                {
-                                    LogAndAttachMessage("Project files prior to VS 2005 aren't supported - upgrade the project file with VS first.", MessageSeverity.Error, MessageSource.Parse);
-                                    return;
-                                }
-                                if (xmlReader.Name != "Project")
-                                {
-                                    LogAndAttachMessage("Project file format not recognized or not supported!", MessageSeverity.Error, MessageSource.Parse);
-                                    return;
-                                }
-                                if (xmlReader.MoveToAttribute("ToolsVersion"))
-                                    _toolsVersion = xmlReader.Value;
-                                if (xmlReader.MoveToAttribute("DefaultTargets"))
-                                    _defaultTargets = xmlReader.Value;
-                                if (xmlReader.MoveToAttribute("xmlns"))
-                                {
-                                    _namespace = xmlReader.Value;
-                                    xmlns = " xmlns=\"" + _namespace + "\"";
-                                }
-                            }
-                            else if (xmlReader.Name == "PropertyGroup" && !xmlReader.IsEmptyElement)
-                            {
-                                if (!xmlReader.HasAttributes)
-                                    location = Locations.MainProperties;
-                                else
-                                {
-                                    xmlReader.MoveToFirstAttribute();
-                                    if (xmlReader.Name == "Condition" && xmlReader.Value.Contains("$(Configuration)"))
-                                    {
-                                        AddConfiguration(new Configuration(xmlReader, this));
-                                        string configurationName;
-                                        string platform;
-                                        solution.GetProjectConfiguration(solution.ActiveConfiguration, solution.ActivePlatform, this, out configurationName, out platform);
-                                        _currentConfiguration = FindConfiguration(configurationName ?? _configurationName, platform ?? _platform);
-                                    }
-                                    else if (xmlReader.Name == "Label" && xmlReader.Value == "Globals")  // Used by C++ projects (.vcxproj)
-                                        location = Locations.MainProperties;
-                                    else
-                                    {
-                                        xmlReader.MoveToElement();
-                                        unhandledData = xmlReader.ReadOuterXml();
-                                    }
-                                }
-                            }
-                            else if (xmlReader.Name == "ItemGroup" && !xmlReader.IsEmptyElement)
-                            {
-                                location = Locations.Items;
-                                lastElementWasItemGroupHeader = true;
-                                continue;
-                            }
-                            else if (location == Locations.MainProperties)
-                            {
-                                if (xmlReader.Name == "Configuration" && _configurationName == null)
-                                    _configurationName = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "Platform" && _platform == null)
-                                    _platform = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "ProductVersion")
-                                    _productVersion = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "SchemaVersion")
-                                    _schemaVersion = xmlReader.ReadString().Trim();
-                                else if (StringUtil.NNEqualsIgnoreCase(xmlReader.Name, "ProjectGuid"))  // C++ uses 'ProjectGUID'
-                                    _projectGuid = Guid.Parse(xmlReader.ReadString().Trim());
-                                else if (xmlReader.Name == "ProjectTypeGuids")
-                                {
-                                    string[] guids = xmlReader.ReadString().Trim().Split(';');
-                                    if (guids != null)
-                                    {
-                                        _projectTypeGuids = new List<Guid>();
-                                        foreach (string guid in guids)
-                                            _projectTypeGuids.Add(Guid.Parse(guid));
-                                    }
-                                }
-                                else if (xmlReader.Name == "OutputType")
-                                    _outputType = StringUtil.ParseEnum(xmlReader.ReadString(), OutputTypes.Library);
-                                else if (xmlReader.Name == "OutputPath" && _outputPath == null)
-                                    _outputPath = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "StartupObject")
-                                    _startupObject = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "NoStandardLibraries")
-                                    _noStandardLibraries = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "AppDesignerFolder")
-                                    _appDesignerFolder = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "RootNamespace")
-                                    _rootNamespace = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "AssemblyName")
-                                    _assemblyName = xmlReader.ReadString().Trim();
-                                else if (xmlReader.Name == "DeploymentDirectory")
-                                    _deploymentDirectory = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "StartArguments")
-                                    _startArguments = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "TargetFrameworkIdentifier")
-                                    _targetFrameworkIdentifier = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "TargetFrameworkVersion")
-                                    _targetFrameworkVersion = xmlReader.ReadString().Substring(1);  // Skip "v"
-                                else if (xmlReader.Name == "TargetFrameworkProfile")
-                                    _targetFrameworkProfile = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "FileAlignment")
-                                    _fileAlignment = StringUtil.ParseInt(xmlReader.ReadString());
-                                else if (xmlReader.Name == "WarningLevel")
-                                    _warningLevel = StringUtil.ParseInt(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SignAssembly")
-                                    _signAssembly = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "AssemblyOriginatorKeyFile")
-                                    _assemblyOriginatorKeyFile = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "ReferencePath")
-                                    _referencePath = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SccProjectName")
-                                    _sccProjectName = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SccLocalPath")
-                                    _sccLocalPath = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SccAuxPath")
-                                    _sccAuxPath = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SccProvider")
-                                    _sccProvider = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "FileUpgradeFlags")
-                                    _fileUpgradeFlags = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "OldToolsVersion")
-                                    _oldToolsVersion = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "UpgradeBackupLocation")
-                                    _upgradeBackupLocation = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "ProjectType")
-                                    _projectType = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SilverlightVersion")
-                                    _silverlightVersion = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SilverlightApplication")
-                                    _silverlightApplication = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SupportedCultures")
-                                    _supportedCultures = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "XapOutputs")
-                                    _xapOutputs = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "GenerateSilverlightManifest")
-                                    _generateSilverlightManifest = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "XapFilename")
-                                    _xapFilename = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SilverlightManifestTemplate")
-                                    _silverlightManifestTemplate = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SilverlightAppEntry")
-                                    _silverlightAppEntry = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "TestPageFileName")
-                                    _testPageFileName = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "CreateTestPage")
-                                    _createTestPage = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "ValidateXaml")
-                                    _validateXaml = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "EnableOutOfBrowser")
-                                    _enableOutOfBrowser = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "OutOfBrowserSettingsFile")
-                                    _outOfBrowserSettingsFile = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "UsePlatformExtensions")
-                                    _usePlatformExtensions = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "ThrowErrorsInValidation")
-                                    _throwErrorsInValidation = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "LinkedServerProject")
-                                    _linkedServerProject = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "MvcBuildViews")
-                                    _mvcBuildViews = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "UseIISExpress")
-                                    _useIISExpress = StringUtil.ParseBool(xmlReader.ReadString());
-                                else if (xmlReader.Name == "SilverlightApplicationList")
-                                    _silverlightApplicationList = StringUtil.EmptyAsNull(xmlReader.ReadString());
-                                else if (xmlReader.Name == "Nonshipping")
-                                    _nonShipping = StringUtil.ParseBool(xmlReader.ReadString());
-                                else
-                                {
-                                    if (_configurations.Count == 0)
-                                        unhandledData = xmlReader.ReadOuterXml();
-                                    else
-                                    {
-                                        unhandledData = "<PropertyGroup>" + xmlReader.ReadOuterXml();
-                                        while (xmlReader.NodeType != XmlNodeType.EndElement || xmlReader.Name != "PropertyGroup")
-                                            unhandledData += xmlReader.ReadOuterXml();
-                                        unhandledData += "</PropertyGroup>";
-                                        location = (_codeUnits.Count == 0 ? Locations.AfterProperties : Locations.AfterItems);
-                                    }
-                                }
-                            }
-                            else if (location == Locations.Items)
-                            {
-                                if (xmlReader.Name == "Reference")
-                                    AddReference(new AssemblyReference(xmlReader, this), statusCallback);
-                                else if (xmlReader.Name == "ProjectReference")
-                                    AddReference(new ProjectReference(xmlReader, this), statusCallback);
-                                else
-                                {
-                                    BuildActions buildAction = StringUtil.ParseEnum(xmlReader.Name, BuildActions.Unrecognized);
-                                    if (buildAction != BuildActions.Unrecognized && xmlReader.HasAttributes)
-                                    {
-                                        xmlReader.MoveToFirstAttribute();
-                                        if (xmlReader.Name == "Include")
-                                            ParseFileItem(xmlReader, buildAction, lastElementWasItemGroupHeader, projectPath, generatedFiles, statusCallback);
-                                        else
-                                        {
-                                            xmlReader.MoveToElement();
-                                            unhandledData = xmlReader.ReadOuterXml();
-                                        }
-                                    }
-                                    else
-                                        unhandledData = xmlReader.ReadOuterXml();
-                                }
-                            }
-                            else
-                                unhandledData = xmlReader.ReadOuterXml();
-                            lastElementWasItemGroupHeader = false;
-                        }
-                        else if (xmlReader.NodeType == XmlNodeType.EndElement)
-                        {
-                            if (xmlReader.Name == "PropertyGroup")
-                                location = (_codeUnits.Count == 0 ? Locations.AfterProperties : Locations.AfterItems);
-                            else if (xmlReader.Name == "ItemGroup")
-                                location = Locations.AfterItems;
-                        }
-                        else if (xmlReader.NodeType == XmlNodeType.Comment)
-                            _unhandledData.Add(new UnhandledData("  <!--" + xmlReader.Value + "-->", location));
-                        else if (xmlReader.NodeType != XmlNodeType.Whitespace && xmlReader.NodeType != XmlNodeType.SignificantWhitespace)
-                            unhandledData = xmlReader.ReadOuterXml();
-                        if (unhandledData != null)
-                        {
-                            string rawData = unhandledData.Replace(xmlns, "");
-                            if (!string.IsNullOrEmpty(rawData))
-                                _unhandledData.Add(new UnhandledData("  " + rawData, location));
-                            unhandledData = null;
-                        }
-                    }
-                }
-
-                // Add an implicit reference to System.Core under the proper circumstances
-                AddImplicitSystemCoreReferenceIfNecessary();
-            }
-            catch (Exception ex)
-            {
-                LogAndAttachException(ex, "parsing", MessageSource.Parse);
-            }
-        }
-
-        /// <summary>
-        /// Parse a project from a file.
-        /// </summary>
-        public static Project Parse(string fileName, Solution solution, Action<LoadStatus, CodeObject> statusCallback)
-        {
-            // Determine the project type GUID
-            Guid typeGuid;
-            if (fileName.EndsWith(CSharpProjectFileExtension))
-                typeGuid = CSProjectType;
-            else if (fileName.EndsWith(VBProjectFileExtension))
-                typeGuid = VBProjectType;
-            else
-                typeGuid = new Guid();
-
-            return Parse(Path.GetFileNameWithoutExtension(fileName), fileName, typeGuid, Guid.Empty, solution, statusCallback);
-        }
-
-        /// <summary>
-        /// Parse a project from a file.
-        /// </summary>
-        public static Project Parse(string fileName, Solution solution)
-        {
-            return Parse(fileName, solution, null);
-        }
-
-        /// <summary>
-        /// Parse a project from a file.
-        /// </summary>
-        public static Project Parse(string name, string fileName, Guid typeGuid, Guid projectGuid, Solution solution, Action<LoadStatus, CodeObject> statusCallback)
-        {
-            // Create the project object
-            Project project;
-            if (typeGuid == CSProjectType)
-                project = new Project(name, fileName, typeGuid, projectGuid, solution, true, statusCallback);
-            else if (typeGuid == VBProjectType)
-            {
-                // VB projects aren't fully supported, but we parse the project file in order to get the OutputPath
-                // and AssemblyName, which are needed to find and load the output assembly in order to resolve symbols.
-                project = new Project(name, fileName, typeGuid, projectGuid, solution, false, statusCallback);
-            }
-            else
-            {
-                // We also parse other project file types in order to get the OutputPath and AssemblyName if possible,
-                // so we can find and load the output assembly in order to resolve symbols.
-                project = new Project(name, fileName, typeGuid, projectGuid, solution, false, statusCallback);
-            }
-
-            if (project.NotSupported)
-                project.AttachMessage("Project type isn't fully supported (source files won't be parsed)", MessageSeverity.Warning, MessageSource.Parse);
-            else
-            {
-                // Load user settings from any ".csproj.user" file
-                string userSettingsFile = Path.ChangeExtension(fileName, ".csproj.user");
-                project.ParseUserSettings(userSettingsFile);
-            }
-
-            return project;
-        }
-
-        /// <summary>
-        /// Parse a project from a file.
-        /// </summary>
-        public static Project Parse(string name, string fileName, Guid typeGuid, Guid projectGuid, Solution solution)
-        {
-            return Parse(name, fileName, typeGuid, projectGuid, solution, null);
-        }
-
-        /// <summary>
-        /// Parse all <see cref="CodeUnit"/>s in the <see cref="Project"/>.
-        /// </summary>
-        public void ParseCodeUnits(ParseFlags flags)
-        {
-            foreach (CodeUnit codeUnit in _codeUnits)
-                codeUnit.Parse(flags);
         }
 
         /// <summary>
@@ -2737,10 +3062,10 @@ namespace Nova.CodeDOM
 
                     // Load any project references from the solution file entry
                     List<string> projectReferenceFileNames = new List<string>();
-                    Solution.ProjectEntry projectEntry = solution.FindProjectEntry(name);
+                    ProjectEntry projectEntry = solution.FindProjectEntry(name);
                     if (projectEntry != null)
                     {
-                        Solution.ProjectSection projectSection = projectEntry.FindProjectSection(Solution.WebsitePropertiesProjectSection);
+                        ProjectSection projectSection = projectEntry.FindProjectSection(Solution.WebsitePropertiesProjectSection);
                         if (projectSection != null)
                         {
                             string projectReferencesRaw = projectSection.FindValue("ProjectReferences");
@@ -2781,264 +3106,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        /// <summary>
-        /// Resolve all <see cref="CodeUnit"/>s in the <see cref="Project"/>.
-        /// </summary>
-        public void ResolveCodeUnits(ResolveFlags flags)
-        {
-            // Do a 3-phase resolve if a specific phase wasn't specified by a higher level (the first phase stops at base lists
-            // of type decls, the second at method/property bodies, and the third does the bodies - this resolves all base classes
-            // and signatures first in order to resolve all references in a single attempt).
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2 | ResolveFlags.Phase3)) == 0)
-            {
-                foreach (CodeUnit codeUnit in _codeUnits)
-                    codeUnit.Resolve(flags | ResolveFlags.Phase1);
-                foreach (CodeUnit codeUnit in _codeUnits)
-                    codeUnit.Resolve(flags | ResolveFlags.Phase2);
-                foreach (CodeUnit codeUnit in _codeUnits)
-                    codeUnit.Resolve(flags | ResolveFlags.Phase3);
-            }
-            else
-            {
-                foreach (CodeUnit codeUnit in _codeUnits)
-                    codeUnit.Resolve(flags);
-            }
-        }
-
-        /// <summary>
-        /// Resolve all <see cref="CodeUnit"/>s in the <see cref="Project"/>.
-        /// </summary>
-        public void ResolveCodeUnits()
-        {
-            ResolveCodeUnits(ResolveFlags.None);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            // Stop at the project level - there's nothing to resolve from here up
-        }
-
-        /// <summary>
-        /// Always <c>false</c>.
-        /// </summary>
-        public override bool IsRenderable
-        {
-            get { return false; }
-        }
-
-        public override void AsText(CodeWriter writer, RenderFlags flags)
-        {
-            if (flags.HasFlag(RenderFlags.Description))
-                writer.Write(GetRenderName());
-            else
-                base.AsText(writer, flags);
-        }
-
-        public void AsText(XmlWriter xmlWriter)
-        {
-            xmlWriter.WriteStartElement(null, "Project", _namespace);
-            if (_toolsVersion != null)
-                xmlWriter.WriteAttributeString("ToolsVersion", _toolsVersion);
-            xmlWriter.WriteAttributeString("DefaultTargets", _defaultTargets);
-
-            WriteUnhandledData(xmlWriter, Locations.BeforeProperties);
-
-            xmlWriter.WriteStartElement("PropertyGroup");
-
-            xmlWriter.WriteStartElement("Configuration");
-            xmlWriter.WriteAttributeString("Condition", " '$(Configuration)' == '' ");
-            xmlWriter.WriteValue(ConfigurationName);
-            xmlWriter.WriteEndElement();
-
-            string platform = ConfigurationPlatform;
-            if (platform != null)
-            {
-                xmlWriter.WriteStartElement("Platform");
-                xmlWriter.WriteAttributeString("Condition", " '$(Platform)' == '' ");
-                xmlWriter.WriteValue(_platform);
-                xmlWriter.WriteEndElement();
-            }
-
-            if (_productVersion != null)
-                xmlWriter.WriteElementString("ProductVersion", _productVersion);
-            if (_schemaVersion != null)
-                xmlWriter.WriteElementString("SchemaVersion", _schemaVersion);
-            xmlWriter.WriteElementString("ProjectGuid", _projectGuid.ToString("B").ToUpper());
-            if (_projectTypeGuids != null)
-            {
-                string guids = "";
-                foreach (Guid guid in _projectTypeGuids)
-                    guids = StringUtil.Append(guids, ";", guid.ToString("B").ToUpper());
-                xmlWriter.WriteElementString("ProjectTypeGuids", guids);
-            }
-            xmlWriter.WriteElementString("OutputType", _outputType.ToString());
-            if (_startupObject != null)
-                xmlWriter.WriteElementString("StartupObject", _startupObject);
-            if (_noStandardLibraries.HasValue)
-                xmlWriter.WriteElementString("NoStandardLibraries", _noStandardLibraries.ToString().ToLower());
-            if (_appDesignerFolder != null)
-                xmlWriter.WriteElementString("AppDesignerFolder", _appDesignerFolder);
-            if (_rootNamespace != null)
-                xmlWriter.WriteElementString("RootNamespace", _rootNamespace);
-            xmlWriter.WriteElementString("AssemblyName", _assemblyName);
-            if (_deploymentDirectory != null)
-                xmlWriter.WriteElementString("DeploymentDirectory", _deploymentDirectory);
-            if (_startArguments != null)
-                xmlWriter.WriteElementString("StartArguments", _startArguments);
-            if (_targetFrameworkIdentifier != null)
-                xmlWriter.WriteElementString("TargetFrameworkIdentifier", _targetFrameworkIdentifier);
-            if (_targetFrameworkVersion != null)
-                xmlWriter.WriteElementString("TargetFrameworkVersion", "v" + _targetFrameworkVersion);
-            if (_targetFrameworkProfile != null)
-                xmlWriter.WriteElementString("TargetFrameworkProfile", _targetFrameworkProfile);
-            if (_fileAlignment > 0)
-                xmlWriter.WriteElementString("FileAlignment", _fileAlignment.ToString());
-            if (_warningLevel.HasValue)
-                xmlWriter.WriteElementString("WarningLevel", _warningLevel.GetValueOrDefault().ToString());
-            if (_signAssembly.HasValue)
-                xmlWriter.WriteElementString("SignAssembly", _signAssembly.ToString().ToLower());
-            if (_assemblyOriginatorKeyFile != null)
-                xmlWriter.WriteElementString("AssemblyOriginatorKeyFile", _assemblyOriginatorKeyFile);
-            if (_referencePath != null)
-                xmlWriter.WriteElementString("ReferencePath", _referencePath);
-            if (_sccProjectName != null)
-                xmlWriter.WriteElementString("SccProjectName", _sccProjectName);
-            if (_sccLocalPath != null)
-                xmlWriter.WriteElementString("SccLocalPath", _sccLocalPath);
-            if (_sccAuxPath != null)
-                xmlWriter.WriteElementString("SccAuxPath", _sccAuxPath);
-            if (_sccProvider != null)
-                xmlWriter.WriteElementString("SccProvider", _sccProvider);
-            if (_fileUpgradeFlags != null)
-                xmlWriter.WriteElementString("FileUpgradeFlags", _fileUpgradeFlags);
-            if (_oldToolsVersion != null)
-                xmlWriter.WriteElementString("OldToolsVersion", _oldToolsVersion);
-            if (_upgradeBackupLocation != null)
-                xmlWriter.WriteElementString("UpgradeBackupLocation", _upgradeBackupLocation);
-            if (_projectType != null)
-                xmlWriter.WriteElementString("ProjectType", _projectType);
-            if (_silverlightVersion != null)
-            {
-                xmlWriter.WriteElementString("SilverlightVersion", _silverlightVersion);
-                xmlWriter.WriteElementString("SilverlightApplication", _silverlightApplication.ToString().ToLower());
-            }
-            if (_supportedCultures != null)
-                xmlWriter.WriteElementString("SupportedCultures", _supportedCultures);
-            if (_xapOutputs.HasValue)
-                xmlWriter.WriteElementString("XapOutputs", _xapOutputs.ToString().ToLower());
-            if (_generateSilverlightManifest.HasValue)
-                xmlWriter.WriteElementString("GenerateSilverlightManifest", _generateSilverlightManifest.ToString().ToLower());
-            if (_xapFilename != null)
-                xmlWriter.WriteElementString("XapFilename", _xapFilename);
-            if (_silverlightManifestTemplate != null)
-                xmlWriter.WriteElementString("SilverlightManifestTemplate", _silverlightManifestTemplate);
-            if (_silverlightAppEntry != null)
-                xmlWriter.WriteElementString("SilverlightAppEntry", _silverlightAppEntry);
-            if (_testPageFileName != null)
-                xmlWriter.WriteElementString("TestPageFileName", _testPageFileName);
-            if (_createTestPage.HasValue)
-                xmlWriter.WriteElementString("CreateTestPage", _createTestPage.ToString().ToLower());
-            if (_validateXaml.HasValue)
-                xmlWriter.WriteElementString("ValidateXaml", _validateXaml.ToString().ToLower());
-            if (_enableOutOfBrowser.HasValue)
-                xmlWriter.WriteElementString("EnableOutOfBrowser", _enableOutOfBrowser.ToString().ToLower());
-            if (_outOfBrowserSettingsFile != null)
-                xmlWriter.WriteElementString("OutOfBrowserSettingsFile", _outOfBrowserSettingsFile);
-            if (_usePlatformExtensions.HasValue)
-                xmlWriter.WriteElementString("UsePlatformExtensions", _usePlatformExtensions.ToString().ToLower());
-            if (_throwErrorsInValidation.HasValue)
-                xmlWriter.WriteElementString("ThrowErrorsInValidation", _throwErrorsInValidation.ToString().ToLower());
-            if (_linkedServerProject != null)
-                xmlWriter.WriteElementString("LinkedServerProject", _linkedServerProject);
-            if (_mvcBuildViews.HasValue)
-                xmlWriter.WriteElementString("MvcBuildViews", _mvcBuildViews.ToString().ToLower());
-            if (_useIISExpress.HasValue)
-                xmlWriter.WriteElementString("UseIISExpress", _useIISExpress.ToString().ToLower());
-            if (_silverlightApplicationList != null)
-                xmlWriter.WriteElementString("SilverlightApplicationList", _silverlightApplicationList);
-            if (_nonShipping.HasValue)
-                xmlWriter.WriteElementString("Nonshipping", _nonShipping.ToString().ToLower());
-
-            WriteUnhandledData(xmlWriter, Locations.MainProperties);
-
-            xmlWriter.WriteEndElement();
-
-            // Write project configurations
-            foreach (Configuration projectConfiguration in _configurations)
-                projectConfiguration.AsText(xmlWriter);
-
-            WriteUnhandledData(xmlWriter, Locations.AfterProperties);
-
-            // Write all references
-            if (Enumerable.Any(_references, delegate (Reference reference) { return !reference.IsHidden; }))
-            {
-                xmlWriter.WriteStartElement("ItemGroup");
-                foreach (Reference reference in _references)
-                {
-                    if (!reference.IsHidden)
-                        reference.AsText(xmlWriter);
-                }
-                xmlWriter.WriteEndElement();
-            }
-
-            // Write all file items
-            if (_fileItems.Count > 0)
-            {
-                xmlWriter.WriteStartElement("ItemGroup");
-                bool first = true;
-                foreach (FileItem fileItem in _fileItems)
-                {
-                    if (fileItem.IsFirstInGroup && !first)
-                    {
-                        xmlWriter.WriteEndElement();
-                        xmlWriter.WriteStartElement("ItemGroup");
-                    }
-                    fileItem.AsText(xmlWriter);
-                    first = false;
-                }
-                xmlWriter.WriteEndElement();
-            }
-
-            // Write any unhandled file items
-            if (Enumerable.Any(_unhandledData, delegate (UnhandledData unhandledData) { return unhandledData.Location == Locations.Items; }))
-            {
-                xmlWriter.WriteStartElement("ItemGroup");
-                WriteUnhandledData(xmlWriter, Locations.Items);
-                xmlWriter.WriteEndElement();
-            }
-
-            WriteUnhandledData(xmlWriter, Locations.AfterItems);
-
-            xmlWriter.WriteEndElement();
-        }
-
-        public string GetRenderName()
-        {
-            if (IsWebSiteProject)
-            {
-                string name = _fileName;
-                if (name.StartsWith("http:"))
-                {
-                    if (!name.EndsWith("/"))
-                        name += "/";
-                }
-                else if (Path.IsPathRooted(name))
-                {
-                    if (name.EndsWith("\\"))
-                        name = name.Substring(0, name.Length - 1);
-                    int index = name.LastIndexOf('\\');
-                    if (index > 0)
-                        name = Path.GetPathRoot(name) + "..." + name.Substring(index);
-                    name += "\\";
-                }
-                return name;
-            }
-            return _name;
-        }
-
         protected void WriteRaw(XmlWriter xmlWriter, string rawData, string @namespace)
         {
             // This is workaround for a nasty bug in the XmlWriter where WriteRaw() turns off formatting, which MS refuses to fix.
@@ -3063,54 +3130,53 @@ namespace Nova.CodeDOM
             }
         }
 
-        /// <summary>
-        /// Enumeration of build actions.
-        /// </summary>
-        public enum BuildActions
+        private void AddDependencies(Project project)
         {
-            Unrecognized,
-            None,
-            Compile,
-            Content,
-            EmbeddedResource,
-            Resource,
-            ApplicationDefinition,
-            Page,
-            SplashScreen,
-            DesignData,
-            DesignDataWithDesignTimeCreatableTypes,
-            EntityDeploy,
-
-            // Used internally (not in VS UI)
-            AppDesigner,
-
-            Folder
+            foreach (Reference reference in project.References)
+            {
+                if (reference is ProjectReference)
+                {
+                    Project referencedProject = ((ProjectReference)reference).ReferencedProject;
+                    if (referencedProject != null)
+                    {
+                        _dependsOn.Add(referencedProject);
+                        AddDependencies(referencedProject);
+                    }
+                }
+            }
         }
 
-        /// <summary>
-        /// Enumeration of copy actions.
-        /// </summary>
-        public enum CopyActions { None, Always, PreserveNewest }
-
-        /// <summary>
-        /// Enumeration of debug types.
-        /// </summary>
-        public enum DebugTypes { none, full, pdbonly }
-
-        /// <summary>
-        /// Enumeration of error reporting types.
-        /// </summary>
-        public enum ErrorReporting { none, prompt, send, queue }
-
-        /// <summary>
-        /// Enumeration of types of serialization generation.
-        /// </summary>
-        public enum GenerateSerializationTypes { Auto, Off, On }
-
-        /// <summary>
-        /// Enumeration of output types.
-        /// </summary>
-        public enum OutputTypes { WinExe, Exe, Library }
+        // Get a friend Project from an InternalsVisibleTo attribute
+        private Project GetInternalsVisibleToProject(Annotations.Attribute attribute)
+        {
+            if (_parent != null)
+            {
+                // Find the attribute call expression
+                Call internalsCall = attribute.FindAttributeExpression(AssemblyUtil.InternalsVisibleToAttributeName) as Call;
+                if (internalsCall != null && internalsCall.ArgumentCount > 0)
+                {
+                    // The parameter should be a string constant - however, it might be built using a string concatenation
+                    // operator, and we want this code to work without resolving or evaluating expressions.  We only need
+                    // the assembly name, which should always be a string literal, so check for an Add operator and if we've
+                    // got one, just grab the left side.  Treat the result as a Literal, and trim leading '"'s.
+                    Expression expression = internalsCall.Arguments[0];
+                    if (expression is Add)
+                        expression = ((Add)expression).Left;
+                    Literal literal = expression as Literal;
+                    if (literal != null)
+                    {
+                        string friendAssemblyName = literal.Text.Trim('"');
+                        // Ignore any strong-name key
+                        int commaIndex = friendAssemblyName.IndexOf(',');
+                        if (commaIndex > 0)
+                            friendAssemblyName = friendAssemblyName.Substring(0, commaIndex);
+                        // Find the project by its assembly name
+                        return Solution.FindProjectByAssemblyName(friendAssemblyName);
+                    }
+                }
+            }
+            return null;
+        }
 
         /// <summary>
         /// Configuration settings for a <see cref="Project"/>.
@@ -3189,66 +3255,6 @@ namespace Nova.CodeDOM
                 Optimize = optimize;
                 OutputPath = @"bin\" + name + @"\";
                 DefineConstants = defineConstants;
-            }
-
-            /// <summary>
-            /// The defined constants for this configuration as a set of strings.
-            /// </summary>
-            public HashSet<string> Constants
-            {
-                get { return _constants; }
-            }
-
-            /// <summary>
-            /// The defined constants for this configuration as a delimited string.
-            /// </summary>
-            public string DefineConstants
-            {
-                get { return _defineConstants; }
-                set
-                {
-                    _defineConstants = value;
-                    _constants.Clear();
-                    if (!string.IsNullOrEmpty(value))
-                    {
-                        foreach (string constant in value.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
-                            _constants.Add(constant);
-                    }
-                }
-            }
-
-            /// <summary>
-            /// The parent <see cref="Project"/>.
-            /// </summary>
-            public Project ParentProject
-            {
-                get { return _parent as Project; }
-            }
-
-            /// <summary>
-            /// Define a constant.
-            /// </summary>
-            public void DefineConstant(string name)
-            {
-                _constants.Add(name);
-                _defineConstants = StringUtil.ToString(_constants, ";");
-            }
-
-            /// <summary>
-            /// Determine if the specified constant is defined.
-            /// </summary>
-            public bool IsConstantDefined(string name)
-            {
-                return (_constants.Contains(name) || name == "USING_NOVA" || name == "USING_NOVA_2");
-            }
-
-            /// <summary>
-            /// Un-define a constant.
-            /// </summary>
-            public void UndefineConstant(string name)
-            {
-                _constants.Remove(name);
-                _defineConstants = StringUtil.ToString(_constants, ";");
             }
 
             /// <summary>
@@ -3356,6 +3362,40 @@ namespace Nova.CodeDOM
             }
 
             /// <summary>
+            /// The defined constants for this configuration as a set of strings.
+            /// </summary>
+            public HashSet<string> Constants
+            {
+                get { return _constants; }
+            }
+
+            /// <summary>
+            /// The defined constants for this configuration as a delimited string.
+            /// </summary>
+            public string DefineConstants
+            {
+                get { return _defineConstants; }
+                set
+                {
+                    _defineConstants = value;
+                    _constants.Clear();
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        foreach (string constant in value.Split(new[] { ';', ',' }, StringSplitOptions.RemoveEmptyEntries))
+                            _constants.Add(constant);
+                    }
+                }
+            }
+
+            /// <summary>
+            /// The parent <see cref="Project"/>.
+            /// </summary>
+            public Project ParentProject
+            {
+                get { return _parent as Project; }
+            }
+
+            /// <summary>
             /// Save to the specified <see cref="XmlWriter"/>.
             /// </summary>
             public void AsText(XmlWriter xmlWriter)
@@ -3432,6 +3472,32 @@ namespace Nova.CodeDOM
 
                 xmlWriter.WriteEndElement();
             }
+
+            /// <summary>
+            /// Define a constant.
+            /// </summary>
+            public void DefineConstant(string name)
+            {
+                _constants.Add(name);
+                _defineConstants = StringUtil.ToString(_constants, ";");
+            }
+
+            /// <summary>
+            /// Determine if the specified constant is defined.
+            /// </summary>
+            public bool IsConstantDefined(string name)
+            {
+                return (_constants.Contains(name) || name == "USING_NOVA" || name == "USING_NOVA_2");
+            }
+
+            /// <summary>
+            /// Un-define a constant.
+            /// </summary>
+            public void UndefineConstant(string name)
+            {
+                _constants.Remove(name);
+                _defineConstants = StringUtil.ToString(_constants, ";");
+            }
         }
 
         /// <summary>
@@ -3496,14 +3562,6 @@ namespace Nova.CodeDOM
             }
 
             /// <summary>
-            /// The parent <see cref="Project"/>.
-            /// </summary>
-            public Project ParentProject
-            {
-                get { return _parent as Project; }
-            }
-
-            /// <summary>
             /// Parse from the specified <see cref="XmlReader"/>.
             /// </summary>
             public FileItem(XmlReader xmlReader, BuildActions buildAction, string projectPath, bool isFirstInGroup, Project parent)
@@ -3562,6 +3620,14 @@ namespace Nova.CodeDOM
             }
 
             /// <summary>
+            /// The parent <see cref="Project"/>.
+            /// </summary>
+            public Project ParentProject
+            {
+                get { return _parent as Project; }
+            }
+
+            /// <summary>
             /// Save to the specified <see cref="XmlWriter"/>.
             /// </summary>
             public void AsText(XmlWriter xmlWriter)
@@ -3601,8 +3667,6 @@ namespace Nova.CodeDOM
                 xmlWriter.WriteEndElement();
             }
         }
-
-        public enum Locations { BeforeProperties, MainProperties, ConfigurationProperties, AfterProperties, Items, AfterItems }
 
         /// <summary>
         /// Represents unhandled data in a <see cref="Project"/> file.

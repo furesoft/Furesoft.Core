@@ -4,10 +4,16 @@
 
 using System;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Resolving;
 
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
 {
     /// <summary>
     /// Represents a reference to a <see cref="Namespace"/>.

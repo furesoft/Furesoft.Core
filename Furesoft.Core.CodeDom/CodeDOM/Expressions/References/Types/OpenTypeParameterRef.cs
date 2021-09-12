@@ -5,10 +5,22 @@
 using System;
 using System.Collections.Generic;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Resolving;
+using Index = Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Index;
 
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {
     /// <summary>
     /// Represents a reference to a <see cref="TypeParameter"/> (or <see cref="GenericParameter"/>/<see cref="Type"/>) from <b>outside</b>
@@ -23,8 +35,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class OpenTypeParameterRef : TypeParameterRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="OpenTypeParameterRef"/> from a <see cref="TypeParameter"/>.
         /// </summary>
@@ -151,14 +161,6 @@ namespace Nova.CodeDOM
             : base(type, false, arrayRanks)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Convert into a <see cref="TypeParameterRef"/>.
         /// </summary>
@@ -170,36 +172,6 @@ namespace Nova.CodeDOM
             if (reference is GenericParameter)
                 return new TypeParameterRef((GenericParameter)reference, IsFirstOnLine, ArrayRanks);
             return new TypeParameterRef((Type)reference, IsFirstOnLine, ArrayRanks);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public override void ResolveRef(string name, Resolver resolver)
-        {
-            // An OpenTypeParameterRef can only have members if it's an array, or if the member is on the base 'object' type
-            ResolveRef(HasArrayRanks ? ArrayRef : ObjectRef, name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        public override void ResolveIndexerRef(Resolver resolver)
-        {
-            // Don't attempt on an OpenTypeParameterRef
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            // Always treat open type parameters as having an unresolved type
-            return true;
         }
 
         /// <summary>
@@ -361,14 +333,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the OpenTypeParameterRef is implicitly convertible to the specified TypeRefBase.
+        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
         /// </summary>
-        /// <param name="toTypeRefBase">The TypeRef, MethodRef, or UnresolvedRef being checked.</param>
-        /// <param name="standardConversionsOnly">True if only standard conversions should be allowed.</param>
-        public override bool IsImplicitlyConvertibleTo(TypeRefBase toTypeRefBase, bool standardConversionsOnly)
+        public override bool HasUnresolvedRef()
         {
-            // Open type parameters only match if they are identical, or if there is an implicit conversion from 'object'
-            return (IsSameRef(toTypeRefBase) || IsImplicitlyConvertible(ObjectRef, toTypeRefBase, false));
+            // Always treat open type parameters as having an unresolved type
+            return true;
         }
 
         /// <summary>
@@ -380,6 +350,32 @@ namespace Nova.CodeDOM
             return (IsSameRef(fromTypeRefBase) || IsImplicitlyConvertible(fromTypeRefBase, ObjectRef, false));
         }
 
-        #endregion
+        /// <summary>
+        /// Determine if the OpenTypeParameterRef is implicitly convertible to the specified TypeRefBase.
+        /// </summary>
+        /// <param name="toTypeRefBase">The TypeRef, MethodRef, or UnresolvedRef being checked.</param>
+        /// <param name="standardConversionsOnly">True if only standard conversions should be allowed.</param>
+        public override bool IsImplicitlyConvertibleTo(TypeRefBase toTypeRefBase, bool standardConversionsOnly)
+        {
+            // Open type parameters only match if they are identical, or if there is an implicit conversion from 'object'
+            return (IsSameRef(toTypeRefBase) || IsImplicitlyConvertible(ObjectRef, toTypeRefBase, false));
+        }
+
+        /// <summary>
+        /// Resolve indexers.
+        /// </summary>
+        public override void ResolveIndexerRef(Resolver resolver)
+        {
+            // Don't attempt on an OpenTypeParameterRef
+        }
+
+        /// <summary>
+        /// Resolve child code objects that match the specified name.
+        /// </summary>
+        public override void ResolveRef(string name, Resolver resolver)
+        {
+            // An OpenTypeParameterRef can only have members if it's an array, or if the member is on the base 'object' type
+            ResolveRef(HasArrayRanks ? ArrayRef : ObjectRef, name, resolver);
+        }
     }
 }

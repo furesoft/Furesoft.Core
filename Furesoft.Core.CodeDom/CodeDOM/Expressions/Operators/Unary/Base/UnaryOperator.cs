@@ -1,11 +1,14 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Resolving;
 
-using Nova.Parsing;
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base
 {
     /// <summary>
     /// The common base class of all unary operators (<see cref="PreUnaryOperator"/>, <see cref="PostUnaryOperator"/>).

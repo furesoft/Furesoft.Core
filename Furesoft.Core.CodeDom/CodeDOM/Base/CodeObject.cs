@@ -6,12 +6,31 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using static Furesoft.Core.CodeDom.Rendering.CodeWriter;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
     /// <summary>
     /// The common base class of all code objects.
@@ -1410,7 +1429,7 @@ namespace Nova.CodeDOM
             if (commentBase is Comment)
             {
                 Comment comment = (Comment)commentBase;
-                int removeSpaceCount = comment.GetIndentSpaceCount() - comment.PrefixSpaceCount - (comment.IsBlock ? 0 : CodeDOM.Comment.ParseToken.Length);
+                int removeSpaceCount = comment.GetIndentSpaceCount() - comment.PrefixSpaceCount - (comment.IsBlock ? 0 : Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Comment.ParseToken.Length);
                 if (removeSpaceCount > 0)
                 {
                     // If we fail to remove the desired count of spaces, and 1 space is implied, then
@@ -1642,7 +1661,7 @@ namespace Nova.CodeDOM
             {
                 foreach (Annotation annotation in _annotations)
                 {
-                    if (annotation is Attribute)
+                    if (annotation is Annotations.Attribute)
                         annotation.Resolve(ResolveCategory.CodeObject, flags);
                 }
             }
@@ -2209,12 +2228,12 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Convert the code object to text using the specified flags and format (file or string).
         /// </summary>
-        public string AsText(RenderFlags flags, bool isFileFormat, Stack<CodeWriter.AlignmentState> alignmentStateStack)
+        public string AsText(RenderFlags flags, bool isFileFormat, Stack<AlignmentState> alignmentStateStack)
         {
             using (CodeWriter writer = new CodeWriter(false, IsGenerated))
             {
                 if (alignmentStateStack != null)
-                    writer.AlignmentStateStack = new Stack<CodeWriter.AlignmentState>(alignmentStateStack);
+                    writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);
                 try
                 {
                     // Render the text into a string, suppressing any leading newline.
@@ -2261,12 +2280,12 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Determine the length of the code object if converted to a string using the specified flags.
         /// </summary>
-        public int AsTextLength(RenderFlags flags, Stack<CodeWriter.AlignmentState> alignmentStateStack)
+        public int AsTextLength(RenderFlags flags, Stack<AlignmentState> alignmentStateStack)
         {
             using (CodeWriter writer = new CodeWriter(true))
             {
                 if (alignmentStateStack != null)
-                    writer.AlignmentStateStack = new Stack<CodeWriter.AlignmentState>(alignmentStateStack);
+                    writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);
                 try
                 {
                     // Render the text into a string, suppressing any leading newline.

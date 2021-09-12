@@ -3,10 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom;
 
-using Nova.CodeDOM;
-
-namespace Nova
+namespace Furesoft.Core.CodeDom
 {
     /// <summary>
     /// Supports logging of messages.

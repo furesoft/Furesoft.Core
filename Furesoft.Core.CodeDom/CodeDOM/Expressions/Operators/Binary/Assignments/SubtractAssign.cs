@@ -1,30 +1,31 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
-using Nova.Parsing;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
 {
     /// <summary>
-    /// Adds one <see cref="Expression"/> to another, and assigns the result to the left <see cref="Expression"/>.
+    /// Subtracts one <see cref="Expression"/> from another, and assigns the result to the left <see cref="Expression"/>.
     /// The left <see cref="Expression"/> must be an assignable object ("lvalue").
     /// </summary>
-    public class AddAssign : Assignment
+    public class SubtractAssign : Assignment
     {
         #region /* CONSTRUCTORS */
 
         /// <summary>
-        /// Create an <see cref="AddAssign"/> operator.
+        /// Create a <see cref="SubtractAssign"/> operator.
         /// </summary>
-        public AddAssign(Expression left, Expression right)
+        public SubtractAssign(Expression left, Expression right)
             : base(left, right)
         { }
 
         /// <summary>
-        /// Create an <see cref="AddAssign"/> operator.
+        /// Create a <see cref="SubtractAssign"/> operator.
         /// </summary>
-        public AddAssign(EventDecl left, Expression right)
+        public SubtractAssign(EventDecl left, Expression right)
             : base(left.CreateRef(), right)
         { }
 
@@ -49,7 +50,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public override string GetInternalName()
         {
-            return Add.InternalName;
+            return Subtract.InternalName;
         }
 
         #endregion
@@ -59,7 +60,7 @@ namespace Nova.CodeDOM
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
-        public new const string ParseToken = "+=";
+        public new const string ParseToken = "-=";
 
         internal static new void AddParsePoints()
         {
@@ -67,14 +68,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse an <see cref="AddAssign"/> operator.
+        /// Parse a <see cref="SubtractAssign"/> operator.
         /// </summary>
-        public static new AddAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public static new SubtractAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            return new AddAssign(parser, parent);
+            return new SubtractAssign(parser, parent);
         }
 
-        protected AddAssign(Parser parser, CodeObject parent)
+        protected SubtractAssign(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
 

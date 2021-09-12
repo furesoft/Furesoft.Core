@@ -4,10 +4,10 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.Resolving;
 
-using Nova.CodeDOM;
-
-namespace Nova.Resolving
+namespace Furesoft.Core.CodeDom.Resolving
 {
     /// <summary>
     /// Holds a collection of possible matches for an <see cref="UnresolvedRef"/>.

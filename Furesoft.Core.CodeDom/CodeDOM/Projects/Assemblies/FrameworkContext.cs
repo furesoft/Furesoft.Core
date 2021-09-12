@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
+using Furesoft.Core.CodeDom.Utilities;
 
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies
 {
     /// <summary>
     /// Represents a group of loaded assemblies for a particular target framework version, loaded into a particular <see cref="AppDomain"/>.

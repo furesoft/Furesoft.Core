@@ -4,8 +4,10 @@
 
 using System.Reflection;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
 {
     /// <summary>
     /// Represents a reference to an <see cref="OperatorDecl"/> or <see cref="MethodDefinition"/>/<see cref="MethodInfo"/> for an overloaded operator.

@@ -5,29 +5,26 @@
 using System;
 using System.IO;
 using System.Xml;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.References;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.Utilities;
+using static Furesoft.Core.CodeDom.CodeDOM.Projects.Project;
 
-using Nova.Resolving;
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects.References
 {
     /// <summary>
     /// Represents a project reference to another project in the same solution.
     /// </summary>
     public class ProjectReference : Reference
     {
-        #region /* FIELDS */
-
-        protected string _projectFileName;
         protected Guid _guid;
         protected Guid? _package;
-
+        protected string _projectFileName;
         protected Project _referencedProject;
         protected bool _treatAsAssemblyReference;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a new <see cref="ProjectReference"/> with the specified name, file name, and GUID.
@@ -48,16 +45,12 @@ namespace Nova.CodeDOM
             _projectFileName = projectFileName;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The file name of the referenced <see cref="Project"/>.
+        /// The descriptive category of the code object.
         /// </summary>
-        public string ProjectFileName
+        public override string Category
         {
-            get { return _projectFileName; }
+            get { return "Project"; }
         }
 
         /// <summary>
@@ -74,6 +67,14 @@ namespace Nova.CodeDOM
         public Guid? Package
         {
             get { return _package; }
+        }
+
+        /// <summary>
+        /// The file name of the referenced <see cref="Project"/>.
+        /// </summary>
+        public string ProjectFileName
+        {
+            get { return _projectFileName; }
         }
 
         /// <summary>
@@ -94,18 +95,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public override string Category
-        {
-            get { return "Project"; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
         /// Load the reference.
         /// </summary>
         public override void Load()
@@ -124,17 +113,13 @@ namespace Nova.CodeDOM
                     : (directory + @"\Bin\" + (_parent != null ? ParentProject.ConfigurationName + @"\" : "")))
                     + (!string.IsNullOrEmpty(_referencedProject.AssemblyName) ? _referencedProject.AssemblyName
                     : Path.GetFileNameWithoutExtension(_referencedProject.FileName))
-                    + (_referencedProject.OutputType == Project.OutputTypes.Library ? ".dll" : ".exe");
+                    + (_referencedProject.OutputType == OutputTypes.Library ? ".dll" : ".exe");
 
                 string errorMessage = LoadAssembly(assemblyPath);
                 if (errorMessage != null)
                     LogAndAttachMessage(errorMessage, MessageSeverity.Error, MessageSource.Load);
             }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// Parse from the specified <see cref="XmlReader"/>.
@@ -175,10 +160,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RESOLVING */
-
         /// <summary>
         /// Resolve the reference.
         /// </summary>
@@ -206,7 +187,7 @@ namespace Nova.CodeDOM
                 else if (_projectFileName != null)
                 {
                     // Using the Name to search for a Project reference won't always work, because VS doesn't update reference names
-                    // when projects are renamed.  So, resolve project references based upon the project path.  
+                    // when projects are renamed.  So, resolve project references based upon the project path.
                     string projectFullFileName = FileUtil.CombineAndNormalizePath(ParentProject.GetDirectory(), _projectFileName);
                     _referencedProject = solution.FindProjectByFileName(projectFullFileName);
                     if (_referencedProject == null)
@@ -246,10 +227,6 @@ namespace Nova.CodeDOM
                 AttachMessage("Can't resolve referenced project '" + _name + "' without a parent project and solution", MessageSeverity.Error, MessageSource.Resolve);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// Write to the specified <see cref="XmlWriter"/>.
         /// </summary>
@@ -265,7 +242,5 @@ namespace Nova.CodeDOM
                 xmlWriter.WriteElementString("Aliases", _alias);
             xmlWriter.WriteEndElement();
         }
-
-        #endregion
     }
 }

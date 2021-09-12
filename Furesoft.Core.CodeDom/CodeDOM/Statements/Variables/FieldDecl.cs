@@ -3,12 +3,26 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 {
     /// <summary>
     /// Represents a class member variable declaration.
@@ -21,13 +35,7 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class FieldDecl : VariableDecl, IModifiers
     {
-        #region /* FIELDS */
-
         protected Modifiers _modifiers;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a field declaration.
@@ -73,16 +81,87 @@ namespace Nova.CodeDOM
             _modifiers = modifiers;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public override string Category
         {
             get { return (IsConst ? "constant" : "field"); }
+        }
+
+        /// <summary>
+        /// Get the declaring <see cref="TypeDecl"/>.
+        /// </summary>
+        public TypeDecl DeclaringType
+        {
+            get { return (_parent is MultiFieldDecl ? _parent.Parent as TypeDecl : _parent as TypeDecl); }
+        }
+
+        /// <summary>
+        /// True if the field is const.
+        /// </summary>
+        public override bool IsConst
+        {
+            get { return _modifiers.HasFlag(Modifiers.Const); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Const : _modifiers & ~Modifiers.Const); }
+        }
+
+        /// <summary>
+        /// True if the field is an event.
+        /// </summary>
+        public bool IsEvent
+        {
+            get { return _modifiers.HasFlag(Modifiers.Event); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Event : _modifiers & ~Modifiers.Event); }
+        }
+
+        /// <summary>
+        /// True if the field has internal access.
+        /// </summary>
+        public bool IsInternal
+        {
+            get { return _modifiers.HasFlag(Modifiers.Internal); }
+            // Force certain other flags off if setting to Protected
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
+        }
+
+        /// <summary>
+        /// True if the field has private access.
+        /// </summary>
+        public bool IsPrivate
+        {
+            get { return _modifiers.HasFlag(Modifiers.Private); }
+            // Force other flags off if setting to Private
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Protected | Modifiers.Internal | Modifiers.Public) | Modifiers.Private : _modifiers & ~Modifiers.Private); }
+        }
+
+        /// <summary>
+        /// True if the field has protected access.
+        /// </summary>
+        public bool IsProtected
+        {
+            get { return _modifiers.HasFlag(Modifiers.Protected); }
+            // Force certain other flags off if setting to Protected
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Protected : _modifiers & ~Modifiers.Protected); }
+        }
+
+        /// <summary>
+        /// True if the field has public access.
+        /// </summary>
+        public bool IsPublic
+        {
+            get { return _modifiers.HasFlag(Modifiers.Public); }
+            // Force other flags off if setting to Public
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
+        }
+
+        /// <summary>
+        /// True if the field is static.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get { return (_modifiers.HasFlag(Modifiers.Static) || IsConst); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
         }
 
         /// <summary>
@@ -113,85 +192,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the field is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            get { return _modifiers.HasFlag(Modifiers.Const); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Const : _modifiers & ~Modifiers.Const); }
-        }
-
-        /// <summary>
-        /// True if the field is static.
-        /// </summary>
-        public override bool IsStatic
-        {
-            get { return (_modifiers.HasFlag(Modifiers.Static) || IsConst); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
-        }
-
-        /// <summary>
-        /// True if the field has public access.
-        /// </summary>
-        public bool IsPublic
-        {
-            get { return _modifiers.HasFlag(Modifiers.Public); }
-            // Force other flags off if setting to Public
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
-        }
-
-        /// <summary>
-        /// True if the field has private access.
-        /// </summary>
-        public bool IsPrivate
-        {
-            get { return _modifiers.HasFlag(Modifiers.Private); }
-            // Force other flags off if setting to Private
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Protected | Modifiers.Internal | Modifiers.Public) | Modifiers.Private : _modifiers & ~Modifiers.Private); }
-        }
-
-        /// <summary>
-        /// True if the field has protected access.
-        /// </summary>
-        public bool IsProtected
-        {
-            get { return _modifiers.HasFlag(Modifiers.Protected); }
-            // Force certain other flags off if setting to Protected
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Protected : _modifiers & ~Modifiers.Protected); }
-        }
-
-        /// <summary>
-        /// True if the field has internal access.
-        /// </summary>
-        public bool IsInternal
-        {
-            get { return _modifiers.HasFlag(Modifiers.Internal); }
-            // Force certain other flags off if setting to Protected
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
-        }
-
-        /// <summary>
-        /// True if the field is an event.
-        /// </summary>
-        public bool IsEvent
-        {
-            get { return _modifiers.HasFlag(Modifiers.Event); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Event : _modifiers & ~Modifiers.Event); }
-        }
-
-        /// <summary>
-        /// Get the declaring <see cref="TypeDecl"/>.
-        /// </summary>
-        public TypeDecl DeclaringType
-        {
-            get { return (_parent is MultiFieldDecl ? _parent.Parent as TypeDecl : _parent as TypeDecl); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
         /// Create a reference to the <see cref="FieldDecl"/>.
         /// </summary>
         /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
@@ -199,11 +199,6 @@ namespace Nova.CodeDOM
         public override SymbolicRef CreateRef(bool isFirstOnLine)
         {
             return new FieldRef(this, isFirstOnLine);
-        }
-
-        protected internal void SetTypeFromParentMulti(Expression type)
-        {
-            SetField(ref _type, type, true);
         }
 
         /// <summary>
@@ -238,23 +233,46 @@ namespace Nova.CodeDOM
             return _name;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        internal static void AddParsePoints()
+        protected internal void SetTypeFromParentMulti(Expression type)
         {
-            // NOTE: We detect field declarations by a ';', '=', or ',' - we parse backwards from the
-            //       parse-point, and then (in the latter two cases) parse forwards to complete the parsing.
+            SetField(ref _type, type, true);
+        }
 
-            // Use a parse-priority of 0 (LocalDecl uses 100)
-            Parser.AddParsePoint(ParseTokenTerminator, Parse, typeof(TypeDecl));
+        protected FieldDecl(Parser parser, CodeObject parent, bool isMulti)
+            : base(parser, parent)
+        {
+            // Ignore for derived types (FixedSizeBufferDecl)
+            if (GetType() != typeof(FieldDecl)) return;
 
-            // Use a parse-priority of 0 (LocalDecl uses 100, MultiEnumMemberDecl uses 200, Assignment uses 300)
-            Parser.AddParsePoint(Assignment.ParseToken, Parse, typeof(TypeDecl));
+            if (isMulti)
+            {
+                // Parse the name
+                _name = parser.GetIdentifierText();
+                MoveLocationAndComment(parser.LastToken);
 
-            // Use a parse-priority of 0 (LocalDecl uses 100, MultiEnumMemberDecl uses 200)
-            Parser.AddParsePoint(Expression.ParseTokenSeparator, Parse, typeof(TypeDecl));
+                ParseInitialization(parser, parent);  // Parse the initialization (if any)
+            }
+            else
+            {
+                // Parse the name from the Unused list
+                Token token = parser.RemoveLastUnusedToken();
+                _name = token.NonVerbatimText;
+                MoveLocationAndComment(token);
+
+                ParseUnusedType(parser, ref _type);                 // Parse the type from the Unused list
+                _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
+                ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
+
+                ParseInitialization(parser, parent);  // Parse the initialization (if any)
+                if (parser.TokenText != Expression.ParseTokenSeparator)
+                    ParseTerminator(parser);
+
+                // Check for compiler directives, storing them as postfix annotations on the parent
+                Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsPostfix, false);
+
+                // Force field decls to always start on a new line
+                IsFirstOnLine = true;
+            }
         }
 
         /// <summary>
@@ -306,43 +324,6 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected FieldDecl(Parser parser, CodeObject parent, bool isMulti)
-            : base(parser, parent)
-        {
-            // Ignore for derived types (FixedSizeBufferDecl)
-            if (GetType() != typeof(FieldDecl)) return;
-
-            if (isMulti)
-            {
-                // Parse the name
-                _name = parser.GetIdentifierText();
-                MoveLocationAndComment(parser.LastToken);
-
-                ParseInitialization(parser, parent);  // Parse the initialization (if any)
-            }
-            else
-            {
-                // Parse the name from the Unused list
-                Token token = parser.RemoveLastUnusedToken();
-                _name = token.NonVerbatimText;
-                MoveLocationAndComment(token);
-
-                ParseUnusedType(parser, ref _type);                 // Parse the type from the Unused list
-                _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
-                ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
-
-                ParseInitialization(parser, parent);  // Parse the initialization (if any)
-                if (parser.TokenText != Expression.ParseTokenSeparator)
-                    ParseTerminator(parser);
-
-                // Check for compiler directives, storing them as postfix annotations on the parent
-                Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsPostfix, false);
-
-                // Force field decls to always start on a new line
-                IsFirstOnLine = true;
-            }
-        }
-
         /// <summary>
         /// Determine if the specified comment should be associated with the current code object during parsing.
         /// </summary>
@@ -351,9 +332,42 @@ namespace Nova.CodeDOM
             return true;
         }
 
-        #endregion
+        internal static void AddParsePoints()
+        {
+            // NOTE: We detect field declarations by a ';', '=', or ',' - we parse backwards from the
+            //       parse-point, and then (in the latter two cases) parse forwards to complete the parsing.
 
-        #region /* RESOLVING */
+            // Use a parse-priority of 0 (LocalDecl uses 100)
+            Parser.AddParsePoint(ParseTokenTerminator, Parse, typeof(TypeDecl));
+
+            // Use a parse-priority of 0 (LocalDecl uses 100, MultiEnumMemberDecl uses 200, Assignment uses 300)
+            Parser.AddParsePoint(Assignment.ParseToken, Parse, typeof(TypeDecl));
+
+            // Use a parse-priority of 0 (LocalDecl uses 100, MultiEnumMemberDecl uses 200)
+            Parser.AddParsePoint(Expression.ParseTokenSeparator, Parse, typeof(TypeDecl));
+        }
+
+        /// <summary>
+        /// Evaluate the type of the <see cref="FieldDecl"/>.
+        /// </summary>
+        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
+        /// of nested types.  It also handles constants and the type being null.</remarks>
+        public override TypeRefBase EvaluateType(bool withoutConstants)
+        {
+            TypeRefBase typeRefBase = base.EvaluateType(withoutConstants);
+            if (IsConst && !withoutConstants)
+            {
+                object value = GetValue();
+                TypeRef typeRef = typeRefBase as TypeRef;
+                if (typeRef != null)
+                {
+                    if (typeRef.IsEnum || value == null)
+                        return new TypeRef(typeRef, value);
+                }
+                return new TypeRef(value);
+            }
+            return typeRefBase;
+        }
 
         /// <summary>
         /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
@@ -387,41 +401,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Evaluate the type of the <see cref="FieldDecl"/>.
+        /// Determines if the code object has a terminator character.
         /// </summary>
-        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
-        /// of nested types.  It also handles constants and the type being null.</remarks>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
+        public override bool HasTerminator
         {
-            TypeRefBase typeRefBase = base.EvaluateType(withoutConstants);
-            if (IsConst && !withoutConstants)
-            {
-                object value = GetValue();
-                TypeRef typeRef = typeRefBase as TypeRef;
-                if (typeRef != null)
-                {
-                    if (typeRef.IsEnum || value == null)
-                        return new TypeRef(typeRef, value);
-                }
-                return new TypeRef(value);
-            }
-            return typeRefBase;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
-        /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
-        {
-            // Default to a preceeding blank line if the object has first-on-line annotations, or if
-            // it's not another field declaration.
-            if (HasFirstOnLineAnnotations || !(previous is FieldDecl))
-                return 2;
-            return 1;
+            // Ignore any terminator if we're part of a multi
+            get { return (!(_parent is MultiFieldDecl) && base.HasTerminator); }
         }
 
         /// <summary>
@@ -448,17 +433,16 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the code object has a terminator character.
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
         /// </summary>
-        public override bool HasTerminator
+        public override int DefaultNewLines(CodeObject previous)
         {
-            // Ignore any terminator if we're part of a multi
-            get { return (!(_parent is MultiFieldDecl) && base.HasTerminator); }
+            // Default to a preceeding blank line if the object has first-on-line annotations, or if
+            // it's not another field declaration.
+            if (HasFirstOnLineAnnotations || !(previous is FieldDecl))
+                return 2;
+            return 1;
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
         {
@@ -496,7 +480,5 @@ namespace Nova.CodeDOM
             else if (_initialization != null)
                 AsTextInitialization(writer, passFlags);
         }
-
-        #endregion
     }
 }

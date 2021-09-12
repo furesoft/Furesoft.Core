@@ -7,10 +7,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.Utilities;
 
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies
 {
     /// <summary>
     /// Manages all assemblies loaded into an <see cref="AppDomain"/>.

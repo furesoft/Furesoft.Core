@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Nova.Resolving
+namespace Furesoft.Core.CodeDom.Resolving
 {
     /// <summary>
     /// Symbol resolution flags (passed through Resolve methods).

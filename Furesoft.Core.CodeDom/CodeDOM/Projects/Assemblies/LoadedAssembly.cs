@@ -5,8 +5,11 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Projects;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies
 {
     /// <summary>
     /// Represents an <see cref="Assembly"/> that has been loaded into memory.

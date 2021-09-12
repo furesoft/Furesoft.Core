@@ -6,8 +6,11 @@ using System;
 using System.Collections;
 using System.Reflection;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
     /// <summary>
     /// Represents a group of named code objects (<see cref="INamedCodeObject"/>s and/or <see cref="IMemberDefinition"/>s/<see cref="MemberInfo"/>s)

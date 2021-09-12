@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities
 {
     /// <summary>
     /// Extension and helper methods for <see cref="Array"/>s.

@@ -8,12 +8,31 @@ using System.Collections.Generic;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Collections.Generic;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using ParameterModifier = Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.ParameterModifier;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-using Nova.Rendering;
-using Nova.Resolving;
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
 {
     /// <summary>
     /// Represents a reference to a <see cref="ParameterDecl"/> or a <see cref="ParameterDefinition"/>/<see cref="ParameterInfo"/>.
@@ -25,8 +44,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ParameterRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ParameterRef"/>.
         /// </summary>
@@ -69,22 +86,18 @@ namespace Nova.CodeDOM
             : base(parameterInfo, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The name of the <see cref="SymbolicRef"/>.
+        /// True if the referenced parameter is an 'out' parameter.
         /// </summary>
-        public override string Name
+        public bool IsOut
         {
             get
             {
                 if (_reference is ParameterDecl)
-                    return ((ParameterDecl)_reference).Name;
+                    return ((ParameterDecl)_reference).IsOut;
                 if (_reference is ParameterDefinition)
-                    return ((ParameterDefinition)_reference).Name;
-                return ((ParameterInfo)_reference).Name;
+                    return ParameterDefinitionUtil.IsOut((ParameterDefinition)_reference);
+                return ParameterInfoUtil.IsOut((ParameterInfo)_reference);
             }
         }
 
@@ -119,23 +132,67 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced parameter is an 'out' parameter.
+        /// The name of the <see cref="SymbolicRef"/>.
         /// </summary>
-        public bool IsOut
+        public override string Name
         {
             get
             {
                 if (_reference is ParameterDecl)
-                    return ((ParameterDecl)_reference).IsOut;
+                    return ((ParameterDecl)_reference).Name;
                 if (_reference is ParameterDefinition)
-                    return ParameterDefinitionUtil.IsOut((ParameterDefinition)_reference);
-                return ParameterInfoUtil.IsOut((ParameterInfo)_reference);
+                    return ((ParameterDefinition)_reference).Name;
+                return ((ParameterInfo)_reference).Name;
             }
         }
 
-        #endregion
+        public static void AsTextParameterDefinition(CodeWriter writer, ParameterDefinition parameterDefinition, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
 
-        #region /* STATIC METHODS */
+            Attribute.AsTextAttributes(writer, parameterDefinition);
+
+            ParameterModifier modifier = GetParameterModifier(parameterDefinition);
+            if (modifier != ParameterModifier.None)
+                writer.Write(ParameterDecl.ParameterModifierToString(modifier) + " ");
+
+            TypeReference parameterType = parameterDefinition.ParameterType;
+            if (parameterType.IsByReference)
+            {
+                // Dereference (remove the trailing '&') if it's a reference type
+                parameterType = ((ByReferenceType)parameterType).ElementType;
+            }
+            TypeRefBase.AsTextTypeReference(writer, parameterType, passFlags);
+            writer.Write(" " + parameterDefinition.Name);
+
+            // Display the default value if it has one
+            if (parameterDefinition.HasDefault)
+            {
+                writer.Write(" " + Assignment.ParseToken);
+                object defaultValue = parameterDefinition.Constant;
+                new Literal(defaultValue).AsText(writer, flags | RenderFlags.PrefixSpace);
+            }
+        }
+
+        public static void AsTextParameterInfo(CodeWriter writer, ParameterInfo parameterInfo, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
+
+            Attribute.AsTextAttributes(writer, parameterInfo);
+
+            ParameterModifier modifier = GetParameterModifier(parameterInfo);
+            if (modifier != ParameterModifier.None)
+                writer.Write(ParameterDecl.ParameterModifierToString(modifier) + " ");
+
+            Type parameterType = parameterInfo.ParameterType;
+            if (parameterType.IsByRef)
+            {
+                // Dereference (remove the trailing '&') if it's a reference type
+                parameterType = parameterType.GetElementType();
+            }
+            TypeRefBase.AsTextType(writer, parameterType, passFlags);
+            writer.Write(" " + parameterInfo.Name);
+        }
 
         /// <summary>
         /// Find the parameter on the specified <see cref="MethodDeclBase"/> with the specified name.
@@ -270,21 +327,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the parameter in the collection with the specified index is a 'params' parameter.
-        /// </summary>
-        public static bool ParameterIsParams(ICollection parameters, int index)
-        {
-            bool isParams;
-            if (parameters is List<ParameterDecl>)
-                isParams = (((List<ParameterDecl>)parameters)[index].IsParams);
-            else if (parameters is Collection<ParameterDefinition>)
-                isParams = ParameterDefinitionUtil.IsParams(((Collection<ParameterDefinition>)parameters)[index]);
-            else //if (parameters is ParameterInfo[])
-                isParams = ParameterInfoUtil.IsParams(((ParameterInfo[])parameters)[index]);
-            return isParams;
-        }
-
-        /// <summary>
         /// Get the type of the parameter in the collection with the specified index, using the specified parent expression to evaluate any type argument types.
         /// </summary>
         public static TypeRefBase GetParameterType(ICollection parameters, int index, Expression parentExpression)
@@ -348,45 +390,6 @@ namespace Nova.CodeDOM
         public static TypeRefBase GetParameterType(ICollection parameters, int index, out bool isRef, out bool isOut)
         {
             return GetParameterType(parameters, index, out isRef, out isOut, null);
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            TypeRefBase typeRefBase;
-            if (_reference is ParameterDecl)
-                typeRefBase = ((ParameterDecl)_reference).EvaluateType(withoutConstants);
-            else if (_reference is ParameterDefinition)
-            {
-                ParameterDefinition parameterDefinition = (ParameterDefinition)_reference;
-                TypeReference parameterType = parameterDefinition.ParameterType;
-                typeRefBase = TypeRef.Create(parameterType);
-            }
-            else //if (_reference is ParameterInfo)
-            {
-                ParameterInfo parameterInfo = (ParameterInfo)_reference;
-                Type parameterType = parameterInfo.ParameterType;
-                typeRefBase = TypeRef.Create(parameterType);
-            }
-
-            // We shouldn't need to evaluate type arguments here.
-            // If it turns out that we do, there's no need to check for a Dot parent, and we can pass
-            // null for the parent expression, which will then only look for the parent TypeDecl.
-            //if (typeRefBase != null)
-            //    typeRefBase = typeRefBase.EvaluateTypeArgumentTypes(null); //Parent);
-
-            return typeRefBase;
         }
 
         /// <summary>
@@ -523,6 +526,52 @@ namespace Nova.CodeDOM
                     failedBecauseUnresolved = argumentTypeRef.HasUnresolvedRef();
             }
             return matches;
+        }
+
+        /// <summary>
+        /// Determine if the parameter in the collection with the specified index is a 'params' parameter.
+        /// </summary>
+        public static bool ParameterIsParams(ICollection parameters, int index)
+        {
+            bool isParams;
+            if (parameters is List<ParameterDecl>)
+                isParams = (((List<ParameterDecl>)parameters)[index].IsParams);
+            else if (parameters is Collection<ParameterDefinition>)
+                isParams = ParameterDefinitionUtil.IsParams(((Collection<ParameterDefinition>)parameters)[index]);
+            else //if (parameters is ParameterInfo[])
+                isParams = ParameterInfoUtil.IsParams(((ParameterInfo[])parameters)[index]);
+            return isParams;
+        }
+
+        /// <summary>
+        /// Evaluate the type of the <see cref="Expression"/>.
+        /// </summary>
+        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
+        public override TypeRefBase EvaluateType(bool withoutConstants)
+        {
+            TypeRefBase typeRefBase;
+            if (_reference is ParameterDecl)
+                typeRefBase = ((ParameterDecl)_reference).EvaluateType(withoutConstants);
+            else if (_reference is ParameterDefinition)
+            {
+                ParameterDefinition parameterDefinition = (ParameterDefinition)_reference;
+                TypeReference parameterType = parameterDefinition.ParameterType;
+                typeRefBase = TypeRef.Create(parameterType);
+            }
+            else //if (_reference is ParameterInfo)
+            {
+                ParameterInfo parameterInfo = (ParameterInfo)_reference;
+                Type parameterType = parameterInfo.ParameterType;
+                typeRefBase = TypeRef.Create(parameterType);
+            }
+
+            // We shouldn't need to evaluate type arguments here.
+            // If it turns out that we do, there's no need to check for a Dot parent, and we can pass
+            // null for the parent expression, which will then only look for the parent TypeDecl.
+            //if (typeRefBase != null)
+            //    typeRefBase = typeRefBase.EvaluateTypeArgumentTypes(null); //Parent);
+
+            return typeRefBase;
         }
 
         protected static TypeRefBase EvaluateParameter(TypeRefBase reference, object obj, MatchCandidate candidate,
@@ -816,59 +865,5 @@ namespace Nova.CodeDOM
 
             return newTypeRef;
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public static void AsTextParameterDefinition(CodeWriter writer, ParameterDefinition parameterDefinition, RenderFlags flags)
-        {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-
-            Attribute.AsTextAttributes(writer, parameterDefinition);
-
-            ParameterModifier modifier = GetParameterModifier(parameterDefinition);
-            if (modifier != ParameterModifier.None)
-                writer.Write(ParameterDecl.ParameterModifierToString(modifier) + " ");
-
-            TypeReference parameterType = parameterDefinition.ParameterType;
-            if (parameterType.IsByReference)
-            {
-                // Dereference (remove the trailing '&') if it's a reference type
-                parameterType = ((ByReferenceType)parameterType).ElementType;
-            }
-            TypeRefBase.AsTextTypeReference(writer, parameterType, passFlags);
-            writer.Write(" " + parameterDefinition.Name);
-
-            // Display the default value if it has one
-            if (parameterDefinition.HasDefault)
-            {
-                writer.Write(" " + Assignment.ParseToken);
-                object defaultValue = parameterDefinition.Constant;
-                new Literal(defaultValue).AsText(writer, flags | RenderFlags.PrefixSpace);
-            }
-        }
-
-        public static void AsTextParameterInfo(CodeWriter writer, ParameterInfo parameterInfo, RenderFlags flags)
-        {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-
-            Attribute.AsTextAttributes(writer, parameterInfo);
-
-            ParameterModifier modifier = GetParameterModifier(parameterInfo);
-            if (modifier != ParameterModifier.None)
-                writer.Write(ParameterDecl.ParameterModifierToString(modifier) + " ");
-
-            Type parameterType = parameterInfo.ParameterType;
-            if (parameterType.IsByRef)
-            {
-                // Dereference (remove the trailing '&') if it's a reference type
-                parameterType = parameterType.GetElementType();
-            }
-            TypeRefBase.AsTextType(writer, parameterType, passFlags);
-            writer.Write(" " + parameterInfo.Name);
-        }
-
-        #endregion
     }
 }

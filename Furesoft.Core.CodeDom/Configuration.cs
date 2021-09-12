@@ -5,10 +5,11 @@
 using System;
 using System.Configuration;
 using System.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom;
+using static Furesoft.Core.CodeDom.Log;
 
-using Nova.CodeDOM;
-
-namespace Nova
+namespace Furesoft.Core.CodeDom
 {
     /// <summary>
     /// Configuration class for Nova classes.
@@ -75,9 +76,9 @@ namespace Nova
                                     object value = config.Settings[key].Value;
                                     if (fieldType.IsEnum && value is string)
                                     {
-                                        if (fieldType == typeof(Log.Level))
+                                        if (fieldType == typeof(Level))
                                         {
-                                            Log.Level enumValue;
+                                            Level enumValue;
                                             if (Enum.TryParse((string)value, true, out enumValue))
                                                 value = enumValue;
                                         }
@@ -98,12 +99,20 @@ namespace Nova
         }
 
         /// <summary>
+        /// Log the specified exception and message.
+        /// </summary>
+        public static string LogException(Exception ex, string message)
+        {
+            return Log.Exception(ex, message + " configuration file");
+        }
+
+        /// <summary>
         /// Log the specified text message with the specified severity level.
         /// </summary>
         public static void LogMessage(string message, MessageSeverity severity, string toolTip)
         {
             string prefix = (severity == MessageSeverity.Error ? "ERROR: " : (severity == MessageSeverity.Warning ? "Warning: " : ""));
-            if (severity == MessageSeverity.Error || severity == MessageSeverity.Warning || Log.LogLevel >= Log.Level.Detailed)
+            if (severity == MessageSeverity.Error || severity == MessageSeverity.Warning || Log.LogLevel >= Level.Detailed)
                 Log.WriteLine(prefix + "Configuration file: " + message, toolTip != null ? toolTip.TrimEnd() : null);
         }
 
@@ -113,14 +122,6 @@ namespace Nova
         public static void LogMessage(string message, MessageSeverity severity)
         {
             LogMessage(message, severity, null);
-        }
-
-        /// <summary>
-        /// Log the specified exception and message.
-        /// </summary>
-        public static string LogException(Exception ex, string message)
-        {
-            return Log.Exception(ex, message + " configuration file");
         }
     }
 }

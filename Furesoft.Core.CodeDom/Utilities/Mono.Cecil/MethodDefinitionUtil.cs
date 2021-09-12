@@ -6,8 +6,9 @@ using System.Linq;
 
 using Mono.Cecil;
 using Mono.Collections.Generic;
+using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities.Mono.Cecil
 {
     /// <summary>
     /// Static helper methods for <see cref="MethodDefinition"/>.

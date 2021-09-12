@@ -1,23 +1,23 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
-using Nova.Parsing;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
 {
     /// <summary>
-    /// Performs a boolean OR operation on two <see cref="Expression"/>s, and assigns the result to the left <see cref="Expression"/>.
+    /// Multiplies one <see cref="Expression"/> by another, and assigns the result to the left <see cref="Expression"/>.
     /// The left <see cref="Expression"/> must be an assignable object ("lvalue").
     /// </summary>
-    public class BitwiseOrAssign : Assignment
+    public class MultiplyAssign : Assignment
     {
         #region /* CONSTRUCTORS */
 
         /// <summary>
-        /// Create a <see cref="BitwiseOrAssign"/> operator.
+        /// Create a <see cref="MultiplyAssign"/> operator.
         /// </summary>
-        public BitwiseOrAssign(Expression left, Expression right)
+        public MultiplyAssign(Expression left, Expression right)
             : base(left, right)
         { }
 
@@ -42,7 +42,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public override string GetInternalName()
         {
-            return BitwiseOr.InternalName;
+            return Multiply.InternalName;
         }
 
         #endregion
@@ -52,7 +52,7 @@ namespace Nova.CodeDOM
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
-        public new const string ParseToken = "|=";
+        public new const string ParseToken = "*=";
 
         internal static new void AddParsePoints()
         {
@@ -60,14 +60,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse a <see cref="BitwiseOrAssign"/> operator.
+        /// Parse a <see cref="MultiplyAssign"/> operator.
         /// </summary>
-        public static new BitwiseOrAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public static new MultiplyAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            return new BitwiseOrAssign(parser, parent);
+            return new MultiplyAssign(parser, parent);
         }
 
-        protected BitwiseOrAssign(Parser parser, CodeObject parent)
+        protected MultiplyAssign(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
 

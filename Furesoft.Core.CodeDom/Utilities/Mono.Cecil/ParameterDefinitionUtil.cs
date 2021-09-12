@@ -3,8 +3,9 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities.Mono.Cecil
 {
     /// <summary>
     /// Static helper methods for <see cref="ParameterDefinition"/>.

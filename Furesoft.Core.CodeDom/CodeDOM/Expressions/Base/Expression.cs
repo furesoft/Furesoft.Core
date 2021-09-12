@@ -6,11 +6,29 @@ using System;
 using System.Collections;
 using System.Reflection;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Index = Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Index;
+using static Furesoft.Core.CodeDom.Parsing.Parser;
 
-using Nova.Parsing;
-using Nova.Rendering;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
 {
     /// <summary>
     /// The common base class of all expressions.
@@ -23,16 +41,53 @@ namespace Nova.CodeDOM
     /// </remarks>
     public abstract class Expression : CodeObject
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the end of a group.
+        /// </summary>
+        public const string ParseTokenEndGroup = ")";
+
+        /// <summary>
+        /// The token used to parse between expressions in a list.
+        /// </summary>
+        public const string ParseTokenSeparator = ",";
+
+        /// <summary>
+        /// The token used to parse the start of a group.
+        /// </summary>
+        public const string ParseTokenStartGroup = "(";
 
         protected Expression()
         {
             SetFormatFlag(FormatFlags.Grouping, HasParensDefault);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse an <see cref="Expression"/>.
+        /// </summary>
+        protected Expression(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the expression is surrounded by parens.
+        /// </summary>
+        public bool HasParens
+        {
+            get { return _formatFlags.HasFlag(FormatFlags.Grouping); }
+            set
+            {
+                SetFormatFlag(FormatFlags.Grouping, value);
+                _formatFlags |= FormatFlags.GroupingSet;
+            }
+        }
+
+        /// <summary>
+        /// True if the expression should have parens by default.
+        /// </summary>
+        public virtual bool HasParensDefault
+        {
+            get { return false; }  // Default is no parens
+        }
 
         /// <summary>
         /// True if the expression is const.
@@ -55,6 +110,28 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if the closing paren or bracket is on a new line.
+        /// </summary>
+        public virtual bool IsEndFirstOnLine
+        {
+            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
+            set
+            {
+                SetFormatFlag(FormatFlags.InfixNewLine, value);
+                if (value)
+                    _formatFlags |= FormatFlags.NewLinesSet;
+            }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return HasFirstOnLineAnnotations; }
+        }
+
+        /// <summary>
         /// True if the expression evaluates to a delegate, or unresolved type or a <see cref="TypeParameterRef"/>.
         /// </summary>
         public virtual bool IsPossibleDelegateType
@@ -62,9 +139,19 @@ namespace Nova.CodeDOM
             get { return IsDelegateType; }
         }
 
-        #endregion
-
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && !IsEndFirstOnLine); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value)
+                    IsEndFirstOnLine = false;
+            }
+        }
 
         /// <summary>
         /// Implicit conversion of a <see cref="Namespace"/> to an <see cref="Expression"/> (actually, a <see cref="NamespaceRef"/>).
@@ -356,105 +443,6 @@ namespace Nova.CodeDOM
             return new Literal(value);
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the expression on the right of the right-most <see cref="Lookup"/> or <see cref="Dot"/> operator (bypass any '::' and '.' prefixes).
-        /// </summary>
-        public virtual Expression SkipPrefixes()
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// Get the expression on the left of the left-most <see cref="Dot"/> operator.
-        /// </summary>
-        public virtual Expression FirstPrefix()
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// Get the delegate parameters if the expression evaluates to a delegate type.
-        /// </summary>
-        public virtual ICollection GetDelegateParameters()
-        {
-            TypeRefBase typeRefBase = EvaluateType();
-            return (typeRefBase != null ? typeRefBase.GetDelegateParameters() : null);
-        }
-
-        /// <summary>
-        /// Get the delegate return type if the expression evaluates to a delegate type.
-        /// </summary>
-        public virtual TypeRefBase GetDelegateReturnType()
-        {
-            TypeRefBase typeRefBase = EvaluateType();
-            return (typeRefBase != null ? typeRefBase.GetDelegateReturnType() : null);
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of a group.
-        /// </summary>
-        public const string ParseTokenStartGroup = "(";
-
-        /// <summary>
-        /// The token used to parse the end of a group.
-        /// </summary>
-        public const string ParseTokenEndGroup = ")";
-
-        /// <summary>
-        /// The token used to parse between expressions in a list.
-        /// </summary>
-        public const string ParseTokenSeparator = ",";
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 400 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300)
-            Parser.AddParsePoint(ParseTokenStartGroup, 400, ParseParenthesizedExpression);
-        }
-
-        /// <summary>
-        /// Parse a parenthesized <see cref="Expression"/>.
-        /// </summary>
-        public static Expression ParseParenthesizedExpression(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            parser.SaveAndNextToken();  // Save '(' for now (remove when we find the matching close)
-
-            // Parse the expression with our parent set to block bubble-up normalization of EOL comments.
-            // This also handles proper parsing of nested Conditional expressions (resetting tracking if nested expressions have parens).
-            parser.PushNormalizationBlocker(parent);
-            Expression expression = Parse(parser, parent, false, ParseTokenEndGroup);
-            parser.PopNormalizationBlocker();
-
-            if (expression != null)
-            {
-                if (expression.ParseExpectedToken(parser, ParseTokenEndGroup))  // Move past ')'
-                {
-                    Token open = parser.RemoveLastUnusedToken();  // Remove '('
-                    expression.MoveFormatting(open);
-                    expression.HasParens = true;
-                    if (parser.LastToken.IsFirstOnLine)
-                        expression.IsEndFirstOnLine = true;
-
-                    // Move any comments after the '(' to the argument expression as regular (inline if necessary) comments
-                    expression.MoveCommentsToLeftMost(open, true);
-
-                    // Associate any trailing EOL or inline comment on the ')'.
-                    // Skip this for directive expressions, because there is no terminating character for
-                    // directive expressions to be associated with, and they'll end up here all the time.
-                    if (!parser.InDirectiveExpression)
-                        expression.MoveEOLComment(parser.LastToken);
-                }
-            }
-            return expression;
-        }
-
         /// <summary>
         /// Parse an expression, stopping when default terminators, or the specified terminators, or a higher-precedence
         /// operator is encountered.
@@ -563,7 +551,7 @@ namespace Nova.CodeDOM
                         continue;
 
                     // Check if the current token represents a valid operator
-                    Parser.OperatorInfo operatorInfo = parser.GetOperatorInfoForToken();
+                    OperatorInfo operatorInfo = parser.GetOperatorInfoForToken();
 
                     // If the current token doesn't look like a valid operator, we're done with the expression
                     if (operatorInfo == null)
@@ -797,19 +785,40 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Move any comments from the specified <see cref="Token"/> to the left-most sub-expression.
+        /// Parse a parenthesized <see cref="Expression"/>.
         /// </summary>
-        public virtual void MoveCommentsToLeftMost(Token token, bool skipParens)
+        public static Expression ParseParenthesizedExpression(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            MoveAllComments(token);
-        }
+            parser.SaveAndNextToken();  // Save '(' for now (remove when we find the matching close)
 
-        /// <summary>
-        /// Parse an <see cref="Expression"/>.
-        /// </summary>
-        protected Expression(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+            // Parse the expression with our parent set to block bubble-up normalization of EOL comments.
+            // This also handles proper parsing of nested Conditional expressions (resetting tracking if nested expressions have parens).
+            parser.PushNormalizationBlocker(parent);
+            Expression expression = Parse(parser, parent, false, ParseTokenEndGroup);
+            parser.PopNormalizationBlocker();
+
+            if (expression != null)
+            {
+                if (expression.ParseExpectedToken(parser, ParseTokenEndGroup))  // Move past ')'
+                {
+                    Token open = parser.RemoveLastUnusedToken();  // Remove '('
+                    expression.MoveFormatting(open);
+                    expression.HasParens = true;
+                    if (parser.LastToken.IsFirstOnLine)
+                        expression.IsEndFirstOnLine = true;
+
+                    // Move any comments after the '(' to the argument expression as regular (inline if necessary) comments
+                    expression.MoveCommentsToLeftMost(open, true);
+
+                    // Associate any trailing EOL or inline comment on the ')'.
+                    // Skip this for directive expressions, because there is no terminating character for
+                    // directive expressions to be associated with, and they'll end up here all the time.
+                    if (!parser.InDirectiveExpression)
+                        expression.MoveEOLComment(parser.LastToken);
+                }
+            }
+            return expression;
+        }
 
         /// <summary>
         /// Determine if the specified comment should be associated with the current code object during parsing.
@@ -819,142 +828,6 @@ namespace Nova.CodeDOM
             // Only associate regular comments with expressions, not doc comments
             return (comment is Comment);
         }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Evaluate the <see cref="Expression"/> to a type or namespace.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/>, <see cref="UnresolvedRef"/>, or <see cref="NamespaceRef"/>.</returns>
-        public override SymbolicRef EvaluateTypeOrNamespace(bool withoutConstants)
-        {
-            // By default, evaluate to a type - this method is overridden by Lookup, Dot, and NamespaceRef
-            // in order to process and return NamespaceRefs in addition to TypeRefBase types.
-            return EvaluateType(withoutConstants);
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public virtual TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public TypeRefBase EvaluateType()
-        {
-            return EvaluateType(false);
-        }
-
-        /// <summary>
-        /// Find a type argument for the specified type parameter.
-        /// </summary>
-        public virtual TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
-        {
-            // By default, do nothing - subclasses will override this to provide the appropriate behavior
-            return null;
-        }
-
-        /// <summary>
-        /// Find a type argument for the specified type parameter.
-        /// </summary>
-        public TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef)
-        {
-            return FindTypeArgument(typeParameterRef, null);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && !IsEndFirstOnLine); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value)
-                    IsEndFirstOnLine = false;
-            }
-        }
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return HasFirstOnLineAnnotations; }
-        }
-
-        /// <summary>
-        /// True if the expression should have parens by default.
-        /// </summary>
-        public virtual bool HasParensDefault
-        {
-            get { return false; }  // Default is no parens
-        }
-
-        /// <summary>
-        /// True if the expression is surrounded by parens.
-        /// </summary>
-        public bool HasParens
-        {
-            get { return _formatFlags.HasFlag(FormatFlags.Grouping); }
-            set
-            {
-                SetFormatFlag(FormatFlags.Grouping, value);
-                _formatFlags |= FormatFlags.GroupingSet;
-            }
-        }
-
-        /// <summary>
-        /// True if the closing paren or bracket is on a new line.
-        /// </summary>
-        public virtual bool IsEndFirstOnLine
-        {
-            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
-            set
-            { 
-                SetFormatFlag(FormatFlags.InfixNewLine, value);
-                if (value)
-                    _formatFlags |= FormatFlags.NewLinesSet;
-            }
-        }
-
-        /// <summary>
-        /// Default format the code object.
-        /// </summary>
-        protected internal override void DefaultFormat()
-        {
-            base.DefaultFormat();
-
-            // Default the parens if they haven't been explicitly set
-            if (!IsGroupingSet)
-                _formatFlags = ((_formatFlags & ~FormatFlags.Grouping) | (HasParensDefault ? FormatFlags.Grouping : 0));
-        }
-
-        /// <summary>
-        /// Format an expression assigned as an argument to another code object (turns off any parentheses).
-        /// </summary>
-        public void FormatAsArgument()
-        {
-            // Clear the grouping (parentheses) flag regardless of if it was manually set
-            _formatFlags &= ~(FormatFlags.Grouping | FormatFlags.GroupingSet);
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -1012,6 +885,119 @@ namespace Nova.CodeDOM
 
         public abstract void AsTextExpression(CodeWriter writer, RenderFlags flags);
 
-        #endregion
+        /// <summary>
+        /// Evaluate the type of the <see cref="Expression"/>.
+        /// </summary>
+        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
+        public virtual TypeRefBase EvaluateType(bool withoutConstants)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Evaluate the type of the <see cref="Expression"/>.
+        /// </summary>
+        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
+        public TypeRefBase EvaluateType()
+        {
+            return EvaluateType(false);
+        }
+
+        /// <summary>
+        /// Evaluate the <see cref="Expression"/> to a type or namespace.
+        /// </summary>
+        /// <returns>The resulting <see cref="TypeRef"/>, <see cref="UnresolvedRef"/>, or <see cref="NamespaceRef"/>.</returns>
+        public override SymbolicRef EvaluateTypeOrNamespace(bool withoutConstants)
+        {
+            // By default, evaluate to a type - this method is overridden by Lookup, Dot, and NamespaceRef
+            // in order to process and return NamespaceRefs in addition to TypeRefBase types.
+            return EvaluateType(withoutConstants);
+        }
+
+        /// <summary>
+        /// Find a type argument for the specified type parameter.
+        /// </summary>
+        public virtual TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
+        {
+            // By default, do nothing - subclasses will override this to provide the appropriate behavior
+            return null;
+        }
+
+        /// <summary>
+        /// Find a type argument for the specified type parameter.
+        /// </summary>
+        public TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef)
+        {
+            return FindTypeArgument(typeParameterRef, null);
+        }
+
+        /// <summary>
+        /// Get the expression on the left of the left-most <see cref="Dot"/> operator.
+        /// </summary>
+        public virtual Expression FirstPrefix()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Format an expression assigned as an argument to another code object (turns off any parentheses).
+        /// </summary>
+        public void FormatAsArgument()
+        {
+            // Clear the grouping (parentheses) flag regardless of if it was manually set
+            _formatFlags &= ~(FormatFlags.Grouping | FormatFlags.GroupingSet);
+        }
+
+        /// <summary>
+        /// Get the delegate parameters if the expression evaluates to a delegate type.
+        /// </summary>
+        public virtual ICollection GetDelegateParameters()
+        {
+            TypeRefBase typeRefBase = EvaluateType();
+            return (typeRefBase != null ? typeRefBase.GetDelegateParameters() : null);
+        }
+
+        /// <summary>
+        /// Get the delegate return type if the expression evaluates to a delegate type.
+        /// </summary>
+        public virtual TypeRefBase GetDelegateReturnType()
+        {
+            TypeRefBase typeRefBase = EvaluateType();
+            return (typeRefBase != null ? typeRefBase.GetDelegateReturnType() : null);
+        }
+
+        /// <summary>
+        /// Move any comments from the specified <see cref="Token"/> to the left-most sub-expression.
+        /// </summary>
+        public virtual void MoveCommentsToLeftMost(Token token, bool skipParens)
+        {
+            MoveAllComments(token);
+        }
+
+        /// <summary>
+        /// Get the expression on the right of the right-most <see cref="Lookup"/> or <see cref="Dot"/> operator (bypass any '::' and '.' prefixes).
+        /// </summary>
+        public virtual Expression SkipPrefixes()
+        {
+            return this;
+        }
+
+        internal static void AddParsePoints()
+        {
+            // Use a parse-priority of 400 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300)
+            Parser.AddParsePoint(ParseTokenStartGroup, 400, ParseParenthesizedExpression);
+        }
+
+        /// <summary>
+        /// Default format the code object.
+        /// </summary>
+        protected internal override void DefaultFormat()
+        {
+            base.DefaultFormat();
+
+            // Default the parens if they haven't been explicitly set
+            if (!IsGroupingSet)
+                _formatFlags = ((_formatFlags & ~FormatFlags.Grouping) | (HasParensDefault ? FormatFlags.Grouping : 0));
+        }
     }
 }

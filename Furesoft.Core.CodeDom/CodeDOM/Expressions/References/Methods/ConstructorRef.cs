@@ -5,12 +5,27 @@
 using System;
 using System.Reflection;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-using Nova.Rendering;
-using Nova.Resolving;
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
 {
     /// <summary>
     /// Represents a reference to a <see cref="ConstructorDecl"/> or <see cref="MethodDefinition"/>/<see cref="ConstructorInfo"/>.
@@ -22,8 +37,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ConstructorRef : MethodRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ConstructorRef"/> from a <see cref="ConstructorDecl"/>.
         /// </summary>
@@ -66,10 +79,6 @@ namespace Nova.CodeDOM
             : base(constructorInfo, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The name of the <see cref="ConstructorRef"/>.
         /// </summary>
@@ -106,10 +115,6 @@ namespace Nova.CodeDOM
                     throw new Exception("A ConstructorRef can't have type arguments!");
             }
         }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Find the constructor of the specified <see cref="TypeDecl"/> with the specified signature.
@@ -245,18 +250,6 @@ namespace Nova.CodeDOM
             return Find(typeRefBase, false, parameterTypes);
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the return type of the constructor (never null).
-        /// </summary>
-        public override TypeRefBase GetReturnType()
-        {
-            return GetReturnType(this, _reference);
-        }
-
         /// <summary>
         /// Get the return type of the constructor (never null).
         /// </summary>
@@ -308,9 +301,13 @@ namespace Nova.CodeDOM
             return base.GetDeclaringType();
         }
 
-        #endregion
-
-        #region /* RESOLVING */
+        /// <summary>
+        /// Get the return type of the constructor (never null).
+        /// </summary>
+        public override TypeRefBase GetReturnType()
+        {
+            return GetReturnType(this, _reference);
+        }
 
         /// <summary>
         /// Find a type argument for the specified type parameter.
@@ -318,27 +315,6 @@ namespace Nova.CodeDOM
         public override TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
         {
             return null;
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            // Display constructors as their declaring type name, including any type arguments (this
-            // is the easy way to display them with the proper type arguments and any enclosing types,
-            // if appropriate).
-            UpdateLineCol(writer, flags);
-            TypeRefBase typeRef = GetDeclaringType();
-            if (typeRef != null)
-                typeRef.AsText(writer, flags &~ RenderFlags.UpdateLineCol);
-            else if (_reference is ConstructorDecl)
-            {
-                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
-                // go ahead and display it's name.
-                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
-            }
         }
 
         public static void AsTextConstructorInfo(CodeWriter writer, ConstructorInfo constructorInfo, RenderFlags flags)
@@ -356,6 +332,21 @@ namespace Nova.CodeDOM
             AsTextMethodParameters(writer, constructorInfo, flags);
         }
 
-        #endregion
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            // Display constructors as their declaring type name, including any type arguments (this
+            // is the easy way to display them with the proper type arguments and any enclosing types,
+            // if appropriate).
+            UpdateLineCol(writer, flags);
+            TypeRefBase typeRef = GetDeclaringType();
+            if (typeRef != null)
+                typeRef.AsText(writer, flags & ~RenderFlags.UpdateLineCol);
+            else if (_reference is ConstructorDecl)
+            {
+                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
+                // go ahead and display it's name.
+                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
+            }
+        }
     }
 }

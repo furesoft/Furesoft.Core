@@ -3,56 +3,44 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using static Furesoft.Core.CodeDom.Parsing.Parser;
 
-using Nova.Parsing;
-using Nova.Rendering;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base
 {
     /// <summary>
     /// The common base class of all pragma directives (<see cref="PragmaChecksumDirective"/>, <see cref="PragmaWarningDirective"/>).
     /// </summary>
     public abstract class PragmaDirective : CompilerDirective
     {
-        #region /* CONSTRUCTORS */
-
         protected PragmaDirective()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         public abstract string PragmaType { get; }
 
-        #endregion
-
-        #region /* PARSING */
-
-        #region /* PARSE-POINTS */
-
         // Map of parse-point tokens to callbacks
-        private static readonly Dictionary<string, Parser.ParseDelegate> _parsePoints = new Dictionary<string, Parser.ParseDelegate>();
+        private static readonly Dictionary<string, ParseDelegate> _parsePoints = new();
 
         /// <summary>
         /// Add a parse-point for a pragma directive - triggers the callback when the specified token appears
         /// </summary>
-        public static void AddPragmaParsePoint(string token, Parser.ParseDelegate callback)
+        public static void AddPragmaParsePoint(string token, ParseDelegate callback)
         {
             _parsePoints.Add(token, callback);
         }
-
-        #endregion
 
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "pragma";
 
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
+        protected PragmaDirective(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// Parse a <see cref="PragmaDirective"/>.
@@ -65,20 +53,17 @@ namespace Nova.CodeDOM
                 return null;
 
             // Execute the callback if we have a parse-point for the token
-            Parser.ParseDelegate callback;
+            ParseDelegate callback;
             if (_parsePoints.TryGetValue(next.Text, out callback))
                 return (PragmaDirective)callback(parser, parent, flags);
 
             return null;
         }
 
-        protected PragmaDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* RENDERING */
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
 
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
@@ -92,7 +77,5 @@ namespace Nova.CodeDOM
         {
             writer.Write(PragmaType);
         }
-
-        #endregion
     }
 }

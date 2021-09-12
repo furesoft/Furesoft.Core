@@ -1,12 +1,16 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
 {
     /// <summary>
     /// The common base class of all binary operators (<see cref="BinaryArithmeticOperator"/>, <see cref="BinaryBitwiseOperator"/>,
@@ -15,18 +19,13 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class BinaryOperator : Operator
     {
-        #region /* FIELDS */
-
         protected Expression _left;
-        protected Expression _right;
 
         // If the operator is overloaded, a hidden reference (OperatorRef) to the overloaded
         // operator declaration is stored here.
         protected SymbolicRef _operatorRef;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected Expression _right;
 
         protected BinaryOperator(Expression left, Expression right)
         {
@@ -37,9 +36,22 @@ namespace Nova.CodeDOM
         protected BinaryOperator()
         { }
 
-        #endregion
+        /// <summary>
+        /// A hidden OperatorRef to an overloaded operator declaration (if any).
+        /// </summary>
+        public override SymbolicRef HiddenRef
+        {
+            get { return _operatorRef; }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the expression is const.
+        /// </summary>
+        public override bool IsConst
+        {
+            // If both sides are const, then the result will be const
+            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
+        }
 
         /// <summary>
         /// The left-side <see cref="Expression"/>.
@@ -60,35 +72,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// A hidden OperatorRef to an overloaded operator declaration (if any).
-        /// </summary>
-        public override SymbolicRef HiddenRef
-        {
-            get { return _operatorRef; }
-        }
-
-        /// <summary>
-        /// True if the expression is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            // If both sides are const, then the result will be const
-            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="BinaryOperator"/>.
-        /// </summary>
-        public virtual string GetInternalName()
-        {
-            return null;
-        }
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -100,9 +83,13 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The internal name of the <see cref="BinaryOperator"/>.
+        /// </summary>
+        public virtual string GetInternalName()
+        {
+            return null;
+        }
 
         protected BinaryOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -185,9 +172,35 @@ namespace Nova.CodeDOM
                 _left.MoveCommentsToLeftMost(token, false);
         }
 
-        #endregion
+        /// <summary>
+        /// Evaluate the type of the <see cref="Expression"/>.
+        /// </summary>
+        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
+        public override TypeRefBase EvaluateType(bool withoutConstants)
+        {
+            // If we have a reference to an overloaded operator declaration, use its return type
+            if (_operatorRef is OperatorRef)
+                return ((OperatorRef)_operatorRef).GetReturnType();
 
-        #region /* RESOLVING */
+            if (_left == null || _right == null)
+                return null;
+
+            // By default, determine a common type (using implicit conversions) that can handle the
+            // result of the operation (various binary operators will override this behavior).
+            return TypeRef.GetCommonType(_left.EvaluateType(withoutConstants), _right.EvaluateType(withoutConstants));
+        }
+
+        /// <summary>
+        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
+        /// </summary>
+        public override bool HasUnresolvedRef()
+        {
+            if (_left != null && _left.HasUnresolvedRef())
+                return true;
+            if (_right != null && _right.HasUnresolvedRef())
+                return true;
+            return base.HasUnresolvedRef();
+        }
 
         /// <summary>
         /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
@@ -225,45 +238,11 @@ namespace Nova.CodeDOM
             return this;
         }
 
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_left != null && _left.HasUnresolvedRef())
-                return true;
-            if (_right != null && _right.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // If we have a reference to an overloaded operator declaration, use its return type
-            if (_operatorRef is OperatorRef)
-                return ((OperatorRef)_operatorRef).GetReturnType();
-
-            if (_left == null || _right == null)
-                return null;
-
-            // By default, determine a common type (using implicit conversions) that can handle the
-            // result of the operation (various binary operators will override this behavior).
-            return TypeRef.GetCommonType(_left.EvaluateType(withoutConstants), _right.EvaluateType(withoutConstants));
-        }
-
         protected virtual object EvaluateConstants(object leftConstant, object rightConstant)
         {
             // By default, assume the operator doesn't have a constant result (subclasses will override this as appropriate)
             return null;
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the expression should have parens by default.
@@ -271,6 +250,26 @@ namespace Nova.CodeDOM
         public override bool HasParensDefault
         {
             get { return true; }  // Default to using parens for binary operators
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get
+            {
+                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
+                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_left != null)
+                    _left.IsSingleLine = value;
+                if (_right != null)
+                    _right.IsSingleLine = value;
+            }
         }
 
         protected override void DefaultFormatField(CodeObject field)
@@ -309,30 +308,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
-                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_left != null)
-                    _left.IsSingleLine = value;
-                if (_right != null)
-                    _right.IsSingleLine = value;
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             // Increase the indent level for any binary operator expressions that wrap, unless the parent
@@ -352,7 +327,5 @@ namespace Nova.CodeDOM
             if (_right != null)
                 _right.AsText(writer, passFlags | RenderFlags.PrefixSpace);
         }
-
-        #endregion
     }
 }

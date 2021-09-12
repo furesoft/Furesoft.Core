@@ -1,16 +1,18 @@
-﻿// The Nova Project by Ken Beckett.
+﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+
+// The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
 {
     /// <summary>
     /// Represents a reference to a <see cref="LocalDecl"/>.
     /// </summary>
     public class LocalRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="LocalRef"/>.
         /// </summary>
@@ -25,10 +27,6 @@ namespace Nova.CodeDOM
             : base(declaration, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// True if the referenced <see cref="LocalDecl"/> is const.
         /// </summary>
@@ -36,14 +34,6 @@ namespace Nova.CodeDOM
         {
             get { return ((LocalDecl)_reference).IsConst; }
         }
-
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
-
-        #region /* RESOLVING */
 
         /// <summary>
         /// Evaluate the type of the <see cref="Expression"/>.
@@ -54,7 +44,5 @@ namespace Nova.CodeDOM
             // Determine the type of the referenced object, including support for constant values
             return ((LocalDecl)_reference).EvaluateType(withoutConstants);
         }
-
-        #endregion
     }
 }

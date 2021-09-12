@@ -10,21 +10,26 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Projects.Assemblies;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Resolving;
+using Furesoft.Core.CodeDom.Utilities;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Resolving;
-using Nova.Utilities;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Projects
 {
     /// <summary>
     /// Represents a collection of <see cref="Project"/> objects that are logically grouped (and compiled) together.
     /// </summary>
     public class Solution : CodeObject, INamedCodeObject, IFile
     {
-        #region /* CONSTANTS */
-
         public const string SolutionFileExtension = ".sln";
         public const string SolutionOptionsExtension = ".nuo";
 
@@ -56,10 +61,6 @@ namespace Nova.CodeDOM
         protected const string GlobalSectionEnd = "EndGlobalSection";
         protected const string PreSolution = "preSolution";
         protected const string PostSolution = "postSolution";
-
-        #endregion
-
-        #region /* FIELDS */
 
         /// <summary>
         /// The name of the <see cref="Solution"/>.
@@ -122,16 +123,13 @@ namespace Nova.CodeDOM
         /// All 'listed' annotations (<see cref="Message"/>s and special <see cref="Comment"/>s) in this <see cref="Solution"/>.
         /// </summary>
         protected ObservableCollection<CodeAnnotation> _codeAnnotations = new ObservableCollection<CodeAnnotation>();
+
         protected Dictionary<Annotation, CodeAnnotation> _codeAnnotationsDictionary = new Dictionary<Annotation, CodeAnnotation>();
 
         /// <summary>
         /// Callback used to indicate status changes to the UI while loading.
         /// </summary>
         protected Action<LoadStatus, CodeObject> _statusCallback;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a new <see cref="Solution"/> object.
@@ -175,19 +173,11 @@ namespace Nova.CodeDOM
             : this(fileName, null)
         { }
 
-        #endregion
-
-        #region /* STATIC CONSTRUCTOR */
-
         static Solution()
         {
             // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
             ForceReference();
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The name of the <see cref="Solution"/> (does not include the file path or extension).
@@ -334,10 +324,6 @@ namespace Nova.CodeDOM
             get { return _codeAnnotations; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Add a <see cref="Project"/> to the <see cref="Solution"/>, keeping the <see cref="Projects"/> collection sorted alphabetically.
         /// </summary>
@@ -431,7 +417,7 @@ namespace Nova.CodeDOM
                 // Scan the dependent project list for the first project that depends upon the
                 // one being added, and insert right before it.
                 int i = 0;
-                for ( ; i < _projectsInDependentOrder.Count; ++i)
+                for (; i < _projectsInDependentOrder.Count; ++i)
                 {
                     if (_projectsInDependentOrder[i].IsDependentOn(project))
                         break;
@@ -534,7 +520,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public Project FindProject(string name)
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return StringUtil.NNEqualsIgnoreCase(project.Name, name); });
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return StringUtil.NNEqualsIgnoreCase(project.Name, name); });
         }
 
         /// <summary>
@@ -542,7 +528,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public Project FindProjectByAssemblyName(string assemblyName)
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return StringUtil.NNEqualsIgnoreCase(project.AssemblyName, assemblyName); });
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return StringUtil.NNEqualsIgnoreCase(project.AssemblyName, assemblyName); });
         }
 
         /// <summary>
@@ -550,7 +536,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public Project FindProjectByFileName(string fullFileName)
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return StringUtil.NNEqualsIgnoreCase(project.FileName, fullFileName); });
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return StringUtil.NNEqualsIgnoreCase(project.FileName, fullFileName); });
         }
 
         /// <summary>
@@ -558,7 +544,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public Project FindProject(Guid projectGuid)
         {
-            return Enumerable.FirstOrDefault(_projects, delegate(Project project) { return project.ProjectGuid == projectGuid; });
+            return Enumerable.FirstOrDefault(_projects, delegate (Project project) { return project.ProjectGuid == projectGuid; });
         }
 
         /// <summary>
@@ -1048,7 +1034,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public ProjectEntry FindProjectEntry(string name)
         {
-            return Enumerable.FirstOrDefault(_projectEntries, delegate(ProjectEntry projectEntry) { return projectEntry.Name == name; });
+            return Enumerable.FirstOrDefault(_projectEntries, delegate (ProjectEntry projectEntry) { return projectEntry.Name == name; });
         }
 
         /// <summary>
@@ -1056,7 +1042,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public ProjectEntry FindProjectEntry(Guid guid)
         {
-            return Enumerable.FirstOrDefault(_projectEntries, delegate(ProjectEntry projectEntry) { return projectEntry.Guid == guid; });
+            return Enumerable.FirstOrDefault(_projectEntries, delegate (ProjectEntry projectEntry) { return projectEntry.Guid == guid; });
         }
 
         /// <summary>
@@ -1064,7 +1050,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public GlobalSection FindGlobalSection(string name)
         {
-            return Enumerable.FirstOrDefault(_globalSections, delegate(GlobalSection globalSection) { return globalSection.Name == name; });
+            return Enumerable.FirstOrDefault(_globalSections, delegate (GlobalSection globalSection) { return globalSection.Name == name; });
         }
 
         /// <summary>
@@ -1164,10 +1150,6 @@ namespace Nova.CodeDOM
         {
             return _name;
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// Parse a solution from a file.
@@ -1471,10 +1453,6 @@ namespace Nova.CodeDOM
             catch { }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// Always <c>false</c>.
         /// </summary>
@@ -1528,7 +1506,7 @@ namespace Nova.CodeDOM
                 if (uniquePlatforms.Count > (hasNullPlatform ? 2 : 1) && Projects.Count > 1)
                     uniquePlatforms.Add(PlatformMixed);
                 List<string> uniqueConfigurationPlatforms = Enumerable.ToList((Enumerable.SelectMany<string, string, string>(uniqueConfigurations,
-                    delegate(string configuration) { return uniquePlatforms; }, delegate(string configuration, string platform) { return configuration + "|" + platform; })));
+                    delegate (string configuration) { return uniquePlatforms; }, delegate (string configuration, string platform) { return configuration + "|" + platform; })));
                 uniqueConfigurationPlatforms.Sort();
 
                 // Write out all global sections
@@ -1562,17 +1540,11 @@ namespace Nova.CodeDOM
             writer.WriteLine(ProjectEnd);
         }
 
-        #endregion
-
-        #region /* PROJECT ENTRY */
-
         /// <summary>
         /// Represents a project entry in a <see cref="Solution"/> file.
         /// </summary>
         public class ProjectEntry : CodeObject
         {
-            #region /* FIELDS */
-
             public Guid TypeGuid;
             public string Name;
             public string FileName;
@@ -1583,10 +1555,6 @@ namespace Nova.CodeDOM
             /// The associated <see cref="Project"/> object.
             /// </summary>
             public Project Project;
-
-            #endregion
-
-            #region /* CONSTRUCTORS */
 
             /// <summary>
             /// Create a <see cref="ProjectEntry"/>.
@@ -1600,10 +1568,6 @@ namespace Nova.CodeDOM
                 Project = project;
                 Parent = project.Solution;
             }
-
-            #endregion
-
-            #region /* PROPERTIES */
 
             /// <summary>
             /// Determine if the ProjectEntry represents a folder instead of an actual project.
@@ -1621,21 +1585,13 @@ namespace Nova.CodeDOM
                 get { return _parent as Solution; }
             }
 
-            #endregion
-
-            #region /* METHODS */
-
             /// <summary>
             /// Find any ProjectSection with the specified name.
             /// </summary>
             public ProjectSection FindProjectSection(string name)
             {
-                return Enumerable.FirstOrDefault(ProjectSections, delegate(ProjectSection projectSection) { return projectSection.Name == name; });
+                return Enumerable.FirstOrDefault(ProjectSections, delegate (ProjectSection projectSection) { return projectSection.Name == name; });
             }
-
-            #endregion
-
-            #region /* PARSING */
 
             /// <summary>
             /// Parse from the specified <see cref="StreamReader"/>.
@@ -1660,10 +1616,6 @@ namespace Nova.CodeDOM
                 while (true);
             }
 
-            #endregion
-
-            #region /* RENDERING */
-
             /// <summary>
             /// Write to the specified <see cref="CodeWriter"/>.
             /// </summary>
@@ -1674,28 +1626,16 @@ namespace Nova.CodeDOM
                     projectSection.AsText(writer);
                 ParentSolution.AsTextProjectEnd(writer);
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region /* PROJECT SECTION */
 
         /// <summary>
         /// Represents a project-level section of configuration data in a solution file.
         /// </summary>
         public class ProjectSection
         {
-            #region /* FIELDS */
-
             public string Name;
             public bool IsPreProject;
             public List<KeyValuePair<string, string>> KeyValues = new List<KeyValuePair<string, string>>();
-
-            #endregion
-
-            #region /* CONSTRUCTORS */
 
             /// <summary>
             /// Create a <see cref="ProjectSection"/>.
@@ -1706,21 +1646,13 @@ namespace Nova.CodeDOM
                 IsPreProject = isPreProject;
             }
 
-            #endregion
-
-            #region /* METHODS */
-
             /// <summary>
             /// Find the value with the specified key.
             /// </summary>
             public string FindValue(string key)
             {
-                return Enumerable.FirstOrDefault(KeyValues, delegate(KeyValuePair<string, string> keyValue) { return keyValue.Key == key; }).Value;
+                return Enumerable.FirstOrDefault(KeyValues, delegate (KeyValuePair<string, string> keyValue) { return keyValue.Key == key; }).Value;
             }
-
-            #endregion
-
-            #region /* PARSING */
 
             /// <summary>
             /// Parse a <see cref="ProjectSection"/>.
@@ -1752,10 +1684,6 @@ namespace Nova.CodeDOM
                 }
             }
 
-            #endregion
-
-            #region /* RENDERING */
-
             public void AsText(CodeWriter writer)
             {
                 AsTextHeader(writer, Name, IsPreProject);
@@ -1773,21 +1701,13 @@ namespace Nova.CodeDOM
             {
                 writer.WriteLine("\t" + ProjectSectionEnd);
             }
-
-            #endregion
         }
-
-        #endregion
-
-        #region /* GLOBAL SECTION */
 
         /// <summary>
         /// Represents a global-level section of configuration data in a solution file.
         /// </summary>
         public class GlobalSection
         {
-            #region /* FIELDS */
-
             /// <summary>
             /// The name of the <see cref="GlobalSection"/>.
             /// </summary>
@@ -1803,11 +1723,8 @@ namespace Nova.CodeDOM
             // missing a number on the end), so we ignore collisions when adding to the dictionary and such duplicate keys are ony
             // accessible via the List.
             private readonly Dictionary<string, string> _dictionary = new Dictionary<string, string>();
+
             private readonly List<KeyValuePair<string, string>> _keyValuePairs = new List<KeyValuePair<string, string>>();
-
-            #endregion
-
-            #region /* CONSTRUCTORS */
 
             /// <summary>
             /// Create a <see cref="GlobalSection"/>.
@@ -1819,10 +1736,6 @@ namespace Nova.CodeDOM
                 foreach (KeyValuePair<string, string> keyValuePair in keyValuePairs)
                     AddKeyValue(keyValuePair.Key, keyValuePair.Value);
             }
-
-            #endregion
-
-            #region /* METHODS */
 
             /// <summary>
             /// The list of key/value pairs ordered as they appear in the solution file.
@@ -1873,13 +1786,9 @@ namespace Nova.CodeDOM
                 if (_dictionary.TryGetValue(key, out value))
                 {
                     _dictionary.Remove(key);
-                    _keyValuePairs.RemoveAll(delegate(KeyValuePair<string, string> keyValuePair) { return keyValuePair.Key == key && keyValuePair.Value == value; });
+                    _keyValuePairs.RemoveAll(delegate (KeyValuePair<string, string> keyValuePair) { return keyValuePair.Key == key && keyValuePair.Value == value; });
                 }
             }
-
-            #endregion
-
-            #region /* PARSING */
 
             /// <summary>
             /// Parse a <see cref="GlobalSection"/> from the specified <see cref="StreamReader"/>.
@@ -1914,10 +1823,6 @@ namespace Nova.CodeDOM
                 }
             }
 
-            #endregion
-
-            #region /* RENDERING */
-
             public void AsText(CodeWriter writer)
             {
                 AsTextHeader(writer, Name, IsPreSolution);
@@ -1935,14 +1840,8 @@ namespace Nova.CodeDOM
             {
                 writer.WriteLine("\t" + GlobalSectionEnd);
             }
-
-            #endregion
         }
-
-        #endregion
     }
-
-    #region /* CODE ANNOTATION */
 
     /// <summary>
     /// Represents a 'listed' code <see cref="Annotation"/> and its location (<see cref="Project"/> and <see cref="CodeUnit"/>).
@@ -1954,15 +1853,9 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class CodeAnnotation
     {
-        #region /* FIELDS */
-
         private readonly Annotation _annotation;
         private readonly Project _project;
         private readonly CodeUnit _codeUnit;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="CodeAnnotation"/>.
@@ -1973,10 +1866,6 @@ namespace Nova.CodeDOM
             _project = project;
             _codeUnit = codeUnit;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The descriptive category of the code object.
@@ -2022,10 +1911,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Format the <see cref="CodeAnnotation"/> as a string.
         /// </summary>
@@ -2056,13 +1941,7 @@ namespace Nova.CodeDOM
             result += _annotation.AsString();
             return result;
         }
-
-        #endregion
     }
-
-    #endregion
-
-    #region /* LOAD OPTIONS */
 
     /// <summary>
     /// Load options - used when loading a Solution, Project, or CodeUnit.
@@ -2121,10 +2000,6 @@ namespace Nova.CodeDOM
         DoNotResolve = ParseSources
     }
 
-    #endregion
-
-    #region /* LOAD STATUS */
-
     /// <summary>
     /// Used for status callbacks during the load process to monitor progress and update any UI.
     /// </summary>
@@ -2157,6 +2032,4 @@ namespace Nova.CodeDOM
         /// <summary>Starting logging of message counts, and messages (if requested).</summary>
         LoggingResults
     }
-
-    #endregion
 }

@@ -9,8 +9,9 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Collections.Generic;
 using TypeAttributes = Mono.Cecil.TypeAttributes;
+using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities.Mono.Cecil
 {
     /// <summary>
     /// Static helper methods for <see cref="TypeDefinition"/>, and also it's base class <see cref="TypeReference"/>

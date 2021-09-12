@@ -1,8 +1,9 @@
-﻿// The Nova Project by Ken Beckett.
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+// The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
 {
     /// <summary>
     /// This interface is implemented by all code objects that have Modifiers.

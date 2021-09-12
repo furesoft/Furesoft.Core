@@ -3,11 +3,25 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Shift;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
-using Nova.Parsing;
-using Nova.Rendering;
-
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls
 {
     /// <summary>
     /// Represents a user-overloaded operator.
@@ -191,7 +205,7 @@ namespace Nova.CodeDOM
             };
         private static readonly string[,] _binaryMapData =
             {
-                { CodeDOM.Add.ParseToken,      CodeDOM.Add.InternalName      },
+                { Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Add.ParseToken,      Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Add.InternalName},
                 { Subtract.ParseToken,         Subtract.InternalName         },
                 { Multiply.ParseToken,         Multiply.InternalName         },
                 { Divide.ParseToken,           Divide.InternalName           },

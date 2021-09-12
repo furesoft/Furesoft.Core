@@ -1,10 +1,8 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.Parsing.Base;
+using Furesoft.Core.CodeDom.Parsing;
 
-using Nova.CodeDOM;
-
-namespace Nova.Parsing
+namespace Furesoft.Core.CodeDom.Parsing
 {
     /// <summary>
     /// Wraps a <see cref="CodeObject"/> plus the last <see cref="Token"/> that it was parsed from (so that
