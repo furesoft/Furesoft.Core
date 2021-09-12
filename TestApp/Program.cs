@@ -1,6 +1,6 @@
 ﻿using Furesoft.Core.CLI;
-using System.Threading.Tasks;
 using Furesoft.Core.Measure;
+using Nova.CodeDOM;
 
 namespace TestApp
 {
@@ -8,6 +8,11 @@ namespace TestApp
     {
         public static int Main(string[] args)
         {
+            var src = "a is int";
+            CodeObject.AddDefaultParsePoints();
+
+            var ast = CodeUnit.LoadFragment(src, "test.ls");
+
             var m = StandardMeasureContext.Default.Metre;
             var s = StandardMeasureContext.Default.Second;
 

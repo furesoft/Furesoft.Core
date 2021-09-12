@@ -181,18 +181,6 @@ namespace Nova.CodeDOM
         /// </summary>
         public bool FileUsingTabs { get; set; }
 
-        /// <summary>
-        /// True if the <see cref="CodeUnit"/> contains C# code.
-        /// </summary>
-        public bool IsCSharp
-        {
-            get
-            {
-                // Treat no extension as C# so that in-memory code can omit the extension
-                string extension = Path.GetExtension(Name);
-                return (string.IsNullOrEmpty(extension) || extension == Project.CSharpFileExtension);
-            }
-        }
 
         /// <summary>
         /// The associated text source code if no file is being used.
@@ -756,9 +744,7 @@ namespace Nova.CodeDOM
         /// Parse the <see cref="CodeUnit"/> from its file.
         /// </summary>
         public void Parse(ParseFlags flags)
-        {
-            // Abort if it's not C#
-            if (!IsCSharp) return;
+        {;
 
             // Check that the file exists (to avoid an exception)
             if (IsFile && !File.Exists(_fileName))
@@ -994,7 +980,7 @@ namespace Nova.CodeDOM
             get
             {
                 // Don't render if not C#, or if there are any Load or Parse errors (other than lost comments)
-                return (IsCSharp && (_annotations == null || !Enumerable.Any(_annotations, delegate(Annotation annotation)
+                return ( (_annotations == null || !Enumerable.Any(_annotations, delegate(Annotation annotation)
                     {
                         return annotation is Message && ((Message)annotation).Severity == MessageSeverity.Error
                                && ((Message)annotation).Source == MessageSource.Load || (((Message)annotation).Source == MessageSource.Parse && !annotation.Text.StartsWith("Line#"));

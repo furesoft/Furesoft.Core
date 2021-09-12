@@ -13,6 +13,7 @@ using Mono.Collections.Generic;
 using Nova.CodeDOM;
 using Nova.Utilities;
 using Attribute = Nova.CodeDOM.Attribute;
+using Index = Nova.CodeDOM.Index;
 
 namespace Nova.Resolving
 {
@@ -69,6 +70,12 @@ namespace Nova.Resolving
         /// </summary>
         protected UnresolvedRef _unresolvedRef;
 
+        static Resolver()
+        {
+            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
+            CodeObject.ForceReference();
+        }
+
         /// <summary>
         /// Create a Resolver instance for the specified <see cref="UnresolvedRef"/>.
         /// </summary>
@@ -80,12 +87,6 @@ namespace Nova.Resolving
             _unresolvedRef = unresolvedRef;
             _resolveCategory = resolveCategory;
             _resolveFlags = flags;
-        }
-
-        static Resolver()
-        {
-            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
-            CodeObject.ForceReference();
         }
 
         /// <summary>
@@ -150,6 +151,25 @@ namespace Nova.Resolving
         public UnresolvedRef UnresolvedRef
         {
             get { return _unresolvedRef; }
+        }
+
+        /// <summary>
+        /// Add matching code object(s).
+        /// </summary>
+        /// <param name="obj">The CodeObject, MemberInfo, ICollection, or null.</param>
+        public void AddMatch(object obj)
+        {
+            if (obj != null)
+            {
+                if (obj is IEnumerable)
+                {
+                    // Breakup collections into individual objects
+                    foreach (object @object in (IEnumerable)obj)
+                        AddMatchInternal(@object);
+                }
+                else
+                    AddMatchInternal(obj);
+            }
         }
 
         /// <summary>
@@ -371,6 +391,175 @@ namespace Nova.Resolving
             return resultRef;
         }
 
+        /// <summary>
+        /// Find the better conversion of a type to two candidate types.
+        /// Returns 1 if the conversion to typeRefBase1 is better, 2 if the conversion to typeRefBase2 is better, 0 if neither is better.
+        /// </summary>
+        protected static int FindBetterConversion(TypeRefBase typeRefBase, TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
+        {
+            // Given a conversion C1 that converts from a type S to a type T1, and a conversion C2 that converts from
+            // a type S to a type T2, C1 is a better conversion than C2 if at least one of the following holds:
+
+            // - An identity conversion exists from S to T1 but not from S to T2
+            bool identity1 = typeRefBase.ImplicitIdentityConversionExists(typeRefBase1);
+            bool identity2 = typeRefBase.ImplicitIdentityConversionExists(typeRefBase2);
+            if (identity1 && !identity2)
+                return 1;
+            if (identity2 && !identity1)
+                return 2;
+
+            // - T1 is a better conversion target than T2
+            return FindBetterConversionTarget(typeRefBase1, typeRefBase2);
+        }
+
+        /// <summary>
+        /// Find the better conversion target of two candidate types.
+        /// Returns 1 if typeRefBase1 is better, 2 if typeRefBase2 is better, 0 if neither is better.
+        /// </summary>
+        protected static int FindBetterConversionTarget(TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
+        {
+            // Given two different types T1 and T2, T1 is a better conversion target than T2 if at least one of the following holds:
+
+            // - An implicit conversion from T1 to T2 exists, and no implicit conversion from T2 to T1 exists
+            bool convert1To2 = typeRefBase1.IsImplicitlyConvertibleTo(typeRefBase2);
+            bool convert2To1 = typeRefBase2.IsImplicitlyConvertibleTo(typeRefBase1);
+            if (convert1To2 && !convert2To1)
+                return 1;
+            if (convert2To1 && !convert1To2)
+                return 2;
+
+            if (typeRefBase1 is TypeRef && typeRefBase2 is TypeRef)
+            {
+                TypeRef typeRef1 = (TypeRef)typeRefBase1;
+                TypeRef typeRef2 = (TypeRef)typeRefBase2;
+
+                // - T1 is a signed integral type and T2 is an unsigned integral type or vice-versa. Specifically:
+                if (typeRef1.IsPrimitive && typeRef2.IsPrimitive)
+                {
+                    TypeCode typeCode1 = typeRef1.GetTypeCode();
+                    TypeCode typeCode2 = typeRef2.GetTypeCode();
+
+                    // - T1 is sbyte and T2 is byte, ushort, uint, or ulong
+                    if (typeCode1 == TypeCode.SByte && (typeCode2 == TypeCode.Byte || typeCode2 == TypeCode.UInt16 || typeCode2 == TypeCode.UInt32 || typeCode2 == TypeCode.UInt64))
+                        return 1;
+                    if (typeCode2 == TypeCode.SByte && (typeCode1 == TypeCode.Byte || typeCode1 == TypeCode.UInt16 || typeCode1 == TypeCode.UInt32 || typeCode1 == TypeCode.UInt64))
+                        return 2;
+                    // - T1 is short and T2 is ushort, uint, or ulong
+                    if (typeCode1 == TypeCode.Int16 && (typeCode2 == TypeCode.UInt16 || typeCode2 == TypeCode.UInt32 || typeCode2 == TypeCode.UInt64))
+                        return 1;
+                    if (typeCode2 == TypeCode.Int16 && (typeCode1 == TypeCode.UInt16 || typeCode1 == TypeCode.UInt32 || typeCode1 == TypeCode.UInt64))
+                        return 2;
+                    // - T1 is int and T2 is uint, or ulong
+                    if (typeCode1 == TypeCode.Int32 && (typeCode2 == TypeCode.UInt32 || typeCode2 == TypeCode.UInt64))
+                        return 1;
+                    if (typeCode2 == TypeCode.Int32 && (typeCode1 == TypeCode.UInt32 || typeCode1 == TypeCode.UInt64))
+                        return 2;
+                    // - T1 is long and T2 is ulong
+                    if (typeCode1 == TypeCode.Int64 && typeCode2 == TypeCode.UInt64)
+                        return 1;
+                    if (typeCode2 == TypeCode.Int64 && typeCode1 == TypeCode.UInt64)
+                        return 2;
+                }
+            }
+
+            // Neither conversion is better
+            return 0;
+        }
+
+        /// <summary>
+        /// Find the more specific of two candidate types.
+        /// Returns 1 if typeRef1 is more specific, 2 if typeRef2 is more specific, 0 if neither is more specific.
+        /// </summary>
+        protected static int FindMoreSpecificType(TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
+        {
+            // Handle unresolved types
+            if (typeRefBase1 == null || typeRefBase2 == null || typeRefBase1 is UnresolvedRef || typeRefBase2 is UnresolvedRef)
+                return 0;
+
+            TypeRef typeRef1 = (TypeRef)typeRefBase1;
+            TypeRef typeRef2 = (TypeRef)typeRefBase2;
+
+            // A type parameter is less specific than a non-type parameter.
+            if (!typeRef1.IsGenericParameter && typeRef2.IsGenericParameter)
+                return 1;
+            if (!typeRef2.IsGenericParameter && typeRef1.IsGenericParameter)
+                return 2;
+
+            // Recursively, a constructed type is more specific than another constructed type (with the same number of type arguments) if at
+            // least one type argument is more specific and no type argument is less specific than the corresponding type argument in the other.
+            if (typeRef1.IsGenericType && typeRef2.IsGenericType)
+            {
+                ChildList<Expression> type1Arguments = typeRef1.TypeArguments;
+                ChildList<Expression> type2Arguments = typeRef2.TypeArguments;
+                if (type1Arguments.Count == type2Arguments.Count)
+                {
+                    bool type1ArgumentIsMoreSpecific = false;
+                    bool type2ArgumentIsMoreSpecific = false;
+                    for (int index = 0; index < type1Arguments.Count; ++index)
+                    {
+                        int result = FindMoreSpecificType(type1Arguments[index].EvaluateType(), type2Arguments[index].EvaluateType());
+                        if (result == 1)
+                            type1ArgumentIsMoreSpecific = true;
+                        else if (result == 2)
+                            type2ArgumentIsMoreSpecific = true;
+                    }
+                    if (type1ArgumentIsMoreSpecific && !type2ArgumentIsMoreSpecific)
+                        return 1;
+                    if (type2ArgumentIsMoreSpecific && !type1ArgumentIsMoreSpecific)
+                        return 2;
+                }
+            }
+
+            if (typeRef1.IsArray)
+            {
+                if (typeRef2.IsArray)
+                {
+                    // An array type is more specific than another array type (with the same number of dimensions) if the element type of the first
+                    // is more specific than the element type of the second.
+                    if (CollectionUtil.CompareList(typeRef1.ArrayRanks, typeRef2.ArrayRanks))
+                        return FindMoreSpecificType(typeRef1.GetElementType(), typeRef2.GetElementType());
+                }
+                else
+                    return 1;  // An array type is more specific than a non-array type
+            }
+            else if (typeRef2.IsArray)
+                return 2;  // An array type is more specific than a non-array type
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Get any CoClass attribute type for the specified object.
+        /// </summary>
+        protected static object GetCoClassAttributeType(object obj)
+        {
+            const string CoClassAttributeName = "CoClassAttribute";
+            object coClassType = null;
+            if (obj is ITypeDecl)
+            {
+                Expression attributeExpression = ((ITypeDecl)obj).GetAttribute(CoClassAttributeName);
+                if (attributeExpression is Call)
+                {
+                    ChildList<Expression> arguments = ((Call)attributeExpression).Arguments;
+                    if (arguments != null && arguments.Count > 0 && arguments[0] is TypeOf)
+                        coClassType = ((TypeOf)arguments[0]).Expression.EvaluateType().Reference;
+                }
+            }
+            else if (obj is TypeDefinition)
+            {
+                CustomAttribute customAttribute = ICustomAttributeProviderUtil.GetCustomAttribute((TypeDefinition)obj, CoClassAttributeName);
+                if (customAttribute != null)
+                    coClassType = customAttribute.ConstructorArguments[0].Value;
+            }
+            else //if (obj is Type)
+            {
+                CustomAttributeData customAttributeData = MemberInfoUtil.GetCustomAttribute((Type)obj, CoClassAttributeName);
+                if (customAttributeData != null)
+                    coClassType = customAttributeData.ConstructorArguments[0].Value;
+            }
+            return coClassType;
+        }
+
         protected static List<Expression> GetDelegateParametersAsArguments(Expression parentExpression)
         {
             List<Expression> arguments = null;
@@ -386,6 +575,42 @@ namespace Nova.Resolving
                 }
             }
             return arguments;
+        }
+
+        /// <summary>
+        /// Get the parameter at the specified index without evaluating any type parameters.
+        /// </summary>
+        protected static bool GetParameterType(ICollection parameters, int index, ref TypeRefBase parameterTypeRef, TypeRefBase argumentTypeRef)
+        {
+            // If the index exceeds the parameter collection size, abort (re-use the last type)
+            if (index >= parameters.Count)
+                return true;  // Indicate that expanded form is in use
+
+            // Get the parameter type
+            if (parameters is List<ParameterDecl>)
+                parameterTypeRef = (((List<ParameterDecl>)parameters)[index].EvaluateType());
+            else if (parameters is Collection<ParameterDefinition>)
+                parameterTypeRef = TypeRef.Create(((Collection<ParameterDefinition>)parameters)[index].ParameterType);
+            else //if (parameters is ParameterInfo[])
+                parameterTypeRef = TypeRef.Create(((ParameterInfo[])parameters)[index].ParameterType);
+
+            if (parameterTypeRef != null)
+            {
+                // Check for a 'params' parameter if we're on the last one
+                if (index == parameters.Count - 1 && ParameterRef.ParameterIsParams(parameters, index) && parameterTypeRef.IsArray && argumentTypeRef != null)
+                {
+                    // If the argument has fewer total array ranks, or the first one isn't one-dimensional,
+                    // then use the expanded form.  We specifically don't want to use the expanded form whenever
+                    // the types don't match exactly for normal form, because FindBetterMethod() will then drop
+                    // possible matches in favor of non-expanded ones even though there was no exact match.
+                    if ((argumentTypeRef.ArrayRanks != null ? argumentTypeRef.ArrayRanks.Count : 0) < parameterTypeRef.ArrayRanks.Count || argumentTypeRef.ArrayRanks[0] != 1)
+                    {
+                        parameterTypeRef = parameterTypeRef.GetElementType();
+                        return true;  // Indicate that expanded form is in use
+                    }
+                }
+            }
+            return false;
         }
 
         protected static string GetWrongCategoryError(object obj)
@@ -421,6 +646,17 @@ namespace Nova.Resolving
             return error;
         }
 
+        protected static bool IsMethodGeneric(object obj)
+        {
+            if (obj is MethodDeclBase)
+                return ((MethodDeclBase)obj).IsGenericMethod;
+            if (obj is MethodDefinition)
+                return ((MethodDefinition)obj).HasGenericParameters;
+            if (obj is MethodBase)  // MethodInfo or ConstructorInfo
+                return ((MethodBase)obj).IsGenericMethod;
+            return false;
+        }
+
         protected static bool IsStatic(object obj)
         {
             if (obj is IModifiers)
@@ -444,6 +680,1194 @@ namespace Nova.Resolving
             if (obj is EventInfo)
                 return EventInfoUtil.IsStatic((EventInfo)obj);
             return false;
+        }
+
+        protected void AddMatchInternal(object obj, bool lookInAllParts, TypeRefBase parentTypeRef)
+        {
+            // Also treat a Method category as a constructor category if we're in a DocCodeRefBase
+            bool isConstructorCategory = (ResolveCategoryHelpers.IsConstructor[(int)_resolveCategory] || IsDocCodeRefToMethod);
+
+            // If we're looking for a constructor and we found a type with the same name, get the constructors on the type instead
+            if (isConstructorCategory && (obj is ITypeDecl || obj is TypeDefinition || obj is Type))
+            {
+                // If the type is a partial type, then only look in all parts if instructed (this is used by NewObject when looking for
+                // all constructors on the already-resolved TypeRef, otherwise we only want to find constructors on the current part,
+                // since we will end up searching, finding, and calling this method for all parts of the type).
+                NamedCodeObjectGroup constructors = TypeRef.GetConstructors(obj, !lookInAllParts);
+                if (constructors != null && constructors.Count > 0)
+                {
+                    // We may have found constructors from inside the type on the way up the code tree, so only add the constructors
+                    // if the first one doesn't already exist.  This can only occur for ITypeDecls, not for TypeDefinition/Types.
+                    if (obj is TypeDefinition || obj is Type || !_unresolvedRef.HasMatches || !_unresolvedRef.Matches.Contains((CodeObject)constructors[0]))
+                        AddMatch(constructors);
+                }
+                else
+                {
+                    // If there aren't any constructors on the type, check for a CoClassAttribute type, and add it if found
+                    object coClassType = GetCoClassAttributeType(obj);
+                    if (coClassType != null)
+                        AddMatchInternal(coClassType, lookInAllParts, parentTypeRef);
+                }
+
+                return;
+            }
+
+            // Create a wrapper object for the match candidate
+            MatchCandidate candidate = new MatchCandidate(obj, _unresolvedRef, _resolveFlags);
+
+            // Check that the type of the object is valid for the category (if the category is null, allow it to pass - this
+            // is used by UnresolvedRef.ResolveMethodGroup() when resolving method groups against a delegate type).
+            if (_isValidCategory == null || _isValidCategory(obj))
+            {
+                candidate.IsCategoryMatch = true;
+
+                // If there are type arguments, the match isn't complete if the counts don't match
+                if (!DoTypeArgumentCountsMatch(obj))
+                    candidate.IsTypeArgumentsMatch = false;
+
+                bool isMethodCategory = ResolveCategoryHelpers.IsMethod[(int)_resolveCategory];
+
+                // If there are method arguments, the match isn't complete unless they match.
+                // If we have a Method category, then we know that we're resolving a method or delegate invocation.  Our parent
+                // will be an ArgumentsOperator (Call, Index, or NewObject) - or our grandparent if our parent is a Dot - but we
+                // don't need to verify that here (the subroutine below will take care of that).  We check the category instead
+                // of the type of the object because it's easier than checking all the Method category delegate types.
+                // If we have a method object, but our category wasn't Method, that means the category is Expression (we don't
+                // need to verify that), and we've got a "method group" being passed as an argument or initializing a variable.
+                // In this case, we need to find the delegate type we're being assigned to, and get our "arguments" from it.
+                if (isMethodCategory || candidate.IsMethod)
+                {
+                    // Ignore overridden methods.  We must ignore 'override' methods so that we match the 'virtual' declaration
+                    // in the base class, so that any overloads in the base class are also considered (per the spec).
+                    if (MethodRef.IsOverridden(obj))
+                        return;
+
+                    bool argumentsMismatchDueToUnresolvedOnly = true;
+
+                    // Get the method arguments
+                    bool hasUnresolvedDelegateTypes;
+                    List<Expression> methodArguments = GetParentArguments(isMethodCategory, out hasUnresolvedDelegateTypes);
+                    if (methodArguments == null)
+                    {
+                        // Null means either no arguments exist (no parens were specified AND no associated delegate type exists,
+                        // such as "MethodName is object" or "MethodName" in a doc comment cref), or they couldn't be determined
+                        // due to the associated delegate type being unresolved.  Treat the first as a match, the 2nd as an error.
+                        if (hasUnresolvedDelegateTypes)
+                            candidate.IsMethodArgumentsMatch = false;
+                    }
+                    else
+                    {
+                        // Get the parameters of the method or delegate type
+                        ICollection parameters = MethodRef.GetParameters(obj, _unresolvedRef);
+                        int parameterCount = (parameters != null ? parameters.Count : 0);
+
+                        // Perform Type Inference if the candidate has inferred types
+                        if (candidate.InferredTypeArguments != null && parameterCount > 0)
+                        {
+                            // For now, if type inference fails OR if any of the inferred types are unresolved, treat it as the type arguments not matching, so
+                            // that it will be displayed as an error (instead of possibly as a warning).  We might want to eventually improve the error reporting
+                            // to distinguish between these events and normal type argument mismatches.
+                            if (candidate.InferTypeArguments(parameters, methodArguments, _unresolvedRef))
+                            {
+                                // Evaluate any inferred OpenTypeParameterRefs in any parent expression or type declarations now that
+                                // type inference is complete (this would cause problems if it were done during type inference).
+                                for (int i = 0; i < candidate.InferredTypeArguments.Length; ++i)
+                                {
+                                    TypeRefBase typeRefBase = candidate.InferredTypeArguments[i];
+                                    if (typeRefBase is OpenTypeParameterRef)
+                                        candidate.InferredTypeArguments[i] = typeRefBase.EvaluateTypeArgumentTypes(_unresolvedRef.Parent, _unresolvedRef);
+                                }
+
+                                // Fail if any of the inferred types are unresolved (unless we're in a doc comment)
+                                if (Enumerable.Any(candidate.InferredTypeArguments, delegate (TypeRefBase typeRef) { return typeRef.HasUnresolvedRef(); }) && !_resolveFlags.HasFlag(ResolveFlags.InDocComment))
+                                    candidate.IsTypeInferenceFailure = true;
+                            }
+                            else
+                                candidate.IsTypeInferenceFailure = true;
+                        }
+
+                        // Determine if the parameter count and types match.  A special first pass (-1) is done to match or
+                        // eliminate zero parameters, and a final pass (maxIndex) eliminates extra parameters.
+                        TypeRefBase paramsTypeRef = null;
+                        int argumentCount = methodArguments.Count;
+                        int maxIndex = (argumentCount == 0 || parameterCount == 0 ? -1 : argumentCount);
+                        for (int i = -1; i <= maxIndex; ++i)
+                        {
+                            bool parameterMatches;
+                            bool failedBecauseUnresolved = false;
+                            if (i == -1)
+                            {
+                                // An index of -1 means we're matching or excluding an empty parameter list
+                                if (argumentCount == 0)
+                                    parameterMatches = (parameterCount == 0 || (parameterCount == 1 && ParameterRef.ParameterIsParams(parameters, 0)));
+                                else
+                                {
+                                    parameterMatches = (parameterCount > 0);
+                                    if (!parameterMatches)
+                                    {
+                                        // Check if we failed to match because of a variable with an unresolved type (instead of a delegate type)
+                                        if (obj is IVariableDecl && ((CodeObject)obj).HasUnresolvedRef())
+                                            failedBecauseUnresolved = true;
+                                    }
+                                }
+                            }
+                            else if (i == maxIndex)
+                            {
+                                // An index of 'maxIndex' means we're matching on the total number of arguments.
+                                // We also have to check for a 'params' parameter (used more than once, or unused).
+                                parameterMatches = ((i == parameterCount) || (i >= parameterCount - 1 && ParameterRef.ParameterIsParams(parameters, parameterCount - 1)));
+                            }
+                            else
+                            {
+                                // Evaluate the argument type, and any type arguments if it's a nested generic type
+                                TypeRefBase argumentTypeRef = methodArguments[i].EvaluateType();
+                                if (argumentTypeRef is TypeRef && ((TypeRef)argumentTypeRef).IsNested && ((TypeRef)argumentTypeRef).IsGenericType)
+                                    argumentTypeRef = argumentTypeRef.EvaluateTypeArgumentTypes(_unresolvedRef.Parent, _unresolvedRef);
+
+                                // Check if the type of the current argument matches the method parameter type
+                                parameterMatches = ParameterRef.MatchParameter(_unresolvedRef, obj, candidate, parameters, i,
+                                    argumentCount, argumentTypeRef, ref paramsTypeRef, true, _parentExpression, out failedBecauseUnresolved);
+                            }
+                            if (!parameterMatches)
+                            {
+                                // Mark the first argument that fails to match
+                                if (candidate.IsMethodArgumentsMatch)
+                                {
+                                    candidate.IsMethodArgumentsMatch = false;
+                                    candidate.MethodArgumentMismatchIndex = i;
+                                }
+                                // If the failure was due to something other than an unresolved parameter, record
+                                // it as such and skip checking any more parameters.
+                                if (!failedBecauseUnresolved)
+                                {
+                                    argumentsMismatchDueToUnresolvedOnly = false;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if (candidate.IsMethodArgumentsMatch)
+                    {
+                        // For user-defined explicit conversions, verify that the operator is applicable
+                        if (_resolveCategory == ResolveCategory.OperatorOverload && _unresolvedRef.Name == "op_Explicit" && _unresolvedRef.Parent is Cast)
+                        {
+                            // Find operators that convert from a type encompassing or encompassed by S to a type encompassing or encompassed by T
+                            TypeRefBase sourceTypeRef = methodArguments[0].EvaluateType();
+                            TypeRefBase targetTypeRef = ((Cast)_unresolvedRef.Parent).Type.EvaluateType();
+                            TypeRefBase parameterTypeRef = ParameterRef.GetParameterType(MethodRef.GetParameters(obj), 0, _parentExpression);
+                            TypeRefBase returnTypeRef = MethodRef.GetReturnType(obj, _parentExpression);
+                            bool matches = ((TypeRef.IsEncompassedBy(sourceTypeRef, parameterTypeRef) || TypeRef.IsEncompassedBy(parameterTypeRef, sourceTypeRef))
+                                            && (TypeRef.IsEncompassedBy(targetTypeRef, returnTypeRef) || TypeRef.IsEncompassedBy(returnTypeRef, targetTypeRef)));
+                            if (!matches && targetTypeRef is TypeRef && ((TypeRef)targetTypeRef).IsEnum)
+                            {
+                                // If the return type wasn't convertible to the cast type, and the cast type is an enum, get the underlying type
+                                // of the enum and try again.
+                                targetTypeRef = ((TypeRef)targetTypeRef).GetUnderlyingTypeOfEnum();
+                                matches = (TypeRef.IsEncompassedBy(targetTypeRef, returnTypeRef) || TypeRef.IsEncompassedBy(returnTypeRef, targetTypeRef));
+                            }
+                            if (!matches)
+                                candidate.IsMethodArgumentsMatch = false;  // Treat as an argument mismatch
+                        }
+                    }
+                    else
+                        candidate.ArgumentsMismatchDueToUnresolvedOnly = argumentsMismatchDueToUnresolvedOnly;
+                }
+
+                // Verify that the static modifier matches for cases where it matters:
+                // If we have a parent expression, and the reference is to a property or method, static matters - if
+                // the parent is a TypeRef, the reference must be static, otherwise it must not be.  If the reference
+                // is a constructor, it must not be static (even though it might have a TypeRef for a parent if it's the
+                // constructor of a nested type).  In all other situations, the reference can be either static or non-static.
+                // Specifically, if the reference is to a type or namespace, don't check the static mode.
+                // If we're evaluating a reference inside a 'cref' doc comment, ignore static checking (thus allowing static
+                // references to non-static type members).
+                if (((_parentExpression != null && ResolveCategoryHelpers.IsPropertyOrMethod[(int)_resolveCategory])
+                    || isConstructorCategory) && !(obj is ITypeDecl || obj is TypeDefinition || obj is Type || obj is Namespace) && !_resolveFlags.HasFlag(ResolveFlags.InDocCodeRef))
+                {
+                    // Default to requiring the reference to NOT be static
+                    bool isStatic = false;
+                    if (!isConstructorCategory)
+                    {
+                        // If the parent expression is a TypeRef, then the reference must be static or const
+                        TypeRef typeRef = (_parentExpression.SkipPrefixes() as TypeRef);
+                        if (typeRef != null)
+                        {
+                            // If the parent expression is an Interface (an explicit interface implementation, or
+                            // a bogus reference to a static member of Object, such as ReferenceEquals), then abort
+                            // (don't check the static mode after all).
+                            if (typeRef.IsInterface)
+                                goto skip;
+                            isStatic = true;
+                        }
+                    }
+
+                    // Verify that the static modifier matches
+                    candidate.IsStaticModeMatch = (IsStatic(obj) == isStatic);
+                }
+            skip:
+
+                // Verify that the match is accessible - if it's not, we must treat it as an incomplete match so that
+                // we'll continue looking for other possible matches that are complete and accessible.  For example,
+                // multiple overloaded methods (with or without matching parameters) where a private one in a derived
+                // class should be ignored in favor of others in base classes, or non-private events that are backed by
+                // private delegate fields with the same name in the same class, or invalid code where two members are
+                // otherwise duplicates but have different access rights.
+
+                // We have to call the individual access right properties to determine access instead of looking at the
+                // Modifiers bit flags, in order to handle default access rights and the actual access rights of property/
+                // indexer/event accessors.  Use a special method for performance that gets the access rights that we need.
+                bool isPrivate, isProtected, isInternal;
+                GetAccessRights(obj, out isPrivate, out isProtected, out isInternal);
+                if (isPrivate)
+                {
+                    // If the ref is inside the same TypeDecl as the definition OR a nested type, then it's accessible, otherwise it's not
+                    if (obj is INamedCodeObject)
+                    {
+                        TypeDecl refDeclaringTypeDecl = _unresolvedRef.FindParent<TypeDecl>();
+                        if (refDeclaringTypeDecl != null)
+                        {
+                            TypeDecl objDeclaringTypeDecl = ((INamedCodeObject)obj).FindParent<TypeDecl>() ?? obj as TypeDecl;
+                            // Check if the TypeDecls are identical OR have the same name (could be different parts)
+                            candidate.IsAccessible = refDeclaringTypeDecl.IsSameAs(objDeclaringTypeDecl);
+                            while (!candidate.IsAccessible && refDeclaringTypeDecl.Parent is TypeDecl)
+                            {
+                                refDeclaringTypeDecl = (TypeDecl)refDeclaringTypeDecl.Parent;
+                                if (refDeclaringTypeDecl.IsSameAs(objDeclaringTypeDecl))
+                                    candidate.IsAccessible = true;
+                            }
+                        }
+                    }
+                    else
+                        candidate.IsAccessible = false;
+                }
+                else
+                {
+                    bool isInternalAccessible = true, isProtectedAccessible = true;
+                    if (isInternal)
+                    {
+                        // If the reference is in the same Project as the definition OR it's in another project or assembly that has
+                        // specifically made its internals visible to the referring project, then it's accessible.
+                        Project refDeclaringProject = _unresolvedRef.FindParent<Project>();
+                        if (refDeclaringProject != null)
+                        {
+                            if (obj is INamedCodeObject)
+                            {
+                                Project objDeclaringProject = ((INamedCodeObject)obj).FindParent<Project>();
+                                isInternalAccessible = (refDeclaringProject == objDeclaringProject || objDeclaringProject.AreInternalTypesVisibleTo(refDeclaringProject));
+                            }
+                            else
+                            {
+                                string assemblyName = null;
+                                if (obj is MemberReference)
+                                    assemblyName = ((MemberReference)obj).Module.Assembly.FullName;
+                                else if (obj is MemberInfo)
+                                    assemblyName = ((MemberInfo)obj).Module.Assembly.FullName;
+                                if (assemblyName != null)
+                                {
+                                    assemblyName = AssemblyUtil.GetNormalizedDisplayName(assemblyName);
+                                    LoadedAssembly objDeclaringAssembly = refDeclaringProject.FrameworkContext.ApplicationContext.FindLoadedAssembly(assemblyName);
+                                    isInternalAccessible = (objDeclaringAssembly != null && objDeclaringAssembly.AreInternalTypesVisibleTo(refDeclaringProject));
+                                }
+                            }
+                        }
+                    }
+                    if (isProtected)
+                    {
+                        // If the ref is inside the same type as the definition or any derived type OR nested type, then it's accessible
+                        TypeDecl refDeclaringTypeDecl = _unresolvedRef.FindParent<TypeDecl>();
+                        if (refDeclaringTypeDecl != null)
+                        {
+                            object objDeclaringType = (obj is INamedCodeObject ? (((INamedCodeObject)obj).FindParent<TypeDecl>() ?? obj as TypeDecl)
+                                : (obj is MemberReference ? (object)((MemberReference)obj).DeclaringType : ((MemberInfo)obj).DeclaringType));
+                            isProtectedAccessible = IsSameOrBaseTypeOf(objDeclaringType, refDeclaringTypeDecl);
+                            while (!isProtectedAccessible && refDeclaringTypeDecl.Parent is TypeDecl)
+                            {
+                                refDeclaringTypeDecl = (TypeDecl)refDeclaringTypeDecl.Parent;
+                                if (IsSameOrBaseTypeOf(objDeclaringType, refDeclaringTypeDecl))
+                                    isProtectedAccessible = true;
+                            }
+                        }
+                    }
+                    if (isInternal)
+                    {
+                        if (isProtected)
+                        {
+                            if (!isInternalAccessible && !isProtectedAccessible)
+                                candidate.IsAccessible = false;
+                        }
+                        else
+                        {
+                            if (!isInternalAccessible)
+                                candidate.IsAccessible = false;
+                        }
+                    }
+                    else if (isProtected && !isProtectedAccessible)
+                        candidate.IsAccessible = false;
+                }
+            }
+
+            // Conditionally add the candidate to the collection (depending upon what is already in it)
+            _hasCompleteMatch = _unresolvedRef.AddMatch(candidate);
+        }
+
+        protected void AddMatchInternal(object obj, bool lookInAllParts)
+        {
+            AddMatchInternal(obj, lookInAllParts, null);
+        }
+
+        protected void AddMatchInternal(object obj)
+        {
+            AddMatchInternal(obj, false, null);
+        }
+
+        /// <summary>
+        /// Check if the type arguments match, based upon the object type.
+        /// </summary>
+        protected bool DoTypeArgumentCountsMatch(object obj)
+        {
+            if (obj is CodeObject)
+            {
+                if (obj is ITypeParameters)
+                    return ((ITypeParameters)obj).DoTypeArgumentCountsMatch(_unresolvedRef);
+                return (_unresolvedRef.TypeArgumentCount == 0);
+            }
+
+            int typeArgumentCount = _unresolvedRef.TypeArgumentCount;
+            if (obj is TypeDefinition)
+                return (TypeDefinitionUtil.GetLocalGenericArgumentCount((TypeDefinition)obj) == typeArgumentCount);
+            if (obj is MethodDefinition)
+            {
+                MethodDefinition methodDefinition = (MethodDefinition)obj;
+                int typeParameterCount = methodDefinition.GenericParameters.Count;
+                if (typeParameterCount == typeArgumentCount)
+                    return true;
+                if (typeArgumentCount == 0)
+                {
+                    // Type arguments to generic methods can be omitted and inferred from the parameter types, so if
+                    // the actual count is 0, it's still considered a match *if* we have at least one method parameter.
+                    if (methodDefinition.Parameters != null && methodDefinition.Parameters.Count > 0)
+                        return true;
+
+                    // If the UnresolvedRef is part of an explicit interface implementation of a GenericMethodDecl,
+                    // then match the actual type argument count.
+                    if (_unresolvedRef.IsExplicitInterfaceImplementation && _unresolvedRef.Parent.Parent is GenericMethodDecl)
+                        return (typeParameterCount == ((GenericMethodDecl)_unresolvedRef.Parent.Parent).TypeParameterCount);
+                }
+                return false;
+            }
+            if (obj is Type)
+                return (TypeUtil.GetLocalGenericArgumentCount((Type)obj) == typeArgumentCount);
+            if (obj is MethodInfo)
+            {
+                MethodInfo methodInfo = (MethodInfo)obj;
+                int typeParameterCount = methodInfo.GetGenericArguments().Length;
+                if (typeParameterCount == typeArgumentCount)
+                    return true;
+                if (typeArgumentCount == 0)
+                {
+                    // Type arguments to generic methods can be omitted and inferred from the parameter types, so if
+                    // the actual count is 0, it's still considered a match *if* we have at least one method parameter.
+                    if (methodInfo.GetParameters().Length > 0)
+                        return true;
+
+                    // If the UnresolvedRef is part of an explicit interface implementation of a GenericMethodDecl,
+                    // then match the actual type argument count.
+                    if (_unresolvedRef.IsExplicitInterfaceImplementation && _unresolvedRef.Parent.Parent is GenericMethodDecl)
+                        return (typeParameterCount == ((GenericMethodDecl)_unresolvedRef.Parent.Parent).TypeParameterCount);
+                }
+                return false;
+            }
+
+            // Other object types can't have type arguments, so the count must be 0
+            return (typeArgumentCount == 0);
+        }
+
+        protected void FilterMatches(TypeRefBase parentTypeRef)
+        {
+            // Don't bother filtering non-complete matches, because we'll want to see all of the possible
+            // options in the error message.  Also, in the case of matching a method group passed as a
+            // parameter (see IsImplicitlyConvertibleTo in this class), we might match one of the other
+            // members later, so we need to keep them all around.
+            if (_unresolvedRef.HasCompleteMatch)
+            {
+                MatchCandidates matches = _unresolvedRef.Matches;
+
+                // If we have multiple complete method matches, try filtering for better matches based upon the
+                // parameters, or in the case of user-defined explicit conversions, the most-specific conversion.
+                // If that doesn't work, we'll also try filtering out other parts of partial types.
+                bool isMethodCategory = ResolveCategoryHelpers.IsMethod[(int)_resolveCategory];
+                object firstMatch = matches[0].Object;
+                if (isMethodCategory || firstMatch is MethodDecl || firstMatch is MethodDefinition || firstMatch is MethodInfo)
+                {
+                    bool hasUnresolvedDelegateTypes;
+                    List<Expression> methodArguments = GetParentArguments(isMethodCategory, out hasUnresolvedDelegateTypes);
+                    if (methodArguments != null)
+                    {
+                        // Check for multiple matching user-defined explicit conversion operators
+                        if (_resolveCategory == ResolveCategory.OperatorOverload && _unresolvedRef.Name == "op_Explicit" && _unresolvedRef.Parent is Cast)
+                        {
+                            // If we can determine a single best conversion, use it (otherwise, no filtering)
+                            MatchCandidate bestConversion = FindBestExplicitConversion(matches, isMethodCategory, methodArguments);
+                            if (bestConversion != null)
+                            {
+                                matches = matches.New();
+                                matches.Add(bestConversion);
+                            }
+                        }
+                        else
+                        {
+                            // If we have multiple complete method matches, try looking for better vs lessor method matches
+                            // based upon the matching of their parameters (ignore if non-method objects have been matched).
+                            // Unlike the spec, we allow ref/out mismatches (although the type must match exactly) in AddMatch(),
+                            // relying on the analysis phase to flag them as errors.  Since it's possible to overload methods
+                            // with only ref/out differences, we could get dups, and also need to filter them here.
+                            MatchCandidates betterMatches = matches.New();
+                            betterMatches.Add(matches[0]);
+                            for (int i = 1; i < matches.Count; ++i)
+                            {
+                                MatchCandidate candidate = matches[i];
+                                object obj = candidate.Object;
+                                object betterMethod = null;
+                                if (isMethodCategory || obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
+                                    betterMethod = FindBetterMethod(betterMatches[0], candidate, methodArguments, _unresolvedRef);
+                                if (betterMethod == null)
+                                {
+                                    // Neither method is better, so add to the list of similar matches
+                                    betterMatches.Add(candidate);
+                                }
+                                else if (betterMethod == obj)
+                                {
+                                    // Replace any existing better matches with the new better match
+                                    betterMatches.Clear();
+                                    betterMatches.Add(candidate);
+                                }
+                            }
+                            matches = betterMatches;
+                        }
+                    }
+                }
+
+                // Try filtering out extra parts of partial types (just use the first one)
+                if (matches.Count > 1)
+                {
+                    MatchCandidates partialMatches = matches.New();
+                    bool isFirstPartial = true;
+                    foreach (MatchCandidate result in matches)
+                    {
+                        if (result.Object is TypeDecl && ((TypeDecl)result.Object).IsPartial)
+                        {
+                            // Only keep the first part of partial types
+                            if (isFirstPartial)
+                            {
+                                partialMatches.Add(result);
+                                isFirstPartial = false;
+                            }
+                        }
+                        else
+                            partialMatches.Add(result);
+                    }
+
+                    // Only keep the results if we found at least one match
+                    if (partialMatches.Count > 0)
+                        matches = partialMatches;
+                }
+
+                // Try filtering out hidden members.
+                // Other logic (such as not searching base classes when a complete match is found in a derived class,
+                // or checking the categories of matches) will prevent duplicates here.  However, in the case of multiple
+                // inheritance of interfaces (which can also occur as generic constraints), it's possible to have matches
+                // that should be hidden.
+                if (matches.Count > 1)
+                {
+                    MatchCandidates nonHiddenMatches = matches.New();
+                    // First, determine the declaring types of any methods, properties, indexers, and events
+                    TypeRefBase[] declaringTypeRefs = new TypeRefBase[matches.Count];
+                    for (int i = 0; i < matches.Count; ++i)
+                    {
+                        MatchCandidate candidate = matches[i];
+                        object obj = candidate.Object;
+                        if (obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
+                            declaringTypeRefs[i] = MethodRef.GetDeclaringType(obj);
+                        else if (obj is EventDecl || obj is EventDefinition || obj is EventInfo)
+                            declaringTypeRefs[i] = PropertyRef.GetDeclaringType(obj);
+                        else if (obj is PropertyDeclBase || obj is PropertyDefinition || obj is PropertyInfo)
+                            declaringTypeRefs[i] = PropertyRef.GetDeclaringType(obj);
+                        else
+                            declaringTypeRefs[i] = null;
+                    }
+                    // Now, for each candidate, hide it if there's another match in a 'derived' interface (don't bother
+                    // checking method parameters, because we're only dealing with complete matches here).
+                    for (int i = 0; i < matches.Count; ++i)
+                    {
+                        bool isHidden = false;
+                        TypeRefBase declaringType = declaringTypeRefs[i];
+                        if (declaringType != null && declaringType.IsInterface)
+                        {
+                            for (int j = 0; j < matches.Count; ++j)
+                            {
+                                if (j != i)
+                                {
+                                    TypeRefBase otherType = declaringTypeRefs[j];
+                                    if (otherType != null && otherType.IsInterface && ((TypeRef)otherType).IsImplementationOf((TypeRef)declaringType))
+                                    {
+                                        isHidden = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (!isHidden)
+                            nonHiddenMatches.Add(matches[i]);
+                    }
+
+                    // Only keep the results if we found at least one match
+                    if (nonHiddenMatches.Count > 0)
+                        matches = nonHiddenMatches;
+                }
+
+                _unresolvedRef.Matches = matches;
+            }
+        }
+
+        protected void FilterToInaccessibleOnly()
+        {
+            // Try filtering to inaccessible matches only, and if it results in a single match, force it to be
+            // accessible (this routine is used only when in documentation comments).
+            MatchCandidates matches = _unresolvedRef.Matches;
+            MatchCandidates inaccessibleMatches = matches.New();
+            foreach (MatchCandidate result in matches)
+            {
+                if (result.IsMismatchDueToAccessibilityOnly())
+                    inaccessibleMatches.Add(result);
+            }
+
+            // Only keep the results if we found at least one match
+            if (inaccessibleMatches.Count > 0)
+                matches = inaccessibleMatches;
+            // Furthermore, force a single match to fake being accessible
+            if (matches.Count == 1)
+                matches[0].IsAccessible = true;
+
+            _unresolvedRef.Matches = matches;
+        }
+
+        /// <summary>
+        /// We have multiple matching user-defined explicit conversion operators - try to find a single best conversion.
+        /// </summary>
+        /// <returns>The single best conversion if found, otherwise null.</returns>
+        protected MatchCandidate FindBestExplicitConversion(MatchCandidates matches, bool isMethodCategory, List<Expression> methodArguments)
+        {
+            MatchCandidate bestConversion = null;
+            TypeRefBase sourceType = methodArguments[0].EvaluateType();
+            TypeRefBase targetType = ((Cast)_unresolvedRef.Parent).Type.EvaluateType();
+
+            // Find the most specific source type and target type
+            TypeRefBase Sx = null;
+            TypeRefBase Tx = null;
+            bool encompassesSource = false;
+            bool encompassedByTarget = false;
+            TypeRefBase mostEncompassedSource = null;
+            TypeRefBase mostEncompassingSource = null;
+            TypeRefBase mostEncompassedTarget = null;
+            TypeRefBase mostEncompassingTarget = null;
+            for (int i = 0; i < matches.Count; ++i)
+            {
+                MatchCandidate candidate = matches[i];
+                object obj = candidate.Object;
+                if (isMethodCategory || obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
+                {
+                    TypeRefBase parameterTypeRef = ParameterRef.GetParameterType(MethodRef.GetParameters(obj), 0, _parentExpression);
+                    TypeRefBase returnTypeRef = MethodRef.GetReturnType(obj, _parentExpression);
+
+                    // If any of the operators in U convert from S, then Sx is S.
+                    if (parameterTypeRef.IsSameRef(sourceType))
+                        Sx = sourceType;
+                    // If any of the operators in U convert to T, then Tx is T.
+                    if (returnTypeRef.IsSameRef(targetType))
+                        Tx = targetType;
+
+                    // Otherwise, if any of the operators in U convert from types that encompass S, then Sx is the most encompassed type in the
+                    // combined set of source types of those operators. If no most encompassed type can be found, then the conversion is ambiguous.
+                    // Otherwise, Sx is the most encompassing type in the combined set of source types of the operators in U. If exactly one most
+                    // encompassing type cannot be found, then the conversion is ambiguous.
+                    if (TypeRef.IsEncompassedBy(sourceType, parameterTypeRef))
+                        encompassesSource = true;
+
+                    // Otherwise, if any of the operators in U convert to types that are encompassed by T, then Tx is the most encompassing type in the
+                    // combined set of target types of those operators. If exactly one most encompassing type cannot be found, then the conversion is ambiguous.
+                    // Otherwise, Tx is the most encompassed type in the combined set of target types of the operators in U. If no most encompassed type
+                    // can be found, then the conversion is ambiguous.
+                    if (TypeRef.IsEncompassedBy(returnTypeRef, targetType))
+                        encompassedByTarget = true;
+
+                    if (Sx == null)
+                    {
+                        if (i == 0)
+                            mostEncompassedSource = mostEncompassingSource = parameterTypeRef;
+                        else
+                        {
+                            if (mostEncompassedSource != null)
+                            {
+                                if (TypeRef.IsEncompassedBy(parameterTypeRef, mostEncompassedSource))
+                                    mostEncompassedSource = parameterTypeRef;
+                                else if (!TypeRef.IsEncompassedBy(mostEncompassedSource, parameterTypeRef))
+                                    mostEncompassedSource = null;  // No single most encompassed source exists
+                            }
+                            if (mostEncompassingSource != null)
+                            {
+                                if (TypeRef.IsEncompassedBy(mostEncompassingSource, parameterTypeRef))
+                                    mostEncompassingSource = parameterTypeRef;
+                                else if (!TypeRef.IsEncompassedBy(parameterTypeRef, mostEncompassingSource))
+                                    mostEncompassingSource = null;  // No single most encompassing source exists
+                            }
+                        }
+                    }
+                    if (Tx == null)
+                    {
+                        if (i == 0)
+                            mostEncompassedTarget = mostEncompassingTarget = returnTypeRef;
+                        else
+                        {
+                            if (mostEncompassingTarget != null)
+                            {
+                                if (TypeRef.IsEncompassedBy(mostEncompassingTarget, returnTypeRef))
+                                    mostEncompassingTarget = returnTypeRef;
+                                else if (!TypeRef.IsEncompassedBy(returnTypeRef, mostEncompassingTarget))
+                                    mostEncompassingTarget = null;  // No single most encompassing target exists
+                            }
+                            if (mostEncompassedTarget != null)
+                            {
+                                if (TypeRef.IsEncompassedBy(returnTypeRef, mostEncompassedTarget))
+                                    mostEncompassedTarget = returnTypeRef;
+                                else if (!TypeRef.IsEncompassedBy(mostEncompassedTarget, returnTypeRef))
+                                    mostEncompassedTarget = null;  // No single most encompassed target exists
+                            }
+                        }
+                    }
+                }
+            }
+            if (Sx == null)
+                Sx = (encompassesSource ? mostEncompassedSource : mostEncompassingSource);
+            if (Tx == null)
+                Tx = (encompassedByTarget ? mostEncompassingTarget : mostEncompassedTarget);
+
+            // If U contains exactly one user-defined conversion operator that converts from Sx to Tx, then this is the
+            // most specific conversion operator.
+            foreach (MatchCandidate candidate in matches)
+            {
+                object obj = candidate.Object;
+                if (isMethodCategory || obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
+                {
+                    TypeRefBase parameterTypeRef = ParameterRef.GetParameterType(MethodRef.GetParameters(obj), 0, _parentExpression);
+                    TypeRefBase returnTypeRef = MethodRef.GetReturnType(obj, _parentExpression);
+                    if (parameterTypeRef.IsSameRef(Sx) && returnTypeRef.IsSameRef(Tx))
+                    {
+                        if (bestConversion == null)
+                            bestConversion = candidate;
+                        else
+                        {
+                            bestConversion = null;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return bestConversion;
+        }
+
+        /// <summary>
+        /// Find the better conversion of an expression to two candidate types.
+        /// Returns 1 if the conversion to typeRef1 is better, 2 if the conversion to typeRef2 is better, 0 if neither is better.
+        /// </summary>
+        protected int FindBetterConversion(Expression expression, TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
+        {
+            // Given an implicit conversion C1 that converts from an expression E to a type T1, and an implicit conversion C2 that
+            // converts from an expression E to a type T2, C1 is a better conversion than C2 if at least one of the following holds:
+            if (expression == null)
+                return 0;
+
+            // - E has a type S and an identity conversion exists from S to T1 but not from S to T2
+            TypeRefBase expressionType = expression.EvaluateType();
+            bool identity1 = expressionType.ImplicitIdentityConversionExists(typeRefBase1);
+            bool identity2 = expressionType.ImplicitIdentityConversionExists(typeRefBase2);
+            if (identity1 && !identity2)
+                return 1;
+            if (identity2 && !identity1)
+                return 2;
+
+            // - E is not an anonymous function and T1 is a better conversion target than T2
+            if (!(expression is AnonymousMethod))
+                return FindBetterConversionTarget(typeRefBase1, typeRefBase2);
+
+            // - E is an anonymous function, T1 is a delegate type D1, T2 is a delegate type D2 and one of the following holds:
+            if (typeRefBase1.IsDelegateType && typeRefBase2.IsDelegateType)
+            {
+                // - D1 is a better conversion target than D2
+                int result = FindBetterConversionTarget(typeRefBase1, typeRefBase2);
+                if (result > 0)
+                    return result;
+
+                // - D1 and D2 have identical parameter lists, and one of the following holds:
+                ICollection typeRef1Parameters = typeRefBase1.GetDelegateParameters();
+                ICollection typeRef2Parameters = typeRefBase2.GetDelegateParameters();
+                int typeRef1ParameterCount = (typeRef1Parameters != null ? typeRef1Parameters.Count : 0);
+                if (typeRef1ParameterCount == (typeRef2Parameters != null ? typeRef2Parameters.Count : 0))
+                {
+                    bool parametersMatch = true;
+                    for (int i = 0; i < typeRef1ParameterCount; ++i)
+                    {
+                        TypeRefBase parameterType1 = ParameterRef.GetParameterType(typeRef1Parameters, i, typeRefBase1);
+                        TypeRefBase parameterType2 = ParameterRef.GetParameterType(typeRef2Parameters, i, typeRefBase2);
+                        if (!parameterType1.IsSameRef(parameterType2))
+                        {
+                            parametersMatch = false;
+                            break;
+                        }
+                    }
+                    if (parametersMatch)
+                    {
+                        // - D1 has a return type Y1, and D2 has a return type Y2, an inferred return type X exists for E in the
+                        //   context of that parameter list, and the conversion from X to Y1 is better than the conversion from X to Y2
+                        // - D1 has a return type Y, and D2 is void returning
+                        AnonymousMethod anonymousMethod = (AnonymousMethod)expression;
+                        TypeRefBase returnType = anonymousMethod.GetReturnType();
+                        TypeRefBase returnType1 = typeRefBase1.GetDelegateReturnType();
+                        TypeRefBase returnType2 = typeRefBase2.GetDelegateReturnType();
+                        if (returnType2 == null)
+                            return (returnType1 == null ? 0 : 1);
+                        if (returnType1 == null)
+                            return 2;
+                        returnType1 = returnType1.EvaluateTypeArgumentTypes(typeRefBase1);
+                        returnType2 = returnType2.EvaluateTypeArgumentTypes(typeRefBase2);
+                        bool returnType1Void = returnType1.IsSameRef(TypeRef.VoidRef);
+                        bool returnType2Void = returnType2.IsSameRef(TypeRef.VoidRef);
+                        if (returnType2Void && !returnType1Void)
+                            return 1;
+                        if (returnType1Void && !returnType2Void)
+                            return 2;
+                        return FindBetterConversion(returnType, returnType1, returnType2);
+                    }
+                }
+            }
+
+            // Neither conversion is better
+            return 0;
+        }
+
+        /// <summary>
+        /// Find the method that better matches the specified arguments.
+        /// Returns the better-matching method object, or null if neither is better.
+        /// Assumes that the two candidate methods have already been determined to be valid matches for
+        /// the given arguments, using implicit conversions where necessary.
+        /// </summary>
+        /// <param name="methodCandidate1">MatchCandidate for 1st method object.</param>
+        /// <param name="methodCandidate2">MatchCandidate for 2nd method object.</param>
+        /// <param name="arguments">The method arguments.</param>
+        /// <param name="unresolvedRef">The parent UnresolvedRef used to track down generic type parameter types.</param>
+        /// <returns>The better method object.</returns>
+        protected object FindBetterMethod(MatchCandidate methodCandidate1, MatchCandidate methodCandidate2, List<Expression> arguments, UnresolvedRef unresolvedRef)
+        {
+            // Get the method parameters for the objects to be compared
+            object method1 = methodCandidate1.Object;
+            object method2 = methodCandidate2.Object;
+            ICollection parameters1 = MethodRef.GetParameters(method1);
+            ICollection parameters2 = MethodRef.GetParameters(method2);
+            int originalParameters1Count = (parameters1 != null ? parameters1.Count : 0);
+            int originalParameters2Count = (parameters2 != null ? parameters2.Count : 0);
+            int parameters1Count = originalParameters1Count;
+            int parameters2Count = originalParameters2Count;
+            int argumentsCount = (arguments != null ? arguments.Count : 0);
+
+            if (argumentsCount == 0)
+            {
+                // Special handling for an empty argument list:
+                // If one method has FEWER parameters, it's better.
+                if (parameters1Count < parameters2Count)
+                    return method1;
+                if (parameters2Count < parameters1Count)
+                    return method2;
+            }
+
+            // At this point, we know we have at least one argument, so:
+            // If either parameter list is empty, then the other is better, or neither if they're both empty
+            if (parameters1Count == 0)
+                return (parameters2Count == 0 ? null : method2);
+            if (parameters2Count == 0)
+                return method1;
+
+            // Unlike the spec, we allow ref/out mismatches (although the type must match exactly) in AddMatch(),
+            // relying on the analysis phase to flag them as errors.  Since it's possible to overload methods
+            // with only ref/out differences, we could get dups, and need to filter them here:
+            bool method1ParameterMismatch = false;
+            bool method2ParameterMismatch = false;
+            for (int index = 0; index < arguments.Count; ++index)
+            {
+                bool argIsRef = (arguments[index] is Ref);
+                bool argIsOut = (arguments[index] is Out);
+                bool isRef1, isOut1, isRef2, isOut2;
+                ParameterRef.GetParameterType(parameters1, index, out isRef1, out isOut1);
+                ParameterRef.GetParameterType(parameters2, index, out isRef2, out isOut2);
+                if (!method1ParameterMismatch)
+                    method1ParameterMismatch = (isRef1 != argIsRef || isOut1 != argIsOut);
+                if (!method2ParameterMismatch)
+                    method2ParameterMismatch = (isRef2 != argIsRef || isOut2 != argIsOut);
+            }
+            // Prefer a method that doesn't have ref/out mismatches over one that does
+            if (!method1ParameterMismatch && method2ParameterMismatch)
+                return method1;
+            if (!method2ParameterMismatch && method1ParameterMismatch)
+                return method2;
+
+            // Given an argument list A with a set of argument expressions { E1, E2, ..., EN } and two applicable function
+            // members MP and MQ with parameter types { P1, P2, ..., PN } and { Q1, Q2, ..., QN }, MP is defined to be a
+            // better function member than MQ if:
+            //   - for each argument, the implicit conversion from EX to QX is not better than the implicit conversion from EX to PX, and
+            //   - for at least one argument, the conversion from EX to PX is better than the conversion from EX to QX.
+            bool method1IsExpanded = false;
+            bool method2IsExpanded = false;
+            bool method1ParameterIsBetter = false;
+            bool method2ParameterIsBetter = false;
+            TypeRefBase typeRefBase1 = null;
+            TypeRefBase typeRefBase2 = null;
+
+            // Determine the parent object for purposes of evaluating type arguments.  If there are inferred type arguments
+            // for either method, then move them to a temporary MethodRef so they can be used in the evaluation.
+            CodeObject parent = unresolvedRef.Parent;
+            parent = ((parent is Dot && ((Dot)parent).Right == unresolvedRef) ? ((Dot)parent).Left : parent.Parent);
+            MethodRef method1Inferred = null;
+            MethodRef method2Inferred = null;
+            if (methodCandidate1.InferredTypeArguments != null)
+            {
+                method1Inferred = (MethodRef)unresolvedRef.CreateRef(method1, true);
+                methodCandidate1.CopyInferredTypeArguments(method1Inferred);
+            }
+            if (methodCandidate2.InferredTypeArguments != null)
+            {
+                method2Inferred = (MethodRef)unresolvedRef.CreateRef(method2, true);
+                methodCandidate2.CopyInferredTypeArguments(method2Inferred);
+            }
+
+            // Check the arguments of the two methods to see if one of them has better type conversions
+            for (int index = 0; index < arguments.Count; ++index)
+            {
+                TypeRefBase argumentTypeRef = arguments[index].EvaluateType();
+
+                // Get the parameter of each method at the current position, evaluating any type parameters,
+                // and determine if the argument type has a better conversion for one of the two types.
+                // Evaluate type parameters using any temporary MethodRefs with inferred types, but always
+                // also check the 'parent', since there might be a generic declaring type with type arguments.
+                method1IsExpanded = GetParameterType(parameters1, index, ref typeRefBase1, argumentTypeRef);
+                if (method1Inferred != null)
+                    typeRefBase1 = typeRefBase1.EvaluateTypeArgumentTypes(method1Inferred);
+                typeRefBase1 = typeRefBase1.EvaluateTypeArgumentTypes(parent);
+                method2IsExpanded = GetParameterType(parameters2, index, ref typeRefBase2, argumentTypeRef);
+                if (method2Inferred != null)
+                    typeRefBase2 = typeRefBase2.EvaluateTypeArgumentTypes(method2Inferred);
+                typeRefBase2 = typeRefBase2.EvaluateTypeArgumentTypes(parent);
+                int result = FindBetterConversion(arguments[index], typeRefBase1, typeRefBase2);
+                if (result == 1)
+                    method1ParameterIsBetter = true;
+                else if (result == 2)
+                    method2ParameterIsBetter = true;
+            }
+
+            // Dispose any temporary MethodRefs
+            if (method1Inferred != null)
+                method1Inferred.Dispose();
+            if (method2Inferred != null)
+                method2Inferred.Dispose();
+
+            // Determine if one method is better than the other
+            if (method1ParameterIsBetter && !method2ParameterIsBetter)
+                return method1;
+            if (method2ParameterIsBetter && !method1ParameterIsBetter)
+                return method2;
+
+            // If either method has more parameters than the available arguments, meaning that it has a params array
+            // that isn't being used, then that is also considered to be "expanded form".
+            if (parameters1Count > argumentsCount)
+                method1IsExpanded = true;
+            if (parameters2Count > argumentsCount)
+                method2IsExpanded = true;
+
+            // TIE BREAKING RULES:
+            // In case the parameter type sequences {P1, P2, …, PN} and {Q1, Q2, …, QN} are equivalent (each Pi has an
+            // identity conversion to the corresponding Qi), the following tie-breaking rules are applied, in order, to
+            // determine the better function member:
+
+            // If MP is a non-generic method and MQ is a generic method, then MP is better than MQ.
+            bool method1Generic = IsMethodGeneric(method1);
+            bool method2Generic = IsMethodGeneric(method2);
+            if (!method1Generic && method2Generic)
+                return method1;
+            if (!method2Generic && method1Generic)
+                return method2;
+
+            // Otherwise, if MP is applicable in its normal form and MQ has a params array and is applicable only in
+            // its expanded form, then MP is better than MQ.
+            if (!method1IsExpanded && method2IsExpanded)
+                return method1;
+            if (!method2IsExpanded && method1IsExpanded)
+                return method2;
+            // Otherwise, if MP has more declared parameters than MQ, then MP is better than MQ. This can occur if
+            // both methods have params arrays and are applicable only in their expanded forms.
+            if (parameters1Count > parameters2Count)
+                return method1;
+            if (parameters2Count > parameters1Count)
+                return method2;
+
+            // Otherwise, if MP has more specific parameter types than MQ, then MP is better than MQ. Let {R1, R2, …, RN} and {S1, S2, …, SN}
+            // represent the uninstantiated and unexpanded parameter types of MP and MQ. MP’s parameter types are more specific than MQ’s if,
+            // for each parameter, RX is not less specific than SX, and, for at least one parameter, RX is more specific than SX:
+            //   - A type parameter is less specific than a non-type parameter.
+            //   - Recursively, a constructed type is more specific than another constructed type (with the same number of type arguments) if at
+            //     least one type argument is more specific and no type argument is less specific than the corresponding type argument in the other.
+            //   - An array type is more specific than another array type (with the same number of dimensions) if the element type of the first
+            //     is more specific than the element type of the second.
+            //   - An array type is more specific than a non-array type.
+            //     For example: M<T>(T[] p) where T=string is better than M<T>(T p) where T=string[], because T[] is more specific than T
+            bool method1ParameterIsMoreSpecific = false;
+            bool method2ParameterIsMoreSpecific = false;
+            typeRefBase1 = null;
+            typeRefBase2 = null;
+            for (int index = 0; index < parameters1Count; ++index)  // The parameter counts for the methods should be the same
+            {
+                // The arguments count might be smaller due to an unused 'params' parameter
+                TypeRefBase argumentTypeRef = (index < argumentsCount ? arguments[index].EvaluateType() : null);
+                // Don't evaluate type arguments for the parameters here - we need to know if they are type arguments
+                GetParameterType(parameters1, index, ref typeRefBase1, argumentTypeRef);
+                GetParameterType(parameters2, index, ref typeRefBase2, argumentTypeRef);
+                int result = FindMoreSpecificType(typeRefBase1, typeRefBase2);
+                if (result == 1)
+                    method1ParameterIsMoreSpecific = true;
+                else if (result == 2)
+                    method2ParameterIsMoreSpecific = true;
+            }
+            if (method1ParameterIsMoreSpecific && !method2ParameterIsMoreSpecific)
+                return method1;
+            if (method2ParameterIsMoreSpecific && !method1ParameterIsMoreSpecific)
+                return method2;
+
+            // Otherwise, neither function member is better.
+            return null;
+        }
+
+        /// <summary>
+        /// Get the IsPrivate access right of the object, and if not private then also get the IsProtected and IsInternal rights.
+        /// </summary>
+        protected void GetAccessRights(object obj, out bool isPrivate, out bool isProtected, out bool isInternal)
+        {
+            // Check for code objects
+            if (obj is CodeObject)
+            {
+                if (obj is IModifiers)
+                    ((IModifiers)obj).GetAccessRights(_unresolvedRef.IsTargetOfAssignment, out isPrivate, out isProtected, out isInternal);
+                else
+                    isPrivate = isProtected = isInternal = false;
+                return;
+            }
+
+            // Check external objects.  For efficiency, get IsPrivate first, then continue only if necessary.
+            // If anything goes wrong, we default to IsPrivate being true.
+            isPrivate = true;
+            isProtected = isInternal = false;
+            bool isPublic = false;
+
+            if (obj is MemberReference)
+            {
+                if (obj is TypeDefinition)
+                {
+                    TypeDefinition typeDefinition = (TypeDefinition)obj;
+                    if (typeDefinition.IsNested)
+                    {
+                        isPrivate = typeDefinition.IsNestedPrivate;
+                        if (!isPrivate)
+                        {
+                            isProtected = (typeDefinition.IsNestedFamily || typeDefinition.IsNestedFamilyOrAssembly);
+                            isInternal = (typeDefinition.IsNestedAssembly || typeDefinition.IsNestedFamilyOrAssembly);
+                            if (!isProtected && !isInternal)
+                                isPublic = typeDefinition.IsNestedPublic;
+                        }
+                    }
+                    else
+                    {
+                        isPrivate = false;
+                        isInternal = typeDefinition.IsNotPublic;
+                        if (!isInternal)
+                            isPublic = typeDefinition.IsPublic;
+                    }
+                }
+                else if (obj is MethodDefinition)
+                {
+                    MethodDefinition methodDefinition = (MethodDefinition)obj;
+                    isPrivate = methodDefinition.IsPrivate;
+                    if (!isPrivate)
+                    {
+                        isProtected = (methodDefinition.IsFamily || methodDefinition.IsFamilyOrAssembly);
+                        isInternal = (methodDefinition.IsAssembly || methodDefinition.IsFamilyOrAssembly);
+                        if (!isProtected && !isInternal)
+                            isPublic = methodDefinition.IsPublic;
+                    }
+                }
+                else if (obj is PropertyDefinition)
+                {
+                    // The access rights of a property/indexer actually depend on the rights of the corresponding
+                    // getter/setter, depending upon whether we're assigning to it or not.
+                    PropertyDefinition propertyDefinition = (PropertyDefinition)obj;
+                    MethodDefinition methodDefinition = (_unresolvedRef.IsTargetOfAssignment
+                                                             ? propertyDefinition.SetMethod ?? propertyDefinition.GetMethod
+                                                             : propertyDefinition.GetMethod ?? propertyDefinition.SetMethod);
+                    if (methodDefinition != null)
+                    {
+                        isPrivate = methodDefinition.IsPrivate;
+                        if (!isPrivate)
+                        {
+                            isProtected = (methodDefinition.IsFamily || methodDefinition.IsFamilyOrAssembly);
+                            isInternal = (methodDefinition.IsAssembly || methodDefinition.IsFamilyOrAssembly);
+                            if (!isProtected && !isInternal)
+                                isPublic = methodDefinition.IsPublic;
+                        }
+                    }
+                }
+                else if (obj is FieldDefinition)
+                {
+                    FieldDefinition fieldDefinition = (FieldDefinition)obj;
+                    isPrivate = fieldDefinition.IsPrivate;
+                    if (!isPrivate)
+                    {
+                        isProtected = (fieldDefinition.IsFamily || fieldDefinition.IsFamilyOrAssembly);
+                        isInternal = (fieldDefinition.IsAssembly || fieldDefinition.IsFamilyOrAssembly);
+                        if (!isProtected && !isInternal)
+                            isPublic = fieldDefinition.IsPublic;
+                    }
+                }
+                else if (obj is EventDefinition)
+                {
+                    // The access rights of an event actually depend on the rights of the corresponding
+                    // adder/remover, depending upon whether we're assigning to it or not.
+                    EventDefinition eventDefinition = (EventDefinition)obj;
+                    MethodDefinition methodDefinition = (_unresolvedRef.IsTargetOfAssignment ? eventDefinition.AddMethod : eventDefinition.RemoveMethod);
+                    if (methodDefinition != null)
+                    {
+                        isPrivate = methodDefinition.IsPrivate;
+                        if (!isPrivate)
+                        {
+                            isProtected = (methodDefinition.IsFamily || methodDefinition.IsFamilyOrAssembly);
+                            isInternal = (methodDefinition.IsAssembly || methodDefinition.IsFamilyOrAssembly);
+                            if (!isProtected && !isInternal)
+                                isPublic = methodDefinition.IsPublic;
+                        }
+                    }
+                }
+                else //if (obj is GenericParameter)
+                {
+                    isPrivate = false;
+                    isPublic = true;
+                }
+            }
+            else if (obj is ParameterDefinition)
+            {
+                isPrivate = false;
+                isPublic = true;
+            }
+            else if (obj is MemberInfo)
+            {
+                if (obj is Type)
+                {
+                    Type type = (Type)obj;
+                    if (type.IsNested)
+                    {
+                        isPrivate = type.IsNestedPrivate;
+                        if (!isPrivate)
+                        {
+                            isProtected = (type.IsNestedFamily || type.IsNestedFamORAssem);
+                            isInternal = (type.IsNestedAssembly || type.IsNestedFamORAssem);
+                            if (!isProtected && !isInternal)
+                                isPublic = type.IsNestedPublic;
+                        }
+                    }
+                    else
+                    {
+                        isPrivate = false;
+                        isInternal = type.IsNotPublic;
+                        if (!isInternal)
+                            isPublic = type.IsPublic;
+                    }
+                }
+                else if (obj is MethodBase)
+                {
+                    MethodBase methodBase = (MethodBase)obj;
+                    isPrivate = methodBase.IsPrivate;
+                    if (!isPrivate)
+                    {
+                        isProtected = (methodBase.IsFamily || methodBase.IsFamilyOrAssembly);
+                        isInternal = (methodBase.IsAssembly || methodBase.IsFamilyOrAssembly);
+                        if (!isProtected && !isInternal)
+                            isPublic = methodBase.IsPublic;
+                    }
+                }
+                else if (obj is PropertyInfo)
+                {
+                    // The access rights of a property/indexer actually depend on the rights of the corresponding
+                    // getter/setter, depending upon whether we're assigning to it or not.
+                    PropertyInfo propertyInfo = (PropertyInfo)obj;
+                    MethodInfo methodInfo = (_unresolvedRef.IsTargetOfAssignment
+                                                 ? propertyInfo.GetSetMethod(true) ?? propertyInfo.GetGetMethod(true)
+                                                 : propertyInfo.GetGetMethod(true) ?? propertyInfo.GetSetMethod(true));
+                    if (methodInfo != null)
+                    {
+                        isPrivate = methodInfo.IsPrivate;
+                        if (!isPrivate)
+                        {
+                            isProtected = (methodInfo.IsFamily || methodInfo.IsFamilyOrAssembly);
+                            isInternal = (methodInfo.IsAssembly || methodInfo.IsFamilyOrAssembly);
+                            if (!isProtected && !isInternal)
+                                isPublic = methodInfo.IsPublic;
+                        }
+                    }
+                }
+                else if (obj is FieldInfo)
+                {
+                    FieldInfo fieldInfo = (FieldInfo)obj;
+                    isPrivate = fieldInfo.IsPrivate;
+                    if (!isPrivate)
+                    {
+                        isProtected = (fieldInfo.IsFamily || fieldInfo.IsFamilyOrAssembly);
+                        isInternal = (fieldInfo.IsAssembly || fieldInfo.IsFamilyOrAssembly);
+                        if (!isProtected && !isInternal)
+                            isPublic = fieldInfo.IsPublic;
+                    }
+                }
+                else if (obj is EventInfo)
+                {
+                    // The access rights of an event actually depend on the rights of the corresponding
+                    // adder/remover, depending upon whether we're assigning to it or not.
+                    EventInfo eventInfo = (EventInfo)obj;
+                    MethodInfo methodInfo = (_unresolvedRef.IsTargetOfAssignment ? eventInfo.GetAddMethod(true) : eventInfo.GetRemoveMethod(true));
+                    if (methodInfo != null)
+                    {
+                        isPrivate = methodInfo.IsPrivate;
+                        if (!isPrivate)
+                        {
+                            isProtected = (methodInfo.IsFamily || methodInfo.IsFamilyOrAssembly);
+                            isInternal = (methodInfo.IsAssembly || methodInfo.IsFamilyOrAssembly);
+                            if (!isProtected && !isInternal)
+                                isPublic = methodInfo.IsPublic;
+                        }
+                    }
+                }
+            }
+            else if (obj is ParameterInfo)
+            {
+                isPrivate = false;
+                isPublic = true;
+            }
+
+            // It's possible for external types (from IL or other languages) to actually not have ANY
+            // access rights set, so default to Private in such a situation.
+            if (!isPrivate && !isProtected && !isInternal && !isPublic)
+                isPrivate = true;
         }
 
         /// <summary>
@@ -1160,1429 +2584,6 @@ namespace Nova.Resolving
                 _unresolvedRef.AttachMessage(message, messageType, MessageSource.Resolve);
 
             return resultRef;
-        }
-
-        protected void FilterMatches(TypeRefBase parentTypeRef)
-        {
-            // Don't bother filtering non-complete matches, because we'll want to see all of the possible
-            // options in the error message.  Also, in the case of matching a method group passed as a
-            // parameter (see IsImplicitlyConvertibleTo in this class), we might match one of the other
-            // members later, so we need to keep them all around.
-            if (_unresolvedRef.HasCompleteMatch)
-            {
-                MatchCandidates matches = _unresolvedRef.Matches;
-
-                // If we have multiple complete method matches, try filtering for better matches based upon the
-                // parameters, or in the case of user-defined explicit conversions, the most-specific conversion.
-                // If that doesn't work, we'll also try filtering out other parts of partial types.
-                bool isMethodCategory = ResolveCategoryHelpers.IsMethod[(int)_resolveCategory];
-                object firstMatch = matches[0].Object;
-                if (isMethodCategory || firstMatch is MethodDecl || firstMatch is MethodDefinition || firstMatch is MethodInfo)
-                {
-                    bool hasUnresolvedDelegateTypes;
-                    List<Expression> methodArguments = GetParentArguments(isMethodCategory, out hasUnresolvedDelegateTypes);
-                    if (methodArguments != null)
-                    {
-                        // Check for multiple matching user-defined explicit conversion operators
-                        if (_resolveCategory == ResolveCategory.OperatorOverload && _unresolvedRef.Name == "op_Explicit" && _unresolvedRef.Parent is Cast)
-                        {
-                            // If we can determine a single best conversion, use it (otherwise, no filtering)
-                            MatchCandidate bestConversion = FindBestExplicitConversion(matches, isMethodCategory, methodArguments);
-                            if (bestConversion != null)
-                            {
-                                matches = matches.New();
-                                matches.Add(bestConversion);
-                            }
-                        }
-                        else
-                        {
-                            // If we have multiple complete method matches, try looking for better vs lessor method matches
-                            // based upon the matching of their parameters (ignore if non-method objects have been matched).
-                            // Unlike the spec, we allow ref/out mismatches (although the type must match exactly) in AddMatch(),
-                            // relying on the analysis phase to flag them as errors.  Since it's possible to overload methods
-                            // with only ref/out differences, we could get dups, and also need to filter them here.
-                            MatchCandidates betterMatches = matches.New();
-                            betterMatches.Add(matches[0]);
-                            for (int i = 1; i < matches.Count; ++i)
-                            {
-                                MatchCandidate candidate = matches[i];
-                                object obj = candidate.Object;
-                                object betterMethod = null;
-                                if (isMethodCategory || obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
-                                    betterMethod = FindBetterMethod(betterMatches[0], candidate, methodArguments, _unresolvedRef);
-                                if (betterMethod == null)
-                                {
-                                    // Neither method is better, so add to the list of similar matches
-                                    betterMatches.Add(candidate);
-                                }
-                                else if (betterMethod == obj)
-                                {
-                                    // Replace any existing better matches with the new better match
-                                    betterMatches.Clear();
-                                    betterMatches.Add(candidate);
-                                }
-                            }
-                            matches = betterMatches;
-                        }
-                    }
-                }
-
-                // Try filtering out extra parts of partial types (just use the first one)
-                if (matches.Count > 1)
-                {
-                    MatchCandidates partialMatches = matches.New();
-                    bool isFirstPartial = true;
-                    foreach (MatchCandidate result in matches)
-                    {
-                        if (result.Object is TypeDecl && ((TypeDecl)result.Object).IsPartial)
-                        {
-                            // Only keep the first part of partial types
-                            if (isFirstPartial)
-                            {
-                                partialMatches.Add(result);
-                                isFirstPartial = false;
-                            }
-                        }
-                        else
-                            partialMatches.Add(result);
-                    }
-
-                    // Only keep the results if we found at least one match
-                    if (partialMatches.Count > 0)
-                        matches = partialMatches;
-                }
-
-                // Try filtering out hidden members.
-                // Other logic (such as not searching base classes when a complete match is found in a derived class,
-                // or checking the categories of matches) will prevent duplicates here.  However, in the case of multiple
-                // inheritance of interfaces (which can also occur as generic constraints), it's possible to have matches
-                // that should be hidden.
-                if (matches.Count > 1)
-                {
-                    MatchCandidates nonHiddenMatches = matches.New();
-                    // First, determine the declaring types of any methods, properties, indexers, and events
-                    TypeRefBase[] declaringTypeRefs = new TypeRefBase[matches.Count];
-                    for (int i = 0; i < matches.Count; ++i)
-                    {
-                        MatchCandidate candidate = matches[i];
-                        object obj = candidate.Object;
-                        if (obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
-                            declaringTypeRefs[i] = MethodRef.GetDeclaringType(obj);
-                        else if (obj is EventDecl || obj is EventDefinition || obj is EventInfo)
-                            declaringTypeRefs[i] = PropertyRef.GetDeclaringType(obj);
-                        else if (obj is PropertyDeclBase || obj is PropertyDefinition || obj is PropertyInfo)
-                            declaringTypeRefs[i] = PropertyRef.GetDeclaringType(obj);
-                        else
-                            declaringTypeRefs[i] = null;
-                    }
-                    // Now, for each candidate, hide it if there's another match in a 'derived' interface (don't bother
-                    // checking method parameters, because we're only dealing with complete matches here).
-                    for (int i = 0; i < matches.Count; ++i)
-                    {
-                        bool isHidden = false;
-                        TypeRefBase declaringType = declaringTypeRefs[i];
-                        if (declaringType != null && declaringType.IsInterface)
-                        {
-                            for (int j = 0; j < matches.Count; ++j)
-                            {
-                                if (j != i)
-                                {
-                                    TypeRefBase otherType = declaringTypeRefs[j];
-                                    if (otherType != null && otherType.IsInterface && ((TypeRef)otherType).IsImplementationOf((TypeRef)declaringType))
-                                    {
-                                        isHidden = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (!isHidden)
-                            nonHiddenMatches.Add(matches[i]);
-                    }
-
-                    // Only keep the results if we found at least one match
-                    if (nonHiddenMatches.Count > 0)
-                        matches = nonHiddenMatches;
-                }
-
-                _unresolvedRef.Matches = matches;
-            }
-        }
-
-        protected void FilterToInaccessibleOnly()
-        {
-            // Try filtering to inaccessible matches only, and if it results in a single match, force it to be
-            // accessible (this routine is used only when in documentation comments).
-            MatchCandidates matches = _unresolvedRef.Matches;
-            MatchCandidates inaccessibleMatches = matches.New();
-            foreach (MatchCandidate result in matches)
-            {
-                if (result.IsMismatchDueToAccessibilityOnly())
-                    inaccessibleMatches.Add(result);
-            }
-
-            // Only keep the results if we found at least one match
-            if (inaccessibleMatches.Count > 0)
-                matches = inaccessibleMatches;
-            // Furthermore, force a single match to fake being accessible
-            if (matches.Count == 1)
-                matches[0].IsAccessible = true;
-
-            _unresolvedRef.Matches = matches;
-        }
-
-        /// <summary>
-        /// We have multiple matching user-defined explicit conversion operators - try to find a single best conversion.
-        /// </summary>
-        /// <returns>The single best conversion if found, otherwise null.</returns>
-        protected MatchCandidate FindBestExplicitConversion(MatchCandidates matches, bool isMethodCategory, List<Expression> methodArguments)
-        {
-            MatchCandidate bestConversion = null;
-            TypeRefBase sourceType = methodArguments[0].EvaluateType();
-            TypeRefBase targetType = ((Cast)_unresolvedRef.Parent).Type.EvaluateType();
-
-            // Find the most specific source type and target type
-            TypeRefBase Sx = null;
-            TypeRefBase Tx = null;
-            bool encompassesSource = false;
-            bool encompassedByTarget = false;
-            TypeRefBase mostEncompassedSource = null;
-            TypeRefBase mostEncompassingSource = null;
-            TypeRefBase mostEncompassedTarget = null;
-            TypeRefBase mostEncompassingTarget = null;
-            for (int i = 0; i < matches.Count; ++i)
-            {
-                MatchCandidate candidate = matches[i];
-                object obj = candidate.Object;
-                if (isMethodCategory || obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
-                {
-                    TypeRefBase parameterTypeRef = ParameterRef.GetParameterType(MethodRef.GetParameters(obj), 0, _parentExpression);
-                    TypeRefBase returnTypeRef = MethodRef.GetReturnType(obj, _parentExpression);
-
-                    // If any of the operators in U convert from S, then Sx is S.
-                    if (parameterTypeRef.IsSameRef(sourceType))
-                        Sx = sourceType;
-                    // If any of the operators in U convert to T, then Tx is T.
-                    if (returnTypeRef.IsSameRef(targetType))
-                        Tx = targetType;
-
-                    // Otherwise, if any of the operators in U convert from types that encompass S, then Sx is the most encompassed type in the
-                    // combined set of source types of those operators. If no most encompassed type can be found, then the conversion is ambiguous.
-                    // Otherwise, Sx is the most encompassing type in the combined set of source types of the operators in U. If exactly one most
-                    // encompassing type cannot be found, then the conversion is ambiguous.
-                    if (TypeRef.IsEncompassedBy(sourceType, parameterTypeRef))
-                        encompassesSource = true;
-
-                    // Otherwise, if any of the operators in U convert to types that are encompassed by T, then Tx is the most encompassing type in the
-                    // combined set of target types of those operators. If exactly one most encompassing type cannot be found, then the conversion is ambiguous.
-                    // Otherwise, Tx is the most encompassed type in the combined set of target types of the operators in U. If no most encompassed type
-                    // can be found, then the conversion is ambiguous.
-                    if (TypeRef.IsEncompassedBy(returnTypeRef, targetType))
-                        encompassedByTarget = true;
-
-                    if (Sx == null)
-                    {
-                        if (i == 0)
-                            mostEncompassedSource = mostEncompassingSource = parameterTypeRef;
-                        else
-                        {
-                            if (mostEncompassedSource != null)
-                            {
-                                if (TypeRef.IsEncompassedBy(parameterTypeRef, mostEncompassedSource))
-                                    mostEncompassedSource = parameterTypeRef;
-                                else if (!TypeRef.IsEncompassedBy(mostEncompassedSource, parameterTypeRef))
-                                    mostEncompassedSource = null;  // No single most encompassed source exists
-                            }
-                            if (mostEncompassingSource != null)
-                            {
-                                if (TypeRef.IsEncompassedBy(mostEncompassingSource, parameterTypeRef))
-                                    mostEncompassingSource = parameterTypeRef;
-                                else if (!TypeRef.IsEncompassedBy(parameterTypeRef, mostEncompassingSource))
-                                    mostEncompassingSource = null;  // No single most encompassing source exists
-                            }
-                        }
-                    }
-                    if (Tx == null)
-                    {
-                        if (i == 0)
-                            mostEncompassedTarget = mostEncompassingTarget = returnTypeRef;
-                        else
-                        {
-                            if (mostEncompassingTarget != null)
-                            {
-                                if (TypeRef.IsEncompassedBy(mostEncompassingTarget, returnTypeRef))
-                                    mostEncompassingTarget = returnTypeRef;
-                                else if (!TypeRef.IsEncompassedBy(returnTypeRef, mostEncompassingTarget))
-                                    mostEncompassingTarget = null;  // No single most encompassing target exists
-                            }
-                            if (mostEncompassedTarget != null)
-                            {
-                                if (TypeRef.IsEncompassedBy(returnTypeRef, mostEncompassedTarget))
-                                    mostEncompassedTarget = returnTypeRef;
-                                else if (!TypeRef.IsEncompassedBy(mostEncompassedTarget, returnTypeRef))
-                                    mostEncompassedTarget = null;  // No single most encompassed target exists
-                            }
-                        }
-                    }
-                }
-            }
-            if (Sx == null)
-                Sx = (encompassesSource ? mostEncompassedSource : mostEncompassingSource);
-            if (Tx == null)
-                Tx = (encompassedByTarget ? mostEncompassingTarget : mostEncompassedTarget);
-
-            // If U contains exactly one user-defined conversion operator that converts from Sx to Tx, then this is the
-            // most specific conversion operator.
-            foreach (MatchCandidate candidate in matches)
-            {
-                object obj = candidate.Object;
-                if (isMethodCategory || obj is MethodDecl || obj is MethodDefinition || obj is MethodInfo)
-                {
-                    TypeRefBase parameterTypeRef = ParameterRef.GetParameterType(MethodRef.GetParameters(obj), 0, _parentExpression);
-                    TypeRefBase returnTypeRef = MethodRef.GetReturnType(obj, _parentExpression);
-                    if (parameterTypeRef.IsSameRef(Sx) && returnTypeRef.IsSameRef(Tx))
-                    {
-                        if (bestConversion == null)
-                            bestConversion = candidate;
-                        else
-                        {
-                            bestConversion = null;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            return bestConversion;
-        }
-
-        /// <summary>
-        /// Get the IsPrivate access right of the object, and if not private then also get the IsProtected and IsInternal rights.
-        /// </summary>
-        protected void GetAccessRights(object obj, out bool isPrivate, out bool isProtected, out bool isInternal)
-        {
-            // Check for code objects
-            if (obj is CodeObject)
-            {
-                if (obj is IModifiers)
-                    ((IModifiers)obj).GetAccessRights(_unresolvedRef.IsTargetOfAssignment, out isPrivate, out isProtected, out isInternal);
-                else
-                    isPrivate = isProtected = isInternal = false;
-                return;
-            }
-
-            // Check external objects.  For efficiency, get IsPrivate first, then continue only if necessary.
-            // If anything goes wrong, we default to IsPrivate being true.
-            isPrivate = true;
-            isProtected = isInternal = false;
-            bool isPublic = false;
-
-            if (obj is MemberReference)
-            {
-                if (obj is TypeDefinition)
-                {
-                    TypeDefinition typeDefinition = (TypeDefinition)obj;
-                    if (typeDefinition.IsNested)
-                    {
-                        isPrivate = typeDefinition.IsNestedPrivate;
-                        if (!isPrivate)
-                        {
-                            isProtected = (typeDefinition.IsNestedFamily || typeDefinition.IsNestedFamilyOrAssembly);
-                            isInternal = (typeDefinition.IsNestedAssembly || typeDefinition.IsNestedFamilyOrAssembly);
-                            if (!isProtected && !isInternal)
-                                isPublic = typeDefinition.IsNestedPublic;
-                        }
-                    }
-                    else
-                    {
-                        isPrivate = false;
-                        isInternal = typeDefinition.IsNotPublic;
-                        if (!isInternal)
-                            isPublic = typeDefinition.IsPublic;
-                    }
-                }
-                else if (obj is MethodDefinition)
-                {
-                    MethodDefinition methodDefinition = (MethodDefinition)obj;
-                    isPrivate = methodDefinition.IsPrivate;
-                    if (!isPrivate)
-                    {
-                        isProtected = (methodDefinition.IsFamily || methodDefinition.IsFamilyOrAssembly);
-                        isInternal = (methodDefinition.IsAssembly || methodDefinition.IsFamilyOrAssembly);
-                        if (!isProtected && !isInternal)
-                            isPublic = methodDefinition.IsPublic;
-                    }
-                }
-                else if (obj is PropertyDefinition)
-                {
-                    // The access rights of a property/indexer actually depend on the rights of the corresponding
-                    // getter/setter, depending upon whether we're assigning to it or not.
-                    PropertyDefinition propertyDefinition = (PropertyDefinition)obj;
-                    MethodDefinition methodDefinition = (_unresolvedRef.IsTargetOfAssignment
-                                                             ? propertyDefinition.SetMethod ?? propertyDefinition.GetMethod
-                                                             : propertyDefinition.GetMethod ?? propertyDefinition.SetMethod);
-                    if (methodDefinition != null)
-                    {
-                        isPrivate = methodDefinition.IsPrivate;
-                        if (!isPrivate)
-                        {
-                            isProtected = (methodDefinition.IsFamily || methodDefinition.IsFamilyOrAssembly);
-                            isInternal = (methodDefinition.IsAssembly || methodDefinition.IsFamilyOrAssembly);
-                            if (!isProtected && !isInternal)
-                                isPublic = methodDefinition.IsPublic;
-                        }
-                    }
-                }
-                else if (obj is FieldDefinition)
-                {
-                    FieldDefinition fieldDefinition = (FieldDefinition)obj;
-                    isPrivate = fieldDefinition.IsPrivate;
-                    if (!isPrivate)
-                    {
-                        isProtected = (fieldDefinition.IsFamily || fieldDefinition.IsFamilyOrAssembly);
-                        isInternal = (fieldDefinition.IsAssembly || fieldDefinition.IsFamilyOrAssembly);
-                        if (!isProtected && !isInternal)
-                            isPublic = fieldDefinition.IsPublic;
-                    }
-                }
-                else if (obj is EventDefinition)
-                {
-                    // The access rights of an event actually depend on the rights of the corresponding
-                    // adder/remover, depending upon whether we're assigning to it or not.
-                    EventDefinition eventDefinition = (EventDefinition)obj;
-                    MethodDefinition methodDefinition = (_unresolvedRef.IsTargetOfAssignment ? eventDefinition.AddMethod : eventDefinition.RemoveMethod);
-                    if (methodDefinition != null)
-                    {
-                        isPrivate = methodDefinition.IsPrivate;
-                        if (!isPrivate)
-                        {
-                            isProtected = (methodDefinition.IsFamily || methodDefinition.IsFamilyOrAssembly);
-                            isInternal = (methodDefinition.IsAssembly || methodDefinition.IsFamilyOrAssembly);
-                            if (!isProtected && !isInternal)
-                                isPublic = methodDefinition.IsPublic;
-                        }
-                    }
-                }
-                else //if (obj is GenericParameter)
-                {
-                    isPrivate = false;
-                    isPublic = true;
-                }
-            }
-            else if (obj is ParameterDefinition)
-            {
-                isPrivate = false;
-                isPublic = true;
-            }
-            else if (obj is MemberInfo)
-            {
-                if (obj is Type)
-                {
-                    Type type = (Type)obj;
-                    if (type.IsNested)
-                    {
-                        isPrivate = type.IsNestedPrivate;
-                        if (!isPrivate)
-                        {
-                            isProtected = (type.IsNestedFamily || type.IsNestedFamORAssem);
-                            isInternal = (type.IsNestedAssembly || type.IsNestedFamORAssem);
-                            if (!isProtected && !isInternal)
-                                isPublic = type.IsNestedPublic;
-                        }
-                    }
-                    else
-                    {
-                        isPrivate = false;
-                        isInternal = type.IsNotPublic;
-                        if (!isInternal)
-                            isPublic = type.IsPublic;
-                    }
-                }
-                else if (obj is MethodBase)
-                {
-                    MethodBase methodBase = (MethodBase)obj;
-                    isPrivate = methodBase.IsPrivate;
-                    if (!isPrivate)
-                    {
-                        isProtected = (methodBase.IsFamily || methodBase.IsFamilyOrAssembly);
-                        isInternal = (methodBase.IsAssembly || methodBase.IsFamilyOrAssembly);
-                        if (!isProtected && !isInternal)
-                            isPublic = methodBase.IsPublic;
-                    }
-                }
-                else if (obj is PropertyInfo)
-                {
-                    // The access rights of a property/indexer actually depend on the rights of the corresponding
-                    // getter/setter, depending upon whether we're assigning to it or not.
-                    PropertyInfo propertyInfo = (PropertyInfo)obj;
-                    MethodInfo methodInfo = (_unresolvedRef.IsTargetOfAssignment
-                                                 ? propertyInfo.GetSetMethod(true) ?? propertyInfo.GetGetMethod(true)
-                                                 : propertyInfo.GetGetMethod(true) ?? propertyInfo.GetSetMethod(true));
-                    if (methodInfo != null)
-                    {
-                        isPrivate = methodInfo.IsPrivate;
-                        if (!isPrivate)
-                        {
-                            isProtected = (methodInfo.IsFamily || methodInfo.IsFamilyOrAssembly);
-                            isInternal = (methodInfo.IsAssembly || methodInfo.IsFamilyOrAssembly);
-                            if (!isProtected && !isInternal)
-                                isPublic = methodInfo.IsPublic;
-                        }
-                    }
-                }
-                else if (obj is FieldInfo)
-                {
-                    FieldInfo fieldInfo = (FieldInfo)obj;
-                    isPrivate = fieldInfo.IsPrivate;
-                    if (!isPrivate)
-                    {
-                        isProtected = (fieldInfo.IsFamily || fieldInfo.IsFamilyOrAssembly);
-                        isInternal = (fieldInfo.IsAssembly || fieldInfo.IsFamilyOrAssembly);
-                        if (!isProtected && !isInternal)
-                            isPublic = fieldInfo.IsPublic;
-                    }
-                }
-                else if (obj is EventInfo)
-                {
-                    // The access rights of an event actually depend on the rights of the corresponding
-                    // adder/remover, depending upon whether we're assigning to it or not.
-                    EventInfo eventInfo = (EventInfo)obj;
-                    MethodInfo methodInfo = (_unresolvedRef.IsTargetOfAssignment ? eventInfo.GetAddMethod(true) : eventInfo.GetRemoveMethod(true));
-                    if (methodInfo != null)
-                    {
-                        isPrivate = methodInfo.IsPrivate;
-                        if (!isPrivate)
-                        {
-                            isProtected = (methodInfo.IsFamily || methodInfo.IsFamilyOrAssembly);
-                            isInternal = (methodInfo.IsAssembly || methodInfo.IsFamilyOrAssembly);
-                            if (!isProtected && !isInternal)
-                                isPublic = methodInfo.IsPublic;
-                        }
-                    }
-                }
-            }
-            else if (obj is ParameterInfo)
-            {
-                isPrivate = false;
-                isPublic = true;
-            }
-
-            // It's possible for external types (from IL or other languages) to actually not have ANY
-            // access rights set, so default to Private in such a situation.
-            if (!isPrivate && !isProtected && !isInternal && !isPublic)
-                isPrivate = true;
-        }
-
-        /// <summary>
-        /// Find the better conversion of a type to two candidate types.
-        /// Returns 1 if the conversion to typeRefBase1 is better, 2 if the conversion to typeRefBase2 is better, 0 if neither is better.
-        /// </summary>
-        protected static int FindBetterConversion(TypeRefBase typeRefBase, TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
-        {
-            // Given a conversion C1 that converts from a type S to a type T1, and a conversion C2 that converts from
-            // a type S to a type T2, C1 is a better conversion than C2 if at least one of the following holds:
-
-            // - An identity conversion exists from S to T1 but not from S to T2
-            bool identity1 = typeRefBase.ImplicitIdentityConversionExists(typeRefBase1);
-            bool identity2 = typeRefBase.ImplicitIdentityConversionExists(typeRefBase2);
-            if (identity1 && !identity2)
-                return 1;
-            if (identity2 && !identity1)
-                return 2;
-
-            // - T1 is a better conversion target than T2
-            return FindBetterConversionTarget(typeRefBase1, typeRefBase2);
-        }
-
-        /// <summary>
-        /// Find the better conversion target of two candidate types.
-        /// Returns 1 if typeRefBase1 is better, 2 if typeRefBase2 is better, 0 if neither is better.
-        /// </summary>
-        protected static int FindBetterConversionTarget(TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
-        {
-            // Given two different types T1 and T2, T1 is a better conversion target than T2 if at least one of the following holds:
-
-            // - An implicit conversion from T1 to T2 exists, and no implicit conversion from T2 to T1 exists
-            bool convert1To2 = typeRefBase1.IsImplicitlyConvertibleTo(typeRefBase2);
-            bool convert2To1 = typeRefBase2.IsImplicitlyConvertibleTo(typeRefBase1);
-            if (convert1To2 && !convert2To1)
-                return 1;
-            if (convert2To1 && !convert1To2)
-                return 2;
-
-            if (typeRefBase1 is TypeRef && typeRefBase2 is TypeRef)
-            {
-                TypeRef typeRef1 = (TypeRef)typeRefBase1;
-                TypeRef typeRef2 = (TypeRef)typeRefBase2;
-
-                // - T1 is a signed integral type and T2 is an unsigned integral type or vice-versa. Specifically:
-                if (typeRef1.IsPrimitive && typeRef2.IsPrimitive)
-                {
-                    TypeCode typeCode1 = typeRef1.GetTypeCode();
-                    TypeCode typeCode2 = typeRef2.GetTypeCode();
-
-                    // - T1 is sbyte and T2 is byte, ushort, uint, or ulong
-                    if (typeCode1 == TypeCode.SByte && (typeCode2 == TypeCode.Byte || typeCode2 == TypeCode.UInt16 || typeCode2 == TypeCode.UInt32 || typeCode2 == TypeCode.UInt64))
-                        return 1;
-                    if (typeCode2 == TypeCode.SByte && (typeCode1 == TypeCode.Byte || typeCode1 == TypeCode.UInt16 || typeCode1 == TypeCode.UInt32 || typeCode1 == TypeCode.UInt64))
-                        return 2;
-                    // - T1 is short and T2 is ushort, uint, or ulong
-                    if (typeCode1 == TypeCode.Int16 && (typeCode2 == TypeCode.UInt16 || typeCode2 == TypeCode.UInt32 || typeCode2 == TypeCode.UInt64))
-                        return 1;
-                    if (typeCode2 == TypeCode.Int16 && (typeCode1 == TypeCode.UInt16 || typeCode1 == TypeCode.UInt32 || typeCode1 == TypeCode.UInt64))
-                        return 2;
-                    // - T1 is int and T2 is uint, or ulong
-                    if (typeCode1 == TypeCode.Int32 && (typeCode2 == TypeCode.UInt32 || typeCode2 == TypeCode.UInt64))
-                        return 1;
-                    if (typeCode2 == TypeCode.Int32 && (typeCode1 == TypeCode.UInt32 || typeCode1 == TypeCode.UInt64))
-                        return 2;
-                    // - T1 is long and T2 is ulong
-                    if (typeCode1 == TypeCode.Int64 && typeCode2 == TypeCode.UInt64)
-                        return 1;
-                    if (typeCode2 == TypeCode.Int64 && typeCode1 == TypeCode.UInt64)
-                        return 2;
-                }
-            }
-
-            // Neither conversion is better
-            return 0;
-        }
-
-        /// <summary>
-        /// Find the more specific of two candidate types.
-        /// Returns 1 if typeRef1 is more specific, 2 if typeRef2 is more specific, 0 if neither is more specific.
-        /// </summary>
-        protected static int FindMoreSpecificType(TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
-        {
-            // Handle unresolved types
-            if (typeRefBase1 == null || typeRefBase2 == null || typeRefBase1 is UnresolvedRef || typeRefBase2 is UnresolvedRef)
-                return 0;
-
-            TypeRef typeRef1 = (TypeRef)typeRefBase1;
-            TypeRef typeRef2 = (TypeRef)typeRefBase2;
-
-            // A type parameter is less specific than a non-type parameter.
-            if (!typeRef1.IsGenericParameter && typeRef2.IsGenericParameter)
-                return 1;
-            if (!typeRef2.IsGenericParameter && typeRef1.IsGenericParameter)
-                return 2;
-
-            // Recursively, a constructed type is more specific than another constructed type (with the same number of type arguments) if at
-            // least one type argument is more specific and no type argument is less specific than the corresponding type argument in the other.
-            if (typeRef1.IsGenericType && typeRef2.IsGenericType)
-            {
-                ChildList<Expression> type1Arguments = typeRef1.TypeArguments;
-                ChildList<Expression> type2Arguments = typeRef2.TypeArguments;
-                if (type1Arguments.Count == type2Arguments.Count)
-                {
-                    bool type1ArgumentIsMoreSpecific = false;
-                    bool type2ArgumentIsMoreSpecific = false;
-                    for (int index = 0; index < type1Arguments.Count; ++index)
-                    {
-                        int result = FindMoreSpecificType(type1Arguments[index].EvaluateType(), type2Arguments[index].EvaluateType());
-                        if (result == 1)
-                            type1ArgumentIsMoreSpecific = true;
-                        else if (result == 2)
-                            type2ArgumentIsMoreSpecific = true;
-                    }
-                    if (type1ArgumentIsMoreSpecific && !type2ArgumentIsMoreSpecific)
-                        return 1;
-                    if (type2ArgumentIsMoreSpecific && !type1ArgumentIsMoreSpecific)
-                        return 2;
-                }
-            }
-
-            if (typeRef1.IsArray)
-            {
-                if (typeRef2.IsArray)
-                {
-                    // An array type is more specific than another array type (with the same number of dimensions) if the element type of the first
-                    // is more specific than the element type of the second.
-                    if (CollectionUtil.CompareList(typeRef1.ArrayRanks, typeRef2.ArrayRanks))
-                        return FindMoreSpecificType(typeRef1.GetElementType(), typeRef2.GetElementType());
-                }
-                else
-                    return 1;  // An array type is more specific than a non-array type
-            }
-            else if (typeRef2.IsArray)
-                return 2;  // An array type is more specific than a non-array type
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Get the parameter at the specified index without evaluating any type parameters.
-        /// </summary>
-        protected static bool GetParameterType(ICollection parameters, int index, ref TypeRefBase parameterTypeRef, TypeRefBase argumentTypeRef)
-        {
-            // If the index exceeds the parameter collection size, abort (re-use the last type)
-            if (index >= parameters.Count)
-                return true;  // Indicate that expanded form is in use
-
-            // Get the parameter type
-            if (parameters is List<ParameterDecl>)
-                parameterTypeRef = (((List<ParameterDecl>)parameters)[index].EvaluateType());
-            else if (parameters is Collection<ParameterDefinition>)
-                parameterTypeRef = TypeRef.Create(((Collection<ParameterDefinition>)parameters)[index].ParameterType);
-            else //if (parameters is ParameterInfo[])
-                parameterTypeRef = TypeRef.Create(((ParameterInfo[])parameters)[index].ParameterType);
-
-            if (parameterTypeRef != null)
-            {
-                // Check for a 'params' parameter if we're on the last one
-                if (index == parameters.Count - 1 && ParameterRef.ParameterIsParams(parameters, index) && parameterTypeRef.IsArray && argumentTypeRef != null)
-                {
-                    // If the argument has fewer total array ranks, or the first one isn't one-dimensional,
-                    // then use the expanded form.  We specifically don't want to use the expanded form whenever
-                    // the types don't match exactly for normal form, because FindBetterMethod() will then drop
-                    // possible matches in favor of non-expanded ones even though there was no exact match.
-                    if ((argumentTypeRef.ArrayRanks != null ? argumentTypeRef.ArrayRanks.Count : 0) < parameterTypeRef.ArrayRanks.Count || argumentTypeRef.ArrayRanks[0] != 1)
-                    {
-                        parameterTypeRef = parameterTypeRef.GetElementType();
-                        return true;  // Indicate that expanded form is in use
-                    }
-                }
-            }
-            return false;
-        }
-
-        protected static bool IsMethodGeneric(object obj)
-        {
-            if (obj is MethodDeclBase)
-                return ((MethodDeclBase)obj).IsGenericMethod;
-            if (obj is MethodDefinition)
-                return ((MethodDefinition)obj).HasGenericParameters;
-            if (obj is MethodBase)  // MethodInfo or ConstructorInfo
-                return ((MethodBase)obj).IsGenericMethod;
-            return false;
-        }
-
-        /// <summary>
-        /// Find the better conversion of an expression to two candidate types.
-        /// Returns 1 if the conversion to typeRef1 is better, 2 if the conversion to typeRef2 is better, 0 if neither is better.
-        /// </summary>
-        protected int FindBetterConversion(Expression expression, TypeRefBase typeRefBase1, TypeRefBase typeRefBase2)
-        {
-            // Given an implicit conversion C1 that converts from an expression E to a type T1, and an implicit conversion C2 that
-            // converts from an expression E to a type T2, C1 is a better conversion than C2 if at least one of the following holds:
-            if (expression == null)
-                return 0;
-
-            // - E has a type S and an identity conversion exists from S to T1 but not from S to T2
-            TypeRefBase expressionType = expression.EvaluateType();
-            bool identity1 = expressionType.ImplicitIdentityConversionExists(typeRefBase1);
-            bool identity2 = expressionType.ImplicitIdentityConversionExists(typeRefBase2);
-            if (identity1 && !identity2)
-                return 1;
-            if (identity2 && !identity1)
-                return 2;
-
-            // - E is not an anonymous function and T1 is a better conversion target than T2
-            if (!(expression is AnonymousMethod))
-                return FindBetterConversionTarget(typeRefBase1, typeRefBase2);
-
-            // - E is an anonymous function, T1 is a delegate type D1, T2 is a delegate type D2 and one of the following holds:
-            if (typeRefBase1.IsDelegateType && typeRefBase2.IsDelegateType)
-            {
-                // - D1 is a better conversion target than D2
-                int result = FindBetterConversionTarget(typeRefBase1, typeRefBase2);
-                if (result > 0)
-                    return result;
-
-                // - D1 and D2 have identical parameter lists, and one of the following holds:
-                ICollection typeRef1Parameters = typeRefBase1.GetDelegateParameters();
-                ICollection typeRef2Parameters = typeRefBase2.GetDelegateParameters();
-                int typeRef1ParameterCount = (typeRef1Parameters != null ? typeRef1Parameters.Count : 0);
-                if (typeRef1ParameterCount == (typeRef2Parameters != null ? typeRef2Parameters.Count : 0))
-                {
-                    bool parametersMatch = true;
-                    for (int i = 0; i < typeRef1ParameterCount; ++i)
-                    {
-                        TypeRefBase parameterType1 = ParameterRef.GetParameterType(typeRef1Parameters, i, typeRefBase1);
-                        TypeRefBase parameterType2 = ParameterRef.GetParameterType(typeRef2Parameters, i, typeRefBase2);
-                        if (!parameterType1.IsSameRef(parameterType2))
-                        {
-                            parametersMatch = false;
-                            break;
-                        }
-                    }
-                    if (parametersMatch)
-                    {
-                        // - D1 has a return type Y1, and D2 has a return type Y2, an inferred return type X exists for E in the
-                        //   context of that parameter list, and the conversion from X to Y1 is better than the conversion from X to Y2
-                        // - D1 has a return type Y, and D2 is void returning
-                        AnonymousMethod anonymousMethod = (AnonymousMethod)expression;
-                        TypeRefBase returnType = anonymousMethod.GetReturnType();
-                        TypeRefBase returnType1 = typeRefBase1.GetDelegateReturnType();
-                        TypeRefBase returnType2 = typeRefBase2.GetDelegateReturnType();
-                        if (returnType2 == null)
-                            return (returnType1 == null ? 0 : 1);
-                        if (returnType1 == null)
-                            return 2;
-                        returnType1 = returnType1.EvaluateTypeArgumentTypes(typeRefBase1);
-                        returnType2 = returnType2.EvaluateTypeArgumentTypes(typeRefBase2);
-                        bool returnType1Void = returnType1.IsSameRef(TypeRef.VoidRef);
-                        bool returnType2Void = returnType2.IsSameRef(TypeRef.VoidRef);
-                        if (returnType2Void && !returnType1Void)
-                            return 1;
-                        if (returnType1Void && !returnType2Void)
-                            return 2;
-                        return FindBetterConversion(returnType, returnType1, returnType2);
-                    }
-                }
-            }
-
-            // Neither conversion is better
-            return 0;
-        }
-
-        /// <summary>
-        /// Find the method that better matches the specified arguments.
-        /// Returns the better-matching method object, or null if neither is better.
-        /// Assumes that the two candidate methods have already been determined to be valid matches for
-        /// the given arguments, using implicit conversions where necessary.
-        /// </summary>
-        /// <param name="methodCandidate1">MatchCandidate for 1st method object.</param>
-        /// <param name="methodCandidate2">MatchCandidate for 2nd method object.</param>
-        /// <param name="arguments">The method arguments.</param>
-        /// <param name="unresolvedRef">The parent UnresolvedRef used to track down generic type parameter types.</param>
-        /// <returns>The better method object.</returns>
-        protected object FindBetterMethod(MatchCandidate methodCandidate1, MatchCandidate methodCandidate2, List<Expression> arguments, UnresolvedRef unresolvedRef)
-        {
-            // Get the method parameters for the objects to be compared
-            object method1 = methodCandidate1.Object;
-            object method2 = methodCandidate2.Object;
-            ICollection parameters1 = MethodRef.GetParameters(method1);
-            ICollection parameters2 = MethodRef.GetParameters(method2);
-            int originalParameters1Count = (parameters1 != null ? parameters1.Count : 0);
-            int originalParameters2Count = (parameters2 != null ? parameters2.Count : 0);
-            int parameters1Count = originalParameters1Count;
-            int parameters2Count = originalParameters2Count;
-            int argumentsCount = (arguments != null ? arguments.Count : 0);
-
-            if (argumentsCount == 0)
-            {
-                // Special handling for an empty argument list:
-                // If one method has FEWER parameters, it's better.
-                if (parameters1Count < parameters2Count)
-                    return method1;
-                if (parameters2Count < parameters1Count)
-                    return method2;
-            }
-
-            // At this point, we know we have at least one argument, so:
-            // If either parameter list is empty, then the other is better, or neither if they're both empty
-            if (parameters1Count == 0)
-                return (parameters2Count == 0 ? null : method2);
-            if (parameters2Count == 0)
-                return method1;
-
-            // Unlike the spec, we allow ref/out mismatches (although the type must match exactly) in AddMatch(),
-            // relying on the analysis phase to flag them as errors.  Since it's possible to overload methods
-            // with only ref/out differences, we could get dups, and need to filter them here:
-            bool method1ParameterMismatch = false;
-            bool method2ParameterMismatch = false;
-            for (int index = 0; index < arguments.Count; ++index)
-            {
-                bool argIsRef = (arguments[index] is Ref);
-                bool argIsOut = (arguments[index] is Out);
-                bool isRef1, isOut1, isRef2, isOut2;
-                ParameterRef.GetParameterType(parameters1, index, out isRef1, out isOut1);
-                ParameterRef.GetParameterType(parameters2, index, out isRef2, out isOut2);
-                if (!method1ParameterMismatch)
-                    method1ParameterMismatch = (isRef1 != argIsRef || isOut1 != argIsOut);
-                if (!method2ParameterMismatch)
-                    method2ParameterMismatch = (isRef2 != argIsRef || isOut2 != argIsOut);
-            }
-            // Prefer a method that doesn't have ref/out mismatches over one that does
-            if (!method1ParameterMismatch && method2ParameterMismatch)
-                return method1;
-            if (!method2ParameterMismatch && method1ParameterMismatch)
-                return method2;
-
-            // Given an argument list A with a set of argument expressions { E1, E2, ..., EN } and two applicable function
-            // members MP and MQ with parameter types { P1, P2, ..., PN } and { Q1, Q2, ..., QN }, MP is defined to be a
-            // better function member than MQ if:
-            //   - for each argument, the implicit conversion from EX to QX is not better than the implicit conversion from EX to PX, and
-            //   - for at least one argument, the conversion from EX to PX is better than the conversion from EX to QX.
-            bool method1IsExpanded = false;
-            bool method2IsExpanded = false;
-            bool method1ParameterIsBetter = false;
-            bool method2ParameterIsBetter = false;
-            TypeRefBase typeRefBase1 = null;
-            TypeRefBase typeRefBase2 = null;
-
-            // Determine the parent object for purposes of evaluating type arguments.  If there are inferred type arguments
-            // for either method, then move them to a temporary MethodRef so they can be used in the evaluation.
-            CodeObject parent = unresolvedRef.Parent;
-            parent = ((parent is Dot && ((Dot)parent).Right == unresolvedRef) ? ((Dot)parent).Left : parent.Parent);
-            MethodRef method1Inferred = null;
-            MethodRef method2Inferred = null;
-            if (methodCandidate1.InferredTypeArguments != null)
-            {
-                method1Inferred = (MethodRef)unresolvedRef.CreateRef(method1, true);
-                methodCandidate1.CopyInferredTypeArguments(method1Inferred);
-            }
-            if (methodCandidate2.InferredTypeArguments != null)
-            {
-                method2Inferred = (MethodRef)unresolvedRef.CreateRef(method2, true);
-                methodCandidate2.CopyInferredTypeArguments(method2Inferred);
-            }
-
-            // Check the arguments of the two methods to see if one of them has better type conversions
-            for (int index = 0; index < arguments.Count; ++index)
-            {
-                TypeRefBase argumentTypeRef = arguments[index].EvaluateType();
-
-                // Get the parameter of each method at the current position, evaluating any type parameters,
-                // and determine if the argument type has a better conversion for one of the two types.
-                // Evaluate type parameters using any temporary MethodRefs with inferred types, but always
-                // also check the 'parent', since there might be a generic declaring type with type arguments.
-                method1IsExpanded = GetParameterType(parameters1, index, ref typeRefBase1, argumentTypeRef);
-                if (method1Inferred != null)
-                    typeRefBase1 = typeRefBase1.EvaluateTypeArgumentTypes(method1Inferred);
-                typeRefBase1 = typeRefBase1.EvaluateTypeArgumentTypes(parent);
-                method2IsExpanded = GetParameterType(parameters2, index, ref typeRefBase2, argumentTypeRef);
-                if (method2Inferred != null)
-                    typeRefBase2 = typeRefBase2.EvaluateTypeArgumentTypes(method2Inferred);
-                typeRefBase2 = typeRefBase2.EvaluateTypeArgumentTypes(parent);
-                int result = FindBetterConversion(arguments[index], typeRefBase1, typeRefBase2);
-                if (result == 1)
-                    method1ParameterIsBetter = true;
-                else if (result == 2)
-                    method2ParameterIsBetter = true;
-            }
-
-            // Dispose any temporary MethodRefs
-            if (method1Inferred != null)
-                method1Inferred.Dispose();
-            if (method2Inferred != null)
-                method2Inferred.Dispose();
-
-            // Determine if one method is better than the other
-            if (method1ParameterIsBetter && !method2ParameterIsBetter)
-                return method1;
-            if (method2ParameterIsBetter && !method1ParameterIsBetter)
-                return method2;
-
-            // If either method has more parameters than the available arguments, meaning that it has a params array
-            // that isn't being used, then that is also considered to be "expanded form".
-            if (parameters1Count > argumentsCount)
-                method1IsExpanded = true;
-            if (parameters2Count > argumentsCount)
-                method2IsExpanded = true;
-
-            // TIE BREAKING RULES:
-            // In case the parameter type sequences {P1, P2, …, PN} and {Q1, Q2, …, QN} are equivalent (each Pi has an
-            // identity conversion to the corresponding Qi), the following tie-breaking rules are applied, in order, to
-            // determine the better function member:
-
-            // If MP is a non-generic method and MQ is a generic method, then MP is better than MQ.
-            bool method1Generic = IsMethodGeneric(method1);
-            bool method2Generic = IsMethodGeneric(method2);
-            if (!method1Generic && method2Generic)
-                return method1;
-            if (!method2Generic && method1Generic)
-                return method2;
-
-            // Otherwise, if MP is applicable in its normal form and MQ has a params array and is applicable only in
-            // its expanded form, then MP is better than MQ.
-            if (!method1IsExpanded && method2IsExpanded)
-                return method1;
-            if (!method2IsExpanded && method1IsExpanded)
-                return method2;
-            // Otherwise, if MP has more declared parameters than MQ, then MP is better than MQ. This can occur if
-            // both methods have params arrays and are applicable only in their expanded forms.
-            if (parameters1Count > parameters2Count)
-                return method1;
-            if (parameters2Count > parameters1Count)
-                return method2;
-
-            // Otherwise, if MP has more specific parameter types than MQ, then MP is better than MQ. Let {R1, R2, …, RN} and {S1, S2, …, SN}
-            // represent the uninstantiated and unexpanded parameter types of MP and MQ. MP’s parameter types are more specific than MQ’s if,
-            // for each parameter, RX is not less specific than SX, and, for at least one parameter, RX is more specific than SX:
-            //   - A type parameter is less specific than a non-type parameter.
-            //   - Recursively, a constructed type is more specific than another constructed type (with the same number of type arguments) if at
-            //     least one type argument is more specific and no type argument is less specific than the corresponding type argument in the other.
-            //   - An array type is more specific than another array type (with the same number of dimensions) if the element type of the first
-            //     is more specific than the element type of the second.
-            //   - An array type is more specific than a non-array type.
-            //     For example: M<T>(T[] p) where T=string is better than M<T>(T p) where T=string[], because T[] is more specific than T
-            bool method1ParameterIsMoreSpecific = false;
-            bool method2ParameterIsMoreSpecific = false;
-            typeRefBase1 = null;
-            typeRefBase2 = null;
-            for (int index = 0; index < parameters1Count; ++index)  // The parameter counts for the methods should be the same
-            {
-                // The arguments count might be smaller due to an unused 'params' parameter
-                TypeRefBase argumentTypeRef = (index < argumentsCount ? arguments[index].EvaluateType() : null);
-                // Don't evaluate type arguments for the parameters here - we need to know if they are type arguments
-                GetParameterType(parameters1, index, ref typeRefBase1, argumentTypeRef);
-                GetParameterType(parameters2, index, ref typeRefBase2, argumentTypeRef);
-                int result = FindMoreSpecificType(typeRefBase1, typeRefBase2);
-                if (result == 1)
-                    method1ParameterIsMoreSpecific = true;
-                else if (result == 2)
-                    method2ParameterIsMoreSpecific = true;
-            }
-            if (method1ParameterIsMoreSpecific && !method2ParameterIsMoreSpecific)
-                return method1;
-            if (method2ParameterIsMoreSpecific && !method1ParameterIsMoreSpecific)
-                return method2;
-
-            // Otherwise, neither function member is better.
-            return null;
-        }
-
-        /// <summary>
-        /// Add matching code object(s).
-        /// </summary>
-        /// <param name="obj">The CodeObject, MemberInfo, ICollection, or null.</param>
-        public void AddMatch(object obj)
-        {
-            if (obj != null)
-            {
-                if (obj is IEnumerable)
-                {
-                    // Breakup collections into individual objects
-                    foreach (object @object in (IEnumerable)obj)
-                        AddMatchInternal(@object);
-                }
-                else
-                    AddMatchInternal(obj);
-            }
-        }
-
-        /// <summary>
-        /// Get any CoClass attribute type for the specified object.
-        /// </summary>
-        protected static object GetCoClassAttributeType(object obj)
-        {
-            const string CoClassAttributeName = "CoClassAttribute";
-            object coClassType = null;
-            if (obj is ITypeDecl)
-            {
-                Expression attributeExpression = ((ITypeDecl)obj).GetAttribute(CoClassAttributeName);
-                if (attributeExpression is Call)
-                {
-                    ChildList<Expression> arguments = ((Call)attributeExpression).Arguments;
-                    if (arguments != null && arguments.Count > 0 && arguments[0] is TypeOf)
-                        coClassType = ((TypeOf)arguments[0]).Expression.EvaluateType().Reference;
-                }
-            }
-            else if (obj is TypeDefinition)
-            {
-                CustomAttribute customAttribute = ICustomAttributeProviderUtil.GetCustomAttribute((TypeDefinition)obj, CoClassAttributeName);
-                if (customAttribute != null)
-                    coClassType = customAttribute.ConstructorArguments[0].Value;
-            }
-            else //if (obj is Type)
-            {
-                CustomAttributeData customAttributeData = MemberInfoUtil.GetCustomAttribute((Type)obj, CoClassAttributeName);
-                if (customAttributeData != null)
-                    coClassType = customAttributeData.ConstructorArguments[0].Value;
-            }
-            return coClassType;
-        }
-
-        protected void AddMatchInternal(object obj, bool lookInAllParts, TypeRefBase parentTypeRef)
-        {
-            // Also treat a Method category as a constructor category if we're in a DocCodeRefBase
-            bool isConstructorCategory = (ResolveCategoryHelpers.IsConstructor[(int)_resolveCategory] || IsDocCodeRefToMethod);
-
-            // If we're looking for a constructor and we found a type with the same name, get the constructors on the type instead
-            if (isConstructorCategory && (obj is ITypeDecl || obj is TypeDefinition || obj is Type))
-            {
-                // If the type is a partial type, then only look in all parts if instructed (this is used by NewObject when looking for
-                // all constructors on the already-resolved TypeRef, otherwise we only want to find constructors on the current part,
-                // since we will end up searching, finding, and calling this method for all parts of the type).
-                NamedCodeObjectGroup constructors = TypeRef.GetConstructors(obj, !lookInAllParts);
-                if (constructors != null && constructors.Count > 0)
-                {
-                    // We may have found constructors from inside the type on the way up the code tree, so only add the constructors
-                    // if the first one doesn't already exist.  This can only occur for ITypeDecls, not for TypeDefinition/Types.
-                    if (obj is TypeDefinition || obj is Type || !_unresolvedRef.HasMatches || !_unresolvedRef.Matches.Contains((CodeObject)constructors[0]))
-                        AddMatch(constructors);
-                }
-                else
-                {
-                    // If there aren't any constructors on the type, check for a CoClassAttribute type, and add it if found
-                    object coClassType = GetCoClassAttributeType(obj);
-                    if (coClassType != null)
-                        AddMatchInternal(coClassType, lookInAllParts, parentTypeRef);
-                }
-
-                return;
-            }
-
-            // Create a wrapper object for the match candidate
-            MatchCandidate candidate = new MatchCandidate(obj, _unresolvedRef, _resolveFlags);
-
-            // Check that the type of the object is valid for the category (if the category is null, allow it to pass - this
-            // is used by UnresolvedRef.ResolveMethodGroup() when resolving method groups against a delegate type).
-            if (_isValidCategory == null || _isValidCategory(obj))
-            {
-                candidate.IsCategoryMatch = true;
-
-                // If there are type arguments, the match isn't complete if the counts don't match
-                if (!DoTypeArgumentCountsMatch(obj))
-                    candidate.IsTypeArgumentsMatch = false;
-
-                bool isMethodCategory = ResolveCategoryHelpers.IsMethod[(int)_resolveCategory];
-
-                // If there are method arguments, the match isn't complete unless they match.
-                // If we have a Method category, then we know that we're resolving a method or delegate invocation.  Our parent
-                // will be an ArgumentsOperator (Call, Index, or NewObject) - or our grandparent if our parent is a Dot - but we
-                // don't need to verify that here (the subroutine below will take care of that).  We check the category instead
-                // of the type of the object because it's easier than checking all the Method category delegate types.
-                // If we have a method object, but our category wasn't Method, that means the category is Expression (we don't
-                // need to verify that), and we've got a "method group" being passed as an argument or initializing a variable.
-                // In this case, we need to find the delegate type we're being assigned to, and get our "arguments" from it.
-                if (isMethodCategory || candidate.IsMethod)
-                {
-                    // Ignore overridden methods.  We must ignore 'override' methods so that we match the 'virtual' declaration
-                    // in the base class, so that any overloads in the base class are also considered (per the spec).
-                    if (MethodRef.IsOverridden(obj))
-                        return;
-
-                    bool argumentsMismatchDueToUnresolvedOnly = true;
-
-                    // Get the method arguments
-                    bool hasUnresolvedDelegateTypes;
-                    List<Expression> methodArguments = GetParentArguments(isMethodCategory, out hasUnresolvedDelegateTypes);
-                    if (methodArguments == null)
-                    {
-                        // Null means either no arguments exist (no parens were specified AND no associated delegate type exists,
-                        // such as "MethodName is object" or "MethodName" in a doc comment cref), or they couldn't be determined
-                        // due to the associated delegate type being unresolved.  Treat the first as a match, the 2nd as an error.
-                        if (hasUnresolvedDelegateTypes)
-                            candidate.IsMethodArgumentsMatch = false;
-                    }
-                    else
-                    {
-                        // Get the parameters of the method or delegate type
-                        ICollection parameters = MethodRef.GetParameters(obj, _unresolvedRef);
-                        int parameterCount = (parameters != null ? parameters.Count : 0);
-
-                        // Perform Type Inference if the candidate has inferred types
-                        if (candidate.InferredTypeArguments != null && parameterCount > 0)
-                        {
-                            // For now, if type inference fails OR if any of the inferred types are unresolved, treat it as the type arguments not matching, so
-                            // that it will be displayed as an error (instead of possibly as a warning).  We might want to eventually improve the error reporting
-                            // to distinguish between these events and normal type argument mismatches.
-                            if (candidate.InferTypeArguments(parameters, methodArguments, _unresolvedRef))
-                            {
-                                // Evaluate any inferred OpenTypeParameterRefs in any parent expression or type declarations now that
-                                // type inference is complete (this would cause problems if it were done during type inference).
-                                for (int i = 0; i < candidate.InferredTypeArguments.Length; ++i)
-                                {
-                                    TypeRefBase typeRefBase = candidate.InferredTypeArguments[i];
-                                    if (typeRefBase is OpenTypeParameterRef)
-                                        candidate.InferredTypeArguments[i] = typeRefBase.EvaluateTypeArgumentTypes(_unresolvedRef.Parent, _unresolvedRef);
-                                }
-
-                                // Fail if any of the inferred types are unresolved (unless we're in a doc comment)
-                                if (Enumerable.Any(candidate.InferredTypeArguments, delegate (TypeRefBase typeRef) { return typeRef.HasUnresolvedRef(); }) && !_resolveFlags.HasFlag(ResolveFlags.InDocComment))
-                                    candidate.IsTypeInferenceFailure = true;
-                            }
-                            else
-                                candidate.IsTypeInferenceFailure = true;
-                        }
-
-                        // Determine if the parameter count and types match.  A special first pass (-1) is done to match or
-                        // eliminate zero parameters, and a final pass (maxIndex) eliminates extra parameters.
-                        TypeRefBase paramsTypeRef = null;
-                        int argumentCount = methodArguments.Count;
-                        int maxIndex = (argumentCount == 0 || parameterCount == 0 ? -1 : argumentCount);
-                        for (int i = -1; i <= maxIndex; ++i)
-                        {
-                            bool parameterMatches;
-                            bool failedBecauseUnresolved = false;
-                            if (i == -1)
-                            {
-                                // An index of -1 means we're matching or excluding an empty parameter list
-                                if (argumentCount == 0)
-                                    parameterMatches = (parameterCount == 0 || (parameterCount == 1 && ParameterRef.ParameterIsParams(parameters, 0)));
-                                else
-                                {
-                                    parameterMatches = (parameterCount > 0);
-                                    if (!parameterMatches)
-                                    {
-                                        // Check if we failed to match because of a variable with an unresolved type (instead of a delegate type)
-                                        if (obj is IVariableDecl && ((CodeObject)obj).HasUnresolvedRef())
-                                            failedBecauseUnresolved = true;
-                                    }
-                                }
-                            }
-                            else if (i == maxIndex)
-                            {
-                                // An index of 'maxIndex' means we're matching on the total number of arguments.
-                                // We also have to check for a 'params' parameter (used more than once, or unused).
-                                parameterMatches = ((i == parameterCount) || (i >= parameterCount - 1 && ParameterRef.ParameterIsParams(parameters, parameterCount - 1)));
-                            }
-                            else
-                            {
-                                // Evaluate the argument type, and any type arguments if it's a nested generic type
-                                TypeRefBase argumentTypeRef = methodArguments[i].EvaluateType();
-                                if (argumentTypeRef is TypeRef && ((TypeRef)argumentTypeRef).IsNested && ((TypeRef)argumentTypeRef).IsGenericType)
-                                    argumentTypeRef = argumentTypeRef.EvaluateTypeArgumentTypes(_unresolvedRef.Parent, _unresolvedRef);
-
-                                // Check if the type of the current argument matches the method parameter type
-                                parameterMatches = ParameterRef.MatchParameter(_unresolvedRef, obj, candidate, parameters, i,
-                                    argumentCount, argumentTypeRef, ref paramsTypeRef, true, _parentExpression, out failedBecauseUnresolved);
-                            }
-                            if (!parameterMatches)
-                            {
-                                // Mark the first argument that fails to match
-                                if (candidate.IsMethodArgumentsMatch)
-                                {
-                                    candidate.IsMethodArgumentsMatch = false;
-                                    candidate.MethodArgumentMismatchIndex = i;
-                                }
-                                // If the failure was due to something other than an unresolved parameter, record
-                                // it as such and skip checking any more parameters.
-                                if (!failedBecauseUnresolved)
-                                {
-                                    argumentsMismatchDueToUnresolvedOnly = false;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (candidate.IsMethodArgumentsMatch)
-                    {
-                        // For user-defined explicit conversions, verify that the operator is applicable
-                        if (_resolveCategory == ResolveCategory.OperatorOverload && _unresolvedRef.Name == "op_Explicit" && _unresolvedRef.Parent is Cast)
-                        {
-                            // Find operators that convert from a type encompassing or encompassed by S to a type encompassing or encompassed by T
-                            TypeRefBase sourceTypeRef = methodArguments[0].EvaluateType();
-                            TypeRefBase targetTypeRef = ((Cast)_unresolvedRef.Parent).Type.EvaluateType();
-                            TypeRefBase parameterTypeRef = ParameterRef.GetParameterType(MethodRef.GetParameters(obj), 0, _parentExpression);
-                            TypeRefBase returnTypeRef = MethodRef.GetReturnType(obj, _parentExpression);
-                            bool matches = ((TypeRef.IsEncompassedBy(sourceTypeRef, parameterTypeRef) || TypeRef.IsEncompassedBy(parameterTypeRef, sourceTypeRef))
-                                            && (TypeRef.IsEncompassedBy(targetTypeRef, returnTypeRef) || TypeRef.IsEncompassedBy(returnTypeRef, targetTypeRef)));
-                            if (!matches && targetTypeRef is TypeRef && ((TypeRef)targetTypeRef).IsEnum)
-                            {
-                                // If the return type wasn't convertible to the cast type, and the cast type is an enum, get the underlying type
-                                // of the enum and try again.
-                                targetTypeRef = ((TypeRef)targetTypeRef).GetUnderlyingTypeOfEnum();
-                                matches = (TypeRef.IsEncompassedBy(targetTypeRef, returnTypeRef) || TypeRef.IsEncompassedBy(returnTypeRef, targetTypeRef));
-                            }
-                            if (!matches)
-                                candidate.IsMethodArgumentsMatch = false;  // Treat as an argument mismatch
-                        }
-                    }
-                    else
-                        candidate.ArgumentsMismatchDueToUnresolvedOnly = argumentsMismatchDueToUnresolvedOnly;
-                }
-
-                // Verify that the static modifier matches for cases where it matters:
-                // If we have a parent expression, and the reference is to a property or method, static matters - if
-                // the parent is a TypeRef, the reference must be static, otherwise it must not be.  If the reference
-                // is a constructor, it must not be static (even though it might have a TypeRef for a parent if it's the
-                // constructor of a nested type).  In all other situations, the reference can be either static or non-static.
-                // Specifically, if the reference is to a type or namespace, don't check the static mode.
-                // If we're evaluating a reference inside a 'cref' doc comment, ignore static checking (thus allowing static
-                // references to non-static type members).
-                if (((_parentExpression != null && ResolveCategoryHelpers.IsPropertyOrMethod[(int)_resolveCategory])
-                    || isConstructorCategory) && !(obj is ITypeDecl || obj is TypeDefinition || obj is Type || obj is Namespace) && !_resolveFlags.HasFlag(ResolveFlags.InDocCodeRef))
-                {
-                    // Default to requiring the reference to NOT be static
-                    bool isStatic = false;
-                    if (!isConstructorCategory)
-                    {
-                        // If the parent expression is a TypeRef, then the reference must be static or const
-                        TypeRef typeRef = (_parentExpression.SkipPrefixes() as TypeRef);
-                        if (typeRef != null)
-                        {
-                            // If the parent expression is an Interface (an explicit interface implementation, or
-                            // a bogus reference to a static member of Object, such as ReferenceEquals), then abort
-                            // (don't check the static mode after all).
-                            if (typeRef.IsInterface)
-                                goto skip;
-                            isStatic = true;
-                        }
-                    }
-
-                    // Verify that the static modifier matches
-                    candidate.IsStaticModeMatch = (IsStatic(obj) == isStatic);
-                }
-            skip:
-
-                // Verify that the match is accessible - if it's not, we must treat it as an incomplete match so that
-                // we'll continue looking for other possible matches that are complete and accessible.  For example,
-                // multiple overloaded methods (with or without matching parameters) where a private one in a derived
-                // class should be ignored in favor of others in base classes, or non-private events that are backed by
-                // private delegate fields with the same name in the same class, or invalid code where two members are
-                // otherwise duplicates but have different access rights.
-
-                // We have to call the individual access right properties to determine access instead of looking at the
-                // Modifiers bit flags, in order to handle default access rights and the actual access rights of property/
-                // indexer/event accessors.  Use a special method for performance that gets the access rights that we need.
-                bool isPrivate, isProtected, isInternal;
-                GetAccessRights(obj, out isPrivate, out isProtected, out isInternal);
-                if (isPrivate)
-                {
-                    // If the ref is inside the same TypeDecl as the definition OR a nested type, then it's accessible, otherwise it's not
-                    if (obj is INamedCodeObject)
-                    {
-                        TypeDecl refDeclaringTypeDecl = _unresolvedRef.FindParent<TypeDecl>();
-                        if (refDeclaringTypeDecl != null)
-                        {
-                            TypeDecl objDeclaringTypeDecl = ((INamedCodeObject)obj).FindParent<TypeDecl>() ?? obj as TypeDecl;
-                            // Check if the TypeDecls are identical OR have the same name (could be different parts)
-                            candidate.IsAccessible = refDeclaringTypeDecl.IsSameAs(objDeclaringTypeDecl);
-                            while (!candidate.IsAccessible && refDeclaringTypeDecl.Parent is TypeDecl)
-                            {
-                                refDeclaringTypeDecl = (TypeDecl)refDeclaringTypeDecl.Parent;
-                                if (refDeclaringTypeDecl.IsSameAs(objDeclaringTypeDecl))
-                                    candidate.IsAccessible = true;
-                            }
-                        }
-                    }
-                    else
-                        candidate.IsAccessible = false;
-                }
-                else
-                {
-                    bool isInternalAccessible = true, isProtectedAccessible = true;
-                    if (isInternal)
-                    {
-                        // If the reference is in the same Project as the definition OR it's in another project or assembly that has
-                        // specifically made its internals visible to the referring project, then it's accessible.
-                        Project refDeclaringProject = _unresolvedRef.FindParent<Project>();
-                        if (refDeclaringProject != null)
-                        {
-                            if (obj is INamedCodeObject)
-                            {
-                                Project objDeclaringProject = ((INamedCodeObject)obj).FindParent<Project>();
-                                isInternalAccessible = (refDeclaringProject == objDeclaringProject || objDeclaringProject.AreInternalTypesVisibleTo(refDeclaringProject));
-                            }
-                            else
-                            {
-                                string assemblyName = null;
-                                if (obj is MemberReference)
-                                    assemblyName = ((MemberReference)obj).Module.Assembly.FullName;
-                                else if (obj is MemberInfo)
-                                    assemblyName = ((MemberInfo)obj).Module.Assembly.FullName;
-                                if (assemblyName != null)
-                                {
-                                    assemblyName = AssemblyUtil.GetNormalizedDisplayName(assemblyName);
-                                    LoadedAssembly objDeclaringAssembly = refDeclaringProject.FrameworkContext.ApplicationContext.FindLoadedAssembly(assemblyName);
-                                    isInternalAccessible = (objDeclaringAssembly != null && objDeclaringAssembly.AreInternalTypesVisibleTo(refDeclaringProject));
-                                }
-                            }
-                        }
-                    }
-                    if (isProtected)
-                    {
-                        // If the ref is inside the same type as the definition or any derived type OR nested type, then it's accessible
-                        TypeDecl refDeclaringTypeDecl = _unresolvedRef.FindParent<TypeDecl>();
-                        if (refDeclaringTypeDecl != null)
-                        {
-                            object objDeclaringType = (obj is INamedCodeObject ? (((INamedCodeObject)obj).FindParent<TypeDecl>() ?? obj as TypeDecl)
-                                : (obj is MemberReference ? (object)((MemberReference)obj).DeclaringType : ((MemberInfo)obj).DeclaringType));
-                            isProtectedAccessible = IsSameOrBaseTypeOf(objDeclaringType, refDeclaringTypeDecl);
-                            while (!isProtectedAccessible && refDeclaringTypeDecl.Parent is TypeDecl)
-                            {
-                                refDeclaringTypeDecl = (TypeDecl)refDeclaringTypeDecl.Parent;
-                                if (IsSameOrBaseTypeOf(objDeclaringType, refDeclaringTypeDecl))
-                                    isProtectedAccessible = true;
-                            }
-                        }
-                    }
-                    if (isInternal)
-                    {
-                        if (isProtected)
-                        {
-                            if (!isInternalAccessible && !isProtectedAccessible)
-                                candidate.IsAccessible = false;
-                        }
-                        else
-                        {
-                            if (!isInternalAccessible)
-                                candidate.IsAccessible = false;
-                        }
-                    }
-                    else if (isProtected && !isProtectedAccessible)
-                        candidate.IsAccessible = false;
-                }
-            }
-
-            // Conditionally add the candidate to the collection (depending upon what is already in it)
-            _hasCompleteMatch = _unresolvedRef.AddMatch(candidate);
-        }
-
-        protected void AddMatchInternal(object obj, bool lookInAllParts)
-        {
-            AddMatchInternal(obj, lookInAllParts, null);
-        }
-
-        protected void AddMatchInternal(object obj)
-        {
-            AddMatchInternal(obj, false, null);
-        }
-
-        /// <summary>
-        /// Check if the type arguments match, based upon the object type.
-        /// </summary>
-        protected bool DoTypeArgumentCountsMatch(object obj)
-        {
-            if (obj is CodeObject)
-            {
-                if (obj is ITypeParameters)
-                    return ((ITypeParameters)obj).DoTypeArgumentCountsMatch(_unresolvedRef);
-                return (_unresolvedRef.TypeArgumentCount == 0);
-            }
-
-            int typeArgumentCount = _unresolvedRef.TypeArgumentCount;
-            if (obj is TypeDefinition)
-                return (TypeDefinitionUtil.GetLocalGenericArgumentCount((TypeDefinition)obj) == typeArgumentCount);
-            if (obj is MethodDefinition)
-            {
-                MethodDefinition methodDefinition = (MethodDefinition)obj;
-                int typeParameterCount = methodDefinition.GenericParameters.Count;
-                if (typeParameterCount == typeArgumentCount)
-                    return true;
-                if (typeArgumentCount == 0)
-                {
-                    // Type arguments to generic methods can be omitted and inferred from the parameter types, so if
-                    // the actual count is 0, it's still considered a match *if* we have at least one method parameter.
-                    if (methodDefinition.Parameters != null && methodDefinition.Parameters.Count > 0)
-                        return true;
-
-                    // If the UnresolvedRef is part of an explicit interface implementation of a GenericMethodDecl,
-                    // then match the actual type argument count.
-                    if (_unresolvedRef.IsExplicitInterfaceImplementation && _unresolvedRef.Parent.Parent is GenericMethodDecl)
-                        return (typeParameterCount == ((GenericMethodDecl)_unresolvedRef.Parent.Parent).TypeParameterCount);
-                }
-                return false;
-            }
-            if (obj is Type)
-                return (TypeUtil.GetLocalGenericArgumentCount((Type)obj) == typeArgumentCount);
-            if (obj is MethodInfo)
-            {
-                MethodInfo methodInfo = (MethodInfo)obj;
-                int typeParameterCount = methodInfo.GetGenericArguments().Length;
-                if (typeParameterCount == typeArgumentCount)
-                    return true;
-                if (typeArgumentCount == 0)
-                {
-                    // Type arguments to generic methods can be omitted and inferred from the parameter types, so if
-                    // the actual count is 0, it's still considered a match *if* we have at least one method parameter.
-                    if (methodInfo.GetParameters().Length > 0)
-                        return true;
-
-                    // If the UnresolvedRef is part of an explicit interface implementation of a GenericMethodDecl,
-                    // then match the actual type argument count.
-                    if (_unresolvedRef.IsExplicitInterfaceImplementation && _unresolvedRef.Parent.Parent is GenericMethodDecl)
-                        return (typeParameterCount == ((GenericMethodDecl)_unresolvedRef.Parent.Parent).TypeParameterCount);
-                }
-                return false;
-            }
-
-            // Other object types can't have type arguments, so the count must be 0
-            return (typeArgumentCount == 0);
         }
 
         private bool IsSameOrBaseTypeOf(object typeReference, TypeDecl typeDecl)

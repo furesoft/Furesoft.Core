@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj" />
     <ProjectReference Include="..\Furesoft.Core\Furesoft.Core.csproj" />
   </ItemGroup>
 
