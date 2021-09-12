@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 
 namespace Furesoft.Core.Measure
 {
-	public partial class MeasureUnit
+    public partial class MeasureUnit
 	{
 		internal struct Combinator
 		{

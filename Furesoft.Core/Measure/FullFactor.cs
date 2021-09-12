@@ -1,13 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// Immutable struct that captures <see cref="Factor"/>.2^<see cref="ExpFactor.Exp2"/>.10^<see cref="ExpFactor.Exp10"/>.
-	/// </summary>
-	public readonly struct FullFactor : IEquatable<FullFactor>
+    /// <summary>
+    /// Immutable struct that captures <see cref="Factor"/>.2^<see cref="ExpFactor.Exp2"/>.10^<see cref="ExpFactor.Exp10"/>.
+    /// </summary>
+    public readonly struct FullFactor : IEquatable<FullFactor>
     {
         /// <summary>
         /// The neutral factor: <see cref="Factor"/> = 1 and <see cref="ExpFactor.Neutral"/>.

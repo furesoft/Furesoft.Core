@@ -1,17 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 using System.Diagnostics;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// A <see cref="MeasureStandardPrefix"/> applied to a <see cref="AtomicMeasureUnit"/>. 
-	/// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
-	/// </summary>
-	public sealed class PrefixedMeasureUnit : AtomicMeasureUnit
+    /// <summary>
+    /// A <see cref="MeasureStandardPrefix"/> applied to a <see cref="AtomicMeasureUnit"/>. 
+    /// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
+    /// </summary>
+    public sealed class PrefixedMeasureUnit : AtomicMeasureUnit
     {
         internal PrefixedMeasureUnit( MeasureContext ctx, (string A, string N) names, ExpFactor adjusment, MeasureStandardPrefix p, AtomicMeasureUnit u, bool isNormalized )
             : base( ctx, names.A, names.N, AutoStandardPrefix.None, isNormalized )

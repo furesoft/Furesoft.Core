@@ -1,14 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// Defines the automatic support of metric or binary standard prefixes
-	/// of a <see cref="AtomicMeasureUnit"/>.
-	/// </summary>
-	public enum AutoStandardPrefix
+    /// <summary>
+    /// Defines the automatic support of metric or binary standard prefixes
+    /// of a <see cref="AtomicMeasureUnit"/>.
+    /// </summary>
+    public enum AutoStandardPrefix
     {
         /// <summary>
         /// The unit does not support automatic standard prefixes.

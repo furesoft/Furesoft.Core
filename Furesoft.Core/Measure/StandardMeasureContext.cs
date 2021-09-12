@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// Specialized <see cref="MeasureContext"/> that defines standard units.
-	/// </summary>
-	public class StandardMeasureContext : MeasureContext
+    /// <summary>
+    /// Specialized <see cref="MeasureContext"/> that defines standard units.
+    /// </summary>
+    public class StandardMeasureContext : MeasureContext
     {
         /// <summary>
         /// Exposes the default context singleton.

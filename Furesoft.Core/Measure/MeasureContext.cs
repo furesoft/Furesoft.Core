@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// A MeasureContext manages a set of <see cref="MeasureUnit"/>.
-	/// </summary>
-	public partial class MeasureContext
+    /// <summary>
+    /// A MeasureContext manages a set of <see cref="MeasureUnit"/>.
+    /// </summary>
+    public partial class MeasureContext
 	{
 		private readonly ConcurrentDictionary<string, MeasureUnit> _allUnits;
 

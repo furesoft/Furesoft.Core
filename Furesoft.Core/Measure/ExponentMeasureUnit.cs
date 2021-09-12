@@ -1,17 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
 using System.Diagnostics;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// A <see cref="ExponentMeasureUnit"/> is an exponentiation of a <see cref="AtomicMeasureUnit"/>
-	/// (like "m3", "s-1", "Pa3" or "dm2").
-	/// </summary>
-	public class ExponentMeasureUnit : MeasureUnit, IComparable<ExponentMeasureUnit>
+    /// <summary>
+    /// A <see cref="ExponentMeasureUnit"/> is an exponentiation of a <see cref="AtomicMeasureUnit"/>
+    /// (like "m3", "s-1", "Pa3" or "dm2").
+    /// </summary>
+    public class ExponentMeasureUnit : MeasureUnit, IComparable<ExponentMeasureUnit>
     {
         internal ExponentMeasureUnit( MeasureContext ctx, (string A, string N) names, int exp, AtomicMeasureUnit u )
             : base( ctx, names.A, names.N, u.IsNormalized )

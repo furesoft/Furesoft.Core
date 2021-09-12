@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// Represents a standard prefix like "Kilo" (abbrev. "k") or "Mega" (abbrev. "M")
-	/// or binary prefix like "Kibi" (abbrev. "ki").
-	/// All standard prefix are registered in a static dictionary and there is no way to add
-	/// new prefix.
-	/// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
-	/// </summary>
-	public sealed class MeasureStandardPrefix
+    /// <summary>
+    /// Represents a standard prefix like "Kilo" (abbrev. "k") or "Mega" (abbrev. "M")
+    /// or binary prefix like "Kibi" (abbrev. "ki").
+    /// All standard prefix are registered in a static dictionary and there is no way to add
+    /// new prefix.
+    /// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
+    /// </summary>
+    public sealed class MeasureStandardPrefix
     {
         /// <summary>
         /// Gets the abbreviation of the prefix.

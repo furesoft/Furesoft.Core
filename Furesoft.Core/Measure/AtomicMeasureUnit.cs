@@ -1,15 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// An atomic measure unit generalizes the 3 concrete kind of measures:
-	/// <see cref="AliasMeasureUnit"/>, <see cref="PrefixedMeasureUnit"/>
-	/// and <see cref="FundamentalMeasureUnit"/>.
-	/// </summary>
-	public abstract class AtomicMeasureUnit : ExponentMeasureUnit, IComparable<AtomicMeasureUnit>
+    /// <summary>
+    /// An atomic measure unit generalizes the 3 concrete kind of measures:
+    /// <see cref="AliasMeasureUnit"/>, <see cref="PrefixedMeasureUnit"/>
+    /// and <see cref="FundamentalMeasureUnit"/>.
+    /// </summary>
+    public abstract class AtomicMeasureUnit : ExponentMeasureUnit, IComparable<AtomicMeasureUnit>
     {
         private protected AtomicMeasureUnit(
             MeasureContext ctx,

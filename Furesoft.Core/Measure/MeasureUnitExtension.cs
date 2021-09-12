@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// Provides extension methods to int and double.
-	/// </summary>
-	public static class MeasureUnitExtension
+    /// <summary>
+    /// Provides extension methods to int and double.
+    /// </summary>
+    public static class MeasureUnitExtension
     {
         /// <summary>
         /// Constructs a new <see cref="Quantity"/> from an Int32.

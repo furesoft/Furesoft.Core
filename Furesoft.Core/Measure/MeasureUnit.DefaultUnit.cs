@@ -1,14 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
-
 namespace Furesoft.Core.Measure
 {
-	public partial class MeasureUnit
+    public partial class MeasureUnit
     {
         /// <summary>
         /// Tries to parse a string in the default context (<see cref="StandardMeasureContext.Default"/>).

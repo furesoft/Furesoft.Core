@@ -1,14 +1,12 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// Immutable value type that captures 10^<see cref="Exp10"/>.2^<see cref="Exp2"/>.
-	/// </summary>
-	public struct ExpFactor : IComparable<ExpFactor>, IEquatable<ExpFactor>
+    /// <summary>
+    /// Immutable value type that captures 10^<see cref="Exp10"/>.2^<see cref="Exp2"/>.
+    /// </summary>
+    public struct ExpFactor : IComparable<ExpFactor>, IEquatable<ExpFactor>
     {
         /// <summary>
         /// The neutral factor (0,0).

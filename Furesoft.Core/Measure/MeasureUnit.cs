@@ -1,18 +1,13 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.IO;
-using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
 using System.Diagnostics;
 
 namespace Furesoft.Core.Measure
 {
-	/// <summary>
-	/// The base class for all measure unit also handles the combination of multiples <see cref="ExponentMeasureUnit"/>.
-	/// </summary>
-	public partial class MeasureUnit
+    /// <summary>
+    /// The base class for all measure unit also handles the combination of multiples <see cref="ExponentMeasureUnit"/>.
+    /// </summary>
+    public partial class MeasureUnit
 	{
 		readonly MeasureContext _ctx;
 		readonly ExponentMeasureUnit[] _units;
