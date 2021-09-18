@@ -1,12 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// This is a special class used for explicit interface implementations of indexers, and also
@@ -24,14 +23,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
         /// Create an <see cref="UnresolvedThisRef"/>.
         /// </summary>
         public UnresolvedThisRef(bool isFirstOnLine)
-            : base(IndexerDecl.IndexerName, isFirstOnLine, ResolveCategory.Indexer)
+            : base(IndexerDecl.IndexerName, isFirstOnLine)
         { }
 
         /// <summary>
         /// Create an <see cref="UnresolvedThisRef"/>.
         /// </summary>
         public UnresolvedThisRef()
-            : base(IndexerDecl.IndexerName, false, ResolveCategory.Indexer)
+            : base(IndexerDecl.IndexerName, false)
         { }
 
         /// <summary>

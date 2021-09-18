@@ -1,9 +1,8 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-// The Nova Project by Ken Beckett.
+﻿// The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.Parsing.Base
+namespace Nova.Parsing
 {
     /// <summary>
     /// The common base class of <see cref="Token"/> and <see cref="UnusedCodeObject"/>.

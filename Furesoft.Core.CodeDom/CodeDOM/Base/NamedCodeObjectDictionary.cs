@@ -5,11 +5,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a dictionary of named code objects, allowing multiple entries with the same name.

@@ -3,13 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Reflection;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Constrains the type that a <see cref="TypeParameter"/> can represent to one with a default constructor.

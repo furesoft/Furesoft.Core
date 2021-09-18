@@ -4,27 +4,11 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a type parameter of a generic type or method declaration.
@@ -284,7 +268,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
                     if (constraint is TypeConstraint)
                     {
                         // Ignore if an UnresolvedRef, because we can't distinguish class vs interface
-                        TypeRef typeRef = ((TypeConstraint)constraint).EvaluateType() as TypeRef;
+                        TypeRef typeRef = ((TypeConstraint)constraint).Type.SkipPrefixes() as TypeRef;
                         if (typeRef != null && typeRef.IsClass)
                             return typeRef;
                     }
@@ -555,107 +539,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
                 parser.NextToken();  // Move past '>'
             }
             return parameters;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-                ResolveAttributes(flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public void ResolveRef(string name, Resolver resolver)
-        {
-            // Find the member on any constraining type(s)
-            List<TypeParameterConstraint> constraints = GetConstraints();
-            if (constraints != null)
-            {
-                foreach (TypeParameterConstraint constraint in constraints)
-                {
-                    if (constraint is TypeConstraint)
-                    {
-                        // Don't look in the constraining type if it's an interface and we already have a complete match
-                        // (we might have multiple interface constraints, and one might have a base interface which is
-                        // also specified directly as a separate constraint, causing duplicate matches).
-                        TypeRef typeRef = ((TypeConstraint)constraint).EvaluateType() as TypeRef;
-                        if (typeRef != null && !(typeRef.IsInterface && resolver.HasCompleteMatch))
-                            typeRef.ResolveRef(name, resolver);
-                    }
-                }
-            }
-
-            // Default to searching the 'object' type
-            if (!resolver.HasCompleteMatch)
-                TypeRef.ResolveRef(TypeRef.ObjectRef, name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        public void ResolveIndexerRef(Resolver resolver)
-        {
-            // Find the member on any constraining type(s)
-            List<TypeParameterConstraint> constraints = GetConstraints();
-            if (constraints != null)
-            {
-                foreach (TypeParameterConstraint constraint in constraints)
-                {
-                    if (constraint is TypeConstraint)
-                    {
-                        // Don't look in the constraining type if it's an interface and we already have a complete match
-                        // (we might have multiple interface constraints, and one might have a base interface which is
-                        // also specified directly as a separate constraint, causing duplicate matches).
-                        TypeRef typeRef = ((TypeConstraint)constraint).EvaluateType() as TypeRef;
-                        if (typeRef != null && !(typeRef.IsInterface && resolver.HasCompleteMatch))
-                            typeRef.ResolveIndexerRef(resolver);
-                    }
-                }
-            }
-
-            // Default to searching the 'object' type (even though it doesn't normally have any indexers, this
-            // is possible for alternate core libs, and this has been necessary for some users of this library).
-            if (!resolver.HasCompleteMatch)
-                TypeRef.ObjectRef.ResolveIndexerRef(resolver);
-        }
-
-        /// <summary>
-        /// Find a type argument in any associated constraints for the specified type parameter.
-        /// </summary>
-        public TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef)
-        {
-            TypeRefBase typeRefBase = null;
-            List<TypeParameterConstraint> constraints = GetConstraints();
-            if (constraints != null)
-            {
-                foreach (TypeParameterConstraint constraint in constraints)
-                {
-                    if (constraint is TypeConstraint)
-                    {
-                        typeRefBase = ((TypeConstraint)constraint).Type.FindTypeArgument(typeParameterRef);
-                        if (typeRefBase != null)
-                            break;
-                    }
-                }
-            }
-            return typeRefBase;
-        }
-
-        /// <summary>
-        /// Find a type argument in a base class for the specified type parameter.
-        /// </summary>
-        public TypeRefBase FindTypeArgumentInBase(TypeParameterRef typeParameterRef)
-        {
-            return null;
         }
 
         #endregion

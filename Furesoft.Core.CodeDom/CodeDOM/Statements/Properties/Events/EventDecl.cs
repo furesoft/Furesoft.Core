@@ -1,13 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Declares a property-like event, with add/remove accessors.
@@ -182,31 +179,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
             : base(parser, parent, true)
         {
             _modifiers |= Modifiers.Event;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-            {
-                _type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-                if (_name is Expression)
-                    _name = ((Expression)_name).Resolve(ResolveCategory.Event, flags);
-            }
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                ResolveAttributes(flags);
-                if (_body != null)
-                    _body.Resolve(ResolveCategory.CodeObject, flags);
-                ResolveDocComments(flags);
-            }
-            return this;
         }
 
         #endregion

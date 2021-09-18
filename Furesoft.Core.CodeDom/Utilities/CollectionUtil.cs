@@ -5,7 +5,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.CodeDom.Utilities
+namespace Nova.Utilities
 {
     /// <summary>
     /// Static helper methods for Collections.

@@ -1,14 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Yields the current value of an iterator.
@@ -92,38 +89,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators
             parser.NextToken();  // Move past 'return'
             SetField(ref _expression, Expression.Parse(parser, this, true), false);
             ParseTerminator(parser);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            _expression = (Expression)_expression.Resolve(ResolveCategory.Expression, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_expression != null && _expression.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the <see cref="Expression"/> to a type or namespace.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/>, <see cref="UnresolvedRef"/>, or <see cref="NamespaceRef"/>.</returns>
-        public override SymbolicRef EvaluateTypeOrNamespace(bool withoutConstants)
-        {
-            return (_expression != null ? _expression.EvaluateTypeOrNamespace(withoutConstants) : TypeRef.ObjectRef);
         }
 
         #endregion

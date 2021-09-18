@@ -6,35 +6,12 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Parsing.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities;
-using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents the body of a <see cref="BlockStatement"/> or <see cref="AnonymousMethod"/> (containing
@@ -45,6 +22,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
     /// </remarks>
     public class Block : CodeObject, ICollection<CodeObject>, ICollection
     {
+        #region /* FIELDS */
+
         /// <summary>
         /// Child <see cref="CodeObject"/>s - the Parent of this collection will be the Block's Parent, so
         /// that the Parent of all child objects will be the Block's Parent, not the Block.
@@ -56,6 +35,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// various other members if the block's parent is a TypeDecl).
         /// </summary>
         protected NamedCodeObjectDictionary _namedMembers;
+
+        #endregion
+
+        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Block"/>, optionally with the specified code objects.
@@ -69,42 +52,16 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                 AddInternal(codeObject);
         }
 
+        #endregion
+
+        #region /* PROPERTIES */
+
         /// <summary>
         /// The number of code objects in the <see cref="Block"/>.
         /// </summary>
         public int Count
         {
             get { return _codeObjects.Count; }
-        }
-
-        /// <summary>
-        /// The "Infix" End-Of-Line comment for the Initializer (if any) - appears after the open brace.
-        /// </summary>
-        /// <remarks>
-        /// This property allows for the very convenient setting of Infix EOL comments in object initializers.
-        /// Although there is support for multiple Infix EOL comments on the same object, this property doesn't
-        /// support that, returning the first one that it finds, and replacing all existing ones when set.
-        /// </remarks>
-        public string InfixEOLComment
-        {
-            get
-            {
-                // Just return the first Infix EOL comment if there is more than one
-                if (_annotations != null)
-                {
-                    Comment comment = (Comment)Enumerable.FirstOrDefault(_annotations, delegate (Annotation annotation) { return annotation is Comment && annotation.IsEOL && annotation.IsInfix; });
-                    if (comment != null)
-                        return comment.Text;
-                }
-                return null;
-            }
-            set
-            {
-                // Remove all existing Infix EOL comments before adding the new one
-                RemoveAllAnnotationsWhere<Comment>(delegate (Comment annotation) { return annotation.IsEOL && annotation.IsInfix; });
-                if (value != null)
-                    AttachAnnotation(new Comment(value, CommentFlags.EOL) { IsInfix = true });
-            }
         }
 
         /// <summary>
@@ -121,6 +78,22 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         public virtual bool IsSynchronized
         {
             get { return false; }
+        }
+
+        /// <summary>
+        /// Gets an object that can be used to synchronize access to the <see cref="ICollection"/>.
+        /// </summary>
+        public virtual object SyncRoot
+        {
+            get { return this; }
+        }
+
+        /// <summary>
+        /// Get the child <see cref="CodeObject"/> at the specified index.
+        /// </summary>
+        public CodeObject this[int index]
+        {
+            get { return _codeObjects[index]; }
         }
 
         /// <summary>
@@ -149,20 +122,38 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         }
 
         /// <summary>
-        /// Gets an object that can be used to synchronize access to the <see cref="ICollection"/>.
+        /// The "Infix" End-Of-Line comment for the Initializer (if any) - appears after the open brace.
         /// </summary>
-        public virtual object SyncRoot
+        /// <remarks>
+        /// This property allows for the very convenient setting of Infix EOL comments in object initializers.
+        /// Although there is support for multiple Infix EOL comments on the same object, this property doesn't
+        /// support that, returning the first one that it finds, and replacing all existing ones when set.
+        /// </remarks>
+        public string InfixEOLComment
         {
-            get { return this; }
+            get
+            {
+                // Just return the first Infix EOL comment if there is more than one
+                if (_annotations != null)
+                {
+                    Comment comment = (Comment)Enumerable.FirstOrDefault(_annotations, delegate(Annotation annotation) { return annotation is Comment && annotation.IsEOL && annotation.IsInfix; });
+                    if (comment != null)
+                        return comment.Text;
+                }
+                return null;
+            }
+            set
+            {
+                // Remove all existing Infix EOL comments before adding the new one
+                RemoveAllAnnotationsWhere<Comment>(delegate(Comment annotation) { return annotation.IsEOL && annotation.IsInfix; });
+                if (value != null)
+                    AttachAnnotation(new Comment(value, CommentFlags.EOL) { IsInfix = true });
+            }
         }
 
-        /// <summary>
-        /// Get the child <see cref="CodeObject"/> at the specified index.
-        /// </summary>
-        public CodeObject this[int index]
-        {
-            get { return _codeObjects[index]; }
-        }
+        #endregion
+
+        #region /* METHODS */
 
         /// <summary>
         /// Add a code object to the <see cref="Block"/>.
@@ -194,6 +185,90 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                 Add(codeObject);
         }
 
+        protected void AddInternal(CodeObject codeObject)
+        {
+            if (codeObject is Block)
+            {
+                foreach (CodeObject obj in ((Block)codeObject)._codeObjects)
+                    AddInternal(obj);
+            }
+            else
+            {
+                AddInsertFormattingCheck(_codeObjects.Count, codeObject);
+                AddInternalNoFormatting(codeObject);
+            }
+        }
+
+        protected void AddInsertFormattingCheck(int index, CodeObject codeObject)
+        {
+            // Default the # of newlines for the object if it wasn't already explicitly specified
+            if (!codeObject.IsNewLinesSet)
+            {
+                int newLines;
+
+                // If we already have items in the block, determine newlines based upon the previous item
+                CodeObject previous = null;
+                for (int i = index - 1; i >= 0 && i < _codeObjects.Count; --i)
+                {
+                    if (!_codeObjects[i].IsGenerated)
+                    {
+                        previous = _codeObjects[i];
+                        break;
+                    }
+                }
+                if (previous != null)
+                    newLines = codeObject.DefaultNewLines(previous);
+                else
+                {
+                    // If we're adding or inserting the first item, then if either brace has a newline, use one, otherwise none
+                    newLines = ((IsFirstOnLine || EndNewLines > 0) ? 1 : 0);
+                    // If the added object has a newline, and the closing brace doesn't, make it have one now
+                    if (newLines > 0 && EndNewLines == 0)
+                        EndNewLines = 1;
+                }
+                codeObject.SetNewLines(newLines);
+            }
+
+            // Check for stand-alone expressions
+            if (codeObject is Expression)
+            {
+                // Turn on the terminator, and default parens to off
+                codeObject.HasTerminator = true;
+                if (!codeObject.IsGroupingSet && ((Expression)codeObject).HasParens)
+                    codeObject.SetFormatFlag(FormatFlags.Grouping, false);
+            }
+        }
+
+        protected void AddInternalNoFormatting(CodeObject codeObject)
+        {
+            // Add the code object to the block
+            _codeObjects.Add(codeObject);
+
+            // Add named members to the block's dictionary
+            if (codeObject is INamedCodeObject)
+                AddNamedMember((INamedCodeObject)codeObject);
+
+            // If any annotations are added directly to the block, send notifications
+            // (this will send special comments up to the CodeUnit and Solution levels).
+            if (codeObject is Annotation && ((Annotation)codeObject).IsListed)
+                NotifyListedAnnotationAdded((Annotation)codeObject);
+        }
+
+        protected void AddNamedMember(INamedCodeObject namedCodeObject)
+        {
+            if (_namedMembers == null)
+                _namedMembers = new NamedCodeObjectDictionary();
+            namedCodeObject.AddToDictionary(_namedMembers);
+
+            // If a TypeDecl is added to a NamespaceDecl, also add it to the Namespace
+            if (_parent is NamespaceDecl && namedCodeObject is TypeDecl)
+            {
+                Namespace @namespace = ((NamespaceDecl)_parent).Namespace;
+                if (@namespace != null)
+                    @namespace.Add((TypeDecl)namedCodeObject);
+            }
+        }
+
         /// <summary>
         /// Clear all members from the <see cref="Block"/>.
         /// </summary>
@@ -221,7 +296,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// <returns>True if the block contains the object, otherwise false.</returns>
         public bool Contains(CodeObject codeObject)
         {
-            return Enumerable.Any(_codeObjects, delegate (CodeObject child) { return child == codeObject; });
+            return Enumerable.Any(_codeObjects, delegate(CodeObject child) { return child == codeObject; });
         }
 
         /// <summary>
@@ -250,6 +325,69 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
 
             foreach (CodeObject obj in _codeObjects)
                 array.SetValue(obj, index++);
+        }
+
+        /// <summary>
+        /// Insert a code object into the block at the specified index.
+        /// </summary>
+        /// <param name="index">The index at which to insert.</param>
+        /// <param name="codeObject">The object to be inserted.</param>
+        public void Insert(int index, CodeObject codeObject)
+        {
+            if (codeObject is Block)
+            {
+                ChildList<CodeObject> codeObjects = ((Block)codeObject)._codeObjects;
+                for (int i = 0; i < codeObjects.Count; ++i)
+                    Insert(i, codeObjects[i]);
+            }
+            else
+            {
+                AddInsertFormattingCheck(index, codeObject);
+                InsertInternalNoFormatting(index, codeObject);
+                ObjectCountChanged();
+            }
+        }
+
+        protected void InsertInternalNoFormatting(int index, CodeObject codeObject)
+        {
+            // Insert the code object into the block
+            _codeObjects.Insert(index, codeObject);
+
+            // Add named members to the block's dictionary
+            if (codeObject is INamedCodeObject)
+                AddNamedMember((INamedCodeObject)codeObject);
+
+            // If any annotations are inserted directly to the block, send notifications
+            // (this will send special comments up to the CodeUnit and Solution levels).
+            if (codeObject is Annotation && ((Annotation)codeObject).IsListed)
+                NotifyListedAnnotationAdded((Annotation)codeObject);
+        }
+
+        /// <summary>
+        /// Find children with the specified name.
+        /// </summary>
+        /// <returns>A <see cref="CodeObject"/>, <see cref="NamedCodeObjectGroup"/>, or null if no matches were found.</returns>
+        public INamedCodeObject FindChildren(string name)
+        {
+            return (_namedMembers != null ? _namedMembers.Find(name) : null);
+        }
+
+        /// <summary>
+        /// Find children with the specified name having type T, adding them to the specified results collection.
+        /// </summary>
+        public void FindChildren<T>(string name, NamedCodeObjectGroup results) where T : CodeObject
+        {
+            INamedCodeObject foundObj = FindChildren(name);
+            if (foundObj is NamedCodeObjectGroup)
+            {
+                foreach (INamedCodeObject namedCodeObject in (NamedCodeObjectGroup)foundObj)
+                {
+                    if (namedCodeObject is T)
+                        results.Add(namedCodeObject);
+                }
+            }
+            else if (foundObj is T)
+                results.Add(foundObj);
         }
 
         /// <summary>
@@ -291,33 +429,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         public IEnumerable<T> Find<T>() where T : CodeObject
         {
             return Enumerable.OfType<T>(_codeObjects);
-        }
-
-        /// <summary>
-        /// Find children with the specified name.
-        /// </summary>
-        /// <returns>A <see cref="CodeObject"/>, <see cref="NamedCodeObjectGroup"/>, or null if no matches were found.</returns>
-        public INamedCodeObject FindChildren(string name)
-        {
-            return (_namedMembers != null ? _namedMembers.Find(name) : null);
-        }
-
-        /// <summary>
-        /// Find children with the specified name having type T, adding them to the specified results collection.
-        /// </summary>
-        public void FindChildren<T>(string name, NamedCodeObjectGroup results) where T : CodeObject
-        {
-            INamedCodeObject foundObj = FindChildren(name);
-            if (foundObj is NamedCodeObjectGroup)
-            {
-                foreach (INamedCodeObject namedCodeObject in (NamedCodeObjectGroup)foundObj)
-                {
-                    if (namedCodeObject is T)
-                        results.Add(namedCodeObject);
-                }
-            }
-            else if (foundObj is T)
-                results.Add(foundObj);
         }
 
         /// <summary>
@@ -365,25 +476,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             return _codeObjects.GetEnumerator();
         }
 
-        /// <summary>
-        /// Insert a code object into the block at the specified index.
-        /// </summary>
-        /// <param name="index">The index at which to insert.</param>
-        /// <param name="codeObject">The object to be inserted.</param>
-        public void Insert(int index, CodeObject codeObject)
+        protected void ObjectCountChanged()
         {
-            if (codeObject is Block)
-            {
-                ChildList<CodeObject> codeObjects = ((Block)codeObject)._codeObjects;
-                for (int i = 0; i < codeObjects.Count; ++i)
-                    Insert(i, codeObjects[i]);
-            }
-            else
-            {
-                AddInsertFormattingCheck(index, codeObject);
-                InsertInternalNoFormatting(index, codeObject);
-                ObjectCountChanged();
-            }
+            if (_parent is IBlock && _codeObjects.Count <= 2)
+                ((IBlock)_parent).ReformatBlock();
         }
 
         /// <summary>
@@ -414,6 +510,16 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         }
 
         /// <summary>
+        /// Remove the <see cref="CodeObject"/> at the specified index from the <see cref="Block"/>.
+        /// </summary>
+        public void RemoveAt(int index)
+        {
+            CodeObject codeObject = this[index];
+            _codeObjects.RemoveAt(index);
+            RemoveInternal(codeObject);
+        }
+
+        /// <summary>
         /// Remove all code objects from the <see cref="Block"/>.
         /// </summary>
         public void RemoveAll()
@@ -428,14 +534,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             ObjectCountChanged();
         }
 
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> at the specified index from the <see cref="Block"/>.
-        /// </summary>
-        public void RemoveAt(int index)
+        protected void RemoveInternal(CodeObject codeObject)
         {
-            CodeObject codeObject = this[index];
-            _codeObjects.RemoveAt(index);
-            RemoveInternal(codeObject);
+            if (codeObject is INamedCodeObject)
+                ((INamedCodeObject)codeObject).RemoveFromDictionary(_namedMembers);
+            if (codeObject is Annotation && ((Annotation)codeObject).IsListed)
+                NotifyListedAnnotationRemoved((Annotation)codeObject);
+            ObjectCountChanged();
         }
 
         /// <summary>
@@ -454,129 +559,19 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             return false;
         }
 
-        protected void AddInsertFormattingCheck(int index, CodeObject codeObject)
-        {
-            // Default the # of newlines for the object if it wasn't already explicitly specified
-            if (!codeObject.IsNewLinesSet)
-            {
-                int newLines;
+        #endregion
 
-                // If we already have items in the block, determine newlines based upon the previous item
-                CodeObject previous = null;
-                for (int i = index - 1; i >= 0 && i < _codeObjects.Count; --i)
-                {
-                    if (!_codeObjects[i].IsGenerated)
-                    {
-                        previous = _codeObjects[i];
-                        break;
-                    }
-                }
-                if (previous != null)
-                    newLines = codeObject.DefaultNewLines(previous);
-                else
-                {
-                    // If we're adding or inserting the first item, then if either brace has a newline, use one, otherwise none
-                    newLines = ((IsFirstOnLine || EndNewLines > 0) ? 1 : 0);
-                    // If the added object has a newline, and the closing brace doesn't, make it have one now
-                    if (newLines > 0 && EndNewLines == 0)
-                        EndNewLines = 1;
-                }
-                codeObject.SetNewLines(newLines);
-            }
-
-            // Check for stand-alone expressions
-            if (codeObject is Expression)
-            {
-                // Turn on the terminator, and default parens to off
-                codeObject.HasTerminator = true;
-                if (!codeObject.IsGroupingSet && ((Expression)codeObject).HasParens)
-                    codeObject.SetFormatFlag(FormatFlags.Grouping, false);
-            }
-        }
-
-        protected void AddInternal(CodeObject codeObject)
-        {
-            if (codeObject is Block)
-            {
-                foreach (CodeObject obj in ((Block)codeObject)._codeObjects)
-                    AddInternal(obj);
-            }
-            else
-            {
-                AddInsertFormattingCheck(_codeObjects.Count, codeObject);
-                AddInternalNoFormatting(codeObject);
-            }
-        }
-
-        protected void AddInternalNoFormatting(CodeObject codeObject)
-        {
-            // Add the code object to the block
-            _codeObjects.Add(codeObject);
-
-            // Add named members to the block's dictionary
-            if (codeObject is INamedCodeObject)
-                AddNamedMember((INamedCodeObject)codeObject);
-
-            // If any annotations are added directly to the block, send notifications
-            // (this will send special comments up to the CodeUnit and Solution levels).
-            if (codeObject is Annotation && ((Annotation)codeObject).IsListed)
-                NotifyListedAnnotationAdded((Annotation)codeObject);
-        }
-
-        protected void AddNamedMember(INamedCodeObject namedCodeObject)
-        {
-            if (_namedMembers == null)
-                _namedMembers = new NamedCodeObjectDictionary();
-            namedCodeObject.AddToDictionary(_namedMembers);
-
-            // If a TypeDecl is added to a NamespaceDecl, also add it to the Namespace
-            if (_parent is NamespaceDecl && namedCodeObject is TypeDecl)
-            {
-                Namespace @namespace = ((NamespaceDecl)_parent).Namespace;
-                if (@namespace != null)
-                    @namespace.Add((TypeDecl)namedCodeObject);
-            }
-        }
-
-        protected void InsertInternalNoFormatting(int index, CodeObject codeObject)
-        {
-            // Insert the code object into the block
-            _codeObjects.Insert(index, codeObject);
-
-            // Add named members to the block's dictionary
-            if (codeObject is INamedCodeObject)
-                AddNamedMember((INamedCodeObject)codeObject);
-
-            // If any annotations are inserted directly to the block, send notifications
-            // (this will send special comments up to the CodeUnit and Solution levels).
-            if (codeObject is Annotation && ((Annotation)codeObject).IsListed)
-                NotifyListedAnnotationAdded((Annotation)codeObject);
-        }
-
-        protected void ObjectCountChanged()
-        {
-            if (_parent is IBlock && _codeObjects.Count <= 2)
-                ((IBlock)_parent).ReformatBlock();
-        }
-
-        protected void RemoveInternal(CodeObject codeObject)
-        {
-            if (codeObject is INamedCodeObject)
-                ((INamedCodeObject)codeObject).RemoveFromDictionary(_namedMembers);
-            if (codeObject is Annotation && ((Annotation)codeObject).IsListed)
-                NotifyListedAnnotationRemoved((Annotation)codeObject);
-            ObjectCountChanged();
-        }
-
-        /// <summary>
-        /// The token used to parse the end of a <see cref="Block"/>.
-        /// </summary>
-        public const string ParseTokenEnd = "}";
+        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse the start of a <see cref="Block"/>.
         /// </summary>
         public const string ParseTokenStart = "{";
+
+        /// <summary>
+        /// The token used to parse the end of a <see cref="Block"/>.
+        /// </summary>
+        public const string ParseTokenEnd = "}";
 
         /// <summary>
         /// Parse a <see cref="Block"/>.
@@ -882,6 +877,15 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         }
 
         /// <summary>
+        /// Parse an Expression into the Block.
+        /// </summary>
+        public void ParseExpressionAsBlock(Parser parser, CodeObject parent)
+        {
+            HasBraces = false;
+            AddInternalNoFormatting(Expression.Parse(parser, parent, true));
+        }
+
+        /// <summary>
         /// Parse any compiler directives between a statement header and body (or base type list, constructor initializer, or type constraints).
         /// Also used to parse any "open" conditional directives if 'includeAll' is false.
         /// </summary>
@@ -987,58 +991,73 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         }
 
         /// <summary>
-        /// Skip parsing a brace-delimited <see cref="Block"/>.
+        /// Post-process the specified comment object at the specified index, associating with the following object if applicable.
         /// </summary>
-        public static void SkipParsingBlock(Parser parser, CodeObject parent, bool bracesRequired, params string[] terminators)
+        protected internal void PostProcessComment(CommentBase obj, int index)
         {
-            // Don't process comments or conditional directives if we have no parent, or the parent has no header (CodeUnit or BlockDecl)
-            if (parent is IBlock && ((IBlock)parent).HasHeader)
+            if (obj.IsFirstOnLine && index < _codeObjects.Count - 1)
             {
-                // Process comments
-                parent.MoveEOLComment(parser.LastToken);  // Associate any skipped EOL comment with the parent
-
-                // Toss any skipped comment objects
-                parser.LastToken.TrailingComments = null;
-
-                // Parse any post compiler directives between the parent statement and the block
-                ParseCompilerDirectives(parser, parent, AnnotationFlags.IsPostfix);
-            }
-            else
-            {
-                // Toss any skipped comments at the top of a CodeUnit or BlockDecl (from the dummy token)
-                parser.LastToken.TrailingComments = null;
-            }
-
-            // Parse the braces and everything between them, throwing it all away
-            if (parser.TokenText == ParseTokenStart)
-            {
-                parser.NextToken();                        // Move past '{'
-                parser.LastToken.TrailingComments = null;  // Toss any comments
-                int nestLevel = 0;
-                while (parser.Token != null && !(parser.TokenText == ParseTokenEnd && nestLevel == 0))
+                // Check for following statements or expressions without a preceeding blank line, or allow a couple
+                // of blank lines if the comment is a documentation comment.
+                CodeObject obj1 = _codeObjects[index + 1];
+                int obj1NewLines = obj1.NewLines;
+                if (obj1.AssociateCommentWhenParsing(obj) && (obj1NewLines <= 1 || (obj is DocComment && obj1NewLines <= 3)))
                 {
-                    if (parser.TokenText == ParseTokenStart)
-                        ++nestLevel;
-                    else if (parser.TokenText == ParseTokenEnd)
-                        --nestLevel;
-                    if (parser.TokenType == TokenType.CompilerDirective)
-                        parser.ProcessToken(parent);  // Skip & toss any compiler directives
+                    // Remove any blank lines between DocComments and following code
+                    if (obj1NewLines > 1)
+                        obj1.NewLines = 1;
+
+                    // Check that the following statement is also on a new line
+                    if (obj1.IsFirstOnLine)
+                    {
+                        // Check if the candidate is the last object in the block, or is followed by a blank line, or is followed by
+                        // either a Comment or an object with first-on-line annotations, or is followed by a compiler directive, or if
+                        // the candidate comment is a documentation comment - in these cases, associate the candidate comment with the
+                        // object that follows it.
+                        CodeObject obj2 = (index < _codeObjects.Count - 2 ? _codeObjects[index + 2] : null);
+                        if (obj2 == null || obj2.NewLines > 1 || obj2 is CommentBase || obj2.HasFirstOnLineAnnotations || obj2 is CompilerDirective || obj is DocComment)
+                        {
+                            // Special exception: Also require that either the comment is preceeded by a blank line, or less than two
+                            // code objects, or the preceeding object is a comment or has a blank line before it, or the 2nd preceeding
+                            // object is a comment.
+                            if (obj.NewLines > 1 || index < 2 || _codeObjects[index - 1] is CommentBase || _codeObjects[index - 1].NewLines > 1 || _codeObjects[index - 2] is CommentBase)
+                            {
+                                RemoveAt(index);
+                                obj1.AttachAnnotation(obj, true);
+                            }
+                        }
+                    }
                     else
-                        parser.NextToken();
-                    parser.LastToken.TrailingComments = null;  // Toss any comments
+                    {
+                        // If the following statement is inline, associate the inline comment with it
+                        RemoveAt(index);
+                        obj1.AttachAnnotation(obj, true);
+                        obj1.IsFirstOnLine = true;
+                        obj.IsFirstOnLine = false;
+                    }
                 }
-                if (parser.TokenText == ParseTokenEnd)
-                    parser.NextToken();  // Move past '}'
             }
         }
 
         /// <summary>
-        /// Parse an Expression into the Block.
+        /// Add any trailing Comment objects on the specified token to the Block.
         /// </summary>
-        public void ParseExpressionAsBlock(Parser parser, CodeObject parent)
+        protected void AddTrailingComments(Token token)
         {
-            HasBraces = false;
-            AddInternalNoFormatting(Expression.Parse(parser, parent, true));
+            if (token != null && token.TrailingComments != null)
+            {
+                foreach (CommentBase commentBase in token.TrailingComments)
+                {
+                    // Add the comment first (so it acquires a parent), then adjust it
+                    AddInternalNoFormatting(commentBase);
+                    AdjustCommentIndentation(commentBase);
+                }
+                token.TrailingComments = null;
+
+                // If the block has no braces, force the Line/Col info to match the first comment (if any)
+                if (!HasBraces && Count > 0)
+                    SetLineCol(this[0]);
+            }
         }
 
         /// <summary>
@@ -1113,76 +1132,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             }
         }
 
-        /// <summary>
-        /// Post-process the specified comment object at the specified index, associating with the following object if applicable.
-        /// </summary>
-        protected internal void PostProcessComment(CommentBase obj, int index)
-        {
-            if (obj.IsFirstOnLine && index < _codeObjects.Count - 1)
-            {
-                // Check for following statements or expressions without a preceeding blank line, or allow a couple
-                // of blank lines if the comment is a documentation comment.
-                CodeObject obj1 = _codeObjects[index + 1];
-                int obj1NewLines = obj1.NewLines;
-                if (obj1.AssociateCommentWhenParsing(obj) && (obj1NewLines <= 1 || (obj is DocComment && obj1NewLines <= 3)))
-                {
-                    // Remove any blank lines between DocComments and following code
-                    if (obj1NewLines > 1)
-                        obj1.NewLines = 1;
-
-                    // Check that the following statement is also on a new line
-                    if (obj1.IsFirstOnLine)
-                    {
-                        // Check if the candidate is the last object in the block, or is followed by a blank line, or is followed by
-                        // either a Comment or an object with first-on-line annotations, or is followed by a compiler directive, or if
-                        // the candidate comment is a documentation comment - in these cases, associate the candidate comment with the
-                        // object that follows it.
-                        CodeObject obj2 = (index < _codeObjects.Count - 2 ? _codeObjects[index + 2] : null);
-                        if (obj2 == null || obj2.NewLines > 1 || obj2 is CommentBase || obj2.HasFirstOnLineAnnotations || obj2 is CompilerDirective || obj is DocComment)
-                        {
-                            // Special exception: Also require that either the comment is preceeded by a blank line, or less than two
-                            // code objects, or the preceeding object is a comment or has a blank line before it, or the 2nd preceeding
-                            // object is a comment.
-                            if (obj.NewLines > 1 || index < 2 || _codeObjects[index - 1] is CommentBase || _codeObjects[index - 1].NewLines > 1 || _codeObjects[index - 2] is CommentBase)
-                            {
-                                RemoveAt(index);
-                                obj1.AttachAnnotation(obj, true);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // If the following statement is inline, associate the inline comment with it
-                        RemoveAt(index);
-                        obj1.AttachAnnotation(obj, true);
-                        obj1.IsFirstOnLine = true;
-                        obj.IsFirstOnLine = false;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Add any trailing Comment objects on the specified token to the Block.
-        /// </summary>
-        protected void AddTrailingComments(Token token)
-        {
-            if (token != null && token.TrailingComments != null)
-            {
-                foreach (CommentBase commentBase in token.TrailingComments)
-                {
-                    // Add the comment first (so it acquires a parent), then adjust it
-                    AddInternalNoFormatting(commentBase);
-                    AdjustCommentIndentation(commentBase);
-                }
-                token.TrailingComments = null;
-
-                // If the block has no braces, force the Line/Col info to match the first comment (if any)
-                if (!HasBraces && Count > 0)
-                    SetLineCol(this[0]);
-            }
-        }
-
         // Flush the Unrecognized object and clear it
         protected void FlushUnrecognized(Parser parser, ref Unrecognized unrecognized)
         {
@@ -1196,58 +1145,127 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         }
 
         /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
+        /// Skip parsing a brace-delimited <see cref="Block"/>.
         /// </summary>
-        public override bool HasUnresolvedRef()
+        public static void SkipParsingBlock(Parser parser, CodeObject parent, bool bracesRequired, params string[] terminators)
         {
-            if (ChildListHelpers.HasUnresolvedRef(_codeObjects))
-                return true;
-            return false;
-        }
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve using the Expression category, because expressions are legal (such as Assignments)
-            // in blocks, in addition to statements (CodeObjects).
-            ChildListHelpers.Resolve(_codeObjects, ResolveCategory.Expression, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name are valid goto targets, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveGotoTargetUp(string name, Resolver resolver)
-        {
-            if (_namedMembers != null)
-                resolver.AddMatch(_namedMembers.FindGotoTarget(name));
-        }
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        public void ResolveIndexerRef(Resolver resolver)
-        {
-            // Although indexers (which always display their name as 'this') usually have an internal name of 'Item',
-            // the IndexerName attribute can be used to override the name.  For example, StringBuilder has an indexer
-            // named 'Chars', XmlAttributeCollection has 'ItemOf', etc.  So, we have to scan for all IndexerDecls.
-            // Also, we don't want to match any explicit interface implementations, so filter those out.
-            foreach (CodeObject codeObject in _codeObjects)
+            // Don't process comments or conditional directives if we have no parent, or the parent has no header (CodeUnit or BlockDecl)
+            if (parent is IBlock && ((IBlock)parent).HasHeader)
             {
-                if (codeObject is IndexerDecl && !((IndexerDecl)codeObject).IsExplicitInterfaceImplementation)
-                    resolver.AddMatch(codeObject);
+                // Process comments
+                parent.MoveEOLComment(parser.LastToken);  // Associate any skipped EOL comment with the parent
+
+                // Toss any skipped comment objects
+                parser.LastToken.TrailingComments = null;
+
+                // Parse any post compiler directives between the parent statement and the block
+                ParseCompilerDirectives(parser, parent, AnnotationFlags.IsPostfix);
+            }
+            else
+            {
+                // Toss any skipped comments at the top of a CodeUnit or BlockDecl (from the dummy token)
+                parser.LastToken.TrailingComments = null;
+            }
+
+            // Parse the braces and everything between them, throwing it all away
+            if (parser.TokenText == ParseTokenStart)
+            {
+                parser.NextToken();                        // Move past '{'
+                parser.LastToken.TrailingComments = null;  // Toss any comments
+                int nestLevel = 0;
+                while (parser.Token != null && !(parser.TokenText == ParseTokenEnd && nestLevel == 0))
+                {
+                    if (parser.TokenText == ParseTokenStart)
+                        ++nestLevel;
+                    else if (parser.TokenText == ParseTokenEnd)
+                        --nestLevel;
+                    if (parser.TokenType == TokenType.CompilerDirective)
+                        parser.ProcessToken(parent);  // Skip & toss any compiler directives
+                    else
+                        parser.NextToken();
+                    parser.LastToken.TrailingComments = null;  // Toss any comments
+                }
+                if (parser.TokenText == ParseTokenEnd)
+                    parser.NextToken();  // Move past '}'
+            }
+        }
+
+        #endregion
+
+        #region /* FORMATTING */
+
+        /// <summary>
+        /// True if the code object only requires a single line for display by default.
+        /// </summary>
+        public override bool IsSingleLineDefault
+        {
+            get
+            {
+                if (_codeObjects != null)
+                {
+                    int count = _codeObjects.Count;
+                    if (count == 0)
+                        return true;
+                    if (count == 1)
+                        return _codeObjects[0].IsSingleLineDefault;
+                }
+                return false;
             }
         }
 
         /// <summary>
-        /// Resolve child code objects that match the specified name.
+        /// Determines if the code object only requires a single line for display.
         /// </summary>
-        public void ResolveRef(string name, Resolver resolver)
+        public override bool IsSingleLine
         {
-            if (_namedMembers != null)
-                resolver.AddMatch(_namedMembers.Find(name));
+            get { return (base.IsSingleLine && (_codeObjects == null || _codeObjects.Count == 0 || (!_codeObjects[0].IsFirstOnLine && _codeObjects.IsSingleLine))); }
+            set
+            {
+                // For Blocks, EndNewLines indicates the number of new lines before the '}'
+                EndNewLines = (value ? 0 : 1);
+
+                // Propagate the change to all members of the Block
+                if (_codeObjects != null)
+                {
+                    CodeObject lastObj = null;
+                    foreach (CodeObject obj in _codeObjects)
+                    {
+                        if (value)
+                            obj.NewLines = 0;
+                        else if (!obj.IsFirstOnLine)
+                            obj.NewLines = (lastObj != null ? obj.DefaultNewLines(lastObj) : 1);
+                        lastObj = obj;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            // Default to a single line (unless we have first-on-line annotations) - the block will be reformatted as items are added
+            get { return HasFirstOnLineAnnotations; }
+        }
+
+        /// <summary>
+        /// Determines if the code object appears as the first item on a line.
+        /// </summary>
+        public override bool IsFirstOnLine
+        {
+            // Special flag for IsFirstOnLine for the '{', because the newlines storage is used for EndNewLines for the '}'
+            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
+            set { SetFormatFlag(FormatFlags.InfixNewLine, value); }
+        }
+
+        /// <summary>
+        /// The number of newlines preceeding the opening '{' (0 or 1 only - setting a higher value is ignored).
+        /// </summary>
+        public override int NewLines
+        {
+            get { return (IsFirstOnLine ? 1 : 0); }
+            set { IsFirstOnLine = (value > 0); }
         }
 
         /// <summary>
@@ -1302,79 +1320,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             set { }  // Just ignore any set attempts
         }
 
-        /// <summary>
-        /// Determines if the code object appears as the first item on a line.
-        /// </summary>
-        public override bool IsFirstOnLine
-        {
-            // Special flag for IsFirstOnLine for the '{', because the newlines storage is used for EndNewLines for the '}'
-            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
-            set { SetFormatFlag(FormatFlags.InfixNewLine, value); }
-        }
+        #endregion
 
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            // Default to a single line (unless we have first-on-line annotations) - the block will be reformatted as items are added
-            get { return HasFirstOnLineAnnotations; }
-        }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_codeObjects == null || _codeObjects.Count == 0 || (!_codeObjects[0].IsFirstOnLine && _codeObjects.IsSingleLine))); }
-            set
-            {
-                // For Blocks, EndNewLines indicates the number of new lines before the '}'
-                EndNewLines = (value ? 0 : 1);
-
-                // Propagate the change to all members of the Block
-                if (_codeObjects != null)
-                {
-                    CodeObject lastObj = null;
-                    foreach (CodeObject obj in _codeObjects)
-                    {
-                        if (value)
-                            obj.NewLines = 0;
-                        else if (!obj.IsFirstOnLine)
-                            obj.NewLines = (lastObj != null ? obj.DefaultNewLines(lastObj) : 1);
-                        lastObj = obj;
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// True if the code object only requires a single line for display by default.
-        /// </summary>
-        public override bool IsSingleLineDefault
-        {
-            get
-            {
-                if (_codeObjects != null)
-                {
-                    int count = _codeObjects.Count;
-                    if (count == 0)
-                        return true;
-                    if (count == 1)
-                        return _codeObjects[0].IsSingleLineDefault;
-                }
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the opening '{' (0 or 1 only - setting a higher value is ignored).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return (IsFirstOnLine ? 1 : 0); }
-            set { IsFirstOnLine = (value > 0); }
-        }
+        #region /* RENDERING */
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -1553,5 +1501,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
 
             AsTextAfter(writer, flags);
         }
+
+        #endregion
     }
 }

@@ -3,28 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Linq;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="MethodDecl"/>, <see cref="GenericMethodDecl"/>, <see cref="ConstructorDecl"/>,
@@ -303,7 +286,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
                 TypeRefBase thatParameterTypeRef = parameterTypes[i];
                 if (thatParameterTypeRef != null)
                 {
-                    TypeRefBase thisParameterTypeRef = _parameters[i].EvaluateType();
+                    TypeRefBase thisParameterTypeRef = _parameters[i].Type.SkipPrefixes() as TypeRefBase;
                     // Allow any type parameters to match (necessary when looking for the base virtual method
                     // of a method with a parameter with a TypeParameterRef type).
                     if (thisParameterTypeRef is TypeParameterRef && thatParameterTypeRef is TypeParameterRef)
@@ -347,7 +330,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
                     {
                         TypeRefBase[] parameterTypes = null;
                         if (_parameters != null)
-                            parameterTypes = Enumerable.ToArray(Enumerable.Select<ParameterDecl, TypeRefBase>(_parameters, delegate(ParameterDecl parameterDecl) { return parameterDecl.Type.EvaluateType(); }));
+                            parameterTypes = Enumerable.ToArray(Enumerable.Select<ParameterDecl, TypeRefBase>(_parameters, delegate(ParameterDecl parameterDecl) { return parameterDecl.Type.SkipPrefixes() as TypeRefBase; }));
                         return baseTypeRef.GetMethod(Name, parameterTypes);
                     }
                 }
@@ -365,7 +348,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
                 Expression left = ((Dot)_name).Left;
                 if (left != null)
                 {
-                    TypeRef typeRef = left.EvaluateType() as TypeRef;
+                    TypeRef typeRef = left.SkipPrefixes() as TypeRef;
                     if (typeRef != null && typeRef.IsInterface)
                         return typeRef;
                 }
@@ -544,90 +527,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
         public override bool AssociateCommentWhenParsing(CommentBase comment)
         {
             return true;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-            {
-                if (_returnType != null)
-                    _returnType = (Expression)_returnType.Resolve(ResolveCategory.Type, flags);
-                ChildListHelpers.Resolve(_parameters, ResolveCategory.CodeObject, flags);
-            }
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                if (_name is Expression)
-                    _name = ((Expression)_name).Resolve(ResolveCategory.Method, flags);
-                if (_parameters != null)
-                {
-                    foreach (ParameterDecl parameter in _parameters)
-                        parameter.ResolveAttributes(flags);
-                }
-                ResolveAttributes(flags);
-                if (_body != null && !flags.HasFlag(ResolveFlags.SkipMethodBodies))
-                    _body.Resolve(ResolveCategory.CodeObject, flags);
-                ResolveDocComments(flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (resolver.ResolveCategory == ResolveCategory.Parameter)
-                ChildListHelpers.ResolveRef(_parameters, name, resolver);
-            else
-            {
-                if (_body != null)
-                {
-                    _body.ResolveRef(name, resolver);
-                    if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                }
-                ChildListHelpers.ResolveRef(_parameters, name, resolver);
-                if (_parent != null && !resolver.HasCompleteMatch)
-                    _parent.ResolveRefUp(name, resolver);
-            }
-        }
-
-        /// <summary>
-        /// Similar to <see cref="ResolveRefUp"/>, but skips trying to resolve the symbol in the body or parameters of a
-        /// method (used for resolving parameter types).
-        /// </summary>
-        public override void ResolveRefUpSkipMethodBody(string name, Resolver resolver)
-        {
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name are valid goto targets, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveGotoTargetUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-                _body.ResolveGotoTargetUp(name, resolver);
-            // Stop the search at the method level (don't search the parent)
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_parameters))
-                return true;
-            if (_returnType != null && _returnType.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

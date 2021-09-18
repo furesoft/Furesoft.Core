@@ -1,14 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The Cast operator casts an Expression to the specified Type.
@@ -165,59 +162,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            _type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-            return base.Resolve(resolveCategory, flags);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_type != null && _type.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // Evaluate to the type of the cast, but also include any constant value in the expression
-            TypeRefBase newType = _type.EvaluateType(withoutConstants);
-            if (_expression != null && _expression.IsConst)
-            {
-                // Use IsConst first, as it's faster and avoids possible infinite loops, but if it's const, then
-                // we have to evaluate the expression.
-                // Because we can't create constant instances of nullable types (see TypeUtil.ChangeType:840), don't
-                // even try, or we'll end up with a non-nullable constant - it's better to lose the constant and keep
-                // the type correct, since this can for example effect the evaluated type of Conditionals.
-                TypeRefBase expressionType = _expression.EvaluateType(withoutConstants);
-                if (newType is TypeRef && !newType.IsNullableType && expressionType != null && expressionType.IsConst)
-                    newType = new TypeRef((TypeRef)newType, expressionType.GetConstantValue());
-            }
-            return newType;
-        }
-
-        /// <summary>
-        /// Find a type argument for the specified type parameter.
-        /// </summary>
-        public override TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
-        {
-            return _type.FindTypeArgument(typeParameterRef, originatingChild);
         }
 
         #endregion

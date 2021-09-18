@@ -4,31 +4,14 @@
 
 using System;
 using System.Reflection;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
-using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
+using Nova.Rendering;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Represents a reference to a <see cref="ConstructorDecl"/> or <see cref="MethodDefinition"/>/<see cref="ConstructorInfo"/>.
+    /// Represents a reference to a <see cref="ConstructorDecl"/> or <see cref="ConstructorInfo"/>.
     /// </summary>
     /// <remarks>
     /// A <see cref="ConstructorRef"/> never has type arguments.  When using <see cref="NewObject"/> to create an
@@ -37,6 +20,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
     /// </remarks>
     public class ConstructorRef : MethodRef
     {
+        #region /* CONSTRUCTORS */
+
         /// <summary>
         /// Create a <see cref="ConstructorRef"/> from a <see cref="ConstructorDecl"/>.
         /// </summary>
@@ -49,20 +34,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
         /// </summary>
         public ConstructorRef(ConstructorDecl constructorDecl)
             : base(constructorDecl, false)
-        { }
-
-        /// <summary>
-        /// Create a <see cref="ConstructorRef"/> from a <see cref="MethodDefinition"/>.
-        /// </summary>
-        public ConstructorRef(MethodDefinition methodDefinition, bool isFirstOnLine)
-            : base(methodDefinition, isFirstOnLine)
-        { }
-
-        /// <summary>
-        /// Create a <see cref="ConstructorRef"/> from a <see cref="MethodDefinition"/>.
-        /// </summary>
-        public ConstructorRef(MethodDefinition methodDefinition)
-            : base(methodDefinition, false)
         { }
 
         /// <summary>
@@ -79,6 +50,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
             : base(constructorInfo, false)
         { }
 
+        #endregion
+
+        #region /* PROPERTIES */
+
         /// <summary>
         /// The name of the <see cref="ConstructorRef"/>.
         /// </summary>
@@ -88,11 +63,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
             {
                 if (_reference is INamedCodeObject)
                     return ((INamedCodeObject)_reference).Name;
-                if (_reference is MethodDefinition)
-                {
-                    TypeDefinition typeDefinition = ((MethodDefinition)_reference).DeclaringType;
-                    return (typeDefinition.HasGenericParameters ? TypeDefinitionUtil.NonGenericName(typeDefinition) : typeDefinition.Name);
-                }
                 if (_reference is ConstructorInfo)
                 {
                     Type type = ((ConstructorInfo)_reference).DeclaringType;
@@ -116,6 +86,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
             }
         }
 
+        #endregion
+
+        #region /* STATIC METHODS */
+
         /// <summary>
         /// Find the constructor of the specified <see cref="TypeDecl"/> with the specified signature.
         /// </summary>
@@ -130,7 +104,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
                     constructorRef.IsFirstOnLine = isFirstOnLine;
                     return constructorRef;
                 }
-                return new UnresolvedRef(typeDecl.Name, isFirstOnLine, ResolveCategory.Constructor);
+                return new UnresolvedRef(typeDecl.Name, isFirstOnLine);
             }
             return null;
         }
@@ -158,7 +132,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
                     constructorRef.IsFirstOnLine = isFirstOnLine;
                     return constructorRef;
                 }
-                return new UnresolvedRef(typeAlias.Name, isFirstOnLine, ResolveCategory.Constructor);
+                return new UnresolvedRef(typeAlias.Name, isFirstOnLine);
             }
             return null;
         }
@@ -173,31 +147,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
         }
 
         /// <summary>
-        /// Find the constructor of the specified <see cref="TypeDefinition"/> with the specified signature.
-        /// </summary>
-        /// <returns>A <see cref="ConstructorRef"/> to the constructor, or an <see cref="UnresolvedRef"/> if no match was found.</returns>
-        public static TypeRefBase Find(TypeDefinition typeDefinition, bool isFirstOnLine, params TypeReference[] parameterTypes)
-        {
-            if (typeDefinition != null)
-            {
-                MethodDefinition constructorDefinition = TypeDefinitionUtil.GetConstructor(typeDefinition, parameterTypes);
-                if (constructorDefinition != null)
-                    return new ConstructorRef(constructorDefinition, isFirstOnLine);
-                return new UnresolvedRef(typeDefinition.Name, isFirstOnLine, ResolveCategory.Constructor);
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Find the constructor of the specified <see cref="TypeDefinition"/> with the specified signature.
-        /// </summary>
-        /// <returns>A <see cref="ConstructorRef"/> to the constructor, or an <see cref="UnresolvedRef"/> if no match was found.</returns>
-        public static TypeRefBase Find(TypeDefinition typeDefinition, params TypeReference[] parameterTypes)
-        {
-            return Find(typeDefinition, false, parameterTypes);
-        }
-
-        /// <summary>
         /// Find the constructor of the specified <see cref="Type"/> with the specified signature.
         /// </summary>
         /// <returns>A <see cref="ConstructorRef"/> to the constructor, or an <see cref="UnresolvedRef"/> if no match was found.</returns>
@@ -208,7 +157,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
                 ConstructorInfo constructorInfo = type.GetConstructor(parameterTypes);
                 if (constructorInfo != null)
                     return new ConstructorRef(constructorInfo, isFirstOnLine);
-                return new UnresolvedRef(type.Name, isFirstOnLine, ResolveCategory.Constructor);
+                return new UnresolvedRef(type.Name, isFirstOnLine);
             }
             return null;
         }
@@ -236,7 +185,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
                     constructorRef.IsFirstOnLine = isFirstOnLine;
                     return constructorRef;
                 }
-                return new UnresolvedRef(typeRefBase.Name, isFirstOnLine, ResolveCategory.Constructor);
+                return new UnresolvedRef(typeRefBase.Name, isFirstOnLine);
             }
             return null;
         }
@@ -248,6 +197,18 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
         public static TypeRefBase Find(TypeRefBase typeRefBase, params TypeRefBase[] parameterTypes)
         {
             return Find(typeRefBase, false, parameterTypes);
+        }
+
+        #endregion
+
+        #region /* METHODS */
+
+        /// <summary>
+        /// Get the return type of the constructor (never null).
+        /// </summary>
+        public override TypeRefBase GetReturnType()
+        {
+            return GetReturnType(this, _reference);
         }
 
         /// <summary>
@@ -267,14 +228,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
                     // a delegate (used for the obsolete explicit delegate creation syntax), and
                     // use the type of the parameter as our type.
                     // Clone the type so we can evaluate any type arguments it has later without consequences.
-                    typeRefBase = constructorDecl.Parameters[0].EvaluateType();
+                    typeRefBase = constructorDecl.Parameters[0].Type.SkipPrefixes() as TypeRefBase;
                     typeRefBase = (typeRefBase != null ? (TypeRefBase)typeRefBase.Clone() : TypeRef.VoidRef);
                 }
                 else
                     typeRefBase = (TypeRef)parent.CreateRef();
             }
-            else if (reference is MethodDefinition)
-                typeRefBase = TypeRef.Create(((MethodDefinition)reference).DeclaringType);
             else //if (reference is ConstructorInfo)
                 typeRefBase = TypeRef.Create(((ConstructorInfo)reference).DeclaringType);
 
@@ -301,20 +260,25 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
             return base.GetDeclaringType();
         }
 
-        /// <summary>
-        /// Get the return type of the constructor (never null).
-        /// </summary>
-        public override TypeRefBase GetReturnType()
-        {
-            return GetReturnType(this, _reference);
-        }
+        #endregion
 
-        /// <summary>
-        /// Find a type argument for the specified type parameter.
-        /// </summary>
-        public override TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
+        #region /* RENDERING */
+
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
-            return null;
+            // Display constructors as their declaring type name, including any type arguments (this
+            // is the easy way to display them with the proper type arguments and any enclosing types,
+            // if appropriate).
+            UpdateLineCol(writer, flags);
+            TypeRefBase typeRef = GetDeclaringType();
+            if (typeRef != null)
+                typeRef.AsText(writer, flags &~ RenderFlags.UpdateLineCol);
+            else if (_reference is ConstructorDecl)
+            {
+                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
+                // go ahead and display it's name.
+                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
+            }
         }
 
         public static void AsTextConstructorInfo(CodeWriter writer, ConstructorInfo constructorInfo, RenderFlags flags)
@@ -332,21 +296,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
             AsTextMethodParameters(writer, constructorInfo, flags);
         }
 
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            // Display constructors as their declaring type name, including any type arguments (this
-            // is the easy way to display them with the proper type arguments and any enclosing types,
-            // if appropriate).
-            UpdateLineCol(writer, flags);
-            TypeRefBase typeRef = GetDeclaringType();
-            if (typeRef != null)
-                typeRef.AsText(writer, flags & ~RenderFlags.UpdateLineCol);
-            else if (_reference is ConstructorDecl)
-            {
-                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
-                // go ahead and display it's name.
-                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
-            }
-        }
+        #endregion
     }
 }

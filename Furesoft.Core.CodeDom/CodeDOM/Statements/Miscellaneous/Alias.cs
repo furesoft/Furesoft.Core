@@ -5,30 +5,14 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Represents an alias to a <see cref="Namespace"/> or a type (<see cref="TypeDecl"/>, or <see cref="TypeDefinition"/>/<see cref="Type"/>).
+    /// Represents an alias to a <see cref="Namespace"/> or a type (<see cref="TypeDecl"/>, or <see cref="Type"/>).
     /// </summary>
     /// <remarks>
     /// An alias can only be defined at the <see cref="CodeUnit"/> or <see cref="NamespaceDecl"/> level, and it can only
@@ -139,7 +123,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
         /// </summary>
         public TypeRef Type
         {
-            get { return _expression.EvaluateType() as TypeRef; }
+            get { return _expression.SkipPrefixes() as TypeRef; }
         }
 
         #region /* ITYPEDECL PROPERTIES */
@@ -628,16 +612,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
         }
 
         /// <summary>
-        /// Add a <see cref="TypeDefinition"/> to the referenced <see cref="Namespace"/>.
-        /// </summary>
-        public void Add(TypeDefinition typeDefinition)
-        {
-            NamespaceRef namespaceRef = Namespace;
-            if (namespaceRef != null)
-                namespaceRef.Add(typeDefinition);
-        }
-
-        /// <summary>
         /// Add a <see cref="Type"/> to the referenced <see cref="Namespace"/>.
         /// </summary>
         public void Add(Type type)
@@ -665,16 +639,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
             NamespaceRef namespaceRef = Namespace;
             if (namespaceRef != null)
                 namespaceRef.Remove(typeDecl);
-        }
-
-        /// <summary>
-        /// Remove a <see cref="TypeDefinition"/> from the referenced <see cref="Namespace"/>.
-        /// </summary>
-        public void Remove(TypeDefinition typeDefinition)
-        {
-            NamespaceRef namespaceRef = Namespace;
-            if (namespaceRef != null)
-                namespaceRef.Remove(typeDefinition);
         }
 
         /// <summary>
@@ -719,7 +683,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
         #endregion
 
         /// <summary>
-        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="TypeDefinition"/>/<see cref="Type"/> with
+        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="Type"/> with
         /// the specified name.
         /// </summary>
         /// <returns>The child object if found, otherwise null.</returns>
@@ -813,60 +777,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
             parser.NextToken();                  // Move past '='
             SetField(ref _expression, Expression.Parse(parser, this, true), false);
             ParseTerminator(parser);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            _expression = (Expression)_expression.Resolve(ResolveCategory.NamespaceOrType, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public void ResolveRef(string name, Resolver resolver)
-        {
-            Expression expression = _expression.SkipPrefixes();
-            if (expression is NamespaceRef)
-                ((NamespaceRef)expression).Namespace.ResolveRef(name, resolver, false);
-            else if (expression is TypeRef)
-                ((TypeRef)expression).ResolveRef(name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        public void ResolveIndexerRef(Resolver resolver)
-        {
-            TypeRef typeRef = Type;
-            if (typeRef != null)
-                typeRef.ResolveIndexerRef(resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_expression != null && _expression.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Find a type argument in a base class for the specified type parameter.
-        /// </summary>
-        public TypeRefBase FindTypeArgumentInBase(TypeParameterRef typeParameterRef)
-        {
-            TypeRef typeRef = Type;
-            return (typeRef != null ? typeRef.FindTypeArgumentInBase(typeParameterRef) : null);
         }
 
         #endregion

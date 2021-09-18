@@ -4,35 +4,11 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Projects;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all user-defined type declarations (<see cref="ClassDecl"/>, <see cref="StructDecl"/>,
@@ -46,11 +22,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         protected string _name;
         protected ChildList<TypeParameter> _typeParameters;        // Not used for EnumDecls
         protected ChildList<ConstraintClause> _constraintClauses;  // Not used for EnumDecls
-
-        /// <summary>
-        /// The parent Project of the TypeDecl, used for performance when importing types.
-        /// </summary>
-        protected Project _parentProject;
 
         #endregion
 
@@ -108,20 +79,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         {
             get { return _modifiers; }
             set { _modifiers = value; }
-        }
-
-        /// <summary>
-        /// The parent <see cref="CodeObject"/>.
-        /// </summary>
-        public override CodeObject Parent
-        {
-            set
-            {
-                base.Parent = value;
-
-                // Cache the parent project for performance when importing types from other projects
-                _parentProject = FindParent<Project>();
-            }
         }
 
         /// <summary>
@@ -321,14 +278,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         public TypeDecl DeclaringType
         {
             get { return (_parent as TypeDecl); }
-        }
-
-        /// <summary>
-        /// The parent <see cref="Project"/> of the <see cref="TypeDecl"/>.
-        /// </summary>
-        public Project ParentProject
-        {
-            get { return _parentProject; }
         }
 
         #endregion
@@ -1086,258 +1035,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         public override bool AssociateCommentWhenParsing(CommentBase comment)
         {
             return true;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & ResolveFlags.Phase1) == 0)
-            {
-                if ((flags & ResolveFlags.Phase3) == 0)
-                {
-                    ChildListHelpers.Resolve(_typeParameters, ResolveCategory.CodeObject, flags);  // Resolve any attributes on the TypeParameters
-                    ChildListHelpers.Resolve(_constraintClauses, ResolveCategory.CodeObject, flags);
-                }
-                if ((flags & ResolveFlags.Phase2) == 0)
-                    ResolveAttributes(flags);
-                if (_body != null)
-                    _body.Resolve(ResolveCategory.CodeObject, flags);
-                if ((flags & ResolveFlags.Phase2) == 0)
-                    ResolveDocComments(flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            // Abort if we reach this level and we're looking for a category that can't be found this "high"
-            if (resolver.IsMethodLevelCategory())
-                return;
-
-            if (resolver.ResolveCategory == ResolveCategory.LocalTypeParameter)
-                ChildListHelpers.ResolveRef(_typeParameters, name, resolver);
-            else
-            {
-                if (_body != null)
-                    _body.ResolveRef(name, resolver);
-                if (IsPartial)
-                    ResolveOtherParts(name, resolver, null);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                ChildListHelpers.ResolveRef(_typeParameters, name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                ResolveRefInBase(name, resolver);
-                if (_parent != null && !resolver.HasCompleteMatch)
-                    _parent.ResolveRefUp(name, resolver);
-            }
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public override void ResolveRef(string name, Resolver resolver)
-        {
-            if (_body != null)
-                _body.ResolveRef(name, resolver);
-            if (IsPartial)
-                ResolveOtherParts(name, resolver, null);
-            if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            ResolveRefInBase(name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve child code objects in the base class that match the specified name.
-        /// </summary>
-        protected virtual void ResolveRefInBase(string name, Resolver resolver)
-        {
-            TypeRef baseRef = GetBaseType();
-            if (baseRef != null)
-            {
-                TypeRefBase typeRefBase = baseRef.EvaluateType();
-                if (typeRefBase != null)
-                    typeRefBase.ResolveRef(name, resolver);
-            }
-        }
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        public override void ResolveIndexerRef(Resolver resolver)
-        {
-            if (_body != null)
-                _body.ResolveIndexerRef(resolver);
-            if (IsPartial)
-                ResolveIndexerOtherParts(resolver, null);
-            if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            ResolveIndexerRefInBase(resolver);
-        }
-
-        /// <summary>
-        /// Resolve indexers in the base class.
-        /// </summary>
-        protected virtual void ResolveIndexerRefInBase(Resolver resolver)
-        {
-            TypeRef baseRef = GetBaseType();
-            if (baseRef != null)
-            {
-                TypeRefBase typeRefBase = baseRef.EvaluateType();
-                if (typeRefBase != null)
-                    typeRefBase.ResolveIndexerRef(resolver);
-            }
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_typeParameters))
-                return true;
-            if (ChildListHelpers.HasUnresolvedRef(_constraintClauses))
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        #region /* RESOLVE OTHER PARTS */
-
-        private void ResolveOtherParts(string name, Resolver resolver, List<string> parentTypes)
-        {
-            // Find any other parts of the type, and try resolving with them
-            CodeObject parent = _parent;
-            if (parent is NamespaceDecl)
-                ResolveOtherParts(((NamespaceDecl)parent).Namespace.Find(_name), name, resolver, parentTypes);
-            else if (parent is TypeDecl)
-            {
-                // Look for other parts of a nested type in the parent type
-                TypeDecl parentTypeDecl = (TypeDecl)parent;
-                ResolveOtherParts(parentTypeDecl.Body.FindChildren(_name), name, resolver, parentTypes);
-
-                // If the parent type is also partial, then look for other parts of the parent
-                // type, and look in them for additional parts of the nested type.
-                if (parentTypeDecl.IsPartial)
-                {
-                    if (parentTypes == null)
-                        parentTypes = new List<string>();
-                    parentTypes.Insert(0, _name);
-                    parentTypeDecl.ResolveOtherParts(name, resolver, parentTypes);
-                }
-            }
-        }
-
-        private void ResolveOtherParts(object obj, string name, Resolver resolver, List<string> parentTypes)
-        {
-            if (obj is TypeDecl && obj != this && ((TypeDecl)obj).TypeParameterCount == TypeParameterCount)
-                ResolveOtherPart((TypeDecl)obj, name, resolver, parentTypes);
-            else if (obj is NamespaceTypeGroup)
-            {
-                foreach (object @object in (NamespaceTypeGroup)obj)
-                {
-                    if (@object is TypeDecl && @object != this && ((TypeDecl)@object).TypeParameterCount == TypeParameterCount)
-                        ResolveOtherPart((TypeDecl)@object, name, resolver, parentTypes);
-                }
-            }
-        }
-
-        private void ResolveOtherPart(TypeDecl typeDecl, string name, Resolver resolver, List<string> parentTypes)
-        {
-            if (parentTypes == null)
-                typeDecl.ResolveOtherPart(name, resolver);
-            else
-            {
-                List<string> newList = new List<string>(parentTypes);
-                string parentType = parentTypes[0];
-                newList.RemoveAt(0);
-                ResolveOtherParts(typeDecl.Body.FindChildren(parentType), name, resolver, newList.Count > 0 ? newList : null);
-            }
-        }
-
-        private void ResolveOtherPart(string name, Resolver resolver)
-        {
-            if (IsPartial && _body != null)
-                _body.ResolveRef(name, resolver);
-        }
-
-        private void ResolveIndexerOtherParts(Resolver resolver, List<string> parentTypes)
-        {
-            // Find any other parts of the type, and try resolving with them
-            CodeObject parent = _parent;
-            if (parent is NamespaceDecl)
-                ResolveIndexerOtherParts(((NamespaceDecl)parent).Namespace.Find(_name), resolver, parentTypes);
-            else if (parent is TypeDecl)
-            {
-                // Look for other parts of a nested type in the parent type
-                TypeDecl parentTypeDecl = (TypeDecl)parent;
-                ResolveIndexerOtherParts(parentTypeDecl.Body.FindChildren(_name), resolver, parentTypes);
-
-                // If the parent type is also partial, then look for other parts of the parent
-                // type, and look in them for additional parts of the nested type.
-                if (parentTypeDecl.IsPartial)
-                {
-                    if (parentTypes == null)
-                        parentTypes = new List<string>();
-                    parentTypes.Insert(0, _name);
-                    parentTypeDecl.ResolveIndexerOtherParts(resolver, parentTypes);
-                }
-            }
-        }
-
-        private void ResolveIndexerOtherParts(object obj, Resolver resolver, List<string> parentTypes)
-        {
-            if (obj is TypeDecl && obj != this)
-                ResolveIndexerOtherPart((TypeDecl)obj, resolver, parentTypes);
-            else if (obj is NamespaceTypeGroup)
-            {
-                foreach (object @object in (NamespaceTypeGroup)obj)
-                {
-                    if (@object is TypeDecl && @object != this)
-                        ResolveIndexerOtherPart((TypeDecl)@object, resolver, parentTypes);
-                }
-            }
-        }
-
-        private void ResolveIndexerOtherPart(TypeDecl typeDecl, Resolver resolver, List<string> parentTypes)
-        {
-            if (parentTypes == null)
-                typeDecl.ResolveIndexerOtherPart(resolver);
-            else
-            {
-                List<string> newList = new List<string>(parentTypes);
-                string parentType = parentTypes[0];
-                newList.RemoveAt(0);
-                ResolveIndexerOtherParts(typeDecl.Body.FindChildren(parentType), resolver, newList.Count > 0 ? newList : null);
-            }
-        }
-
-        private void ResolveIndexerOtherPart(Resolver resolver)
-        {
-            if (IsPartial && _body != null)
-                _body.ResolveIndexerRef(resolver);
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Find a type argument in a base class for the specified type parameter.
-        /// </summary>
-        public virtual TypeRefBase FindTypeArgumentInBase(TypeParameterRef typeParameterRef)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Determine if the type argument counts match those in the specified <see cref="UnresolvedRef"/>.
-        /// </summary>
-        public bool DoTypeArgumentCountsMatch(UnresolvedRef unresolvedRef)
-        {
-            return (TypeParameterCount == unresolvedRef.TypeArgumentCount);
         }
 
         #endregion

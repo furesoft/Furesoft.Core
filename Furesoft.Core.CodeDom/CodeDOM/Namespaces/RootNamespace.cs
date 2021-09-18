@@ -3,15 +3,8 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Projects;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents the top-level namespace (either a project's global namespace, or an extern alias namespace).
@@ -19,8 +12,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
     /// <remarks>
     /// A <see cref="RootNamespace"/> maintains a dictionary of child namespaces indexed by full name for
     /// better performance when searching for namespaces.
-    /// The Parent of a <see cref="Namespace"/> instance should only be another Namespace, but the Parent of a RootNamespace
-    /// can be either a <see cref="Project"/> (global namespace) or a <see cref="Reference"/> (extern alias namespace).
     /// </remarks>
     public class RootNamespace : Namespace
     {
@@ -61,22 +52,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         public override bool IsGlobal
         {
             get { return (_name == ExternAlias.GlobalName); }
-        }
-
-        /// <summary>
-        /// The parent Project if this RootNamespace is a project-global namespace (otherwise null).
-        /// </summary>
-        public Project ParentProject
-        {
-            get { return (_parent as Project); }
-        }
-
-        /// <summary>
-        /// The parent <see cref="Reference"/> if this RootNamespace is an extern alias for an external reference (otherwise null).
-        /// </summary>
-        public Reference ParentReference
-        {
-            get { return (_parent as Reference); }
         }
 
         #endregion

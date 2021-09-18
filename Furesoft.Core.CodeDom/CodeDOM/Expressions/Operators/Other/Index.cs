@@ -1,18 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents an index into an array or type with an indexer.
@@ -149,127 +142,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Indexers always have a category of Expression
-            return base.Resolve(ResolveCategory.Expression, flags);
-        }
-
-        protected override void ResolveInvokedExpression(ResolveCategory resolveCategory, ResolveFlags flags, out SymbolicRef oldInvokedRef, out SymbolicRef newInvokedRef)
-        {
-            // Resolve the invoked (indexed) expression - first, resolve the invoked expression, then any hidden IndexerRef
-            base.ResolveInvokedExpression(resolveCategory, flags, out oldInvokedRef, out newInvokedRef);
-
-            // If we failed to resolve the expression, then don't bother with the IndexerRef yet
-            if (newInvokedRef is UnresolvedRef)
-            {
-                // Force the IndexerRef to null if it isn't already
-                if (_indexerRef != null)
-                    SetField(ref _indexerRef, null, false);
-            }
-            else
-            {
-                // Check for implicit indexing, or an explicit IndexerRef expression
-                bool implicitIndexing = false;
-                if (newInvokedRef is IndexerRef)
-                    implicitIndexing = true;
-                else
-                {
-                    // Arrays and strings also use imnplicit indexing
-                    TypeRefBase typeRefBase = _expression.EvaluateType();
-                    if (typeRefBase != null)
-                    {
-                        if (typeRefBase.IsArray || typeRefBase.IsSameRef(TypeRef.StringRef))
-                            implicitIndexing = true;
-                    }
-                }
-
-                // If the expression was resolved or changed, or it's not implicit and we don't have a IndexerRef yet, or it's implicit and
-                // we have an IndexerRef, then reset the IndexerRef as appropriate.
-                if (newInvokedRef != oldInvokedRef || (!implicitIndexing && _indexerRef == null) || (implicitIndexing && _indexerRef != null))
-                {
-                    // If the indexer is implicit, make the IndexerRef null, otherwise set it to an UnresolvedRef to be resolved
-                    SymbolicRef symbolicRef = (implicitIndexing ? null : new UnresolvedRef(IndexerDecl.IndexerName, ResolveCategory.Indexer, LineNumber, ColumnNumber));
-                    SetField(ref _indexerRef, symbolicRef, false);
-                }
-
-                // Resolve the IndexerRef, treating it as the "invoked reference" now in place of the expression
-                oldInvokedRef = _indexerRef;
-                if (_indexerRef is UnresolvedRef)
-                    _indexerRef = (SymbolicRef)_indexerRef.Resolve(ResolveCategory.Indexer, flags);
-                newInvokedRef = _indexerRef;
-            }
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_indexerRef != null && _indexerRef.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            TypeRefBase typeRefBase;
-
-            // If we have an IndexerRef, our type is its return type
-            if (_indexerRef != null)
-            {
-                typeRefBase = null;
-                if (_indexerRef is IndexerRef)
-                {
-                    typeRefBase = _indexerRef.EvaluateType(withoutConstants);
-                    if (typeRefBase != null)
-                        typeRefBase = typeRefBase.EvaluateTypeArgumentTypes(_expression);
-                }
-                else if (_indexerRef is UnresolvedRef)
-                {
-                    if (((UnresolvedRef)_indexerRef).ResolveCategory == ResolveCategory.Indexer)
-                        typeRefBase = ((UnresolvedRef)_indexerRef).MethodGroupReturnType();
-                }
-            }
-            else
-            {
-                // Otherwise, we're doing implicit indexing, or have an explicit IndexerRef expression
-                typeRefBase = _expression.EvaluateType(withoutConstants);
-                if (typeRefBase != null)
-                {
-                    if (!(_expression.SkipPrefixes() is IndexerRef))
-                    {
-                        // Determine the element type for arrays and strings
-                        if (typeRefBase.IsArray)
-                            typeRefBase = typeRefBase.GetElementType();
-                        else if (typeRefBase.IsSameRef(TypeRef.StringRef))
-                            typeRefBase = TypeRef.CharRef;
-                    }
-                }
-            }
-
-            return typeRefBase;
-        }
-
-        /// <summary>
-        /// Get the invocation target reference.
-        /// </summary>
-        public override SymbolicRef GetInvocationTargetRef()
-        {
-            return _indexerRef;
         }
 
         #endregion

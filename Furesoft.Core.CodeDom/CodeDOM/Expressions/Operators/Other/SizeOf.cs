@@ -3,15 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Runtime.InteropServices;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.Parsing;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Returns the size of the specified type.
@@ -97,33 +92,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // The following built-in types result in constant sizes outside of unsafe code blocks:
-            TypeRefBase typeRefBase = _expression.EvaluateType(withoutConstants);
-            if (typeRefBase.IsSameRef(TypeRef.BoolRef) || typeRefBase.IsSameRef(TypeRef.SByteRef) || typeRefBase.IsSameRef(TypeRef.ByteRef))
-                return new TypeRef(TypeRef.IntRef, 1);
-            if (typeRefBase.IsSameRef(TypeRef.CharRef) || typeRefBase.IsSameRef(TypeRef.ShortRef) || typeRefBase.IsSameRef(TypeRef.UShortRef))
-                return new TypeRef(TypeRef.IntRef, 2);
-            if (typeRefBase.IsSameRef(TypeRef.IntRef) || typeRefBase.IsSameRef(TypeRef.UIntRef) || typeRefBase.IsSameRef(TypeRef.FloatRef))
-                return new TypeRef(TypeRef.IntRef, 4);
-            if (typeRefBase.IsSameRef(TypeRef.LongRef) || typeRefBase.IsSameRef(TypeRef.ULongRef) || typeRefBase.IsSameRef(TypeRef.DoubleRef))
-                return new TypeRef(TypeRef.IntRef, 8);
-            if (typeRefBase.IsSameRef(TypeRef.DecimalRef))
-                return new TypeRef(TypeRef.IntRef, 16);
-
-            // Otherwise, just return 'int'
-            return TypeRef.IntRef;
         }
 
         #endregion

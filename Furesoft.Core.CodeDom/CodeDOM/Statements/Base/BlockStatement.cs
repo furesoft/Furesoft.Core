@@ -4,18 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Projects;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all <see cref="Statement"/>s that can have a <see cref="Block"/> as a body (<see cref="NamespaceDecl"/>,
@@ -109,11 +102,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
         /// <summary>
         /// True if a <see cref="BlockStatement"/> is at the top level (those that have no header and no indent).
         /// For example, a <see cref="CodeUnit"/>, a <see cref="BlockDecl"/> with no parent or a <see cref="DocComment"/>
-        /// or <see cref="Project"/> parent.
+        /// parent.
         /// </summary>
         public virtual bool IsTopLevel
         {
-            get { return (!HasHeader && (_parent == null || _parent is DocComment || _parent is Project)); }
+            get { return (!HasHeader && (_parent == null || _parent is DocComment)); }
         }
 
         /// <summary>
@@ -328,76 +321,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
                 else
                     new Block(out _body, parser, this, true);  // Parse the body
             }
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_body != null)
-                _body.Resolve(ResolveCategory.CodeObject, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public virtual void ResolveRef(string name, Resolver resolver)
-        {
-            if (_body != null)
-                _body.ResolveRef(name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        public virtual void ResolveIndexerRef(Resolver resolver)
-        {
-            if (_body != null)
-                _body.ResolveIndexerRef(resolver);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name are valid goto targets, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveGotoTargetUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveGotoTargetUp(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_parent != null)
-                _parent.ResolveGotoTargetUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_body != null && _body.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

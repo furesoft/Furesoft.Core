@@ -3,13 +3,8 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a collection of child <see cref="CodeObject"/>s of a particular type.
@@ -231,72 +226,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         public static T First<T>(ChildList<T> thisChildList) where T : CodeObject
         {
             return ((thisChildList != null && thisChildList.Count > 0) ? thisChildList[0] : null);
-        }
-
-        /// <summary>
-        /// Resolve all symbolic references in the child objects.
-        /// </summary>
-        public static void Resolve<T>(ChildList<T> thisChildList, ResolveCategory resolveCategory, ResolveFlags flags) where T : CodeObject
-        {
-            if (thisChildList != null)
-            {
-                bool inGeneratedRegion = false;
-                for (int i = 0; i < thisChildList.Count; ++i)
-                {
-                    T child = thisChildList[i];
-                    if (child != null)
-                    {
-                        thisChildList[i] = (T)child.Resolve(resolveCategory, flags);
-
-                        // Set flag when inside a region of generated code
-                        if (child is MessageDirective)
-                        {
-                            if (child is RegionDirective && (child as RegionDirective).IsGeneratedRegion && !flags.HasFlag(ResolveFlags.IsGenerated))
-                            {
-                                inGeneratedRegion = true;
-                                flags |= ResolveFlags.IsGenerated;
-                            }
-                            else if (inGeneratedRegion && child is EndRegionDirective)
-                            {
-                                inGeneratedRegion = false;
-                                flags &= ~ResolveFlags.IsGenerated;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Attempt to resolve a reference in a <see cref="ChildList{T}"/> collection.
-        /// </summary>
-        public static void ResolveRef<T>(ChildList<T> thisChildList, string name, Resolver resolver) where T : CodeObject, INamedCodeObject
-        {
-            if (thisChildList != null)
-            {
-                foreach (T item in thisChildList)
-                {
-                    if (item.Name == name)
-                        resolver.AddMatch(item);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns true if any child object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children, otherwise false.
-        /// </summary>
-        public static bool HasUnresolvedRef<T>(ChildList<T> thisChildList) where T : CodeObject
-        {
-            if (thisChildList != null)
-            {
-                for (int i = 0; i < thisChildList.Count; ++i)
-                {
-                    T child = thisChildList[i];
-                    if (child != null && child.HasUnresolvedRef())
-                        return true;
-                }
-            }
-            return false;
         }
 
         /// <summary>

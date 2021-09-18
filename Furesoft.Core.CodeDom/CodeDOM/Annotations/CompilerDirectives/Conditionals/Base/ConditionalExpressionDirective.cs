@@ -1,12 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="IfDirective"/> and <see cref="ElIfDirective"/>.
@@ -85,9 +84,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Condition
 
             // Skip the next section of code if an earlier 'if' or 'elif' evaluated to true, or
             // if this one doesn't evaluate to true.
-            TypeRef typeRef = (_expression != null ? _expression.EvaluateType() as TypeRef : null);
-            if (parser.CurrentConditionalDirectiveState
-                || !(typeRef != null && typeRef.IsConst && typeRef.Reference is bool && (bool)typeRef.Reference))
+            bool eval = false;
+            if (_expression is DirectiveSymbolRef)
+                eval = FindParent<CodeUnit>().IsCompilerDirectiveSymbolDefined(((DirectiveSymbolRef)_expression).Name);
+            else if (_expression is Literal)
+                eval = ((Literal)_expression).Text == Literal.ParseTokenTrue;
+            if (parser.CurrentConditionalDirectiveState || !eval)
                 SkipSection(parser);
             else
                 parser.CurrentConditionalDirectiveState = _isActive = true;

@@ -6,16 +6,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a compound field declaration - the declaration of multiple fields of the same type in
@@ -297,49 +291,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
         public override string GetFullName(bool descriptive)
         {
             return null;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-            {
-                // Resolve the type first, so it can be used to avoid ambiguities while resolving
-                // any Initializations for the FieldDecls (such as for method groups).
-                if (_type != null)
-                    Type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-            }
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                ResolveAttributes(flags);
-                ChildListHelpers.Resolve(_fieldDecls, ResolveCategory.CodeObject, flags);
-                ResolveDocComments(flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public override void ResolveRef(string name, Resolver resolver)
-        {
-            ChildListHelpers.ResolveRef(_fieldDecls, name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_fieldDecls))
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

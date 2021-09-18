@@ -5,22 +5,11 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Declares a type that represents a reference to a method.
@@ -225,7 +214,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
         /// </summary>
         public override TypeRefBase GetDelegateReturnType()
         {
-            return (_returnType != null ? _returnType.EvaluateType() : null);
+            return (_returnType != null ? _returnType.SkipPrefixes() as TypeRefBase : null);
         }
 
         /// <summary>
@@ -374,81 +363,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             ParseConstraintClauses(parser);  // Parse any constraint clauses
             ParseTerminator(parser);
             GenerateMethods();  // Generate invoke methods and constructor
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-            {
-                if (_returnType != null)
-                    _returnType = (Expression)_returnType.Resolve(ResolveCategory.Type, flags);
-                ChildListHelpers.Resolve(_parameters, ResolveCategory.CodeObject, flags);
-            }
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            ChildListHelpers.ResolveRef(_typeParameters, name, resolver);
-            if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            ChildListHelpers.ResolveRef(_parameters, name, resolver);
-            if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            TypeRef baseRef = GetBaseType();
-            if (baseRef != null)
-            {
-                TypeRefBase typeRefBase = baseRef.EvaluateType();
-                if (typeRefBase != null)
-                {
-                    typeRefBase.ResolveRef(name, resolver);
-                    if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                }
-            }
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Similar to <see cref="ResolveRefUp"/>, but skips trying to resolve the symbol in the body or parameters of a
-        /// method (used for resolving parameter types).
-        /// </summary>
-        public override void ResolveRefUpSkipMethodBody(string name, Resolver resolver)
-        {
-            ChildListHelpers.ResolveRef(_typeParameters, name, resolver);
-            if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            TypeRef baseRef = GetBaseType();
-            if (baseRef != null)
-            {
-                TypeRefBase typeRefBase = baseRef.EvaluateType();
-                if (typeRefBase != null)
-                {
-                    typeRefBase.ResolveRef(name, resolver);
-                    if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                }
-            }
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_parameters))
-                return true;
-            if (_returnType != null && _returnType.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

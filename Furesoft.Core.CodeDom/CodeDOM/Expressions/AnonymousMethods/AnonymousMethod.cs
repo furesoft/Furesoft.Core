@@ -2,36 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Nova.Parsing;
+using Nova.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents an un-named method that can be assigned to a delegate.
@@ -40,9 +14,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
     /// An AnonymousMethod distinguishes between having zero parameters and unspecified parameters (no parens
     /// at all).  If the parameters are unspecified, the anonymous method is convertible to a delegate with any
     /// parameter list not containing out parameters.  It's possible that the empty parens will be needed in
-    /// some cases to prevent ambiguity, such as when resolving a method reference that is passed an anonymous
-    /// method as a parameter, and multiple matches are found that have delegates with different numbers of
-    /// parameters (one of them having zero).
+    /// some cases to prevent ambiguity.
     /// </remarks>
     public class AnonymousMethod : Expression, IParameters, IBlock
     {
@@ -229,7 +201,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
         /// <summary>
         /// Determine the return type of the anonymous method (never null - will be 'void' instead).
         /// </summary>
-        public virtual TypeRefBase GetReturnType()
+        public TypeRefBase GetReturnType()
         {
             TypeRefBase returnTypeRef = null;
             ScanReturnTypes(ref returnTypeRef, _body);
@@ -246,7 +218,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
                     if (codeObject is Return)
                     {
                         Expression expression = ((Return)codeObject).Expression;
-                        TypeRefBase typeRef = (expression == null ? TypeRef.VoidRef : expression.EvaluateType(true));
+                        TypeRefBase typeRef = (expression == null ? TypeRef.VoidRef : expression.SkipPrefixes() as TypeRefBase);
                         returnTypeRef = (returnTypeRef == null ? typeRef : TypeRef.GetCommonType(returnTypeRef, typeRef));
                     }
                     else if (codeObject is BlockStatement)
@@ -273,7 +245,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
             else if (parent is Assignment)
             {
                 // If the anonymous method is being assigned to a variable, get the delegate type from the variable's type
-                delegateExpression = ((Assignment)parent).Left.EvaluateType();
+                delegateExpression = ((Assignment)parent).Left.SkipPrefixes();
             }
             else if (parent is Cast)
             {
@@ -313,10 +285,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
                 // Handle collection initializers
                 if (parent.Parent is Initializer && parent.Parent.Parent is NewObject)
                 {
-                    TypeRefBase typeRefBase = ((NewObject)parent.Parent.Parent).EvaluateType();
+                    TypeRefBase typeRefBase = ((NewObject)parent.Parent.Parent).SkipPrefixes() as TypeRefBase;
 
                     // Handle a Dictionary where the value is a delegate type
-                    if (typeRefBase.IsSameGenericType(TypeRef.Dictionary2Ref))
+                    if (typeRefBase != null && typeRefBase.IsSameGenericType(TypeRef.Dictionary2Ref))
                         delegateExpression = typeRefBase.TypeArguments[1];
                 }
             }
@@ -384,166 +356,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
                 SetFormatFlag(FormatFlags.NoIndentation, true);
 
             new Block(out _body, parser, this, true);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            ChildListHelpers.Resolve(_parameters, ResolveCategory.CodeObject, flags);
-            if (_body != null)
-                _body.Resolve(ResolveCategory.CodeObject, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            ChildListHelpers.ResolveRef(_parameters, name, resolver);
-            if (_parent != null && !resolver.HasCompleteMatch)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name are valid goto targets, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveGotoTargetUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveGotoTargetUp(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_parent != null)
-                _parent.ResolveGotoTargetUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_body.HasUnresolvedRef())
-                return true;
-            if (ChildListHelpers.HasUnresolvedRef(_parameters))
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Determine if the parameters of the anonymous method are compatible with those of the specified delegate type.
-        /// </summary>
-        public bool AreParametersCompatible(TypeRef toTypeRef)
-        {
-            ICollection delegateParameters = toTypeRef.GetDelegateParameters();
-
-            // If we have parameters (even if we have 0), then we match normally
-            if (_parameters != null)
-            {
-                // Get the method and delegate parameters
-                ChildList<ParameterDecl> parameters = Parameters;
-                int delegateParameterCount = (delegateParameters != null ? delegateParameters.Count : 0);
-
-                // The parameter counts must match ('params' are NOT expanded in this situation)
-                if ((parameters != null ? parameters.Count : 0) != delegateParameterCount)
-                    return false;
-
-                // For each delegate parameter, verify that its type and ref/out modifiers *match* those of
-                // the method parameter (no conversions are allowed).
-                for (int i = 0; i < delegateParameterCount; ++i)
-                {
-                    // Get the type of the delegate parameter, and any modifiers
-                    bool isRef, isOut;
-                    TypeRefBase delegateParameterRef = ParameterRef.GetParameterType(delegateParameters, i, out isRef, out isOut, toTypeRef);
-
-                    // Check if the parameter types and modifiers match
-                    ParameterDecl parameterDecl = parameters[i];
-                    TypeRefBase parameterTypeRef = parameterDecl.EvaluateType();
-                    if (parameterTypeRef == null || !parameterTypeRef.IsSameRef(delegateParameterRef) || parameterDecl.IsRef != isRef || parameterDecl.IsOut != isOut)
-                        return false;
-                }
-            }
-            else
-            {
-                // If we don't have any parameters (they were "unspecified"), then any count and types are allowed
-                // to match, except that we have to ensure that there aren't any 'out' parameters.
-                if (delegateParameters is List<ParameterDecl>)
-                    return Enumerable.All(((List<ParameterDecl>)delegateParameters), delegate(ParameterDecl parameterDecl) { return !parameterDecl.IsOut; });
-                if (delegateParameters is ParameterInfo[])
-                    return Enumerable.All(((ParameterInfo[])delegateParameters), delegate(ParameterInfo parameterInfo) { return !ParameterInfoUtil.IsOut(parameterInfo); });
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Determine if the return type of the anonymous method is compatible with that of the specified delegate type.
-        /// </summary>
-        public virtual bool AreReturnTypesCompatible(TypeRef toTypeRef)
-        {
-            // The types of *all* of the return statements in the block must be convertible to the delegate's return type
-            TypeRefBase delegateReturnType = toTypeRef.GetDelegateReturnType();
-            if (delegateReturnType == null)
-                return false;
-            delegateReturnType = delegateReturnType.EvaluateTypeArgumentTypes(toTypeRef);
-            return ScanReturnStatements(delegateReturnType, delegateReturnType.IsSameRef(TypeRef.VoidRef), _body);
-        }
-
-        protected bool ScanReturnStatements(TypeRefBase delegateReturnType, bool isVoidReturn, Block body)
-        {
-            // Recursively scan all bodies for Return statements
-            if (body != null)
-            {
-                foreach (CodeObject codeObject in body)
-                {
-                    if (codeObject is Return)
-                    {
-                        Expression expression = ((Return)codeObject).Expression;
-                        if (expression == null)
-                        {
-                            // If the return doesn't have an expression, the return type of the delegate must be 'void'
-                            if (!isVoidReturn)
-                                return false;
-                        }
-                        else
-                        {
-                            // Otherwise, the type of the expression must be convertible to the return type of the delegate
-                            TypeRefBase typeRefBase = expression.EvaluateType();
-                            if (typeRefBase != null)
-                            {
-                                if (!typeRefBase.IsImplicitlyConvertibleTo(delegateReturnType))
-                                    return false;
-                            }
-                        }
-                    }
-                    else if (codeObject is BlockStatement)
-                    {
-                        if (!ScanReturnStatements(delegateReturnType, isVoidReturn, ((BlockStatement)codeObject).Body))
-                            return false;
-                    }
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            return new AnonymousMethodRef(this);
         }
 
         #endregion

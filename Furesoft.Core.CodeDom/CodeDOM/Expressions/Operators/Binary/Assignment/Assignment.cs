@@ -1,11 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Assigns the right <see cref="Expression"/> to the left <see cref="Expression"/>.
@@ -91,20 +90,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // The type of an assignment expression is the type of the left side
-            return (_left != null ? _left.EvaluateType(withoutConstants) : null);
         }
 
         #endregion

@@ -5,26 +5,18 @@
 using System;
 using System.Collections;
 using System.Reflection;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Represents a group of types (<see cref="TypeDecl"/>s and/or <see cref="TypeDefinition"/>s/<see cref="Type"/>s)
+    /// Represents a group of types (<see cref="TypeDecl"/>s and/or <see cref="Type"/>s)
     /// and/or <see cref="Namespace"/>s, with the same name (the contained objects are of type 'object').
     /// </summary>
     /// <remarks>
-    /// In valid code, a <see cref="NamespaceTypeGroup"/> should contain only <see cref="TypeDecl"/>s and/or <see cref="TypeDefinition"/>s/<see cref="Type"/>s
+    /// In valid code, a <see cref="NamespaceTypeGroup"/> should contain only <see cref="TypeDecl"/>s and/or <see cref="Type"/>s
     /// with the same name (the types being a combination of a non-generic type and/or generic types with the same name but different
     /// numbers of type parameters).  The two types of objects can be mixed due to external types existing in the same namespace as types
-    /// declared in the current <see cref="Solution"/>.  Normally, <see cref="Namespace"/>s shouldn't be involved, since types aren't
-    /// allowed to have the same name as a child namespace in the same parent namespace (but they could collide with a <see cref="TypeDecl"/>
-    /// in a <see cref="Project"/> that contains invalid code).
+    /// declared in local code.
     /// </remarks>
     public class NamespaceTypeGroup : INamedCodeObject, ICollection
     {
@@ -70,8 +62,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
                 string name;
                 if (obj is INamedCodeObject)
                     name = ((INamedCodeObject)obj).Name;
-                else if (obj is IMemberDefinition)
-                    name = ((IMemberDefinition)obj).Name;
                 else if (obj is MemberInfo)
                     name = ((MemberInfo)obj).Name;
                 else
@@ -161,17 +151,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         }
 
         /// <summary>
-        /// Add the specified <see cref="TypeDefinition"/> to the group.
-        /// </summary>
-        public void Add(TypeDefinition typeDefinition)
-        {
-            Add((object)typeDefinition);
-        }
-
-        /// <summary>
         /// Add an object to the group.
         /// </summary>
-        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="TypeDefinition"/>/<see cref="Type"/>, or <see cref="Namespace"/> object being added.</param>
+        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object being added.</param>
         public void Add(object obj)
         {
             if (obj is IEnumerable)

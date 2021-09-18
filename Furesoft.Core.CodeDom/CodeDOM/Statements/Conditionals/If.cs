@@ -1,11 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
-using Furesoft.Core.CodeDom.Parsing;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents conditional flow control, and includes a conditional expression, a body, and an optional <see cref="Else"/> or <see cref="ElseIf"/> statement.

@@ -5,21 +5,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Represents a dictionary of <see cref="Namespace"/>s and types (<see cref="TypeDecl"/>s and/or <see cref="TypeDefinition"/>s/<see cref="Type"/>s),
+    /// Represents a dictionary of <see cref="Namespace"/>s and types (<see cref="TypeDecl"/>s and/or <see cref="Type"/>s),
     /// allowing multiple entries with the same name.
     /// </summary>
     /// <remarks>
     /// This dictionary is used by <see cref="Namespace"/> to store child <see cref="Namespace"/>, <see cref="TypeDecl"/>,
-    /// and <see cref="TypeDefinition"/>/<see cref="Type"/> objects (storing items of type 'object').  It handles multiple entries with
+    /// and <see cref="Type"/> objects (storing items of type 'object').  It handles multiple entries with
     /// the same name (for generic types with different type parameter counts) by storing a <see cref="NamespaceTypeGroup"/> object.
     /// </remarks>
     public class NamespaceTypeDictionary : ICollection
@@ -85,18 +82,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         }
 
         /// <summary>
-        /// Add a <see cref="TypeDefinition"/> to the dictionary.
-        /// </summary>
-        public void Add(TypeDefinition typeDefinition)
-        {
-            Add(typeDefinition.HasGenericParameters ? TypeDefinitionUtil.NonGenericName(typeDefinition) : typeDefinition.Name, typeDefinition);
-        }
-
-        /// <summary>
         /// Add the specified type or namespace object with the specified name to the dictionary.
         /// </summary>
         /// <param name="name">The name of the object.</param>
-        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="TypeDefinition"/>/<see cref="Type"/>, or <see cref="Namespace"/> object.</param>
+        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object.</param>
         protected void Add(string name, object obj)
         {
             // Protect against null names - shouldn't occur, but might in rare cases for code with parsing errors
@@ -144,18 +133,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         }
 
         /// <summary>
-        /// Remove the specified <see cref="TypeDefinition"/> from the dictionary.
-        /// </summary>
-        public void Remove(TypeDefinition typeDefinition)
-        {
-            Remove(typeDefinition.HasGenericParameters ? TypeDefinitionUtil.NonGenericName(typeDefinition) : typeDefinition.Name, typeDefinition);
-        }
-
-        /// <summary>
         /// Remove the type or namespace object with the specified name from the dictionary.
         /// </summary>
         /// <param name="name">The name of the object.</param>
-        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="TypeDefinition"/>/<see cref="Type"/>, or <see cref="Namespace"/> object.</param>
+        /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object.</param>
         protected void Remove(string name, object obj)
         {
             object existingObj;
@@ -189,7 +170,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         /// <summary>
         /// Find named code object(s) in the dictionary by name.
         /// </summary>
-        /// <returns>The matching <see cref="TypeDecl"/>, <see cref="TypeDefinition"/>/<see cref="Type"/>, <see cref="Namespace"/>,
+        /// <returns>The matching <see cref="TypeDecl"/>, <see cref="Type"/>, <see cref="Namespace"/>,
         /// <see cref="NamespaceTypeGroup"/>, or null if not found.</returns>
         public object Find(string name)
         {
@@ -210,12 +191,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
                         // If we found multiple matches, then return any exact match if found
                         foreach (object @object in (NamespaceTypeGroup)found)
                         {
-                            if (@object is TypeDefinition)
-                            {
-                                if (((TypeDefinition)@object).Name == name)
-                                    return @object;
-                            }
-                            else if (@object is Type)
+                            if (@object is Type)
                             {
                                 if (((Type)@object).Name == name)
                                     return @object;

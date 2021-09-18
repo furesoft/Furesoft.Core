@@ -3,14 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Reflection;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Represents a reference to an <see cref="OperatorDecl"/> or <see cref="MethodDefinition"/>/<see cref="MethodInfo"/> for an overloaded operator.
+    /// Represents a reference to an <see cref="OperatorDecl"/> or a <see cref="MethodInfo"/> for an overloaded operator.
     /// </summary>
     public class OperatorRef : MethodRef
     {
@@ -28,20 +25,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
         /// </summary>
         public OperatorRef(OperatorDecl methodBase)
             : base(methodBase, false)
-        { }
-
-        /// <summary>
-        /// Create an <see cref="OperatorRef"/> from a <see cref="MethodDefinition"/>.
-        /// </summary>
-        public OperatorRef(MethodDefinition methodDefinition, bool isFirstOnLine)
-            : base(methodDefinition, isFirstOnLine)
-        { }
-
-        /// <summary>
-        /// Create an <see cref="OperatorRef"/> from a <see cref="MethodDefinition"/>.
-        /// </summary>
-        public OperatorRef(MethodDefinition methodDefinition)
-            : base(methodDefinition, false)
         { }
 
         /// <summary>

@@ -1,16 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Used together with compiler command-line options to create additional root-level namespaces.
@@ -62,7 +57,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
         /// </summary>
         public ExternAlias(string name)
         {
-            RootNamespaceRef = new UnresolvedRef(name, ResolveCategory.Namespace);
+            RootNamespaceRef = new UnresolvedRef(name);
         }
 
         #endregion
@@ -206,32 +201,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
             parser.NextToken();                        // Move past 'alias' keyword
             token = parser.Token;
             string name = parser.GetIdentifierText();  // Parse the name
-            RootNamespaceRef = new UnresolvedRef(name, ResolveCategory.Namespace, token.LineNumber, token.ColumnNumber);
+            RootNamespaceRef = new UnresolvedRef(name, token.LineNumber, token.ColumnNumber);
             ParseTerminator(parser);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase2 | ResolveFlags.Phase3)) == 0)
-                _rootNamespaceRef = (SymbolicRef)_rootNamespaceRef.Resolve(ResolveCategory.RootNamespace, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_rootNamespaceRef != null && _rootNamespaceRef.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

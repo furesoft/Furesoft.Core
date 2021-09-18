@@ -1,10 +1,8 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-// The Nova Project by Ken Beckett.
+﻿// The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all <see cref="CodeObject"/>s that have a Name property, and can be referenced symbolically.
@@ -15,7 +13,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
     ///    <see cref="IVariableDecl"/> implementers (<see cref="VariableDecl"/> and subclasses [<see cref="ParameterDecl"/>, <see cref="LocalDecl"/>, <see cref="FieldDecl"/>, <see cref="EnumMemberDecl"/>],
     ///        <see cref="PropertyDeclBase"/> and subclasses [<see cref="PropertyDecl"/>, <see cref="IndexerDecl"/>, <see cref="EventDecl"/>]),
     ///    <see cref="MethodDeclBase"/> and subclasses (<see cref="MethodDecl"/>, <see cref="GenericMethodDecl"/>, <see cref="ConstructorDecl"/>, <see cref="DestructorDecl"/>)
-    ///    <see cref="SwitchItem"/>, <see cref="Label"/>, <see cref="Solution"/>, <see cref="Project"/>, <see cref="CodeUnit"/>, <see cref="Namespace"/>, <see cref="ExternAlias"/>
+    ///    <see cref="SwitchItem"/>, <see cref="Label"/>, <see cref="CodeUnit"/>, <see cref="Namespace"/>, <see cref="ExternAlias"/>
     /// </remarks>
     public interface INamedCodeObject
     {

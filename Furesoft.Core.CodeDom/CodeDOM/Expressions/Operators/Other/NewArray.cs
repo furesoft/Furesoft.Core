@@ -2,18 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+using Nova.Parsing;
+using Nova.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The NewArray operator is used to create new array instances.
@@ -120,49 +112,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 
         #endregion
 
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_initializer != null)
-                _initializer.Resolve(ResolveCategory.Expression, flags);
-            base.Resolve(ResolveCategory.Type, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // Determine the type of the array
-            TypeRefBase typeRefBase;
-            if (_expression != null)
-            {
-                typeRefBase = _expression.EvaluateType(withoutConstants);
-
-                // Set the rank of the top-level array
-                if (_arguments != null && typeRefBase != null)
-                {
-                    // Clone the type and add the array rank if none, otherwise insert the top-level rank
-                    typeRefBase = (TypeRefBase)typeRefBase.Clone();
-                    if (typeRefBase.ArrayRanks == null)
-                        typeRefBase.ArrayRanks = new List<int> { _arguments.Count };
-                    else
-                        typeRefBase.ArrayRanks.Insert(0, _arguments.Count);
-                }
-            }
-            else
-                typeRefBase = _initializer.EvaluateType(withoutConstants);
-            return typeRefBase;
-        }
-
-        #endregion
-
         #region /* RENDERING */
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
@@ -199,7 +148,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
             // skipping the first set, because they will be rendered as the arguments.
             if (_expression != null)
             {
-                TypeRefBase typeRefBase = _expression.EvaluateType();
+                TypeRefBase typeRefBase = _expression.SkipPrefixes() as TypeRefBase;
                 if (typeRefBase != null)
                     typeRefBase.AsTextArrayRanks(writer, flags);
             }

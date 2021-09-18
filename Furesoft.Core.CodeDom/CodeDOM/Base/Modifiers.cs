@@ -4,16 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.Parsing.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// These modifiers are usable on various code objects to specify access and special behaviors.

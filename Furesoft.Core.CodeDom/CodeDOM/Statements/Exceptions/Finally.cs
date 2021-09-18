@@ -1,11 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Has a body that is ensured to always be executed whenever its parent <see cref="Try"/> block is exited for any reason.
@@ -86,27 +85,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
             // Remove any preceeding blank lines if auto-cleanup is on
             if (AutomaticFormattingCleanup && NewLines > 1)
                 NewLines = 1;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            // Skip past any Try parent (we don't want to match anything in its body)
-            if (_parent is Try && _parent.Parent != null)
-                _parent.Parent.ResolveRefUp(name, resolver);
-            else if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
         }
 
         #endregion

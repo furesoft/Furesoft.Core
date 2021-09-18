@@ -3,17 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="Alias"/>, which can in turn refer to a <see cref="NamespaceRef"/>
@@ -159,59 +152,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
         {
             TypeRefBase typeRef = Type;
             return (typeRef != null && typeRef.IsSameGenericType(typeRefBase));
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Unresolve instead of resolving if the flag is specified
-            TypeRefBase typeRefBase;
-            if (flags.HasFlag(ResolveFlags.Unresolve))
-                typeRefBase = new UnresolvedRef(this, resolveCategory, false);
-            else
-                typeRefBase = this;
-
-            // Ignore any TypeArguments - don't attempt to resolve or unresolve, since they're actually
-            // part of the Alias definition, not the AliasRef.
-
-            return typeRefBase;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public override void ResolveRef(string name, Resolver resolver)
-        {
-            if (HasArrayRanks)
-                ResolveRef(ArrayRef, name, resolver);
-            else
-                ((Alias)_reference).ResolveRef(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            return ((Alias)_reference).HasUnresolvedRef();
-        }
-
-        // Don't override EvaluateType() - we want to treat a type alias like a new type, displaying it as
-        // the new type, but making it synonymous with the aliased type.
-
-        /// <summary>
-        /// Find a type argument for the specified type parameter.
-        /// </summary>
-        public override TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
-        {
-            TypeRefBase typeRefBase = Type;
-            return (typeRefBase != null ? typeRefBase.FindTypeArgument(typeParameterRef, originatingChild) : null);
         }
 
         #endregion

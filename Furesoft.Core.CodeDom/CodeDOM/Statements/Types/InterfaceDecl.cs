@@ -3,21 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Declares an interface, which includes a name plus a body, along with various optional modifiers.
@@ -102,7 +91,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
                 {
                     foreach (Expression baseTypeExpression in baseTypes)
                     {
-                        TypeRef baseTypeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                        TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                         if (baseTypeRef != null && baseTypeRef.IsInterface)
                         {
                             methodRef = baseTypeRef.GetMethod(name, parameterTypes);
@@ -129,7 +118,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
                 {
                     foreach (Expression baseTypeExpression in baseTypes)
                     {
-                        TypeRef baseTypeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                        TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                         if (baseTypeRef != null && baseTypeRef.IsInterface)
                         {
                             propertyRef = baseTypeRef.GetProperty(name);
@@ -196,56 +185,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             // Eat any trailing terminator (they are allowed but not required on non-delegate type declarations)
             if (parser.TokenText == ParseTokenTerminator)
                 parser.NextToken();
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve child code objects in the base class that match the specified name.
-        /// </summary>
-        protected override void ResolveRefInBase(string name, Resolver resolver)
-        {
-            // Interfaces are implicitly 'object' types, but they have a null base type - instead,
-            // we must find and search any base interfaces, and then manually search 'object'.
-            List<Expression> baseTypes = GetAllBaseTypes();
-            if (baseTypes != null)
-            {
-                foreach (Expression baseTypeExpression in baseTypes)
-                {
-                    TypeRef baseTypeRef = baseTypeExpression.EvaluateType() as TypeRef;
-                    if (baseTypeRef != null && baseTypeRef.IsInterface)
-                    {
-                        baseTypeRef.ResolveRef(name, resolver);
-                        if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                    }
-                }
-            }
-            TypeRef.ResolveRef(TypeRef.ObjectRef, name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve indexers in any base interfaces.
-        /// </summary>
-        protected override void ResolveIndexerRefInBase(Resolver resolver)
-        {
-            // Interfaces are implicitly 'object' types, but they have a null base type - instead,
-            // we must find and search any base interfaces, and then manually search 'object'.
-            List<Expression> baseTypes = GetAllBaseTypes();
-            if (baseTypes != null)
-            {
-                foreach (Expression baseTypeExpression in baseTypes)
-                {
-                    TypeRef baseTypeRef = baseTypeExpression.EvaluateType() as TypeRef;
-                    if (baseTypeRef != null && baseTypeRef.IsInterface)
-                    {
-                        baseTypeRef.ResolveIndexerRef(resolver);
-                        if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                    }
-                }
-            }
-            TypeRef.ObjectRef.ResolveIndexerRef(resolver);
         }
 
         #endregion

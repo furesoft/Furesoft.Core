@@ -5,11 +5,10 @@
 using System;
 using System.Configuration;
 using System.Reflection;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom;
-using static Furesoft.Core.CodeDom.Log;
 
-namespace Furesoft.Core.CodeDom
+using Nova.CodeDOM;
+
+namespace Nova
 {
     /// <summary>
     /// Configuration class for Nova classes.
@@ -59,9 +58,8 @@ namespace Furesoft.Core.CodeDom
                             string fieldName = key.Substring(typeNameIndex + 1);
 
                             // Get the type using reflection - just ignore any types that aren't found, so that
-                            // settings can exist in the file for different assemblies.  Also, we'll allow types
-                            // under the Mono namespace through without prefixing the Nova namespace onto them.
-                            string fullTypeName = (typeName.StartsWith("Mono.") ? typeName : namespaceName + "." + typeName);
+                            // settings can exist in the file for different assemblies.
+                            string fullTypeName = namespaceName + "." + typeName;
                             Type type = assembly.GetType(fullTypeName);
                             if (type != null)
                             {
@@ -76,9 +74,9 @@ namespace Furesoft.Core.CodeDom
                                     object value = config.Settings[key].Value;
                                     if (fieldType.IsEnum && value is string)
                                     {
-                                        if (fieldType == typeof(Level))
+                                        if (fieldType == typeof(Log.Level))
                                         {
-                                            Level enumValue;
+                                            Log.Level enumValue;
                                             if (Enum.TryParse((string)value, true, out enumValue))
                                                 value = enumValue;
                                         }
@@ -99,20 +97,12 @@ namespace Furesoft.Core.CodeDom
         }
 
         /// <summary>
-        /// Log the specified exception and message.
-        /// </summary>
-        public static string LogException(Exception ex, string message)
-        {
-            return Log.Exception(ex, message + " configuration file");
-        }
-
-        /// <summary>
         /// Log the specified text message with the specified severity level.
         /// </summary>
         public static void LogMessage(string message, MessageSeverity severity, string toolTip)
         {
             string prefix = (severity == MessageSeverity.Error ? "ERROR: " : (severity == MessageSeverity.Warning ? "Warning: " : ""));
-            if (severity == MessageSeverity.Error || severity == MessageSeverity.Warning || Log.LogLevel >= Level.Detailed)
+            if (severity == MessageSeverity.Error || severity == MessageSeverity.Warning || Log.LogLevel >= Log.Level.Detailed)
                 Log.WriteLine(prefix + "Configuration file: " + message, toolTip != null ? toolTip.TrimEnd() : null);
         }
 
@@ -122,6 +112,14 @@ namespace Furesoft.Core.CodeDom
         public static void LogMessage(string message, MessageSeverity severity)
         {
             LogMessage(message, severity, null);
+        }
+
+        /// <summary>
+        /// Log the specified exception and message.
+        /// </summary>
+        public static string LogException(Exception ex, string message)
+        {
+            return Log.Exception(ex, message + " configuration file");
         }
     }
 }

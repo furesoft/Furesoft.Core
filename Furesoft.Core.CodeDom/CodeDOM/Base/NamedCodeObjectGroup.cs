@@ -5,21 +5,17 @@
 using System;
 using System.Collections;
 using System.Reflection;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Represents a group of named code objects (<see cref="INamedCodeObject"/>s and/or <see cref="IMemberDefinition"/>s/<see cref="MemberInfo"/>s)
+    /// Represents a group of named code objects (<see cref="INamedCodeObject"/>s and/or <see cref="MemberInfo"/>s)
     /// with the same name, such as overloaded methods or other name collisions.
     /// </summary>
     /// <remarks>
     /// Used by <see cref="NamedCodeObjectDictionary"/> to hold groups of child <see cref="INamedCodeObject"/>s with the same name,
     /// and also by various Get() and Find() type methods to return collections of <see cref="INamedCodeObject"/>s and/or
-    /// <see cref="IMemberDefinition"/>s/<see cref="MemberInfo"/>s with the same name.
+    /// <see cref="MemberInfo"/>s with the same name.
     /// </remarks>
     public class NamedCodeObjectGroup : INamedCodeObject, ICollection
     {
@@ -63,8 +59,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                 string name;
                 if (obj is INamedCodeObject)
                     name = ((INamedCodeObject)obj).Name;
-                else if (obj is IMemberDefinition)
-                    name = ((IMemberDefinition)obj).Name;
                 else if (obj is MemberInfo)
                     name = ((MemberInfo)obj).Name;
                 else

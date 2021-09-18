@@ -2,26 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Nova.Parsing;
+using Nova.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="FieldDecl"/>, <see cref="LocalDecl"/>, <see cref="ParameterDecl"/>, and <see cref="EnumMemberDecl"/>.
@@ -216,111 +200,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base
 
         #endregion
 
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve the type first, so it can be used to avoid ambiguities while resolving the Initialization (such as for method groups)
-            if (_type != null && !(_parent is MultiLocalDecl))
-                _type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-            if (_initialization != null)
-                _initialization = (Expression)_initialization.Resolve(ResolveCategory.Expression, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_type != null && _type.HasUnresolvedRef())
-                return true;
-            if (_initialization != null && _initialization.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Get the constant value of the variable (if any).
-        /// </summary>
-        /// <returns>An object of the type of the variable with a value of the constant used
-        /// to initialize it (if any), or null if the variable isn't a constant.</returns>
-        public virtual object GetValue()
-        {
-            if (IsConst && _initialization != null)
-            {
-                TypeRefBase typeRefBase = _initialization.EvaluateType();
-                if (typeRefBase != null)
-                {
-                    object value = typeRefBase.GetConstantValue();
-                    if (value is EnumConstant)
-                        value = ((EnumConstant)value).ConstantValue;
-                    if (value != null)
-                    {
-                        // Determine the type of the variable.  We're dealing with a constant, so it should
-                        // be a built-in type or an enum, so use SkipPrefixes() instead of EvaluateType() in
-                        // order to avoid infinite recursion (VariableDecl.EvaluateType() calls GetValue()).
-                        Expression typeExpression = Type;
-                        if (typeExpression != null)
-                        {
-                            TypeRef typeRef = typeExpression.SkipPrefixes() as TypeRef;
-                            if (typeRef != null)
-                            {
-                                object reference = typeRef.GetReferencedType();
-                                if (reference == null)
-                                    return null;
-
-                                // Make sure the value is of the proper type
-                                if (typeRef.IsEnum)
-                                {
-                                    // Get the underlying type if it's an enum
-                                    if (reference is EnumDecl)
-                                        reference = ((EnumDecl)reference).UnderlyingType.EvaluateType().GetReferencedType();
-                                    else if (reference is TypeDefinition)
-                                        return TypeRef.ChangeTypeOfConstant(value, TypeDefinitionUtil.GetUnderlyingTypeOfEnum((TypeDefinition)reference));
-                                    else //if (reference is Type)
-                                        return TypeUtil.ChangeType(value, Enum.GetUnderlyingType((Type)reference));
-                                }
-                                if (reference is TypeDefinition)
-                                    value = TypeRef.ChangeTypeOfConstant(value, (TypeDefinition)reference);
-                                else if (reference is Type)
-                                    value = TypeUtil.ChangeType(value, (Type)reference);
-                            }
-                        }
-                    }
-                    return value;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="VariableDecl"/>.
-        /// </summary>
-        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
-        /// of nested types.  It also handles constants and the type being null.</remarks>
-        public virtual TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            Expression typeExpression = Type;
-            return (typeExpression != null ? typeExpression.EvaluateType(withoutConstants) : null);
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="VariableDecl"/>.
-        /// </summary>
-        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
-        /// of nested types.  It also handles constants and the type being null.</remarks>
-        public TypeRefBase EvaluateType()
-        {
-            Expression typeExpression = Type;
-            return (typeExpression != null ? typeExpression.EvaluateType(false) : null);
-        }
-
-        #endregion
-
         #region /* FORMATTING */
 
         /// <summary>
@@ -404,11 +283,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base
             AsTextType(writer, flags);
             UpdateLineCol(writer, flags);
             writer.WriteIdentifier(_name, flags);
-        }
-
-        protected void AsTextConstantValue(CodeWriter writer, RenderFlags flags)
-        {
-            Literal.AsTextConstantValue(writer, flags, GetValue(), flags.HasFlag(RenderFlags.FormatAsHex), this);
         }
 
         protected void AsTextInitialization(CodeWriter writer, RenderFlags flags)

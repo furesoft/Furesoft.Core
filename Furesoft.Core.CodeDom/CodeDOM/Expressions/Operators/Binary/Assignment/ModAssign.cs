@@ -7,25 +7,17 @@ using Nova.Parsing;
 namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Returns the remainder of the division of one <see cref="Expression"/> by another.
+    /// Gets the remainder of the division of one <see cref="Expression"/> by another, and assigns it to the left <see cref="Expression"/>.
+    /// The left <see cref="Expression"/> must be an assignable object ("lvalue").
     /// </summary>
-    public class Mod : BinaryArithmeticOperator
+    public class ModAssign : Assignment
     {
-        #region /* CONSTANTS */
-
-        /// <summary>
-        /// The internal name of the operator.
-        /// </summary>
-        public const string InternalName = NamePrefix + "Modulus";
-
-        #endregion
-
         #region /* CONSTRUCTORS */
 
         /// <summary>
-        /// Create a <see cref="Mod"/> operator.
+        /// Create a <see cref="ModAssign"/> operator.
         /// </summary>
-        public Mod(Expression left, Expression right)
+        public ModAssign(Expression left, Expression right)
             : base(left, right)
         { }
 
@@ -50,7 +42,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public override string GetInternalName()
         {
-            return InternalName;
+            return Mod.InternalName;
         }
 
         #endregion
@@ -60,17 +52,7 @@ namespace Nova.CodeDOM
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
-        public const string ParseToken = "%";
-
-        /// <summary>
-        /// The precedence of the operator.
-        /// </summary>
-        public const int Precedence = 300;
-
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
+        public new const string ParseToken = "%=";
 
         internal static new void AddParsePoints()
         {
@@ -78,24 +60,16 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse a <see cref="Mod"/> operator.
+        /// Parse a <see cref="ModAssign"/> operator.
         /// </summary>
-        public static Mod Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public static new ModAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            return new Mod(parser, parent);
+            return new ModAssign(parser, parent);
         }
 
-        protected Mod(Parser parser, CodeObject parent)
+        protected ModAssign(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        /// <summary>
-        /// Get the precedence of the operator.
-        /// </summary>
-        public override int GetPrecedence()
-        {
-            return Precedence;
-        }
 
         #endregion
     }

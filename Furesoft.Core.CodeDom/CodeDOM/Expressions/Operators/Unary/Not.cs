@@ -1,10 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
-using Furesoft.Core.CodeDom.Parsing;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Checks if an <see cref="Expression"/> is false.
@@ -95,25 +95,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Perform a "not" operation on a constant object.
-        /// Supported types are: string, bool, enum, decimal, double, float, ulong, long, uint, int, ushort, short, char, byte, sbyte.
-        /// </summary>
-        /// <returns>
-        /// The result, using the appropriate result type, including promoting smaller types to int. Returns null if the operation is invalid.
-        /// </returns>
-        protected override object EvaluateConstant(object constant)
-        {
-            // The only type supported for "!" is boolean
-            if (constant is bool)
-                return !(bool)constant;
-            return null;  // The operation is invalid
         }
 
         #endregion

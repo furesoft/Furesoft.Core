@@ -1,18 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a special method used to initialize an instance of a <see cref="ClassDecl"/> or <see cref="StructDecl"/>.
@@ -122,7 +115,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods
                 declaringType = (TypeRef)_parent.CreateRef();
             // Handle the special case where the Parent is null for the generated ConstructorDecl of an external delegate type
             else if (_parent == null && IsGenerated && ParameterCount == 1)
-                declaringType = Parameters[0].EvaluateType() as TypeRef;
+                declaringType = Parameters[0].Type.SkipPrefixes() as TypeRef;
             else
                 declaringType = null;
             return declaringType;
@@ -182,39 +175,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods
                 MoveAnnotations(AnnotationFlags.IsInfix2, AnnotationFlags.IsPostfix);
 
             ParseTerminatorOrBody(parser, flags);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-                ChildListHelpers.Resolve(_parameters, ResolveCategory.CodeObject, flags);
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                ResolveAttributes(flags);
-                if (_initializer != null)
-                    _initializer.Resolve(ResolveCategory.CodeObject, flags);
-                if (_body != null)
-                    _body.Resolve(ResolveCategory.CodeObject, flags);
-                ResolveDocComments(flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_initializer != null && _initializer.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

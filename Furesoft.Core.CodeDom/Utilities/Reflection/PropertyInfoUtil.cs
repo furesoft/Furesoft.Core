@@ -4,7 +4,7 @@
 
 using System.Reflection;
 
-namespace Furesoft.Core.CodeDom.Utilities.Reflection
+namespace Nova.Utilities
 {
     /// <summary>
     /// Static helper methods for <see cref="PropertyInfo"/>.

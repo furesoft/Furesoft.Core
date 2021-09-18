@@ -1,10 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a generated message associated with a <see cref="CodeObject"/> (error, warning, suggestion, or hint).
@@ -222,7 +223,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
         Load,
         Parse,
         Resolve,
-        Analyze,
         Save
     }
 

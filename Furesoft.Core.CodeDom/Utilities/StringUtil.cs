@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Furesoft.Core.CodeDom.Utilities
+namespace Nova.Utilities
 {
     /// <summary>
     /// Static helper methods for the <see cref="string"/> class.
@@ -369,43 +369,6 @@ namespace Furesoft.Core.CodeDom.Utilities
         public static T[] ParseArray<T>(string thisStr, T[] defaultValues) where T : IConvertible
         {
             return ParseArray(thisStr, defaultValues, ',');
-        }
-
-        /// <summary>
-        /// Expand any $(NAME) or %NAME% macros in the specified string with environment variable values.
-        /// </summary>
-        public static string ExpandEnvironmentMacros(string value)
-        {
-            if (!string.IsNullOrEmpty(value))
-            {
-                Regex regex = new Regex(@"%(\w+)%|\$\((\w+)\)");
-                MatchCollection matches = regex.Matches(value);
-                if (matches.Count > 0)
-                {
-                    string result = null;
-                    int index = 0;
-                    for (int i = 0; i < matches.Count; ++i)
-                    {
-                        Match match = matches[i];
-                        int skippedLength = match.Index - index;
-                        result += value.Substring(index, skippedLength);
-                        index += skippedLength;
-                        for (int j = 1; j < match.Groups.Count; ++j)
-                        {
-                            Group group = match.Groups[j];
-                            if (group.Length > 0)
-                            {
-                                string macro = group.Value;
-                                result += Environment.GetEnvironmentVariable(macro);
-                            }
-                        }
-                        index += match.Length;
-                    }
-                    result += value.Substring(index);
-                    return result;
-                }
-            }
-            return value;
         }
 
         /// <summary>

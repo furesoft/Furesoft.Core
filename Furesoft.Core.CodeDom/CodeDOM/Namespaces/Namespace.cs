@@ -4,24 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Projects;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities.Mono.Cecil;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a namespace of type declarations and optional child namespaces.
@@ -29,10 +15,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
     /// <remarks>
     /// Unlike <see cref="NamespaceDecl"/>, which models individual namespace declaration statements and their contained statements,
     /// there is only a single instance of this class for a namespace, and it contains all of the <see cref="TypeDecl"/>
-    /// (for types declared in the same solution) and/or <see cref="TypeDefinition"/>/<see cref="Type"/> (for external types) and
+    /// (for types declared in the same solution) and/or <see cref="Type"/> (for external types) and
     /// child <see cref="Namespace"/> objects that currently exist in the namespace.
-    /// The Parent of a Namespace instance should only be another Namespace, but the Parent of a <see cref="RootNamespace"/>
-    /// can be either a <see cref="Project"/> (global namespace) or a <see cref="Reference"/> (extern alias namespace).
     /// </remarks>
     public class Namespace : CodeObject, INamedCodeObject, INamespace
     {
@@ -61,7 +45,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         protected bool _hasDeclarationsInProject;
 
         /// <summary>
-        /// Dictionary of child namespaces and types (<see cref="Namespace"/>s, <see cref="TypeDecl"/>s, and <see cref="TypeDefinition"/>s/<see cref="Type"/>s) by name.
+        /// Dictionary of child namespaces and types (<see cref="Namespace"/>s, <see cref="TypeDecl"/>s, and <see cref="Type"/>s) by name.
         /// </summary>
         protected NamespaceTypeDictionary _children = new NamespaceTypeDictionary();
 
@@ -182,59 +166,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         }
 
         /// <summary>
-        /// Add the specified <see cref="TypeDefinition"/> to the current <see cref="Namespace"/>.
-        /// </summary>
-        public void Add(TypeDefinition typeDefinition)
-        {
-            lock (this)
-                _children.Add(typeDefinition);
-        }
-
-        /// <summary>
         /// Add the specified <see cref="Type"/> to the current <see cref="Namespace"/>.
         /// </summary>
         public void Add(Type type)
         {
             lock (this)
                 _children.Add(type);
-        }
-
-        protected internal void AddFromOtherProject(Project project, Namespace @namespace, bool includePrivateTypes)
-        {
-            lock (this)
-            {
-                foreach (object codeObject in @namespace.Children)
-                {
-                    if (codeObject is NamespaceTypeGroup)
-                    {
-                        foreach (object codeObject2 in (NamespaceTypeGroup)codeObject)
-                            AddFromOtherProject(project, codeObject2, includePrivateTypes);
-                    }
-                    else
-                        AddFromOtherProject(project, codeObject, includePrivateTypes);
-                }
-            }
-        }
-
-        private void AddFromOtherProject(Project project, object codeObject, bool includePrivateTypes)
-        {
-            if (codeObject is TypeDecl)
-            {
-                // Add only those TypeDecls that are declared in the other project, and are accessible
-                TypeDecl typeDecl = (TypeDecl)codeObject;
-                if (typeDecl.ParentProject == project && (includePrivateTypes || typeDecl.IsPublic || typeDecl.IsProtected))
-                    Add(typeDecl);
-            }
-            else if (codeObject is Namespace)
-            {
-                // Add only those Namespaces that have declarations in the other project
-                Namespace @namespace = (Namespace)codeObject;
-                if (@namespace.HasDeclarationsInProject)
-                {
-                    Namespace childNamespace = FindOrCreateChildNamespace(@namespace.Name);
-                    childNamespace.AddFromOtherProject(project, @namespace, includePrivateTypes);
-                }
-            }
         }
 
         /// <summary>
@@ -253,15 +190,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         {
             lock (this)
                 _children.Remove(typeDecl);
-        }
-
-        /// <summary>
-        /// Remove the specified <see cref="TypeDefinition"/> from the current <see cref="Namespace"/>.
-        /// </summary>
-        public void Remove(TypeDefinition typeDefinition)
-        {
-            lock (this)
-                _children.Remove(typeDefinition);
         }
 
         /// <summary>
@@ -336,11 +264,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         }
 
         /// <summary>
-        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="TypeDefinition"/>/<see cref="Type"/> with
+        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="Type"/> with
         /// the specified name.
         /// </summary>
         /// <param name="name">The name of the child namespace or type (may contain namespace and/or parent type prefixes).</param>
-        /// <returns>The matching <see cref="TypeDecl"/>, <see cref="TypeDefinition"/>/<see cref="Type"/>, <see cref="Namespace"/>,
+        /// <returns>The matching <see cref="TypeDecl"/>, <see cref="Type"/>, <see cref="Namespace"/>,
         /// <see cref="NamespaceTypeGroup"/>, or null if not found.</returns>
         public object Find(string name)
         {
@@ -358,8 +286,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
             // Handle nested types
             if (obj is TypeDecl)
                 return ((TypeDecl)obj).GetNestedType(name);
-            if (obj is TypeDefinition)
-                return TypeDefinitionUtil.GetNestedType((TypeDefinition)obj, name);
             if (obj is Type)
                 return ((Type)obj).GetNestedType(name);
 
@@ -403,8 +329,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
                     symbolicRef = new NamespaceRef((Namespace)obj);
                 else if (obj is ITypeDecl)
                     symbolicRef = new TypeRef((ITypeDecl)obj);
-                else if (obj is TypeDefinition)
-                    symbolicRef = new TypeRef((TypeDefinition)obj);
                 else //if (obj is Type)
                     symbolicRef = new TypeRef((Type)obj);
             }
@@ -502,32 +426,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces
         public string GetFullName()
         {
             return _fullName;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public void ResolveRef(string name, Resolver resolver, bool noNamespaces)
-        {
-            // Search the namespace for the name
-            object found = _children.Find(name);
-            if (found != null)
-            {
-                if (found is NamespaceTypeGroup)
-                {
-                    foreach (object subObj in (NamespaceTypeGroup)found)
-                    {
-                        if (!(noNamespaces && subObj is Namespace))
-                            resolver.AddMatch(subObj);
-                    }
-                }
-                else if (!(noNamespaces && found is Namespace))
-                    resolver.AddMatch(found);
-            }
         }
 
         #endregion

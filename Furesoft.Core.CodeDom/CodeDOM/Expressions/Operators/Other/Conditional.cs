@@ -3,22 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a conditional if/then/else (ternary) expression.
@@ -323,97 +312,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
                 MoveAllComments(token);
             else
                 _if.MoveCommentsToLeftMost(token, false);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_if != null)
-                _if = (Expression)_if.Resolve(ResolveCategory.Expression, flags);
-            if (_then != null)
-                _then = (Expression)_then.Resolve(ResolveCategory.Expression, flags);
-            if (_else != null)
-                _else = (Expression)_else.Resolve(ResolveCategory.Expression, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_if != null && _if.HasUnresolvedRef())
-                return true;
-            if (_then != null && _then.HasUnresolvedRef())
-                return true;
-            if (_else != null && _else.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // Determine the types of the two expressions (ignore 'withoutConstants' here - we must always use them so that
-            // we can handle the 'null' constant properly).
-            TypeRefBase thenRef = (_then != null ? _then.EvaluateType() : null);
-            TypeRefBase elseRef = (_else != null ? _else.EvaluateType() : null);
-            if (thenRef == null)
-                return elseRef;
-            if (elseRef == null)
-                return thenRef;
-
-            // Check if the types of both expressions are the same
-            if (thenRef.IsSameRef(elseRef))
-            {
-                // Return a non-constant reference (a conditional can't evaluate to a single constant
-                // value, since it has two possible values).
-                if (!thenRef.IsConst)
-                    return thenRef;
-                if (!elseRef.IsConst)
-                    return elseRef;
-                return thenRef.GetTypeWithoutConstant();
-            }
-
-            // Check if the TypeRef of each expression is implicitly convertible to the TypeRef of
-            // the other expression.
-            // In this particular case, we do NOT want to treat the destination type as 'object' if
-            // it's a 'null' literal - we want such a conversion to fail, although the opposite
-            // direction ('null' to a reference type) is fine.
-            bool thenToElse = (thenRef.IsImplicitlyConvertibleTo(elseRef) && !(_else is Literal && ((Literal)_else).IsNull));
-            bool elseToThen = (elseRef.IsImplicitlyConvertibleTo(thenRef) && !(_then is Literal && ((Literal)_then).IsNull));
-
-            // If the first is implicitly convertible to the second, but not vice-versa, use the second type
-            if (thenToElse && !elseToThen)
-                return (!elseRef.IsConst ? elseRef : elseRef.GetTypeWithoutConstant());
-
-            // If the second is implicitly convertible to the first, but not vice-versa, use the first type
-            if (elseToThen && !thenToElse)
-                return (!thenRef.IsConst ? thenRef : thenRef.GetTypeWithoutConstant());
-
-            // Although it seems reasonable to resolve to one type if the other is unresolved in order to reduce
-            // cascading errors, this can cause a serious problem where member lookups are done somewhere later
-            // in the code on the evaluated type of this expression, and are not re-resolved when the evaluated
-            // type changes in a 2nd resolve pass due to the unresolved becoming resolved.  Someday, we'll need
-            // to automatically re-resolve all member lookups on a type that changes due to code edits, and then
-            // perhaps we could add this logic back in IF we do the same thing if its evaluated type changes.
-            //// If one of the two types is an UnresolvedRef, use the other type
-            //if (thenRef is UnresolvedRef && !(elseRef is UnresolvedRef))
-            //    return (!elseRef.IsConst ? elseRef : elseRef.GetTypeWithoutConstant());
-            //if (elseRef is UnresolvedRef && !(thenRef is UnresolvedRef))
-            //    return (!thenRef.IsConst ? thenRef : thenRef.GetTypeWithoutConstant());
-
-            // No common type could be determined - default to 'object'
-            return TypeRef.ObjectRef;
         }
 
         #endregion

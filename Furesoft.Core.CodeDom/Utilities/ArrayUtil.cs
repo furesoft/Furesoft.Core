@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Furesoft.Core.CodeDom.Utilities
+namespace Nova.Utilities
 {
     /// <summary>
     /// Extension and helper methods for <see cref="Array"/>s.
@@ -33,25 +33,6 @@ namespace Furesoft.Core.CodeDom.Utilities
                     return true;
             }
             return false;
-        }
-
-        /// <summary>
-        /// Add the contents of the 2nd array to the 1st one.
-        /// If the 1st array is null, the 2nd array will be assigned to it.
-        /// </summary>
-        /// <param name="array1">The 1st array (can be null).</param>
-        /// <param name="array2">The 2nd array (can be null).</param>
-        /// <typeparam name="T">The element type of the arrays.</typeparam>
-        public static void Add<T>(ref T[] array1, T[] array2)
-        {
-            if (array1 == null || array1.Length == 0)
-                array1 = array2;
-            else if (array2 != null && array2.Length != 0)
-            {
-                int oldLength = array1.Length;
-                Array.Resize(ref array1, oldLength + array2.Length);
-                array2.CopyTo(array1, oldLength);
-            }
         }
 
         #endregion

@@ -1,18 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Redirects execution to the specified <see cref="Label"/> or <see cref="SwitchItem"/> (<see cref="Case"/> or <see cref="Default"/>).
@@ -180,36 +173,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps
                     first = false;
                 }
             }
-            SetField(ref _target, new UnresolvedRef(target, ResolveCategory.GotoTarget, startToken.LineNumber, startToken.ColumnNumber), false);
+            SetField(ref _target, new UnresolvedRef(target, startToken.LineNumber, startToken.ColumnNumber), false);
 
             ParseTerminator(parser);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_constantExpression != null)
-                _constantExpression = (Expression)_constantExpression.Resolve(ResolveCategory.Expression, flags);
-            _target = (SymbolicRef)_target.Resolve(ResolveCategory.GotoTarget, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_constantExpression != null && _constantExpression.HasUnresolvedRef())
-                return true;
-            if (_target != null && _target.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

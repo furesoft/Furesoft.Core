@@ -1,12 +1,8 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-
-// The Nova Project by Ken Beckett.
+﻿// The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a reference to an <see cref="ExternAlias"/> namespace statement, or
@@ -14,6 +10,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
     /// </summary>
     public class ExternAliasRef : SymbolicRef
     {
+        #region /* CONSTRUCTORS */
+
         /// <summary>
         /// Create an <see cref="ExternAliasRef"/>.
         /// </summary>
@@ -28,21 +26,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
             : base(externAlias, false)
         { }
 
-        /// <summary>
-        /// The referenced ExternAlias code object.
-        /// </summary>
-        public ExternAlias ExternAlias
-        {
-            get { return (ExternAlias)_reference; }
-        }
+        #endregion
 
-        /// <summary>
-        /// True if the extern alias is 'global'.
-        /// </summary>
-        public bool IsGlobal
-        {
-            get { return ((ExternAlias)_reference).IsGlobal; }
-        }
+        #region /* PROPERTIES */
 
         /// <summary>
         /// The name of the <see cref="ExternAliasRef"/>.
@@ -59,5 +45,23 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
         {
             get { return ((ExternAlias)_reference).RootNamespaceRef.Reference as RootNamespace; }
         }
+
+        /// <summary>
+        /// True if the extern alias is 'global'.
+        /// </summary>
+        public bool IsGlobal
+        {
+            get { return ((ExternAlias)_reference).IsGlobal; }
+        }
+
+        /// <summary>
+        /// The referenced ExternAlias code object.
+        /// </summary>
+        public ExternAlias ExternAlias
+        {
+            get { return (ExternAlias)_reference; }
+        }
+
+        #endregion
     }
 }

@@ -1,23 +1,23 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Shift;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Shifts the value of the left <see cref="Expression"/> RIGHT by the value of the right <see cref="Expression"/>, and assigns the
+    /// Shifts the value of the left <see cref="Expression"/> LEFT by the value of the right <see cref="Expression"/>, and assigns the
     /// result to the left <see cref="Expression"/>.  The left <see cref="Expression"/> must be an assignable object ("lvalue").
     /// </summary>
-    public class RightShiftAssign : Assignment
+    public class LeftShiftAssign : Assignment
     {
         #region /* CONSTRUCTORS */
 
         /// <summary>
-        /// Create a <see cref="RightShiftAssign"/> operator.
+        /// Create a <see cref="LeftShiftAssign"/> operator.
         /// </summary>
-        public RightShiftAssign(Expression left, Expression right)
+        public LeftShiftAssign(Expression left, Expression right)
             : base(left, right)
         { }
 
@@ -42,7 +42,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         /// </summary>
         public override string GetInternalName()
         {
-            return RightShift.InternalName;
+            return LeftShift.InternalName;
         }
 
         #endregion
@@ -52,7 +52,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
-        public new const string ParseToken = ">>=";
+        public new const string ParseToken = "<<=";
 
         internal static new void AddParsePoints()
         {
@@ -60,14 +60,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         }
 
         /// <summary>
-        /// Parse a <see cref="RightShiftAssign"/> operator.
+        /// Parse a <see cref="LeftShiftAssign"/> operator.
         /// </summary>
-        public static new RightShiftAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public static new LeftShiftAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            return new RightShiftAssign(parser, parent);
+            return new LeftShiftAssign(parser, parent);
         }
 
-        protected RightShiftAssign(Parser parser, CodeObject parent)
+        protected LeftShiftAssign(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
 

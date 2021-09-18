@@ -6,31 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using static Furesoft.Core.CodeDom.Rendering.CodeWriter;
-using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all code objects.
@@ -63,7 +43,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         public static bool AutomaticFormattingCleanup;
 
         /// <summary>
-        /// Determines whether or not code cleanup is automatically performed during the parsing and/or resolving process.
+        /// Determines whether or not code cleanup is automatically performed during the parsing process.
         /// </summary>
         public static bool AutomaticCodeCleanup;
 
@@ -124,10 +104,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             TypeRef.InitializeTypeRefs();
 
             // Initialize all parse-points for all CodeDOM objects
-            //AddDefaultParsePoints();
+            //LoadDefaultParsePoints();
         }
 
-        public static void AddDefaultParsePoints()
+        public static void LoadDefaultParsePoints()
         {
             // Force calls to all static AddParsePoints methods on all types derived from CodeObject, so that
             // all parse-points will be registered with the parser before it tries to parse something.
@@ -1429,7 +1409,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             if (commentBase is Comment)
             {
                 Comment comment = (Comment)commentBase;
-                int removeSpaceCount = comment.GetIndentSpaceCount() - comment.PrefixSpaceCount - (comment.IsBlock ? 0 : Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Comment.ParseToken.Length);
+                int removeSpaceCount = comment.GetIndentSpaceCount() - comment.PrefixSpaceCount - (comment.IsBlock ? 0 : CodeDOM.Comment.ParseToken.Length);
                 if (removeSpaceCount > 0)
                 {
                     // If we fail to remove the desired count of spaces, and 1 space is implied, then
@@ -1582,186 +1562,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         protected internal void ParseUnusedAnnotations(Parser parser, CodeObject parent, bool includeAll)
         {
             ParseUnusedAnnotations(parser, parent, includeAll, 0);
-        }
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        /// <remarks>
-        /// Resolves the current object if it's an <see cref="UnresolvedRef"/>, otherwise recursively resolves all child UnresolvedRefs.
-        /// Leaves already-resolved references alone - unless the Unresolve flag is specified, in which case it converts
-        /// all resolved references back to UnresolvedRefs while leaving existing UnresolvedRefs alone.
-        ///
-        /// Note that all declarations are processed during parsing - only symbolic references to declarations
-        /// must be resolved.  References to built-in types (types with keywords) and references to namespaces
-        /// in NamespaceDecl statements are resolved during parsing (and all Namespace objects are declared).
-        ///
-        /// If this method is called on a Solution, Project, or CodeUnit, then resolving will proceed in 3 phases
-        /// in order to resolve all references in a single "pass" without dependency problems:
-        ///    - Phase 1 resolves top-level statements in CodeUnits, NamespaceDecls, and then stops at TypeDecls
-        ///      after resolving any base lists (necessary so that base types will be resolved for later phases).
-        ///    - Phase 2 stops at the bodies of methods/properties, or base/this initializers, or field initializers
-        ///      (this gets all 'signatures' of members resolved for the final phase).
-        ///    - Phase 3 continues resolving method bodies and the other items not done in phase 2.
-        /// These 3 phases neatly resolves all references in a single attempt without dependency issues - with a
-        /// few minor exceptions.  Switches resolve all Case constant expressions before the Case bodies in order to
-        /// handle any forward references by 'goto case ...' statements.  Types of fields initialized to constant
-        /// values via references to other constant fields might not evaluate to their final constant value during
-        /// Phase 3, but they'll have their correct type and that should be good enough.
-        ///
-        /// Currently, all 3 phases traverse the tree from the top down as opposed to building lists of objects at
-        /// which to continue for the later 2 phases - such lists could be huge, and the first 2 phases only require
-        /// traversal of the upper 3 to 4 levels of the tree for most references.
-        ///
-        /// Symbols might be resolved:
-        ///    - For an entire file, after the file is added and all parsing is complete for all added files.
-        ///      After loading and parsing a solution, after adding an existing project to a solution and parsing it,
-        ///      or after adding an existing file to a project and parsing it.  After all parsing is complete, *all*
-        ///      references (resolved *and* unresolved) must be resolved.  Resolved symbols must be re-resolved because
-        ///      new types or partial class members could cause conflicts.  Ideally, resolution would be limited to
-        ///      references that might need it, but to be safe we should just re-resolve all references.
-        ///    - For an entire file, if a 'using' statement is added or removed.
-        ///      All references (resolved or unresolved) must be re-resolved to determine if they are still resolved
-        ///      or now have conflicts.  HOWEVER, if conflicts arise in such a case, they should probably be auto-
-        ///      matically resolved by default, by adding the use of namespace prefixes to keep references tied to
-        ///      the same objects to which they were already resolved.
-        ///    - For all files with a 'using' or 'namespace' if the associated namespace has had a type added,
-        ///      removed, or renamed; or if a public member of a type was added, removed, renamed, or its signature
-        ///      changed.  Of course, this applies to all files when types in the global namespace are changed.  In
-        ///      theory, scope could be taken into consideration in order to avoid resolving all references in the
-        ///      entire program.  For renames, resolving is necessary only to detect conflicts.
-        /// </remarks>
-        public virtual CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve all child symbolic references.
-        /// </summary>
-        public virtual void Resolve(ResolveFlags flags)
-        {
-            Resolve(ResolveCategory.CodeObject, ResolveFlags.None);
-        }
-
-        /// <summary>
-        /// Resolve all child symbolic references.
-        /// </summary>
-        public void Resolve()
-        {
-            Resolve(ResolveFlags.None);
-        }
-
-        /// <summary>
-        /// Resolve any attached attributes.
-        /// </summary>
-        public void ResolveAttributes(ResolveFlags flags)
-        {
-            if (_annotations != null)
-            {
-                foreach (Annotation annotation in _annotations)
-                {
-                    if (annotation is Annotations.Attribute)
-                        annotation.Resolve(ResolveCategory.CodeObject, flags);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Resolve any references in attached documentation comments.
-        /// </summary>
-        public void ResolveDocComments(ResolveFlags flags)
-        {
-            if (_annotations != null)
-            {
-                foreach (Annotation annotation in _annotations)
-                {
-                    if (annotation is DocComment)
-                        annotation.Resolve(ResolveCategory.CodeObject, flags | ResolveFlags.InDocComment);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        /// <param name="name">The name of the reference (might be modified from the one inside the <see cref="UnresolvedRef"/> in special cases).</param>
-        /// <param name="resolver">The <see cref="Resolver"/> object, which contains the <see cref="UnresolvedRef"/> being resolved.</param>
-        /// <remarks>
-        /// The <see cref="UnresolvedRef"/> object will be updated to reflect the results of the search.
-        /// Search for objects by name recursively up the parent code tree, finding:
-        ///   - LocalDecls in the current block (must be verified later during analysis to be defined *before* a reference).
-        ///   - LocalDecls in each parent block (must be verified later during analysis to be defined *before* a reference) up to
-        ///     the parent MethodDeclBase level, including LocalDecls of Catch, Using, For, ForEach statements.
-        ///   - ParameterDecls of the parent MethodDeclBase (MethodDecl, GenericMethodDecl, ConstructorDecl, AccessorDecl)
-        ///     or AnonymousMethod, and TypeParameters if it's a GenericMethodDecl.
-        ///   - Members (fields, properties, methods, etc) of the current TypeDecl, including base types and interfaces,
-        ///     and TypeParameters (if any).
-        ///   - Namespaces or TypeDecls of the current NamespaceDecl, and of any of its UsingDirectives.
-        ///
-        /// Not here, but during the analysis phase:
-        ///   - Namespaces or TypeDecls of any other known Namespaces (give an option to add a 'using').
-        /// </remarks>
-        public virtual void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Similar to <see cref="ResolveRefUp"/>, but skips trying to resolve the symbol in the body or parameters of a
-        /// method (used for resolving parameter types).
-        /// </summary>
-        public virtual void ResolveRefUpSkipMethodBody(string name, Resolver resolver)
-        {
-            // By default, do the same behavior as ResolveRefUp()
-            ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name are valid goto targets, moving up the tree until a complete match is found.
-        /// </summary>
-        /// <param name="name">The name of the desired goto target(s).</param>
-        /// <param name="resolver">The resolver object.</param>
-        /// <remarks>
-        /// Search for objects by name recursively up the parent code tree, finding:
-        ///   - Labels and SwitchItems in the current block.
-        ///   - Labels and SwitchItems in each parent block up to the parent MethodDeclBase level.
-        /// </remarks>
-        public virtual void ResolveGotoTargetUp(string name, Resolver resolver)
-        {
-            if (_parent != null)
-                _parent.ResolveGotoTargetUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public virtual bool HasUnresolvedRef()
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Evaluate the type or namespace associated with the code object.
-        /// </summary>
-        /// <returns>The resulting TypeRef, UnresolvedRef, or NamespaceRef.</returns>
-        public virtual SymbolicRef EvaluateTypeOrNamespace(bool withoutConstants)
-        {
-            // By default, return null, meaning that evaluating the type of the code object doesn't apply.
-            // Most statements will evaluate to null, except for some such as Return and YieldReturn, which
-            // will evaluate to the type of their returned expression.
-            // All Expressions will evaluate to some type (or namespace), even if it's just 'object'.
-            return null;
-        }
-
-        /// <summary>
-        /// Evaluate the type or namespace associated with the code object.
-        /// </summary>
-        /// <returns>The resulting TypeRef, UnresolvedRef, or NamespaceRef.</returns>
-        public SymbolicRef EvaluateTypeOrNamespace()
-        {
-            return EvaluateTypeOrNamespace(false);
         }
 
         /// <summary>
@@ -2228,12 +2028,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// <summary>
         /// Convert the code object to text using the specified flags and format (file or string).
         /// </summary>
-        public string AsText(RenderFlags flags, bool isFileFormat, Stack<AlignmentState> alignmentStateStack)
+        public string AsText(RenderFlags flags, bool isFileFormat, Stack<CodeWriter.AlignmentState> alignmentStateStack)
         {
             using (CodeWriter writer = new CodeWriter(false, IsGenerated))
             {
                 if (alignmentStateStack != null)
-                    writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);
+                    writer.AlignmentStateStack = new Stack<CodeWriter.AlignmentState>(alignmentStateStack);
                 try
                 {
                     // Render the text into a string, suppressing any leading newline.
@@ -2280,12 +2080,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// <summary>
         /// Determine the length of the code object if converted to a string using the specified flags.
         /// </summary>
-        public int AsTextLength(RenderFlags flags, Stack<AlignmentState> alignmentStateStack)
+        public int AsTextLength(RenderFlags flags, Stack<CodeWriter.AlignmentState> alignmentStateStack)
         {
             using (CodeWriter writer = new CodeWriter(true))
             {
                 if (alignmentStateStack != null)
-                    writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);
+                    writer.AlignmentStateStack = new Stack<CodeWriter.AlignmentState>(alignmentStateStack);
                 try
                 {
                     // Render the text into a string, suppressing any leading newline.

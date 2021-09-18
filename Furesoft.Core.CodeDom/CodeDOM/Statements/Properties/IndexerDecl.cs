@@ -1,22 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents an "indexer" - an indexed property.
@@ -368,66 +357,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             IsEndFirstOnLine = isEndFirstOnLine;
 
             new Block(out _body, parser, this, true);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-            {
-                if (_type != null)
-                    _type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-                ChildListHelpers.Resolve(_parameters, ResolveCategory.CodeObject, flags);
-                if (_name is Expression)
-                    _name = ((Expression)_name).Resolve(ResolveCategory.Indexer, flags);
-            }
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                ResolveAttributes(flags);
-                if (_body != null)
-                    _body.Resolve(ResolveCategory.CodeObject, flags);
-                ResolveDocComments(flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (resolver.ResolveCategory == ResolveCategory.Parameter)
-                ChildListHelpers.ResolveRef(_parameters, name, resolver);
-            else
-            {
-                if (_body != null)
-                {
-                    // Check any accessor parameters, so that 'value' can be resolved if referenced in doc comments
-                    foreach (AccessorDeclWithValue accessorDeclWithValue in _body.Find<AccessorDeclWithValue>())
-                        ChildListHelpers.ResolveRef(accessorDeclWithValue.Parameters, name, resolver);
-                    _body.ResolveRef(name, resolver);
-                    if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                }
-                ChildListHelpers.ResolveRef(_parameters, name, resolver);
-                if (_parent != null && !resolver.HasCompleteMatch)
-                    _parent.ResolveRefUp(name, resolver);
-            }
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_parameters))
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

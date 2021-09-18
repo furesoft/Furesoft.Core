@@ -8,25 +8,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Projects;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Projects
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Declares a unit of independent code that belongs to the root-level namespace (also known as a "compilation unit").
@@ -49,7 +36,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
     /// directives defined, resulting in a different parse tree.  If saved to the file, each CodeUnit should produce the exact
     /// same save text, so no problems will result even though they write to the same file.
     /// </remarks>
-    public class CodeUnit : NamespaceDecl, INamedCodeObject, IFile, IComparable
+    public class CodeUnit : BlockStatement, INamedCodeObject, IComparable
     {
         #region /* STATIC FIELDS */
 
@@ -59,9 +46,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         public static bool SaveChangesToSeparateFile;
 
         /// <summary>
-        /// Determines if messages in workflow code-beside files (".xoml.cs") are listed.
+        /// The global namespace.
         /// </summary>
-        public static bool ListWorkflowFileErrors;
+        protected static RootNamespace _globalNamespace = new RootNamespace(ExternAlias.GlobalName, null);  // Setup the 'global' namespace;
 
         #endregion
 
@@ -95,27 +82,25 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         #region /* CONSTRUCTORS */
 
         /// <summary>
-        /// Create a new <see cref="CodeUnit"/> with the specified file name (or text source) and parent <see cref="Project"/>.
+        /// Create a new <see cref="CodeUnit"/> with the specified file name (or text source).
         /// </summary>
-        public CodeUnit(string fileName, string code, Project project)
-            : base(new NamespaceRef(project.GlobalNamespace) { IsGenerated = true })
+        public CodeUnit(string fileName, string code)
+            : base()
         {
             Name = Path.GetFileName(fileName);
             _isNew = true;
             _fileName = fileName;
-            if (!Path.HasExtension(fileName))
-                _fileName += Project.CSharpFileExtension;
+
             FileEncoding = Encoding.UTF8;  // Default to UTF8 encoding with a BOM
             FileHasUTF8BOM = true;
-            _parent = project;
             _code = code;
         }
 
         /// <summary>
-        /// Create a new <see cref="CodeUnit"/> with the specified file name and parent <see cref="Project"/>.
+        /// Create a new <see cref="CodeUnit"/> with the specified file name.
         /// </summary>
-        public CodeUnit(string fileName, Project project)
-            : this(fileName, null, project)
+        public CodeUnit(string fileName)
+            : this(fileName, null)
         { }
 
         #endregion
@@ -133,6 +118,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         #region /* PROPERTIES */
 
         /// <summary>
+        /// The global namespace.
+        /// </summary>
+        public static RootNamespace GlobalNamespace
+        {
+            get { return _globalNamespace; }
+        }
+
+        /// <summary>
         /// The name of the <see cref="CodeUnit"/>.  If associated with a file, this is the file name and extension.
         /// </summary>
         public string Name
@@ -141,7 +134,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
             set
             {
                 _name = value;
-                _isWorkflowCodeBesideFile = _name.EndsWith(Project.WorkflowCSharpCodeBesideFileExtension);
+                _isWorkflowCodeBesideFile = _name.EndsWith(".xoml.cs");
             }
         }
 
@@ -210,26 +203,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
             get { return "file"; }
         }
 
-        /// <summary>
-        /// The parent <see cref="Project"/>.
-        /// </summary>
-        public Project Project
-        {
-            get { return _parent as Project; }
-        }
-
-        /// <summary>
-        /// The implied global extern alias to the global <see cref="RootNamespace"/>.
-        /// </summary>
-        public ExternAlias GlobalAlias
-        {
-            get
-            {
-                if (_globalAlias == null && _parent != null)
-                    _globalAlias = new ExternAlias(Project.GlobalNamespace) { Parent = this, IsGenerated = true };
-                return _globalAlias;
-            }
-        }
 
         /// <summary>
         /// True for all <see cref="BlockStatement"/>s that have a header (all except <see cref="CodeUnit"/> and <see cref="BlockDecl"/>).
@@ -277,7 +250,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         #region /* METHODS */
 
         /// <summary>
-        /// Load a <see cref="CodeUnit"/> directly from the specified source file (without a <see cref="Project"/> or <see cref="Solution"/>).
+        /// Load a <see cref="CodeUnit"/> directly from the specified source file.
         /// </summary>
         /// <param name="fileName">The source (".cs") file.</param>
         /// <param name="loadOptions">Determines various optional processing.</param>
@@ -286,13 +259,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         /// <remarks>
         /// Loading a code unit directly goes through the following steps:
         ///   - Parse the code file.
-        ///   - Resolve all symbolic references in the code file.
-        /// The 'DoNotResolve' option skips resolving symbolic references, which is useful if that step is not required, such as when
-        /// only formatting code which doesn't rely on resolved references.  The 'LoadOnly' option does not apply in this case, and is
-        /// ignored if specified.
-        /// Note that any external references in the <see cref="CodeUnit"/> will fail to resolve, since there is no Project and thus no assembly
-        /// or project references.  Also, any compiler directive symbols will be undefined.  To work around these issues, create a
-        /// dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing and resolving them.
+        /// Note that any compiler directive symbols will be undefined.  To work around this issue, create
+        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing.
         /// </remarks>
         public static CodeUnit Load(string fileName, LoadOptions loadOptions, Action<LoadStatus, CodeObject> statusCallback)
         {
@@ -311,14 +279,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
                     return null;
                 }
 
-                // Create a dummy project for the file, since it is being loaded directly
-                Project project = new Project(Path.ChangeExtension(fileName, Project.CSharpProjectFileExtension), null);
                 if (statusCallback != null)
-                    statusCallback(LoadStatus.ObjectCreated, project);
+                    statusCallback(LoadStatus.ObjectCreated, null);
 
-                // Create, parse and resolve the code unit, and log statistics
-                codeUnit = new CodeUnit(fileName, project);
-                codeUnit.ParseResolveLog(loadOptions, statusCallback);
+                // Create and parse the code unit, and log statistics
+                codeUnit = new CodeUnit(fileName);
+                codeUnit.ParseLog(loadOptions, statusCallback);
             }
             catch (Exception ex)
             {
@@ -328,7 +294,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         }
 
         /// <summary>
-        /// Load a <see cref="CodeUnit"/> directly from the specified source file (without a <see cref="Project"/> or <see cref="Solution"/>).
+        /// Load a <see cref="CodeUnit"/> directly from the specified source file.
         /// </summary>
         /// <param name="fileName">The source (".cs") file.</param>
         /// <param name="loadOptions">Determines various optional processing.</param>
@@ -336,13 +302,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         /// <remarks>
         /// Loading a code unit directly goes through the following steps:
         ///   - Parse the code file.
-        ///   - Resolve all symbolic references in the code file.
-        /// The 'DoNotResolve' option skips resolving symbolic references, which is useful if that step is not required, such as when
-        /// only formatting code which doesn't rely on resolved references.  The 'LoadOnly' option does not apply in this case, and is
-        /// ignored if specified.
-        /// Note that any external references in the <see cref="CodeUnit"/> will fail to resolve, since there is no Project and thus no assembly
-        /// or project references.  Also, any compiler directive symbols will be undefined.  To work around these issues, create a
-        /// dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing and resolving them.
+        /// Note that any compiler directive symbols will be undefined.  To work around this issue, create
+        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing.
         /// </remarks>
         public static CodeUnit Load(string fileName, LoadOptions loadOptions)
         {
@@ -350,20 +311,15 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         }
 
         /// <summary>
-        /// Load a <see cref="CodeUnit"/> directly from the specified source file (without a <see cref="Project"/> or <see cref="Solution"/>).
+        /// Load a <see cref="CodeUnit"/> directly from the specified source file.
         /// </summary>
         /// <param name="fileName">The source (".cs") file.</param>
         /// <returns>The resulting CodeUnit object.</returns>
         /// <remarks>
         /// Loading a code unit directly goes through the following steps:
         ///   - Parse the code file.
-        ///   - Resolve all symbolic references in the code file.
-        /// The 'DoNotResolve' option skips resolving symbolic references, which is useful if that step is not required, such as when
-        /// only formatting code which doesn't rely on resolved references.  The 'LoadOnly' option does not apply in this case, and is
-        /// ignored if specified.
-        /// Note that any external references in the <see cref="CodeUnit"/> will fail to resolve, since there is no Project and thus no assembly
-        /// or project references.  Also, any compiler directive symbols will be undefined.  To work around these issues, create a
-        /// dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing and resolving them.
+        /// Note that any compiler directive symbols will be undefined.  To work around this issue, create
+        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing.
         /// </remarks>
         public static CodeUnit Load(string fileName)
         {
@@ -371,29 +327,25 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         }
 
         /// <summary>
-        /// Load a code unit directly from the specified source file (without a <see cref="Project"/> or <see cref="Solution"/>).
+        /// Load a code unit directly from the specified source file.
         /// </summary>
         /// <param name="codeFragment">A fragment of code as a string.</param>
         /// <param name="name">An optional name for the code fragment.</param>
         /// <param name="loadOptions">Determines various optional processing.</param>
         /// <returns>The resulting <see cref="CodeUnit"/> object.</returns>
         /// <remarks>
-        /// The code fragment is parsed, and optionally resolved.
-        /// Note that any external references in the code fragment will fail to resolve, since there is no <see cref="Project"/> and
-        /// thus no assembly or project references.  Also, any compiler directive symbols will be undefined.  To work around these issues, create
-        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing and resolving them.
+        /// The code fragment is parsed.
+        /// Note that any compiler directive symbols will be undefined.  To work around this issue, create
+        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing.
         /// </remarks>
         public static CodeUnit LoadFragment(string codeFragment, string name, LoadOptions loadOptions)
         {
             CodeUnit codeUnit = null;
             try
             {
-                // Create a dummy project for the fragment
-                Project project = new Project(name + Project.CSharpProjectFileExtension, null);
-
-                // Create, parse and resolve the code fragment, and log statistics
-                codeUnit = new CodeUnit(name, codeFragment, project);
-                codeUnit.ParseResolveLog(loadOptions, null);
+                // Create and parse the code fragment, and log statistics
+                codeUnit = new CodeUnit(name, codeFragment);
+                codeUnit.ParseLog(loadOptions, null);
             }
             catch (Exception ex)
             {
@@ -402,17 +354,18 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
             return codeUnit;
         }
 
+
+
         /// <summary>
-        /// Load a code unit directly from the specified source file (without a <see cref="Project"/> or <see cref="Solution"/>).
+        /// Load a code unit directly from the specified source file.
         /// </summary>
         /// <param name="codeFragment">A fragment of code as a string.</param>
         /// <param name="name">An optional name for the code fragment.</param>
         /// <returns>The resulting <see cref="CodeUnit"/> object.</returns>
         /// <remarks>
-        /// The code fragment is parsed, and optionally resolved.
-        /// Note that any external references in the code fragment will fail to resolve, since there is no <see cref="Project"/> and
-        /// thus no assembly or project references.  Also, any compiler directive symbols will be undefined.  To work around these issues, create
-        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing and resolving them.
+        /// The code fragment is parsed.
+        /// Note that any compiler directive symbols will be undefined.  To work around this issue, create
+        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing.
         /// </remarks>
         public static CodeUnit LoadFragment(string codeFragment, string name)
         {
@@ -420,15 +373,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         }
 
         /// <summary>
-        /// Load a code unit directly from the specified source file (without a <see cref="Project"/> or <see cref="Solution"/>).
+        /// Load a code unit directly from the specified source file.
         /// </summary>
         /// <param name="codeFragment">A fragment of code as a string.</param>
         /// <returns>The resulting <see cref="CodeUnit"/> object.</returns>
         /// <remarks>
-        /// The code fragment is parsed, and optionally resolved.
-        /// Note that any external references in the code fragment will fail to resolve, since there is no <see cref="Project"/> and
-        /// thus no assembly or project references.  Also, any compiler directive symbols will be undefined.  To work around these issues, create
-        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing and resolving them.
+        /// The code fragment is parsed.
+        /// Note that any compiler directive symbols will be undefined.  To work around this issue, create
+        /// a dummy parent project to hold one or more <see cref="CodeUnit"/>s before parsing.
         /// </remarks>
         public static CodeUnit LoadFragment(string codeFragment)
         {
@@ -436,16 +388,16 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         }
 
         /// <summary>
-        /// Parse and optionally resolve the <see cref="CodeUnit"/> (or fragment), and log statistics if requested.
+        /// Parse the <see cref="CodeUnit"/> (or fragment), and log statistics if requested.
         /// </summary>
-        public void ParseResolveLog(LoadOptions loadOptions, Action<LoadStatus, CodeObject> statusCallback)
+        public void ParseLog(LoadOptions loadOptions, Action<LoadStatus, CodeObject> statusCallback)
         {
             Stopwatch overallStopWatch = new Stopwatch();
             overallStopWatch.Start();
             GC.Collect();
             long startBytes = GC.GetTotalMemory(true);
 
-            // Parse and resolve the code unit
+            // Parse the code unit
             if (statusCallback != null)
                 statusCallback(LoadStatus.Parsing, null);
             Unrecognized.Count = 0;
@@ -453,18 +405,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
             if (Unrecognized.Count > 0)
                 Log.WriteLine("UNRECOGNIZED OBJECT COUNT: " + Unrecognized.Count);
             Log.WriteLine("Parsed " + (IsFile ? "file" : "fragment") + " '" + Name + "', total elapsed time: " + overallStopWatch.Elapsed.TotalSeconds.ToString("N3"));
-
-            if (loadOptions.HasFlag(LoadOptions.ResolveSources))
-            {
-                if (statusCallback != null)
-                    statusCallback(LoadStatus.Resolving, null);
-                Stopwatch stopWatch = new Stopwatch();
-                stopWatch.Restart();
-                Resolver.ResolveAttempts = Resolver.ResolveFailures = 0;
-                Resolve();
-                Log.WriteLine(string.Format("Resolved " + (IsFile ? "file" : "fragment") + " '{0}', elapsed time: {1:N3}, ResolveAttempts = {2:N0}, ResolveFailures = {3:N0}",
-                    Name, stopWatch.Elapsed.TotalSeconds, Resolver.ResolveAttempts, Resolver.ResolveFailures));
-            }
 
             long memoryUsage = GC.GetTotalMemory(true) - startBytes;
             Log.WriteLine(string.Format("Total elapsed time: {0:N3}, memory usage: {1} MBs", overallStopWatch.Elapsed.TotalSeconds, memoryUsage / (1024 * 1024)));
@@ -520,6 +460,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
                         Log.WriteLine(annotation is Message ? annotation.GetDescription() : annotation.ToString());
                 }
             }
+        }
+
+        /// <summary>
+        /// Parse the specified name into a <see cref="NamespaceRef"/> or <see cref="TypeRef"/>, or a <see cref="Dot"/> or <see cref="Lookup"/> expression that evaluates to one.
+        /// </summary>
+        public Expression ParseName(string fullName)
+        {
+            return _globalNamespace.ParseName(fullName);
         }
 
         /// <summary>
@@ -619,15 +567,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         protected override void NotifyListedAnnotationAdded(Annotation annotation)
         {
             _listedAnnotations.Add(annotation);
-            if (_parent != null)
-                Project.AnnotationAdded(annotation, this, annotation.Parent is CodeUnit);
         }
 
         protected override void NotifyListedAnnotationRemoved(Annotation annotation)
         {
             _listedAnnotations.Remove(annotation);
-            if (_parent != null)
-                Project.AnnotationRemoved(annotation);
         }
 
         /// <summary>
@@ -756,7 +700,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
         /// Parse the <see cref="CodeUnit"/> from its file.
         /// </summary>
         public void Parse(ParseFlags flags)
-        {;
+        {
+
 
             // Check that the file exists (to avoid an exception)
             if (IsFile && !File.Exists(_fileName))
@@ -768,14 +713,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
             }
 
             // If we're loading a generated file, record it as such so we can disable saving it
-            if (_fileName.EndsWith(Project.XamlCSharpGeneratedExtension) || _fileName.EndsWith(Project.DesignerCSharpGeneratedExtension))
+            if (_fileName.EndsWith(".g.cs") || _fileName.EndsWith(".Designer.cs"))
                 IsGenerated = true;
 
-            // Get any compiler directive symbols from the project (copy them, because
-            // they can be both defined and un-defined at the file level).
             _compilerDirectiveSymbols.Clear();
-            if (_parent != null && Project.CurrentConfiguration != null)
-                _compilerDirectiveSymbols = new HashSet<string>(Project.CurrentConfiguration.Constants);
 
             try
             {
@@ -830,101 +771,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
             string text = commentBase.Text;
             if (StringUtil.ContainsIgnoreCase(text, "<auto-generated>") || StringUtil.ContainsIgnoreCase(text, "do not edit"))
                 IsGenerated = true;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references in the <see cref="CodeUnit"/>, handling any exceptions.
-        /// </summary>
-        public override void Resolve(ResolveFlags flags)
-        {
-            try
-            {
-                // Clear any existing error messages from a previous resolve pass
-                if ((flags & (ResolveFlags.Phase2 | ResolveFlags.Phase3)) == 0)
-                    RemoveAllMessages(MessageSource.Resolve);
-
-                // Set the IsGenerated resolve flag if this is a generated file
-                if (IsGenerated)
-                    flags |= ResolveFlags.IsGenerated;
-
-                // Don't list messages for resolve errors in workflow ".xoml.cs" files unless enabled
-                if (_isWorkflowCodeBesideFile && !ListWorkflowFileErrors)
-                    flags |= ResolveFlags.Quiet;
-
-                // Do a 3-phase resolve if a specific phase wasn't specified by a higher level (the first phase stops at base lists
-                // of type decls, the second at method/property bodies, and the third does the bodies - this resolves all base classes
-                // and signatures first in order to resolve all references in a single attempt).
-                if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2 | ResolveFlags.Phase3)) == 0)
-                {
-                    base.Resolve(ResolveCategory.CodeObject, flags | ResolveFlags.Phase1);
-                    base.Resolve(ResolveCategory.CodeObject, flags | ResolveFlags.Phase2);
-                    base.Resolve(ResolveCategory.CodeObject, flags | ResolveFlags.Phase3);
-                }
-                else
-                    base.Resolve(ResolveCategory.CodeObject, flags);
-            }
-            catch (Exception ex)
-            {
-                LogAndAttachException(ex, "resolving", MessageSource.Resolve);
-            }
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            base.ResolveRefUp(name, resolver);
-            if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-
-            // Check for root-level namespaces here, including matching on a root-level namespace if we're looking
-            // for the namespace-or-type of an Alias statement and haven't found one yet.
-            if (resolver.ResolveCategory == ResolveCategory.RootNamespace
-                || (resolver.ResolveCategory == ResolveCategory.NamespaceOrType && resolver.UnresolvedRef.Parent is Alias))
-            {
-                if (_parent != null)
-                {
-                    // Search for root-level namespaces
-                    if (name == ExternAlias.GlobalName)
-                        resolver.AddMatch(Project.GlobalNamespace);
-                    else
-                    {
-                        foreach (Reference reference in Project.References)
-                        {
-                            RootNamespace aliasNamespace = reference.AliasNamespace;
-                            if (aliasNamespace != null && aliasNamespace.Name == name)
-                                resolver.AddMatch(aliasNamespace);
-                        }
-                    }
-                }
-            }
-            else if (resolver.ResolveCategory == ResolveCategory.NamespaceAlias)
-            {
-                // Check for the global extern alias (others are checked in the NamespaceDecl base class)
-                if (name == ExternAlias.GlobalName)
-                    resolver.AddMatch(GlobalAlias);
-            }
-            else
-            {
-                // For other categories, we might have a code fragment with a CodeUnit parent, so resolve like we
-                // would for any other BlockStatement, except we want to ignore any Alias or UsingDirective objects
-                // because they will have already been checked by 'base.ResolveRefUp()' at the top of this method.
-                foreach (CodeObject codeObject in Find(name))
-                {
-                    if (!(codeObject is Alias || codeObject is UsingDirective))
-                        resolver.AddMatch(codeObject);
-                }
-            }
-        }
-
-        protected override void ResolveNamespaces()
-        {
-            // A CodeUnit is actually a NamespaceDecl with an Expression that evaluates to the
-            // global namespace, but we don't need to resolve it, because it's always a NamespaceRef.
         }
 
         #endregion
@@ -992,7 +838,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
             get
             {
                 // Don't render if not C#, or if there are any Load or Parse errors (other than lost comments)
-                return ( (_annotations == null || !Enumerable.Any(_annotations, delegate(Annotation annotation)
+                return ((_annotations == null || !Enumerable.Any(_annotations, delegate(Annotation annotation)
                     {
                         return annotation is Message && ((Message)annotation).Severity == MessageSeverity.Error
                                && ((Message)annotation).Source == MessageSource.Load || (((Message)annotation).Source == MessageSource.Parse && !annotation.Text.StartsWith("Line#"));
@@ -1022,4 +868,69 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Projects
 
         #endregion
     }
+
+    #region /* LOAD OPTIONS */
+
+    /// <summary>
+    /// Load options - used when loading a Solution, Project, or CodeUnit.
+    /// </summary>
+    [Flags]
+    public enum LoadOptions
+    {
+        /// <summary>
+        /// No options specified - loading will still occur, but no parsing, or extra logging.
+        /// </summary>
+        None = 0x00,
+
+        /// <summary>
+        /// Parse all <see cref="CodeUnit"/>s.
+        /// </summary>
+        ParseSources = 0x01,
+
+        /// <summary>
+        /// Log messages after loading/parsing (errors, warnings, others - depending upon the log level).
+        /// </summary>
+        /// <remarks>
+        /// This option only determines whether or not messages are logged using the <see cref="Log"/> class (to the <see cref="Console"/>,
+        /// or intercepted by <see cref="Log.SetLogWriteLineCallback"/>.  Regardless, <see cref="Message"/>s are always created and propagated up.
+        /// </remarks>
+        LogMessages = 0x08,
+
+        /// <summary>
+        /// Do not parse method bodies (useful if you only need types and member signatures, and not code in methods).
+        /// </summary>
+        DoNotParseBodies = 0x10,
+
+        /// <summary>
+        /// Perform complete processing.
+        /// </summary>
+        Complete = ParseSources
+    }
+
+    #endregion
+
+    #region /* LOAD STATUS */
+
+    /// <summary>
+    /// Used for status callbacks during the load process to monitor progress and update any UI.
+    /// </summary>
+    public enum LoadStatus
+    {
+        /// <summary>Starting to load a <see cref="CodeUnit"/>.</summary>
+        Loading,
+
+        /// <summary>Created a new <see cref="CodeUnit"/> object.</summary>
+        ObjectCreated,
+
+        /// <summary>A listed <see cref="Annotation"/> (such as an error or warning <see cref="Message"/>) was added to an object.</summary>
+        ObjectAnnotated,
+
+        /// <summary>Starting parsing <see cref="CodeUnit"/>.</summary>
+        Parsing,
+
+        /// <summary>Starting logging of message counts, and messages (if requested).</summary>
+        LoggingResults
+    }
+
+    #endregion
 }

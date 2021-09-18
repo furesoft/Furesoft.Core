@@ -3,12 +3,8 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all code objects that have <see cref="TypeParameters"/> (<see cref="TypeDecl"/>, <see cref="GenericMethodDecl"/>).
@@ -39,11 +35,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
         /// Add one or more <see cref="TypeParameter"/>s.
         /// </summary>
         void AddTypeParameters(params TypeParameter[] typeParameters);
-
-        /// <summary>
-        /// Determine if the type argument counts match those in the specified <see cref="UnresolvedRef"/>.
-        /// </summary>
-        bool DoTypeArgumentCountsMatch(UnresolvedRef unresolvedRef);
 
         /// <summary>
         /// Get any constraints for the specified <see cref="TypeParameter"/>.

@@ -1,10 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of the <see cref="TypeOf"/>, <see cref="SizeOf"/>, and <see cref="DefaultValue"/> operators.
@@ -27,20 +27,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
         protected TypeOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_expression != null)
-                _expression = (Expression)_expression.Resolve(ResolveCategory.Type, flags);
-            return this;
-        }
 
         #endregion
     }

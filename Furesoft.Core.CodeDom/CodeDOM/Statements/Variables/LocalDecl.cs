@@ -3,20 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a local variable declaration.
@@ -291,41 +282,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 
         #endregion
 
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public virtual void ResolveRef(string name, Resolver resolver)
-        {
-            if (Name == name)
-                resolver.AddMatch(this);
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="LocalDecl"/>.
-        /// </summary>
-        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
-        /// of nested types.  It also handles constants and the type being null.</remarks>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            TypeRefBase typeRefBase = base.EvaluateType(withoutConstants);
-            if (IsConst && !withoutConstants)
-            {
-                object value = GetValue();
-                TypeRef typeRef = typeRefBase as TypeRef;
-                if (typeRef != null)
-                {
-                    if (typeRef.IsEnum || value == null)
-                        return new TypeRef(typeRef, value);
-                }
-                return new TypeRef(value);
-            }
-            return typeRefBase;
-        }
-
-        #endregion
-
         #region /* FORMATTING */
 
         /// <summary>
@@ -360,12 +316,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             UpdateLineCol(writer, flags);
             writer.WriteIdentifier(_name, flags);
 
-            if (isDescription)
-            {
-                if (IsConst)
-                    AsTextConstantValue(writer, passFlags);
-            }
-            else if (_initialization != null)
+            if (_initialization != null)
                 AsTextInitialization(writer, passFlags);
         }
 

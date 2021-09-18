@@ -2,18 +2,12 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using System.Globalization;
 using System.Text;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a literal value of a particular type (string, integer, boolean, etc).
@@ -25,16 +19,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
     /// </remarks>
     public class Literal : Expression
     {
-        #region /* FIELDS */
-
         protected string _text;
-
-        // We could perhaps cache the actual value of the literal as a member, but since GetValue() shouldn't be
-        // called very many times while parsing/analyzing the code, perhaps it's not worth the extra memory.
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a literal with the specified string representation.
@@ -208,7 +193,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
                     case '\r': str = @"\r"; break;
                     case '\t': str = @"\t"; break;
                     case '\v': str = @"\v"; break;
-                    default:   str = string.Format("\\x{0:X2}", (int)ch); break;
+                    default: str = string.Format("\\x{0:X2}", (int)ch); break;
                 }
                 builder.Append(str);
             }
@@ -224,26 +209,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
                     builder.Append("\\\"");
                 else
                     builder.Append(ch);
-            }
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The text content of the <see cref="Literal"/>.
-        /// </summary>
-        public string Text
-        {
-            get { return _text; }
-            set
-            {
-                _text = value;
-
-                // Normalize certain literals
-                if (_text == @"'\""'")
-                    _text = @"'""'";  // Change '\"' to '"'
             }
         }
 
@@ -263,13 +228,26 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             get { return (_text == ParseTokenNull); }
         }
 
-        #endregion
+        /// <summary>
+        /// The text content of the <see cref="Literal"/>.
+        /// </summary>
+        public string Text
+        {
+            get { return _text; }
+            set
+            {
+                _text = value;
 
-        #region /* METHODS */
+                // Normalize certain literals
+                if (_text == @"'\""'")
+                    _text = @"'""'";  // Change '\"' to '"'
+            }
+        }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// The token used to parse a 'false' literal.
+        /// </summary>
+        public const string ParseTokenFalse = "false";
 
         /// <summary>
         /// The token used to parse a 'null' literal.
@@ -280,31 +258,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         /// The token used to parse a 'true' literal.
         /// </summary>
         public const string ParseTokenTrue = "true";
-
-        /// <summary>
-        /// The token used to parse a 'false' literal.
-        /// </summary>
-        public const string ParseTokenFalse = "false";
-
-        internal static new void AddParsePoints()
-        {
-            // NOTE: No parse-points are installed for string, char, or numeric literals - instead, the parser
-            //       calls the parsing constructor directly based upon the token type.  This is because we want
-            //       to parse literals into individual tokens within the parser itself to preserve whitespace.
-
-            // Install parse-points for 'null', 'true', and 'false' literals (without scope restrictions)
-            Parser.AddParsePoint(ParseTokenNull, Parse);
-            Parser.AddParsePoint(ParseTokenTrue, Parse);
-            Parser.AddParsePoint(ParseTokenFalse, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Literal"/>.
-        /// </summary>
-        public static Literal Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Literal(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="Literal"/>.
@@ -319,271 +272,25 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             MoveEOLComment(parser.LastToken);
         }
 
-        #endregion
-
-        #region /* RESOLVING */
-
         /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
+        /// Parse a <see cref="Literal"/>.
         /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
+        public static Literal Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            object value = GetValue();
-            return (withoutConstants ? (value != null ? new TypeRef(value.GetType()) : TypeRef.ObjectRef) : new TypeRef(value));
+            return new Literal(parser, parent);
         }
 
-        /// <summary>
-        /// Get the value of the <see cref="Literal"/>.
-        /// </summary>
-        public object GetValue()
+        internal static new void AddParsePoints()
         {
-            int length = _text.Length;
-            if (length == 0) return this;
+            // NOTE: No parse-points are installed for string, char, or numeric literals - instead, the parser
+            //       calls the parsing constructor directly based upon the token type.  This is because we want
+            //       to parse literals into individual tokens within the parser itself to preserve whitespace.
 
-            char firstChar = _text[0];
-            switch (firstChar)
-            {
-                case '"':  // string
-                    if (length >= 2 && _text[length - 1] == '"')
-                    {
-                        // Extract the actual string, processing any escape sequences
-                        StringBuilder builder = new StringBuilder(length);
-                        for (int index = 1; index < length - 1; ++index)
-                        {
-                            char ch = _text[index];
-                            if (ch == '\\' && index < length - 2)
-                                ch = CharFromEscapeSequence(_text, length - 1, ref index);
-                            builder.Append(ch);
-                        }
-                        return builder.ToString();
-                    }
-                    break;
-                case '@':  // literal string
-                    if (length >= 3 && _text[1] == '"' && _text[length - 1] == '"')
-                    {
-                        // Extract the actual string, processing any escaped double quotes
-                        StringBuilder builder = new StringBuilder(length);
-                        for (int i = 2; i < length - 1; ++i)
-                        {
-                            char ch = _text[i];
-                            if (ch == '"' && _text[i + 1] == '"')
-                                ++i;
-                            builder.Append(ch);
-                        }
-                        return builder.ToString();
-                    }
-                    break;
-                case '\'':  // char
-                    if (length >= 2 && _text[length - 1] == '\'')
-                    {
-                        // Extract the actual char, processing any escape sequences
-                        char ch = _text[1];
-                        if (ch == '\\')
-                        {
-                            int index = 1;
-                            ch = CharFromEscapeSequence(_text, length - 1, ref index);
-                        }
-                        return ch;
-                    }
-                    break;
-                case 'n':  // null
-                    if (_text == ParseTokenNull)
-                        return null;
-                    break;
-                case 't':  // true
-                    if (_text == ParseTokenTrue)
-                        return true;
-                    break;
-                case 'f':  // false
-                    if (_text == ParseTokenFalse)
-                        return false;
-                    break;
-                default:  // numerics
-                    if (char.IsDigit(firstChar) || (firstChar == '.') || (firstChar == '-' && _text != "-Infinity") || (firstChar == '+'))
-                    {
-                        int start = 0;
-                        bool negative = false;
-                        bool hexFormat = false;
-                        NumberStyles style = NumberStyles.None;
-
-                        // Check for signs
-                        if (_text[start] == '-')
-                        {
-                            ++start;
-                            negative = true;
-                            style = NumberStyles.AllowLeadingSign;
-                        }
-                        else if (_text[start] == '+')
-                            ++start;
-
-                        // Check for hex values
-                        if (_text[start] == '0' && start < _text.Length - 1 && _text[start + 1] == 'x')
-                        {
-                            start += 2;
-                            hexFormat = true;
-                            style = NumberStyles.AllowHexSpecifier;  // Overwrite/ignore any AllowLeadingSign
-                        }
-
-                        int i;
-                        uint ui;
-                        long l;
-                        ulong ul;
-                        double d;
-                        decimal m;
-                        string val = (negative ? "-" : "") + _text.Substring(start);
-
-                        // Check for suffixes
-                        if (start < _text.Length)
-                        {
-                            int end = _text.Length - 1;
-                            char last = char.ToLower(_text[end]);
-                            char prev = (end > start ? char.ToLower(_text[end - 1]) : '\0');
-                            if (!hexFormat)
-                            {
-                                if (last == 'f')
-                                {
-                                    float f;
-                                    val = val.Substring(0, val.Length - 1);  // Remove suffix or it will fail
-                                    float.TryParse(val, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out f);
-                                    return f;
-                                }
-                                if (last == 'd')
-                                {
-                                    val = val.Substring(0, val.Length - 1);  // Remove suffix or it will fail
-                                    double.TryParse(val, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out d);
-                                    return d;
-                                }
-                                if (last == 'm')
-                                {
-                                    val = val.Substring(0, val.Length - 1);  // Remove suffix or it will fail
-                                    decimal.TryParse(val, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out m);
-                                    return m;
-                                }
-                            }
-                            bool isULong = false;
-                            if (last == 'u')
-                            {
-                                if (prev != 'l')
-                                {
-                                    // If only 'u' is specified, use the first type that fits: uint, ulong
-                                    val = val.Substring(0, val.Length - 1);  // Remove suffix or it will fail
-                                    if (uint.TryParse(val, style, CultureInfo.InvariantCulture, out ui))
-                                        return ui;
-                                }
-                                else
-                                    val = val.Substring(0, val.Length - 2);  // Remove suffix or it will fail
-                                isULong = true;
-                            }
-                            if (last == 'l')
-                            {
-                                if (prev != 'u')
-                                {
-                                    // If only 'l' is specified, use the first type that fits: long, ulong
-                                    val = val.Substring(0, val.Length - 1);  // Remove suffix or it will fail
-                                    if (long.TryParse(val, style, CultureInfo.InvariantCulture, out l))
-                                        return l;
-                                }
-                                else
-                                    val = val.Substring(0, val.Length - 2);  // Remove suffix or it will fail
-                                isULong = true;
-                            }
-                            if (isULong)
-                            {
-                                ulong.TryParse(val, style, CultureInfo.InvariantCulture, out ul);
-                                return ul;
-                            }
-                        }
-
-                        // If we haven't determined the type yet, parse the string, finding the smallest type
-                        // in which it fits.  We have to try signed types first in case smaller positive values
-                        // fit, but hex values representing negative values are (erroneously?) parsed, so we
-                        // have to check for that case and allow the unsigned type to parse them instead.
-                        if (int.TryParse(val, style, CultureInfo.InvariantCulture, out i))
-                        {
-                            if (!(hexFormat && i < 0))
-                                return i;
-                        }
-                        if (!negative && uint.TryParse(val, style, CultureInfo.InvariantCulture, out ui))
-                            return ui;
-                        if (long.TryParse(val, style, CultureInfo.InvariantCulture, out l))
-                        {
-                            if (!(hexFormat && l < 0))
-                                return l;
-                        }
-                        if (!negative && ulong.TryParse(val, style, CultureInfo.InvariantCulture, out ul))
-                            return ul;
-                        if (!hexFormat)
-                        {
-                            if (double.TryParse(val, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, out d))
-                                return d;
-                            if (decimal.TryParse(val, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out m))
-                                return m;
-                        }
-                    }
-                    if (_text == "NaN")
-                        return double.NaN;
-                    if (_text == "Infinity")
-                        return double.PositiveInfinity;
-                    if (_text == "-Infinity")
-                        return double.NegativeInfinity;
-                    break;
-            }
-
-            // Return this object if the Literal is invalid
-            return this;
+            // Install parse-points for 'null', 'true', and 'false' literals (without scope restrictions)
+            Parser.AddParsePoint(ParseTokenNull, Parse);
+            Parser.AddParsePoint(ParseTokenTrue, Parse);
+            Parser.AddParsePoint(ParseTokenFalse, Parse);
         }
-
-        protected char CharFromEscapeSequence(string text, int length, ref int index)
-        {
-            // Assume index is pointing to a verified '\' starting the sequence
-            char ch = _text[index];
-            if (++index < length)
-            {
-                ch = _text[index];  // By default, use the escaped char
-                switch (ch)
-                {
-                    case '0': ch = '\0'; break;
-                    case 'a': ch = '\a'; break;
-                    case 'b': ch = '\b'; break;
-                    case 'f': ch = '\f'; break;
-                    case 'n': ch = '\n'; break;
-                    case 'r': ch = '\r'; break;
-                    case 't': ch = '\t'; break;
-                    case 'v': ch = '\v'; break;
-                    case 'x':
-                    case 'u':
-                        ch = CharFromHexString(text, Math.Max(length, index + 4), ref index);
-                        break;
-                    case 'U':  // values can be up to 0x0010FFFF
-                        ch = CharFromHexString(text, Math.Max(length, index + 8), ref index);
-                        break;
-                }
-            }
-            return ch;
-        }
-
-        protected char CharFromHexString(string text, int length, ref int index)
-        {
-            // Assume index is pointing to a verified 'x', 'u', or 'U' starting the sequence
-            char ch = _text[index];
-            if (++index < length)
-            {
-                ch = '\0';
-                while (Uri.IsHexDigit(_text[index]))
-                {
-                    ch = (char)((ch << 4) + Uri.FromHex(_text[index]));
-                    if (++index >= length)
-                        break;
-                }
-            }
-            --index;  // Point to the last char that was used
-            return ch;
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
@@ -592,20 +299,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             writer.Write(_text);
             writer.EscapeUnicode = true;
         }
-
-        public static void AsTextConstantValue(CodeWriter writer, RenderFlags flags, object constantValue, bool hexFormat, CodeObject parent)
-        {
-            writer.Write(" = ");
-            Literal literal = new Literal(constantValue, hexFormat);
-            literal.Parent = parent;
-            literal.AsText(writer, flags);
-        }
-
-        public static void AsTextConstantValue(CodeWriter writer, RenderFlags flags, object constantValue, bool hexFormat)
-        {
-            AsTextConstantValue(writer, flags, constantValue, hexFormat, null);
-        }
-
-        #endregion
     }
 }

@@ -1,18 +1,16 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-
-// The Nova Project by Ken Beckett.
+﻿// The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="LocalDecl"/>.
     /// </summary>
     public class LocalRef : VariableRef
     {
+        #region /* CONSTRUCTORS */
+
         /// <summary>
         /// Create a <see cref="LocalRef"/>.
         /// </summary>
@@ -27,6 +25,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
             : base(declaration, false)
         { }
 
+        #endregion
+
+        #region /* PROPERTIES */
+
         /// <summary>
         /// True if the referenced <see cref="LocalDecl"/> is const.
         /// </summary>
@@ -35,14 +37,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
             get { return ((LocalDecl)_reference).IsConst; }
         }
 
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // Determine the type of the referenced object, including support for constant values
-            return ((LocalDecl)_reference).EvaluateType(withoutConstants);
-        }
+        #endregion
+
+        #region /* METHODS */
+
+        #endregion
     }
 }

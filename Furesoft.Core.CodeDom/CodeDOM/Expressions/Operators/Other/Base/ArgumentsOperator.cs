@@ -1,18 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all operators with a variable list of arguments (<see cref="Call"/>, <see cref="Index"/>,
@@ -165,155 +158,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
         protected void ParseArguments(Parser parser, CodeObject parent, string parseTokenStart, string parseTokenEnd)
         {
             ParseArguments(parser, parent, parseTokenStart, parseTokenEnd, false);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve the arguments first, so that argument type matching can occur for the expression
-            if (_arguments != null && _arguments.Count > 0)
-            {
-                for (int i = 0; i < _arguments.Count; ++i)
-                {
-                    Expression argument = _arguments[i];
-                    if (argument != null)
-                    {
-                        // Any methods being passed to delegate parameters will fail to resolve if there are multiple
-                        // matches (since we usually won't know the delegate type yet), but we still need to go ahead and
-                        // try in order to create a "method group" UnresolvedRef for use below.
-                        _arguments[i] = (Expression)argument.Resolve(ResolveCategory.Expression, flags);
-                    }
-                }
-            }
-
-            // Now, resolve the invoked (called) expression
-            if (_expression != null)
-            {
-                SymbolicRef oldInvokedRef, newInvokedRef;
-                ResolveInvokedExpression(resolveCategory, flags, out oldInvokedRef, out newInvokedRef);
-
-                // If the invoked reference was resolved (or changed), we need to check for certain types of
-                // arguments that may need to be resolved now.
-                if (_arguments != null && _arguments.Count > 0 && newInvokedRef != null)
-                {
-                    bool changed = !newInvokedRef.IsSameRef(oldInvokedRef);
-
-                    // If the invoked ref is actually a method definition reference in a DocCodeRefBase, close any open type parameters
-                    bool isDocCodeReference = false;
-                    if (changed && flags.HasFlag(ResolveFlags.InDocCodeRef))
-                    {
-                        TypeRefBase invokedRef = newInvokedRef as TypeRefBase;
-                        isDocCodeReference = (invokedRef != null && invokedRef.HasTypeArguments && invokedRef.IsDocCodeReference);
-                    }
-
-                    // Process the arguments
-                    for (int i = 0; i < _arguments.Count; ++i)
-                    {
-                        Expression argument = _arguments[i];
-                        if (argument != null)
-                        {
-                            bool resolve = false;
-                            if (argument is UnresolvedRef)
-                            {
-                                // If the argument is unresolved, it might represent a method group that needed a delegate
-                                // type in order to be resolved, so try it again now if the invoked reference was resolved
-                                // and the UnresolvedRef has some partial matches (otherwise trying is a waste of time) - OR
-                                // if we're in a doc comment, resolve anyway to handle a 'T' with no partial matches that
-                                // might now be resolvable in the invoked expression.
-                                if (changed && !(newInvokedRef is UnresolvedRef) && ((((UnresolvedRef)argument).IsMethodGroup) || flags.HasFlag(ResolveFlags.InDocCodeRef)))
-                                    resolve = true;
-                            }
-                            else if (argument is Dot)
-                            {
-                                // Also handle a Dot operator with an unresolved right side
-                                if (changed && !(newInvokedRef is UnresolvedRef))
-                                {
-                                    UnresolvedRef unresolvedRef = ((Dot)argument).Right as UnresolvedRef;
-                                    if (unresolvedRef != null && (unresolvedRef.IsMethodGroup || flags.HasFlag(ResolveFlags.InDocCodeRef)))
-                                        resolve = true;
-                                }
-                            }
-
-                            // If it's been determined that we should, resolve the argument expression
-                            if (resolve || isDocCodeReference)
-                                _arguments[i] = (Expression)argument.Resolve(ResolveCategory.Expression, flags);
-
-                            // If it's a DocCodeRef reference, close any open type parameter references
-                            if (isDocCodeReference)
-                                _arguments[i] = CloseTypeParametersInExpression(_arguments[i]);
-                        }
-                    }
-                }
-            }
-            return this;
-        }
-
-        protected virtual void ResolveInvokedExpression(ResolveCategory resolveCategory, ResolveFlags flags, out SymbolicRef oldInvokedRef, out SymbolicRef newInvokedRef)
-        {
-            // Resolve the invoked (called) expression
-            if (_expression != null)
-            {
-                oldInvokedRef = _expression.SkipPrefixes() as SymbolicRef;
-                _expression = (Expression)_expression.Resolve(resolveCategory, flags);
-                newInvokedRef = _expression.SkipPrefixes() as SymbolicRef;
-            }
-            else
-                oldInvokedRef = newInvokedRef = null;
-        }
-
-        protected static Expression CloseTypeParametersInExpression(Expression expression)
-        {
-            if (expression is OpenTypeParameterRef)
-                return ((OpenTypeParameterRef)expression).ConvertToTypeParameterRef();
-            if (expression is Dot)
-                ((Dot)expression).Right = CloseTypeParametersInExpression(((Dot)expression).Right);
-            else if (expression is TypeRefBase)
-                ((TypeRefBase)expression).ConvertOpenTypeParameters();
-            return expression;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_expression != null && _expression.HasUnresolvedRef())
-                return true;
-            if (_arguments != null && _arguments.Count > 0 && ChildListHelpers.HasUnresolvedRef(_arguments))
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Find a type argument for the specified type parameter.
-        /// </summary>
-        public override TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
-        {
-            // Search the evaluated type of the expression for the type parameter
-            TypeRefBase typeRefBase = EvaluateType();
-            return (typeRefBase != null ? typeRefBase.FindTypeArgument(typeParameterRef, originatingChild) : null);
-        }
-
-        /// <summary>
-        /// Determine the delegate type of the parameter with the specified argument index.
-        /// </summary>
-        public TypeRefBase GetDelegateParameterType(object obj, int argumentIndex)
-        {
-            return MethodRef.GetDelegateParameterType(obj, argumentIndex, _expression);
-        }
-
-        /// <summary>
-        /// Get the invocation target reference.
-        /// </summary>
-        public virtual SymbolicRef GetInvocationTargetRef()
-        {
-            return null;
         }
 
         #endregion

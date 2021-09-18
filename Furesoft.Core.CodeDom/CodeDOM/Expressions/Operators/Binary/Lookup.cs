@@ -1,15 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Specifies that an identifier is in the specified namespace - either 'global' or an aliased
@@ -129,38 +125,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            _left = (Expression)_left.Resolve(ResolveCategory.NamespaceAlias, flags);
-            _right = (Expression)_right.Resolve(ResolveCategory.NamespaceOrType, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Evaluate the <see cref="Expression"/> to a type or namespace.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/>, <see cref="UnresolvedRef"/>, or <see cref="NamespaceRef"/>.</returns>
-        public override SymbolicRef EvaluateTypeOrNamespace(bool withoutConstants)
-        {
-            return _right.EvaluateTypeOrNamespace(withoutConstants);
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            return _right.EvaluateType(withoutConstants);
         }
 
         #endregion

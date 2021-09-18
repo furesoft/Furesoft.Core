@@ -1,14 +1,12 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all documentation comment tags that have a 'name' attribute (<see cref="DocParam"/>,
@@ -98,29 +96,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Ba
                     value = parser.TokenText;
                 parser.NextToken(true);  // Move past delimiter (or token)
 
-                NameRef = new UnresolvedRef(value.Trim(), AttributeCategory, lineNumber, columnNumber);
+                NameRef = new UnresolvedRef(value.Trim(), lineNumber, columnNumber);
                 return _nameRef;
             }
             return base.ParseAttributeValue(parser, name);
-        }
-
-        protected virtual ResolveCategory AttributeCategory
-        {
-            get { return ResolveCategory.Expression; }
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_nameRef != null && (flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-                _nameRef = (SymbolicRef)_nameRef.Resolve(AttributeCategory, flags | ResolveFlags.InDocComment);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
         }
 
         #endregion

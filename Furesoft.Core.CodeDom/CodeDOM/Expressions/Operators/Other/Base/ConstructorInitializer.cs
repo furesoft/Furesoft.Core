@@ -1,16 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="BaseInitializer"/> and <see cref="ThisInitializer"/>.
@@ -89,18 +84,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
 
             MoveComments(lastHeaderToken);  // Move any regular comments from before the ':' this object
 
-            // Set the expression to an unresolved reference using the keyword for the name,
-            // although it will be ignored (special logic is used to resolve ConstructorInitializers).
-            Expression = new UnresolvedRef(keyword, ResolveCategory.Constructor, LineNumber, ColumnNumber);
+            // Set the expression to an unresolved reference using the keyword for the name
+            Expression = new UnresolvedRef(keyword, LineNumber, ColumnNumber);
 
             // Force constructor initializers to start on a new line if auto-cleanup is on
             if (AutomaticFormattingCleanup && !parser.IsGenerated)
                 IsFirstOnLine = true;
         }
-
-        #endregion
-
-        #region /* RESOLVING */
 
         #endregion
 

@@ -3,13 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents the declaration of an implicit 'value' parameter for a <see cref="GetterDecl"/>, <see cref="AdderDecl"/>, or <see cref="RemoverDecl"/>.

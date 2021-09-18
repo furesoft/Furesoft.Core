@@ -1,17 +1,16 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
-
-// The Nova Project by Ken Beckett.
+﻿// The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="Label"/>.
     /// </summary>
     public class LabelRef : GotoTargetRef
     {
+        #region /* CONSTRUCTORS */
+
         /// <summary>
         /// Create a <see cref="LabelRef"/>.
         /// </summary>
@@ -25,5 +24,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets
         public LabelRef(Label declaration)
             : base(declaration, false)
         { }
+
+        #endregion
     }
 }

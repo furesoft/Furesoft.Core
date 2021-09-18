@@ -6,19 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Utilities;
-using static Furesoft.Core.CodeDom.CodeDOM.Base.CodeObject;
 
-namespace Furesoft.Core.CodeDom.Rendering
+using Nova.CodeDOM;
+using Nova.Utilities;
+using Attribute = Nova.CodeDOM.Attribute;
+
+namespace Nova.Rendering
 {
     /// <summary>
     /// Used to format code objects as text and write them into a string or a file.
@@ -31,6 +24,8 @@ namespace Furesoft.Core.CodeDom.Rendering
     /// </remarks>
     public class CodeWriter : IDisposable
     {
+        #region /* STATIC FIELDS */
+
         /// <summary>
         /// C# keywords.
         /// </summary>
@@ -56,10 +51,21 @@ namespace Furesoft.Core.CodeDom.Rendering
                 // have to treat them as keywords at least in text sources to be compatible with the C# compiler.
             };
 
-        /// <summary>
-        /// True if unicode characters should be escaped.
-        /// </summary>
-        public bool EscapeUnicode = true;
+        #endregion
+
+        #region /* FIELDS */
+
+        protected TextWriter _textWriter;
+        protected int _lineNumber = 1;
+        protected int _columnNumber = 1;
+        protected bool _isEmptyLine = true;
+        protected bool _isGenerated;
+        protected List<EOLComment> _pendingEOLComments = new List<EOLComment>();
+        protected bool _flushingEOLComments;
+
+        protected Stack<IndentState> _indentStateStack = new Stack<IndentState>(32);
+        protected IndentState _lastPoppedIndentState;
+        protected Stack<AlignmentState> _alignmentStateStack = new Stack<AlignmentState>(16);
 
         /// <summary>
         /// True if rendering documentation comment content.
@@ -67,20 +73,18 @@ namespace Furesoft.Core.CodeDom.Rendering
         public bool InDocCommentContent;
 
         /// <summary>
+        /// True if unicode characters should be escaped.
+        /// </summary>
+        public bool EscapeUnicode = true;
+
+        /// <summary>
         /// True if tabs should be used for indentation instead of spaces.
         /// </summary>
         public bool UseTabs;
 
-        protected Stack<AlignmentState> _alignmentStateStack = new Stack<AlignmentState>(16);
-        protected int _columnNumber = 1;
-        protected bool _flushingEOLComments;
-        protected Stack<IndentState> _indentStateStack = new Stack<IndentState>(32);
-        protected bool _isEmptyLine = true;
-        protected bool _isGenerated;
-        protected IndentState _lastPoppedIndentState;
-        protected int _lineNumber = 1;
-        protected List<EOLComment> _pendingEOLComments = new List<EOLComment>();
-        protected TextWriter _textWriter;
+        #endregion
+
+        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a code writer that writes to a string.
@@ -134,18 +138,16 @@ namespace Furesoft.Core.CodeDom.Rendering
             : this(fileName, encoding, hasUTF8BOM, useTabs, false)
         { }
 
-        /// <summary>
-        /// This event is fired after a new line is created.
-        /// </summary>
-        public event Action<CodeWriter> AfterNewLine;
+        #endregion
+
+        #region /* PROPERTIES */
 
         /// <summary>
-        /// A stack of <see cref="AlignmentState"/>s.
+        /// The current line number (1 to N).
         /// </summary>
-        public Stack<AlignmentState> AlignmentStateStack
+        public int LineNumber
         {
-            get { return _alignmentStateStack; }
-            set { _alignmentStateStack = value; }
+            get { return _lineNumber; }
         }
 
         /// <summary>
@@ -155,6 +157,33 @@ namespace Furesoft.Core.CodeDom.Rendering
         {
             get { return _columnNumber; }
         }
+
+        /// <summary>
+        /// True if the code being rendered is generated (such as a generated '.g.cs' file).  Code cleanup settings will be ignored.
+        /// </summary>
+        public bool IsGenerated
+        {
+            get { return _isGenerated; }
+        }
+
+        /// <summary>
+        /// Get or set the string used to create new lines (LF or CR/LF).
+        /// </summary>
+        public string NewLine
+        {
+            get { return (_textWriter != null ? _textWriter.NewLine : null); }
+            set
+            {
+                if (_textWriter != null)
+                    _textWriter.NewLine = value;
+            }
+        }
+
+        /// <summary>
+        /// True if a newline is required before any other text, such as if a compiler directive was just emitted
+        /// (used to force a newline before a terminating ';' on an expression with a compiler directive at the end).
+        /// </summary>
+        public bool NeedsNewLine { get; set; }
 
         /// <summary>
         /// Get or set the current indent offset (0 to N).
@@ -171,202 +200,22 @@ namespace Furesoft.Core.CodeDom.Rendering
         }
 
         /// <summary>
-        /// True if the code being rendered is generated (such as a generated '.g.cs' file).  Code cleanup settings will be ignored.
+        /// A stack of <see cref="AlignmentState"/>s.
         /// </summary>
-        public bool IsGenerated
+        public Stack<AlignmentState> AlignmentStateStack
         {
-            get { return _isGenerated; }
+            get { return _alignmentStateStack; }
+            set { _alignmentStateStack = value; }
         }
 
         /// <summary>
-        /// The current line number (1 to N).
+        /// This event is fired after a new line is created.
         /// </summary>
-        public int LineNumber
-        {
-            get { return _lineNumber; }
-        }
+        public event Action<CodeWriter> AfterNewLine;
 
-        /// <summary>
-        /// True if a newline is required before any other text, such as if a compiler directive was just emitted
-        /// (used to force a newline before a terminating ';' on an expression with a compiler directive at the end).
-        /// </summary>
-        public bool NeedsNewLine { get; set; }
+        #endregion
 
-        /// <summary>
-        /// Get or set the string used to create new lines (LF or CR/LF).
-        /// </summary>
-        public string NewLine
-        {
-            get { return (_textWriter != null ? _textWriter.NewLine : null); }
-            set
-            {
-                if (_textWriter != null)
-                    _textWriter.NewLine = value;
-            }
-        }
-
-        /// <summary>
-        /// Begin the association of alignment information with a code object.
-        /// </summary>
-        public void BeginAlignment(CodeObject codeObject, int[] alignmentOffsets)
-        {
-            _alignmentStateStack.Push(new AlignmentState(codeObject, alignmentOffsets));
-        }
-
-        /// <summary>
-        /// Begin a section during which any newline should be indented an extra level.
-        /// </summary>
-        public void BeginIndentOnNewLine(CodeObject codeObject)
-        {
-            IndentState indentState = _indentStateStack.Peek();
-            _indentStateStack.Push(new IndentState(codeObject, indentState.IndentOffset,
-                indentState.IndentOffset + TabSize, indentState.ParentOffset));
-        }
-
-        /// <summary>
-        /// Begin a section during which any newline should be indented relative to the current offset.
-        /// </summary>
-        public void BeginIndentOnNewLineRelativeToCurrentOffset(CodeObject codeObject)
-        {
-            IndentState indentState = _indentStateStack.Peek();
-            int newOffset = _columnNumber - 1;
-            _indentStateStack.Push(new IndentState(codeObject, newOffset, newOffset, indentState.ParentOffset));
-            IndentOffset = newOffset;  // Change current column now if line is empty
-        }
-
-        /// <summary>
-        /// Begin a section during which any newline should be indented relative to the last indented offset.
-        /// </summary>
-        public void BeginIndentOnNewLineRelativeToLastIndent(CodeObject codeObject, CodeObject lastCodeObject)
-        {
-            // Use the last indented offset if the code object matches, otherwise just do a normal indent
-            IndentState indentState = _lastPoppedIndentState;
-            if (indentState == null || indentState.IndentObject != lastCodeObject)
-                BeginIndentOnNewLine(codeObject);
-            else
-            {
-                indentState.IndentObject = codeObject;
-                _indentStateStack.Push(indentState);
-            }
-            IndentOffset = IndentOffset;  // Change current column now if line is empty
-        }
-
-        /// <summary>
-        /// Begin a section during which any newline should be indented relative to the parent object offset.
-        /// </summary>
-        public void BeginIndentOnNewLineRelativeToParentOffset(CodeObject codeObject, bool additionalIndent)
-        {
-            IndentState indentState = _indentStateStack.Peek();
-            _indentStateStack.Push(new IndentState(codeObject, indentState.IndentOffset,
-                indentState.ParentOffset + (additionalIndent ? TabSize : 0), indentState.ParentOffset));
-        }
-
-        /// <summary>
-        /// Begin a section during which any newline should be outdented by a certain amount, or to a certain offset.
-        /// </summary>
-        /// <param name="codeObject">The related code object.</param>
-        /// <param name="offset">The indentation offset (0 to N), or amount to outdent if negative.</param>
-        public void BeginOutdentOnNewLine(CodeObject codeObject, int offset)
-        {
-            IndentState indentState = _indentStateStack.Peek();
-            int newOffset = (offset < 0 ? indentState.IndentOffsetOnNewLine + offset : offset);
-            if (newOffset < 0) newOffset = 0;
-            _indentStateStack.Push(new IndentState(codeObject, newOffset, newOffset, indentState.ParentOffset));
-            IndentOffset = newOffset;  // Change current column now if line is empty
-        }
-
-        /// <summary>
-        /// Dispose the object.
-        /// </summary>
-        public void Dispose()
-        {
-            if (_textWriter != null)
-                _textWriter.Dispose();
-        }
-
-        /// <summary>
-        /// End the association of alignment information with a code object.
-        /// </summary>
-        public void EndAlignment(CodeObject codeObject)
-        {
-            AlignmentState alignmentState = _alignmentStateStack.Pop();
-            if (alignmentState.Object != codeObject)
-                Log.WriteLine("ERROR popping alignment state stack - objects don't match!");
-        }
-
-        /// <summary>
-        /// End a section during which any newline should be indented an extra level.
-        /// </summary>
-        public void EndIndentation(CodeObject codeObject)
-        {
-            _lastPoppedIndentState = _indentStateStack.Pop();
-            if (_lastPoppedIndentState.IndentObject != codeObject)
-                Log.WriteLine("ERROR popping indent state stack - objects don't match!");
-            IndentOffset = IndentOffset;  // Change current column now if line is empty
-        }
-
-        /// <summary>
-        /// Flush any pending data.
-        /// </summary>
-        public void Flush()
-        {
-            FlushPendingEOLComments(true);
-        }
-
-        /// <summary>
-        /// Get the column width associated with the specified CodeObject.
-        /// </summary>
-        public int GetColumnWidth(CodeObject codeObject, int column)
-        {
-            foreach (AlignmentState alignmentState in _alignmentStateStack)
-            {
-                if (alignmentState.Object == codeObject && column < alignmentState.Offsets.Length)
-                    return alignmentState.Offsets[column];
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Get any column widths associated with the specified CodeObject.
-        /// </summary>
-        public int[] GetColumnWidths(CodeObject codeObject)
-        {
-            foreach (AlignmentState alignmentState in _alignmentStateStack)
-            {
-                if (alignmentState.Object == codeObject)
-                    return alignmentState.Offsets;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the indentation offset of the specified code object.
-        /// </summary>
-        public int GetIndentOffset(CodeObject codeObject)
-        {
-            foreach (IndentState indentState in _indentStateStack)
-            {
-                if (indentState.IndentObject == codeObject)
-                    return indentState.IndentOffset;
-            }
-            return 0;
-        }
-
-        /// <summary>
-        /// Set the indent offset of the parent object.
-        /// </summary>
-        public void SetParentOffset()
-        {
-            _indentStateStack.Peek().ParentOffset = _columnNumber - 1;
-        }
-
-        /// <summary>
-        /// Convert all written data to a string.
-        /// </summary>
-        public override string ToString()
-        {
-            return (_textWriter != null ? _textWriter.ToString() : "");
-        }
+        #region /* METHODS */
 
         /// <summary>
         /// Write the specified text.
@@ -390,7 +239,7 @@ namespace Furesoft.Core.CodeDom.Rendering
                 int indentOffset = _indentStateStack.Peek().IndentOffset;
                 if (_textWriter != null)
                 {
-                    string indentString = (UseTabs ? new string('\t', indentOffset / TabSize) + new string(' ', indentOffset % TabSize)
+                    string indentString = (UseTabs ? new string('\t', indentOffset / CodeObject.TabSize) + new string(' ', indentOffset % CodeObject.TabSize)
                         : new string(' ', indentOffset));
                     _textWriter.Write(indentString);
                 }
@@ -401,9 +250,9 @@ namespace Furesoft.Core.CodeDom.Rendering
                 if (_textWriter != null && UseTabs && text[0] == ' ')
                 {
                     int leadingSpaces = StringUtil.CharCount(text, ' ', 0);
-                    int tabs = leadingSpaces / TabSize;
+                    int tabs = leadingSpaces / CodeObject.TabSize;
                     _textWriter.Write(new string('\t', tabs));
-                    int offset = tabs * TabSize;
+                    int offset = tabs * CodeObject.TabSize;
                     _columnNumber += offset;
                     text = text.Substring(offset);
                 }
@@ -459,12 +308,37 @@ namespace Furesoft.Core.CodeDom.Rendering
         /// <summary>
         /// Write an identifier, prefixing with '@' if it happens to be a keyword.
         /// </summary>
-        public void WriteIdentifier(string text, RenderFlags flags)
+        public void WriteIdentifier(string text, CodeObject.RenderFlags flags)
         {
             // Delimit the identifier if we're not in a doc comment and it's the same as a C# keyword
-            if (!flags.HasFlag(RenderFlags.InDocComment) && Keywords.Contains(text))
+            if (!flags.HasFlag(CodeObject.RenderFlags.InDocComment) && Keywords.Contains(text))
                 Write("@");
             Write(text);
+        }
+
+        /// <summary>
+        /// Render a name, hiding any 'Attribute' suffix if it's an attribute name.
+        /// </summary>
+        public void WriteName(string name, CodeObject.RenderFlags flags, bool possibleKeyword)
+        {
+            // Hide any "Attribute" suffix for attribute constructor names
+            if (flags.HasFlag(CodeObject.RenderFlags.Attribute) && name.EndsWith(Attribute.NameSuffix))
+            {
+                name = name.Substring(0, name.Length - Attribute.NameSuffix.Length);
+                possibleKeyword = false;
+            }
+            if (possibleKeyword)
+                WriteIdentifier(name, flags);
+            else
+                Write(name);
+        }
+
+        /// <summary>
+        /// Render a name, hiding any 'Attribute' suffix if it's an attribute name.
+        /// </summary>
+        public void WriteName(string name, CodeObject.RenderFlags flags)
+        {
+            WriteName(name, flags, false);
         }
 
         /// <summary>
@@ -512,13 +386,13 @@ namespace Furesoft.Core.CodeDom.Rendering
         /// <summary>
         /// Write a list of CodeObjects.
         /// </summary>
-        public void WriteList<T>(IEnumerable<T> enumerable, RenderFlags flags, CodeObject parent, int[] columnWidths) where T : CodeObject
+        public void WriteList<T>(IEnumerable<T> enumerable, CodeObject.RenderFlags flags, CodeObject parent, int[] columnWidths) where T : CodeObject
         {
             if (enumerable == null)
                 return;
 
             // Increase the indent level for any newlines that occur within the child list unless specifically told not to
-            bool increaseIndent = !flags.HasFlag(RenderFlags.NoIncreaseIndent);
+            bool increaseIndent = !flags.HasFlag(CodeObject.RenderFlags.NoIncreaseIndent);
             if (increaseIndent)
                 BeginIndentOnNewLine(parent);
 
@@ -542,7 +416,7 @@ namespace Furesoft.Core.CodeDom.Rendering
 
                     // Render any newlines here, so that the indentation will be correct if the object has any post annotations
                     // (which are rendered separately below, so that any commas can be rendered properly).
-                    if (!flags.HasFlag(RenderFlags.IsPrefix) && !flags.HasFlag(RenderFlags.SuppressNewLine) && codeObject.NewLines > 0)
+                    if (!flags.HasFlag(CodeObject.RenderFlags.IsPrefix) && !flags.HasFlag(CodeObject.RenderFlags.SuppressNewLine) && codeObject.NewLines > 0)
                     {
                         WriteLines(codeObject.NewLines);
                         // Set the parent offset for any post annotations
@@ -551,9 +425,10 @@ namespace Furesoft.Core.CodeDom.Rendering
 
                     // Render the code object, omitting any EOL comments and post annotations (so they can be rendered later after
                     // any comma), and prefixing a space if it's not the first item.
-                    RenderFlags passFlags = flags | RenderFlags.NoEOLComments | RenderFlags.NoPostAnnotations | RenderFlags.SuppressNewLine | (isSingleLine ? (isFirst ? 0 : RenderFlags.PrefixSpace) : (codeObject.IsFirstOnLine ? 0 : RenderFlags.PrefixSpace));
+                    CodeObject.RenderFlags passFlags = flags | CodeObject.RenderFlags.NoEOLComments | CodeObject.RenderFlags.NoPostAnnotations | CodeObject.RenderFlags.SuppressNewLine
+                        | (isSingleLine ? (isFirst ? 0 : CodeObject.RenderFlags.PrefixSpace) : (codeObject.IsFirstOnLine ? 0 : CodeObject.RenderFlags.PrefixSpace));
                     codeObject.AsText(this, passFlags);
-                    flags &= ~(RenderFlags.SuppressNewLine | RenderFlags.NoPreAnnotations);
+                    flags &= ~(CodeObject.RenderFlags.SuppressNewLine | CodeObject.RenderFlags.NoPreAnnotations);
 
                     if (hasMore)
                     {
@@ -562,7 +437,7 @@ namespace Furesoft.Core.CodeDom.Rendering
                         bool isLastOnLine = (nextObject != null && nextObject.IsFirstOnLine);
                         if (!isLastOnLine)
                             codeObject.AsTextEOLComments(this, flags);
-                        if (!flags.HasFlag(RenderFlags.NoItemSeparators))
+                        if (!flags.HasFlag(CodeObject.RenderFlags.NoItemSeparators))
                             Write(Expression.ParseTokenSeparator);
                         if (!isLastOnLine || codeObject.HasEOLComments)
                             WritePadding(codeObject, columnWidths, column);
@@ -571,7 +446,7 @@ namespace Furesoft.Core.CodeDom.Rendering
                     }
                     else
                     {
-                        if (flags.HasFlag(RenderFlags.HasTerminator) && !flags.HasFlag(RenderFlags.Description) && parent != null)
+                        if (flags.HasFlag(CodeObject.RenderFlags.HasTerminator) && !flags.HasFlag(CodeObject.RenderFlags.Description) && parent != null)
                             ((Statement)parent).AsTextTerminator(this, flags);
                         bool hasCloseBraceOnSameLine = (parent is Initializer && !((Initializer)parent).IsEndFirstOnLine);
                         if (codeObject.HasEOLComments || hasCloseBraceOnSameLine)
@@ -606,40 +481,167 @@ namespace Furesoft.Core.CodeDom.Rendering
         /// <summary>
         /// Write a list of CodeObjects.
         /// </summary>
-        public void WriteList<T>(IEnumerable<T> enumerable, RenderFlags flags, CodeObject parent) where T : CodeObject
+        public void WriteList<T>(IEnumerable<T> enumerable, CodeObject.RenderFlags flags, CodeObject parent) where T : CodeObject
         {
             WriteList(enumerable, flags, parent, null);
         }
 
-        /// <summary>
-        /// Render a name, hiding any 'Attribute' suffix if it's an attribute name.
-        /// </summary>
-        public void WriteName(string name, RenderFlags flags, bool possibleKeyword)
+        private void WritePadding(CodeObject codeObject, int[] columnWidths, int column)
         {
-            // Hide any "Attribute" suffix for attribute constructor names
-            if (flags.HasFlag(RenderFlags.Attribute) && name.EndsWith(Attribute.NameSuffix))
+            if (columnWidths != null && column < columnWidths.Length)
             {
-                name = name.Substring(0, name.Length - Attribute.NameSuffix.Length);
-                possibleKeyword = false;
+                int paddingLength = columnWidths[column] - codeObject.AsTextLength(CodeObject.RenderFlags.LengthFlags, AlignmentStateStack);
+                if (paddingLength > 0)
+                {
+                    if (_textWriter != null)
+                        _textWriter.Write(new string(' ', paddingLength));
+                    _columnNumber += paddingLength;
+                }
             }
-            if (possibleKeyword)
-                WriteIdentifier(name, flags);
-            else
-                Write(name);
         }
 
         /// <summary>
-        /// Render a name, hiding any 'Attribute' suffix if it's an attribute name.
+        /// Set the indent offset of the parent object.
         /// </summary>
-        public void WriteName(string name, RenderFlags flags)
+        public void SetParentOffset()
         {
-            WriteName(name, flags, false);
+            _indentStateStack.Peek().ParentOffset = _columnNumber - 1;
+        }
+
+        /// <summary>
+        /// Begin a section during which any newline should be indented an extra level.
+        /// </summary>
+        public void BeginIndentOnNewLine(CodeObject codeObject)
+        {
+            IndentState indentState = _indentStateStack.Peek();
+            _indentStateStack.Push(new IndentState(codeObject, indentState.IndentOffset,
+                indentState.IndentOffset + CodeObject.TabSize, indentState.ParentOffset));
+        }
+
+        /// <summary>
+        /// Begin a section during which any newline should be indented relative to the parent object offset.
+        /// </summary>
+        public void BeginIndentOnNewLineRelativeToParentOffset(CodeObject codeObject, bool additionalIndent)
+        {
+            IndentState indentState = _indentStateStack.Peek();
+            _indentStateStack.Push(new IndentState(codeObject, indentState.IndentOffset,
+                indentState.ParentOffset + (additionalIndent ? CodeObject.TabSize : 0), indentState.ParentOffset));
+        }
+
+        /// <summary>
+        /// Begin a section during which any newline should be indented relative to the current offset.
+        /// </summary>
+        public void BeginIndentOnNewLineRelativeToCurrentOffset(CodeObject codeObject)
+        {
+            IndentState indentState = _indentStateStack.Peek();
+            int newOffset = _columnNumber - 1;
+            _indentStateStack.Push(new IndentState(codeObject, newOffset, newOffset, indentState.ParentOffset));
+            IndentOffset = newOffset;  // Change current column now if line is empty
+        }
+
+        /// <summary>
+        /// Begin a section during which any newline should be indented relative to the last indented offset.
+        /// </summary>
+        public void BeginIndentOnNewLineRelativeToLastIndent(CodeObject codeObject, CodeObject lastCodeObject)
+        {
+            // Use the last indented offset if the code object matches, otherwise just do a normal indent
+            IndentState indentState = _lastPoppedIndentState;
+            if (indentState == null || indentState.IndentObject != lastCodeObject)
+                BeginIndentOnNewLine(codeObject);
+            else
+            {
+                indentState.IndentObject = codeObject;
+                _indentStateStack.Push(indentState);
+            }
+            IndentOffset = IndentOffset;  // Change current column now if line is empty
+        }
+
+        /// <summary>
+        /// Begin a section during which any newline should be outdented by a certain amount, or to a certain offset.
+        /// </summary>
+        /// <param name="codeObject">The related code object.</param>
+        /// <param name="offset">The indentation offset (0 to N), or amount to outdent if negative.</param>
+        public void BeginOutdentOnNewLine(CodeObject codeObject, int offset)
+        {
+            IndentState indentState = _indentStateStack.Peek();
+            int newOffset = (offset < 0 ? indentState.IndentOffsetOnNewLine + offset : offset);
+            if (newOffset < 0) newOffset = 0;
+            _indentStateStack.Push(new IndentState(codeObject, newOffset, newOffset, indentState.ParentOffset));
+            IndentOffset = newOffset;  // Change current column now if line is empty
+        }
+
+        /// <summary>
+        /// End a section during which any newline should be indented an extra level.
+        /// </summary>
+        public void EndIndentation(CodeObject codeObject)
+        {
+            _lastPoppedIndentState = _indentStateStack.Pop();
+            if (_lastPoppedIndentState.IndentObject != codeObject)
+                Log.WriteLine("ERROR popping indent state stack - objects don't match!");
+            IndentOffset = IndentOffset;  // Change current column now if line is empty
+        }
+
+        /// <summary>
+        /// Get the indentation offset of the specified code object.
+        /// </summary>
+        public int GetIndentOffset(CodeObject codeObject)
+        {
+            foreach (IndentState indentState in _indentStateStack)
+            {
+                if (indentState.IndentObject == codeObject)
+                    return indentState.IndentOffset;
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Begin the association of alignment information with a code object.
+        /// </summary>
+        public void BeginAlignment(CodeObject codeObject, int[] alignmentOffsets)
+        {
+            _alignmentStateStack.Push(new AlignmentState(codeObject, alignmentOffsets));
+        }
+
+        /// <summary>
+        /// Get any column widths associated with the specified CodeObject.
+        /// </summary>
+        public int[] GetColumnWidths(CodeObject codeObject)
+        {
+            foreach (AlignmentState alignmentState in _alignmentStateStack)
+            {
+                if (alignmentState.Object == codeObject)
+                    return alignmentState.Offsets;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the column width associated with the specified CodeObject.
+        /// </summary>
+        public int GetColumnWidth(CodeObject codeObject, int column)
+        {
+            foreach (AlignmentState alignmentState in _alignmentStateStack)
+            {
+                if (alignmentState.Object == codeObject && column < alignmentState.Offsets.Length)
+                    return alignmentState.Offsets[column];
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// End the association of alignment information with a code object.
+        /// </summary>
+        public void EndAlignment(CodeObject codeObject)
+        {
+            AlignmentState alignmentState = _alignmentStateStack.Pop();
+            if (alignmentState.Object != codeObject)
+                Log.WriteLine("ERROR popping alignment state stack - objects don't match!");
         }
 
         /// <summary>
         /// Write a pending EOL comment, to be flushed later once it's known if anything follows it on the same line.
         /// </summary>
-        public void WritePendingEOLComment(Comment comment, RenderFlags flags)
+        public void WritePendingEOLComment(Comment comment, CodeObject.RenderFlags flags)
         {
             // If the EOL comment is on a new line (postfix comment), flush any existing pending EOL comments first
             if (comment.IsFirstOnLine && _pendingEOLComments.Count > 0)
@@ -650,7 +652,7 @@ namespace Furesoft.Core.CodeDom.Rendering
             // an Expression).  Use the max of any ParentOffset or the current IndentOffset.
             // Also save the rendering flags, to preserve flags such as UpdateLineCol for later rendering.
             int parentOffset = _indentStateStack.Peek().ParentOffset;
-            _pendingEOLComments.Add(new EOLComment(comment, Math.Max(parentOffset, IndentOffset), flags & RenderFlags.PassMask));
+            _pendingEOLComments.Add(new EOLComment(comment, Math.Max(parentOffset, IndentOffset), flags & CodeObject.RenderFlags.PassMask));
         }
 
         protected void FlushPendingEOLComments(bool isEndOfLine)
@@ -668,7 +670,7 @@ namespace Furesoft.Core.CodeDom.Rendering
                     Comment comment = eolComment.Comment;
                     if (comment.IsFirstOnLine)
                         BeginOutdentOnNewLine(comment, eolComment.Indentation);
-                    comment.AsText(this, eolComment.RenderFlags | (isEndOfLine ? 0 : RenderFlags.CommentsInline));
+                    comment.AsText(this, eolComment.RenderFlags | (isEndOfLine ? 0 : CodeObject.RenderFlags.CommentsInline));
                     if (comment.IsFirstOnLine)
                     {
                         EndIndentation(comment);
@@ -681,19 +683,34 @@ namespace Furesoft.Core.CodeDom.Rendering
             }
         }
 
-        private void WritePadding(CodeObject codeObject, int[] columnWidths, int column)
+        /// <summary>
+        /// Flush any pending data.
+        /// </summary>
+        public void Flush()
         {
-            if (columnWidths != null && column < columnWidths.Length)
-            {
-                int paddingLength = columnWidths[column] - codeObject.AsTextLength(RenderFlags.LengthFlags, AlignmentStateStack);
-                if (paddingLength > 0)
-                {
-                    if (_textWriter != null)
-                        _textWriter.Write(new string(' ', paddingLength));
-                    _columnNumber += paddingLength;
-                }
-            }
+            FlushPendingEOLComments(true);
         }
+
+        /// <summary>
+        /// Convert all written data to a string.
+        /// </summary>
+        public override string ToString()
+        {
+            return (_textWriter != null ? _textWriter.ToString() : "");
+        }
+
+        /// <summary>
+        /// Dispose the object.
+        /// </summary>
+        public void Dispose()
+        {
+            if (_textWriter != null)
+                _textWriter.Dispose();
+        }
+
+        #endregion
+
+        #region /* INDENT STATE */
 
         /// <summary>
         /// State information for the current indentation offset (related to a CodeObject).
@@ -713,6 +730,10 @@ namespace Furesoft.Core.CodeDom.Rendering
                 ParentOffset = parentOffset;
             }
         }
+
+        #endregion
+
+        #region /* ALIGNMENT STATE */
 
         /// <summary>
         /// Alignment state information related to a <see cref="CodeObject"/>.
@@ -739,6 +760,10 @@ namespace Furesoft.Core.CodeDom.Rendering
             }
         }
 
+        #endregion
+
+        #region /* EOL COMMENT */
+
         /// <summary>
         /// EOL comment and flags for delayed rendering.
         /// </summary>
@@ -757,17 +782,19 @@ namespace Furesoft.Core.CodeDom.Rendering
             /// <summary>
             /// The rendering flags.
             /// </summary>
-            public RenderFlags RenderFlags;
+            public CodeObject.RenderFlags RenderFlags;
 
             /// <summary>
             /// Create an <see cref="EOLComment"/>.
             /// </summary>
-            public EOLComment(Comment comment, int indentation, RenderFlags flags)
+            public EOLComment(Comment comment, int indentation, CodeObject.RenderFlags flags)
             {
                 Comment = comment;
                 Indentation = indentation;
                 RenderFlags = flags;
             }
         }
+
+        #endregion
     }
 }

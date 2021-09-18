@@ -4,20 +4,8 @@
 
 using System.Collections;
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// This interface is implemented by all code objects that represent type declarations,
@@ -137,21 +125,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
         TypeRef CreateNullableRef();
 
         /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        void ResolveRef(string name, Resolver resolver);
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        void ResolveIndexerRef(Resolver resolver);
-
-        /// <summary>
-        /// Find a type argument in a base class for the specified type parameter.
-        /// </summary>
-        TypeRefBase FindTypeArgumentInBase(TypeParameterRef typeParameterRef);
-
-        /// <summary>
         /// Returns the first attribute expression (<see cref="Call"/> or <see cref="ConstructorRef"/>) with the specified name on the <see cref="CodeObject"/>.
         /// </summary>
         Expression GetAttribute(string attributeName);
@@ -243,9 +216,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
         /// Determine if the type implements the specified interface type.
         /// </summary>
         bool IsImplementationOf(TypeRef interfaceTypeRef);
-
-#if TYPE_BUILDING
-        Type GetRuntimeType(bool complete);
-#endif
     }
 }

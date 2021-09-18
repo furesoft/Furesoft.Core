@@ -1,20 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a call to a Method or a Delegate, including any arguments.
@@ -60,8 +51,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         {
             if (_expression != null)
             {
-                TypeRefBase invokedRef = _expression.EvaluateType();
-                return invokedRef.GetDelegateParameterType(argumentIndex);
+                TypeRefBase invokedRef = _expression.SkipPrefixes() as TypeRefBase;
+                if (invokedRef != null)
+                    return invokedRef.GetDelegateParameterType(argumentIndex);
             }
             return null;
         }
@@ -136,94 +128,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Calls always have a category of Method, with the exception of Attribute constructors
-            base.Resolve((resolveCategory == ResolveCategory.Attribute || resolveCategory == ResolveCategory.Constructor) ? resolveCategory : ResolveCategory.Method, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            // Special case - if we're in a DocCodeRefBase, a top-level call represents a reference to a method
-            // declaration, and we need to check any type arguments for a match.
-            if (_parent is DocCodeRefBase)
-                ResolveInTypeArguments(name, resolver, _expression);
-
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        protected void ResolveInTypeArguments(string name, Resolver resolver, Expression expression)
-        {
-            if (expression is TypeRefBase)
-            {
-                TypeRefBase typeRefBase = (TypeRefBase)expression;
-                if (typeRefBase.HasTypeArguments)
-                {
-                    foreach (Expression typeArgument in typeRefBase.TypeArguments)
-                    {
-                        if (typeArgument is TypeParameterRef && ((TypeParameterRef)typeArgument).Name == name)
-                            resolver.AddMatch(((TypeParameterRef)typeArgument).Reference);
-                    }
-                }
-            }
-            else if (expression is Dot)
-            {
-                Dot dot = (Dot)expression;
-                ResolveInTypeArguments(name, resolver, dot.Right);
-                ResolveInTypeArguments(name, resolver, dot.Left);
-            }
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // Evaluate the type of the called expression, and use the return type of a MethodRef or delegate type
-            TypeRefBase typeRefBase = _expression.EvaluateType(withoutConstants);
-            if (typeRefBase is MethodRef)
-            {
-                typeRefBase = ((MethodRef)typeRefBase).GetReturnType();
-
-                // If the invoked expression is a Dot, then evaluate any type arguments on its left side
-                if (typeRefBase != null && _expression is Dot)
-                    typeRefBase = typeRefBase.EvaluateTypeArgumentTypes(((Dot)_expression).Left);
-            }
-            else if (typeRefBase is UnresolvedRef)
-            {
-                if (((UnresolvedRef)typeRefBase).ResolveCategory == ResolveCategory.Method)
-                {
-                    TypeRefBase returnTypeRef = ((UnresolvedRef)typeRefBase).MethodGroupReturnType();
-                    if (returnTypeRef != null)
-                        typeRefBase = returnTypeRef;
-                }
-            }
-            else if (typeRefBase != null && typeRefBase.IsDelegateType)
-                typeRefBase = typeRefBase.GetDelegateReturnType();
-            return typeRefBase;
-        }
-
-        /// <summary>
-        /// Get the invocation target reference.
-        /// </summary>
-        public override SymbolicRef GetInvocationTargetRef()
-        {
-            return (_expression.SkipPrefixes() as SymbolicRef);
         }
 
         #endregion

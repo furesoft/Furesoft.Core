@@ -1,12 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Contains a body of code that is scoped to one or more <see cref="Catch"/> statements and/or a <see cref="Finally"/> statement.
@@ -187,38 +186,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
             // to move them now so they can be manually flushed by the parent Block *after* this statement.
             if (parser.HasUnused)
                 parser.MoveUnusedToPostUnused();
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            base.Resolve(ResolveCategory.CodeObject, flags);
-            if (HasCatches)
-            {
-                foreach (Catch @catch in _catches)
-                    @catch.Resolve(ResolveCategory.CodeObject, flags);
-            }
-            if (HasFinally)
-                _finally.Resolve(ResolveCategory.CodeObject, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_catches))
-                return true;
-            if (_finally != null && _finally.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

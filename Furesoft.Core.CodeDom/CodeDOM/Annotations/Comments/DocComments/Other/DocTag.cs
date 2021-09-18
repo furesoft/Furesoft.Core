@@ -3,14 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Other
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents an unrecognized or orphaned (missing start or end) tag in a documentation comment.

@@ -3,22 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Loops;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Loops
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Defines an iteration variable and a collection (or array) plus a body (a statement or block) that is
@@ -103,88 +92,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Loops
         #region /* METHODS */
 
         /// <summary>
-        /// Determine the type of the elements in the collection.
-        /// </summary>
-        public TypeRefBase GetElementType()
-        {
-            return GetCollectionExpressionElementType(_collection);
-        }
-
-        /// <summary>
-        /// Determine the element type of the specified collection expression.
-        /// </summary>
-        public static TypeRefBase GetCollectionExpressionElementType(Expression collectionExpression)
-        {
-            // Determine the element type of the specified collection expression
-            TypeRefBase elementTypeRef = null;
-
-            // Evaluate the type of the collection expression
-            TypeRefBase collectionTypeRefBase = collectionExpression.EvaluateType();
-            if (collectionTypeRefBase != null)
-            {
-                // For arrays, use the element type of the array
-                if (collectionTypeRefBase.IsArray)
-                    return collectionTypeRefBase.GetElementType();
-
-                // For other types, first look for a GetEnumerator() method
-                if (collectionTypeRefBase is TypeRef)
-                {
-                    TypeRef collectionTypeRef = (TypeRef)collectionTypeRefBase;
-                    List<MethodRef> methods = collectionTypeRef.GetMethods("GetEnumerator");
-                    if (methods != null && methods.Count == 1 && methods[0].IsPublic && !methods[0].IsStatic)
-                    {
-                        // If we found a single public non-static match, continue
-                        MethodRef getEnumerator = methods[0];
-
-                        // The return type of GetEnumerator() will usually be IEnumerator, IEnumerator<T>, or Enumerator<T>.
-                        // However, the only actual requirement is that it be a class, struct, or interface type that has a property
-                        // named Current (and also a method with the signature 'bool MoveNext()', but we don't care about that here).
-                        TypeRef returnType = getEnumerator.GetReturnType() as TypeRef;
-                        if (returnType != null && (returnType.IsUserClass || returnType.IsUserStruct || returnType.IsInterface))
-                        {
-                            // Look for the 'Current' property of the return type
-                            PropertyRef current = returnType.GetProperty("Current");
-                            if (current != null && current.IsPublic && !current.IsStatic && current.IsReadable)
-                            {
-                                // The return type of the property is the element type of the collection
-                                elementTypeRef = current.GetPropertyType();
-                                if (elementTypeRef != null)
-                                    elementTypeRef = elementTypeRef.EvaluateTypeArgumentTypes(returnType);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // If we didn't find a matching GetEnumerator() method, check for an IEnumerable interface:
-
-                        // If there is exactly one type T such that there is an implicit conversion to IEnumerable<T>,
-                        // then the element type is T.
-                        if (collectionTypeRef.IsSameGenericType(TypeRef.IEnumerable1Ref))
-                            elementTypeRef = collectionTypeRef.TypeArguments[0].EvaluateType();
-                        else
-                        {
-                            foreach (TypeRef interfaceTypeRef in collectionTypeRef.GetInterfaces(true))
-                            {
-                                if (interfaceTypeRef.IsSameGenericType(TypeRef.IEnumerable1Ref))
-                                {
-                                    elementTypeRef = interfaceTypeRef.TypeArguments[0].EvaluateType();
-                                    break;
-                                }
-                            }
-                        }
-
-                        // Otherwise, if there is an implicit conversion to IEnumerable, then the element type is 'object'.
-                        if (elementTypeRef == null && collectionTypeRef.IsImplicitlyConvertibleTo(TypeRef.IEnumerableRef))
-                            return TypeRef.ObjectRef;
-                    }
-                    if (elementTypeRef != null)
-                        elementTypeRef = elementTypeRef.EvaluateTypeArgumentTypes(collectionExpression);
-                }
-            }
-            return elementTypeRef;
-        }
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -233,52 +140,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Loops
             ParseExpectedToken(parser, Expression.ParseTokenEndGroup);  // Move past ')'
 
             new Block(out _body, parser, this, false);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve the collection first, in case the iteration variable is of 'var' type
-            _collection = (Expression)_collection.Resolve(ResolveCategory.Expression, flags);
-            _iteration = (LocalDecl)_iteration.Resolve(ResolveCategory.CodeObject, flags);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_iteration != null)
-            {
-                _iteration.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_iteration != null && _iteration.HasUnresolvedRef())
-                return true;
-            if (_collection != null && _collection.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

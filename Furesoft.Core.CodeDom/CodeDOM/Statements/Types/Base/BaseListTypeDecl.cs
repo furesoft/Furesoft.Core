@@ -3,22 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all user-defined types with optionally declared base types (<see cref="ClassDecl"/>,
@@ -135,7 +124,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             {
                 foreach (Expression baseTypeExpression in baseTypes)
                 {
-                    TypeRef typeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                    TypeRef typeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                     if (typeRef != null)
                     {
                         MethodRef methodRef = typeRef.GetMethod(name, parameterTypes);
@@ -162,7 +151,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                 {
                     foreach (Expression baseTypeExpression in baseTypes)
                     {
-                        TypeRef typeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                        TypeRef typeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                         if (typeRef != null)
                             typeRef.GetMethods(name, true, results);
                     }
@@ -187,7 +176,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             {
                 foreach (Expression baseTypeExpression in baseTypes)
                 {
-                    TypeRef typeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                    TypeRef typeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                     if (typeRef != null)
                     {
                         PropertyRef propertyRef = typeRef.GetProperty(name);
@@ -223,14 +212,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                 // Check all interfaces implemented directly by the type declaration
                 foreach (Expression baseTypeExpression in baseTypes)
                 {
-                    TypeRef baseTypeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                    TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                     if (baseTypeRef != null && baseTypeRef.IsInterface && baseTypeRef.IsSameRef(interfaceTypeRef))
                         return true;
                 }
                 // If we didn't find a match yet, search all base types/interfaces for implemented interfaces
                 foreach (Expression baseTypeExpression in baseTypes)
                 {
-                    TypeRef baseTypeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                    TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                     if (baseTypeRef != null)
                     {
                         if (baseTypeRef.IsImplementationOf(interfaceTypeRef))
@@ -316,53 +305,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                         _baseTypes[baseTypes - 1].Annotations = null;
                 }
             }
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve base types in Phase 1 for top-level types, or Phase 2 for nested types
-            if ((flags & ((_parent is TypeDecl ? ResolveFlags.Phase1 : ResolveFlags.Phase2) | ResolveFlags.Phase3)) == 0)
-                ChildListHelpers.Resolve(_baseTypes, ResolveCategory.Type, flags);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_baseTypes))
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Find a type argument in a base class for the specified type parameter.
-        /// </summary>
-        public override TypeRefBase FindTypeArgumentInBase(TypeParameterRef typeParameterRef)
-        {
-            List<Expression> baseTypes = GetAllBaseTypes();
-            if (baseTypes != null)
-            {
-                foreach (Expression baseType in baseTypes)
-                {
-                    TypeRefBase baseTypeRef = baseType.EvaluateType();
-                    if (baseTypeRef != null)
-                    {
-                        TypeRefBase found = baseTypeRef.FindTypeArgument(typeParameterRef);
-                        if (found != null)
-                            return found;
-                    }
-                }
-            }
-            return null;
         }
 
         #endregion

@@ -3,17 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Enforces the disposal of an object when it's no longer needed.  It accepts either an <see cref="Expression"/> or a
@@ -175,48 +169,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
             ParseExpectedToken(parser, Expression.ParseTokenEndGroup);  // Move past ')'
 
             new Block(out _body, parser, this, false);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            _target = _target.Resolve(ResolveCategory.Expression, flags);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_target is LocalDecl)
-            {
-                ((LocalDecl)_target).ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_target != null && _target.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

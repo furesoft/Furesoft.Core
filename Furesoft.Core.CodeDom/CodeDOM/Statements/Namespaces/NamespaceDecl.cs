@@ -3,22 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Projects;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Declares a namespace plus a body of declarations that belong to it.
@@ -222,19 +211,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
             new Block(out _body, parser, this, true);
         }
 
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // No need to resolve the namespace Expression here - it will be resolved during parsing
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
         protected virtual void ResolveNamespaces()
         {
             // Resolve the namespaces using special logic, since it will always work without errors because
@@ -252,7 +228,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
                 UnresolvedRef unresolvedRef = (UnresolvedRef)expression;
                 Namespace @namespace = parentNamespace.FindOrCreateChildNamespace(unresolvedRef.Name);
                 @namespace.SetDeclarationsInProject(true);
-                expression = unresolvedRef.CreateRef(@namespace, true);
+                expression = @namespace.CreateRef();
             }
             else if (expression is Dot)
             {
@@ -262,105 +238,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
                 dot.Right = ResolveNamespaceExpression(((NamespaceRef)dot.Left.SkipPrefixes()).Namespace, dot.Right);
             }
             return expression;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            // Abort if we reach this level and we're looking for a category that can't be found this "high".
-            // Don't treat a Method category as "type-level" if we're in a DocCodeRefBase, because it might be a Constructor.
-            if (resolver.IsTypeLevelCategory() && !resolver.IsDocCodeRefToMethod)
-                return;
-
-            bool skipAbortCheck = false;
-
-            // Search the body of the namespace (skip if we're looking for a root-level namespace name)
-            if (_body != null && resolver.ResolveCategory != ResolveCategory.RootNamespace)
-            {
-                if (resolver.ResolveCategory == ResolveCategory.NamespaceAlias)
-                {
-                    // Search for aliases (prefer these to extern aliases, in case there is any conflict, such as
-                    // an Alias with the name 'global').
-                    foreach (Alias alias in _body.Find<Alias>(name))
-                        resolver.AddMatch(alias);
-                    if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-
-                    // Search for extern aliases
-                    foreach (ExternAlias externAlias in _body.Find<ExternAlias>(name))
-                        resolver.AddMatch(externAlias);
-                }
-                else
-                {
-                    // Search the declared namespace, and then any specified parent namespaces
-                    bool isNamespaceDecl = true;
-                    Expression expression = _expression;
-                    while (expression != null)
-                    {
-                        Expression parentNamespaces = null;
-                        NamespaceRef namespaceRef = expression as NamespaceRef;
-                        if (expression is Dot)
-                        {
-                            Dot dot = (Dot)expression;
-                            namespaceRef = dot.Right as NamespaceRef;
-                            parentNamespaces = dot.Left;
-                        }
-                        if (namespaceRef != null)
-                        {
-                            namespaceRef.ResolveRef(name, resolver);
-                            if (resolver.HasCompleteMatch)
-                            {
-                                // Abort if we found a match - EXCEPT under the special case that we're including
-                                // internal types from imported projects and assemblies AND the only matches we have
-                                // are all such imported internal types.
-                                if (!Project.LoadInternalTypes || resolver.HasMatchesOtherThanImportedInternalTypes())
-                                    return;
-                                skipAbortCheck = true;
-                            }
-                        }
-                        if (isNamespaceDecl)
-                        {
-                            // Search for (using) aliases declared in the NamespaceDecl
-                            foreach (Alias alias in _body.Find<Alias>(name))
-                                resolver.AddMatch(alias);
-                            if (!skipAbortCheck && resolver.HasCompleteMatch) return;  // Abort if we found a match
-
-                            // Search all namespaces specified with 'using' directives in this NamespaceDecl
-                            if (resolver.ResolveCategory != ResolveCategory.Namespace)
-                            {
-                                foreach (UsingDirective usingDirective in _body.Find<UsingDirective>())
-                                {
-                                    // Search the namespace, but don't match any namespaces - although a NamespaceDecl is
-                                    // searched for namespaces, the 'using' directives are NOT.
-                                    namespaceRef = usingDirective.GetNamespaceRef();
-                                    if (namespaceRef != null)
-                                        namespaceRef.ResolveRef(name, resolver, true);
-                                }
-                            }
-                            if (!skipAbortCheck && resolver.HasCompleteMatch) return;  // Abort if we found a match
-                        }
-
-                        // Repeat for any specified parent namespaces
-                        expression = parentNamespaces;
-                        isNamespaceDecl = false;
-                    }
-                }
-            }
-
-            // Continue for all nested NamespaceDecls, including the CodeUnit (the global namespace)
-            if (_parent != null && (skipAbortCheck || !resolver.HasCompleteMatch))
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_expression != null && _expression.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

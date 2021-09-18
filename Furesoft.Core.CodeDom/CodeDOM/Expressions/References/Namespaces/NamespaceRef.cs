@@ -3,17 +3,8 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a reference to a <see cref="Namespace"/>.
@@ -119,7 +110,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
         {
             if (symbolicRef is NamespaceRef)
                 Find(((NamespaceRef)symbolicRef).Namespace.Find(name), name, isFirstOnLine);
-            return new UnresolvedRef(name, isFirstOnLine, ResolveCategory.Type);
+            return new UnresolvedRef(name, isFirstOnLine);
         }
 
         /// <summary>
@@ -135,7 +126,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
         {
             if (obj is Namespace)
                 return new NamespaceRef((Namespace)obj, isFirstOnLine);
-            return new UnresolvedRef(name, isFirstOnLine, ResolveCategory.NamespaceOrType);
+            return new UnresolvedRef(name, isFirstOnLine);
         }
 
         #endregion
@@ -156,14 +147,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
         public void Add(TypeDecl typeDecl)
         {
             ((Namespace)_reference).Add(typeDecl);
-        }
-
-        /// <summary>
-        /// Add a <see cref="TypeDefinition"/> to the namespace.
-        /// </summary>
-        public void Add(TypeDefinition typeDefinition)
-        {
-            ((Namespace)_reference).Add(typeDefinition);
         }
 
         /// <summary>
@@ -191,14 +174,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
         }
 
         /// <summary>
-        /// Remove a <see cref="TypeDefinition"/> from the namespace.
-        /// </summary>
-        public void Remove(TypeDefinition typeDefinition)
-        {
-            ((Namespace)_reference).Remove(typeDefinition);
-        }
-
-        /// <summary>
         /// Remove a <see cref="Type"/> from the namespace.
         /// </summary>
         public void Remove(Type type)
@@ -223,7 +198,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
         }
 
         /// <summary>
-        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="TypeDefinition"/>/<see cref="Type"/> with
+        /// Find a child <see cref="Namespace"/>, <see cref="TypeDecl"/>, or <see cref="Type"/> with
         /// the specified name.
         /// </summary>
         /// <returns>The child object if found, otherwise null.</returns>
@@ -247,35 +222,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
         public Expression ParseName(string name)
         {
             return ((Namespace)_reference).ParseName(name);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public override void ResolveRef(string name, Resolver resolver)
-        {
-            ResolveRef(name, resolver, false);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public void ResolveRef(string name, Resolver resolver, bool noNamespaces)
-        {
-            ((Namespace)_reference).ResolveRef(name, resolver, noNamespaces);
-        }
-
-        /// <summary>
-        /// Evaluates the <see cref="NamespaceRef"/> to itself.
-        /// </summary>
-        /// <returns>The <see cref="NamespaceRef"/> itself.</returns>
-        public override SymbolicRef EvaluateTypeOrNamespace(bool withoutConstants)
-        {
-            return this;
         }
 
         #endregion

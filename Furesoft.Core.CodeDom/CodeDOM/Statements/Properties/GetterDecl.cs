@@ -3,14 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a special type of method used to read the value of a property.
@@ -110,31 +106,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             : base(parser, parent, NamePrefix, flags)
         {
             ParseAccessor(parser, flags);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase3)) == 0)
-            {
-                // Don't resolve our ReturnType (the parent PropertyDeclBase will do it)
-                ChildListHelpers.Resolve(_parameters, ResolveCategory.CodeObject, flags);
-                if (_name is Expression)
-                    _name = ((Expression)_name).Resolve(ResolveCategory.Method, flags);
-            }
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                ResolveAttributes(flags);
-                if (_body != null)
-                    _body.Resolve(ResolveCategory.CodeObject, flags);
-            }
-            return this;
         }
 
         #endregion

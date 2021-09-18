@@ -5,23 +5,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Mono.Cecil;
-using ICustomAttributeProvider = Mono.Cecil.ICustomAttributeProvider;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents metadata associated with a <see cref="CodeObject"/>.
@@ -163,7 +151,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
         }
 
         /// <summary>
-        /// True if the annotation should be listed at the <see cref="CodeUnit"/> and <see cref="Solution"/> levels (for display in an output window).
+        /// True if the annotation should be listed at the <see cref="CodeUnit"/> level (for display in an output window).
         /// </summary>
         public override bool IsListed
         {
@@ -309,20 +297,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
 
         #endregion
 
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-                ChildListHelpers.Resolve(_attributeExpressions, ResolveCategory.Attribute, flags);
-            return this;
-        }
-
-        #endregion
-
         #region /* FORMATTING */
 
         /// <summary>
@@ -417,55 +391,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
             }
         }
 
-        public static void AsTextAttributes(CodeWriter writer, ICustomAttributeProvider customAttributeProvider, AttributeTarget attributeTarget)
-        {
-            int count = 0;
-            foreach (CustomAttribute attribute in customAttributeProvider.CustomAttributes)
-            {
-                TypeReference declaringType = attribute.Constructor.DeclaringType;
-                if (declaringType != null)
-                {
-                    string name = declaringType.Name;
-                    if (count > 0)
-                        writer.Write(" ");
-                    writer.Write(ParseTokenStart);
-                    if (attributeTarget != AttributeTarget.None)
-                        writer.Write(AttributeTargetHelpers.AsString(attributeTarget) + ": ");
-                    if (name.EndsWith(NameSuffix))
-                        name = name.Substring(0, name.Length - NameSuffix.Length);
-                    writer.Write(name);
-
-                    if (attribute.ConstructorArguments.Count > 0)
-                    {
-                        writer.Write(ParameterDecl.ParseTokenStart);
-                        foreach (CustomAttributeArgument argument in attribute.ConstructorArguments)
-                            AsTextValue(writer, argument.Value);
-                        writer.Write(ParameterDecl.ParseTokenEnd);
-                    }
-                    else if (attribute.HasProperties)
-                    {
-                        writer.Write(ParameterDecl.ParseTokenStart);
-                        foreach (Mono.Cecil.CustomAttributeNamedArgument argument in attribute.Properties)
-                        {
-                            writer.Write(argument.Name + " = ");
-                            AsTextValue(writer, argument.Argument.Value);
-                        }
-                        writer.Write(ParameterDecl.ParseTokenEnd);
-                    }
-
-                    writer.Write(ParseTokenEnd);
-                    ++count;
-                }
-            }
-            if (count > 0)
-                writer.WriteLine();
-        }
-
-        public static void AsTextAttributes(CodeWriter writer, ICustomAttributeProvider customAttributeProvider)
-        {
-            AsTextAttributes(writer, customAttributeProvider, AttributeTarget.None);
-        }
-
         public static void AsTextAttributes(CodeWriter writer, MemberInfo memberInfo, AttributeTarget attributeTarget)
         {
             // Use the static method to get the attributes so that this works with types from reflection-only assemblies
@@ -516,7 +441,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
                     else if (attribute.NamedArguments != null && attribute.NamedArguments.Count > 0)
                     {
                         writer.Write(ParameterDecl.ParseTokenStart);
-                        foreach (System.Reflection.CustomAttributeNamedArgument argument in attribute.NamedArguments)
+                        foreach (CustomAttributeNamedArgument argument in attribute.NamedArguments)
                         {
                             writer.Write(argument.MemberInfo.Name + " = ");
                             AsTextValue(writer, argument.TypedValue.Value);

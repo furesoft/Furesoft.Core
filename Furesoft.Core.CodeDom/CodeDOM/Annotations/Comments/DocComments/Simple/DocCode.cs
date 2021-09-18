@@ -1,14 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a block of code in a documentation comment.
@@ -215,44 +212,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple
                 }
             }
             return base.ParseContent(parser);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                // Resolve the embedded code with no phases - this should work for almost all sample code.  We could do it in 3 phases
-                // to handle 100% of cases, but this would result in multiple resolves of expression-level references that fail (such
-                // as non-code put inside the code comment).
-                flags &= ~(ResolveFlags.Phase1 | ResolveFlags.Phase2 | ResolveFlags.Phase3);
-                flags |= ResolveFlags.InDocComment;
-                if (_content is ChildList<DocComment>)
-                    ChildListHelpers.Resolve((ChildList<DocComment>)_content, ResolveCategory.CodeObject, flags);
-                else if (_content is CodeObject)
-                    _content = ((CodeObject)_content).Resolve(_content is Expression ? ResolveCategory.Expression : ResolveCategory.CodeObject, flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_content is Block)
-            {
-                ((Block)_content).ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
         }
 
         #endregion

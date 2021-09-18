@@ -1,11 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Checks if an <see cref="Expression"/> can be converted to the specified type, returning true if so.
@@ -83,27 +82,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_left != null)
-                _left = (Expression)_left.Resolve(ResolveCategory.Expression, flags);
-
-            // The decision was made to enforce that the right side of 'is' be a Type at resolution time
-            // instead of during analysis, meaning that a non-type reference will end up being unresolved.
-            // If we don't do this, a property with the same name as a type would take precedence.
-            if (_right != null)
-                _right = (Expression)_right.Resolve(ResolveCategory.Type, flags);
-
-            return this;
         }
 
         #endregion

@@ -3,24 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a generic method declaration with type parameters.
@@ -396,89 +383,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
             ParseParameters(parser);
             _constraintClauses = ConstraintClause.ParseList(parser, this);  // Parse any constraint clauses
             ParseTerminatorOrBody(parser, flags);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            ChildListHelpers.Resolve(_typeParameters, ResolveCategory.CodeObject, flags);  // Resolve any attributes on the TypeParameters
-            ChildListHelpers.Resolve(_constraintClauses, ResolveCategory.CodeObject, flags);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (resolver.ResolveCategory == ResolveCategory.Parameter)
-                ChildListHelpers.ResolveRef(_parameters, name, resolver);
-            else if (resolver.ResolveCategory == ResolveCategory.LocalTypeParameter)
-                ChildListHelpers.ResolveRef(_typeParameters, name, resolver);
-            else
-            {
-                if (_body != null)
-                {
-                    _body.ResolveRef(name, resolver);
-                    if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                }
-                ChildListHelpers.ResolveRef(_typeParameters, name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-                ChildListHelpers.ResolveRef(_parameters, name, resolver);
-                if (_parent != null && !resolver.HasCompleteMatch)
-                    _parent.ResolveRefUp(name, resolver);
-            }
-        }
-
-        /// <summary>
-        /// Similar to <see cref="ResolveRefUp"/>, but skips trying to resolve the symbol in the body or parameters of a
-        /// method (used for resolving parameter types).
-        /// </summary>
-        public override void ResolveRefUpSkipMethodBody(string name, Resolver resolver)
-        {
-            ChildListHelpers.ResolveRef(_typeParameters, name, resolver);
-            if (_parent != null && !resolver.HasCompleteMatch)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_typeParameters))
-                return true;
-            if (ChildListHelpers.HasUnresolvedRef(_constraintClauses))
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Determine if the type argument counts match those in the specified <see cref="UnresolvedRef"/>.
-        /// </summary>
-        public virtual bool DoTypeArgumentCountsMatch(UnresolvedRef unresolvedRef)
-        {
-            if (TypeParameterCount == unresolvedRef.TypeArgumentCount)
-                return true;
-            if (unresolvedRef.TypeArgumentCount == 0)
-            {
-                // Arguments to generic methods can be omitted and inferred from the parameter types, so if the
-                // actual count is 0, it's still considered a match *if* we have at least one method parameter.
-                if (ParameterCount > 0)
-                    return true;
-
-                // If the UnresolvedRef is part of an explicit interface implementation of a GenericMethodDecl,
-                // then match the actual type argument count.
-                if (unresolvedRef.IsExplicitInterfaceImplementation && unresolvedRef.Parent.Parent is GenericMethodDecl)
-                    return (TypeParameterCount == ((GenericMethodDecl)unresolvedRef.Parent.Parent).TypeParameterCount);
-            }
-            return false;
         }
 
         #endregion

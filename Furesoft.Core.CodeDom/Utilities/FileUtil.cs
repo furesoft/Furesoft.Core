@@ -5,9 +5,8 @@
 using System;
 using System.Collections.Specialized;
 using System.IO;
-using Furesoft.Core.CodeDom.Utilities;
 
-namespace Furesoft.Core.CodeDom.Utilities
+namespace Nova.Utilities
 {
     /// <summary>
     /// Helper methods for working with files and directories.
@@ -41,60 +40,6 @@ namespace Furesoft.Core.CodeDom.Utilities
         }
 
         /// <summary>
-        /// Remove the specified common root path from the specified file name.
-        /// </summary>
-        public static string RemoveCommonRootPath(string fileName, string rootFileOrDirectory)
-        {
-            string currentLocation = Path.GetDirectoryName(rootFileOrDirectory) + @"\";
-            return (fileName.StartsWith(currentLocation) ? fileName.Substring(currentLocation.Length) : fileName);
-        }
-
-        /// <summary>
-        /// Determine a relative path that navigates from the first specified path to the second one.
-        /// </summary>
-        public static string MakeRelative(string fromPath, string toPath)
-        {
-            if (fromPath == null)
-                throw new ArgumentNullException("fromPath");
-            if (toPath == null)
-                throw new ArgumentNullException("toPath");
-
-            // If both paths are rooted, but aren't the same, just return 'toPath'
-            if (Path.IsPathRooted(fromPath) && Path.IsPathRooted(toPath))
-            {
-                if (string.Compare(Path.GetPathRoot(fromPath), Path.GetPathRoot(toPath), true) != 0)
-                    return toPath;
-            }
-
-            StringCollection relativePath = new StringCollection();
-            string[] fromDirectories = fromPath.Split(Path.DirectorySeparatorChar);
-            string[] toDirectories = toPath.Split(Path.DirectorySeparatorChar);
-            int length = Math.Min(fromDirectories.Length, toDirectories.Length);
-
-            // find common root  
-            int lastCommonRoot = -1;
-            for (int i = 0; i < length; i++)
-            {
-                if (string.Compare(fromDirectories[i], toDirectories[i], true) != 0)
-                    break;
-                lastCommonRoot = i;
-            }
-            if (lastCommonRoot == -1)
-                return toPath;
-
-            // add relative folders in from path
-            for (int i = lastCommonRoot + 1; i < fromDirectories.Length; i++)
-                if (fromDirectories[i].Length > 0)
-                    relativePath.Add("..");
-
-            // add folders in to path
-            for (int i = lastCommonRoot + 1; i < toDirectories.Length; i++)
-                relativePath.Add(toDirectories[i]);
-
-            return StringUtil.ToString(relativePath, Path.DirectorySeparatorChar.ToString());
-        }
-
-        /// <summary>
         /// Get the base directory of the executing application, using the project directory if running in an output directory.
         /// </summary>
         public static string GetBaseDirectory()
@@ -104,14 +49,9 @@ namespace Furesoft.Core.CodeDom.Utilities
             // If we're in an output directory, move up above it
             if (baseDirectory.EndsWith(@"\Debug\") || baseDirectory.EndsWith(@"\Release\"))
                 baseDirectory = RemoveLastDirectory(baseDirectory);
-            // Remove any '\bin\xxx' directories, or just '\bin'
             if (!baseDirectory.EndsWith(@"\bin\"))
-            {
-                string parentDirectory = RemoveLastDirectory(baseDirectory);
-                if (parentDirectory.EndsWith(@"\bin\"))
-                    baseDirectory = RemoveLastDirectory(parentDirectory);
-            }
-            else if (baseDirectory.EndsWith(@"\bin\"))
+                baseDirectory = RemoveLastDirectory(baseDirectory);
+            if (baseDirectory.EndsWith(@"\bin\"))
                 baseDirectory = RemoveLastDirectory(baseDirectory);
             return baseDirectory;
         }

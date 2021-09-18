@@ -1,16 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all binary operators (<see cref="BinaryArithmeticOperator"/>, <see cref="BinaryBitwiseOperator"/>,
@@ -19,13 +14,18 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
     /// </summary>
     public abstract class BinaryOperator : Operator
     {
+        #region /* FIELDS */
+
         protected Expression _left;
+        protected Expression _right;
 
         // If the operator is overloaded, a hidden reference (OperatorRef) to the overloaded
         // operator declaration is stored here.
         protected SymbolicRef _operatorRef;
 
-        protected Expression _right;
+        #endregion
+
+        #region /* CONSTRUCTORS */
 
         protected BinaryOperator(Expression left, Expression right)
         {
@@ -36,22 +36,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
         protected BinaryOperator()
         { }
 
-        /// <summary>
-        /// A hidden OperatorRef to an overloaded operator declaration (if any).
-        /// </summary>
-        public override SymbolicRef HiddenRef
-        {
-            get { return _operatorRef; }
-        }
+        #endregion
 
-        /// <summary>
-        /// True if the expression is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            // If both sides are const, then the result will be const
-            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
-        }
+        #region /* PROPERTIES */
 
         /// <summary>
         /// The left-side <see cref="Expression"/>.
@@ -72,6 +59,35 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
         }
 
         /// <summary>
+        /// A hidden OperatorRef to an overloaded operator declaration (if any).
+        /// </summary>
+        public override SymbolicRef HiddenRef
+        {
+            get { return _operatorRef; }
+        }
+
+        /// <summary>
+        /// True if the expression is const.
+        /// </summary>
+        public override bool IsConst
+        {
+            // If both sides are const, then the result will be const
+            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
+        }
+
+        #endregion
+
+        #region /* METHODS */
+
+        /// <summary>
+        /// The internal name of the <see cref="BinaryOperator"/>.
+        /// </summary>
+        public virtual string GetInternalName()
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -83,13 +99,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
             return clone;
         }
 
-        /// <summary>
-        /// The internal name of the <see cref="BinaryOperator"/>.
-        /// </summary>
-        public virtual string GetInternalName()
-        {
-            return null;
-        }
+        #endregion
+
+        #region /* PARSING */
 
         protected BinaryOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -172,77 +184,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
                 _left.MoveCommentsToLeftMost(token, false);
         }
 
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // If we have a reference to an overloaded operator declaration, use its return type
-            if (_operatorRef is OperatorRef)
-                return ((OperatorRef)_operatorRef).GetReturnType();
+        #endregion
 
-            if (_left == null || _right == null)
-                return null;
-
-            // By default, determine a common type (using implicit conversions) that can handle the
-            // result of the operation (various binary operators will override this behavior).
-            return TypeRef.GetCommonType(_left.EvaluateType(withoutConstants), _right.EvaluateType(withoutConstants));
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_left != null && _left.HasUnresolvedRef())
-                return true;
-            if (_right != null && _right.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_left != null)
-                _left = (Expression)_left.Resolve(ResolveCategory.Expression, flags);
-            if (_right != null)
-                _right = (Expression)_right.Resolve(ResolveCategory.Expression, flags);
-            return ResolveOverload();
-        }
-
-        /// <summary>
-        /// Resolve any overload for the operator.
-        /// </summary>
-        public Operator ResolveOverload()
-        {
-            if (_operatorRef == null)
-            {
-                // After the operands have been resolved, we need to check for any overloaded operator
-                // that matches the types.  Get the internal name of the operator, and skip if it's null
-                // or if either of the operands is null.
-                string name = GetInternalName();
-                if (name != null && _left != null && _right != null)
-                {
-                    // Determine if an overloaded operator exists - create an UnresolvedRef, which will be
-                    // resolved below as an operator overload declaration reference.  If it fails to resolve,
-                    // null is returned, and no errors are logged.
-                    SetField(ref _operatorRef, new UnresolvedRef(name, ResolveCategory.OperatorOverload, LineNumber, ColumnNumber), false);
-                }
-            }
-            if (_operatorRef != null)
-                _operatorRef = (SymbolicRef)_operatorRef.Resolve(ResolveCategory.OperatorOverload, ResolveFlags.Quiet);
-            return this;
-        }
-
-        protected virtual object EvaluateConstants(object leftConstant, object rightConstant)
-        {
-            // By default, assume the operator doesn't have a constant result (subclasses will override this as appropriate)
-            return null;
-        }
+        #region /* FORMATTING */
 
         /// <summary>
         /// True if the expression should have parens by default.
@@ -250,26 +194,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
         public override bool HasParensDefault
         {
             get { return true; }  // Default to using parens for binary operators
-        }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
-                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_left != null)
-                    _left.IsSingleLine = value;
-                if (_right != null)
-                    _right.IsSingleLine = value;
-            }
         }
 
         protected override void DefaultFormatField(CodeObject field)
@@ -308,6 +232,30 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
             }
         }
 
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get
+            {
+                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
+                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_left != null)
+                    _left.IsSingleLine = value;
+                if (_right != null)
+                    _right.IsSingleLine = value;
+            }
+        }
+
+        #endregion
+
+        #region /* RENDERING */
+
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             // Increase the indent level for any binary operator expressions that wrap, unless the parent
@@ -327,5 +275,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
             if (_right != null)
                 _right.AsText(writer, passFlags | RenderFlags.PrefixSpace);
         }
+
+        #endregion
     }
 }

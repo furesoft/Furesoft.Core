@@ -1,15 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a call to another constructor in the same class (constructor initializer).
@@ -66,38 +61,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         public ThisInitializer(Parser parser, CodeObject parent)
             : base(parser, parent, ParseToken)
         { }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            base.Resolve(ResolveCategory.Constructor, flags);
-            return this;
-        }
-
-        protected override void ResolveInvokedExpression(ResolveCategory resolveCategory, ResolveFlags flags, out SymbolicRef oldInvokedRef, out SymbolicRef newInvokedRef)
-        {
-            // Resolve the invoked (called) expression
-            if (_expression != null)
-            {
-                oldInvokedRef = _expression.SkipPrefixes() as SymbolicRef;
-
-                // Special handling for ": this()" on a struct, since it has no default constructor (it's implicit)
-                if (ArgumentCount == 0 && _parent is ConstructorDecl && _parent.Parent != null && _parent.Parent is StructDecl)
-                    _expression = _parent.Parent.CreateRef();
-                else
-                    _expression = (Expression)_expression.Resolve(ResolveCategory.Constructor, flags);
-
-                newInvokedRef = _expression.SkipPrefixes() as SymbolicRef;
-            }
-            else
-                oldInvokedRef = newInvokedRef = null;
-        }
 
         #endregion
     }

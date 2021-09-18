@@ -6,20 +6,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents the declaration of the single valid member of an <see cref="EnumDecl"/>,
@@ -309,43 +299,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
         // We can't just have EnumDecl do a forced parse of a single MultiEnumMemberDecl, because there
         // are things handled by the Block parser that we need, plus we need to handle stand-alone comments
         // and we'd like to keep open the possibility of additional enum members in the future.
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-            {
-                // Don't resolve the type, because it's stored in the EnumDecl base type.
-                // But, we still have to resolve the SubDecls.
-                ChildListHelpers.Resolve(_enumMemberDecls, ResolveCategory.CodeObject, flags);
-                ResolveDocComments(flags);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public override void ResolveRef(string name, Resolver resolver)
-        {
-            ChildListHelpers.ResolveRef(_enumMemberDecls, name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_enumMemberDecls))
-                return true;
-            return base.HasUnresolvedRef();
-        }
 
         #endregion
 

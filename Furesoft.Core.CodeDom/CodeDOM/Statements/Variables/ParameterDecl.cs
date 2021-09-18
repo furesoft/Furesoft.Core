@@ -1,18 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents the declaration of a parameter to a method.
@@ -307,45 +300,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
                 default:               modifier = ParameterModifier.None; break;
             }
             return modifier;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if ((flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-                ResolveAttributes(flags);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            // Use a special call to avoid wasting time searching method bodies and parameters for the
-            // type of the parameter (assumes our parent is a MethodDeclBase or an AnonymousMethod,
-            // with the skip method just moving up to the next level without doing any resolving - a
-            // GenericMethodDecl overrides the skip method to check type parameters).
-            if (_parent != null)
-                _parent.ResolveRefUpSkipMethodBody(name, resolver);
-        }
-
-        /// <summary>
-        /// Get the constant value of the variable (if any).
-        /// </summary>
-        /// <returns>An object of the type of the variable with a value of the constant used
-        /// to initialize it (if any), or null if the variable isn't a constant.</returns>
-        public override object GetValue()
-        {
-            // Always null for parameters, since they have no true initializer (just a default value), and
-            // we don't yet perform runtime value tracing.
-            return null;
         }
 
         #endregion

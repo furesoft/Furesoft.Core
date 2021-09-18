@@ -1,13 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Constrains the type that a <see cref="TypeParameter"/> can represent to the specified type (or a derived type).
@@ -73,39 +71,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints
             : base(parser, parent)
         {
             SetField(ref _type, Expression.Parse(parser, this), true);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            _type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_type != null && _type.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="TypeConstraint"/>.
-        /// </summary>
-        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
-        /// of nested types.  It also handles the type being null.</remarks>
-        public TypeRefBase EvaluateType()
-        {
-            return (_type != null ? _type.EvaluateType() : null);
         }
 
         #endregion

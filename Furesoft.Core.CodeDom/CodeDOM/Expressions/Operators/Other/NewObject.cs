@@ -1,19 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The NewObject operator is used to create new object instances of class, struct, or delegates.
@@ -33,11 +25,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         #region /* FIELDS */
 
         // A NewObject has both a TypeRef and an implied, hidden ConstructorRef.  The syntax "new List<int>()" is actually
-        // short-hand for "new List<int>.List()".  We store and resolve both references, display the TypeRef name, show the
-        // 'new' keyword in the error or warning color if the hidden ConstructorRef has an error or warning, and display the
-        // hidden ConstructorRef in the tooltip.  This is necessary to handle type aliases, because the TypeRef and ConstructorRef
-        // will have different names in this case, and the aliased type can have type arguments while the alias itself can't.
-        // This technique also improves error messages, since it first resolves the type, then the constructor within the type.
+        // short-hand for "new List<int>.List()".  We store both references, display the TypeRef name, show the 'new' keyword
+        // in the error or warning color if the hidden ConstructorRef has an error or warning, and display the hidden ConstructorRef
+        // in the tooltip.  This is necessary to handle type aliases, because the TypeRef and ConstructorRef will have different
+        // names in this case, and the aliased type can have type arguments while the alias itself can't.
         protected SymbolicRef _constructorRef;
 
         #endregion
@@ -142,92 +133,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 
             // Parse any object or collection initializer
             ParseInitializer(parser, this);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve the base before the initializer, because the initializer might reference properties of the type
-            base.Resolve(ResolveCategory.Type, flags);
-            if (_initializer != null)
-                _initializer.Resolve(ResolveCategory.Expression, flags);
-            return this;
-        }
-
-        protected override void ResolveInvokedExpression(ResolveCategory resolveCategory, ResolveFlags flags, out SymbolicRef oldInvokedRef, out SymbolicRef newInvokedRef)
-        {
-            // Resolve the invoked (called) expression - first, resolve the TypeRef, then any hidden ConstructorRef
-            base.ResolveInvokedExpression(resolveCategory, flags, out oldInvokedRef, out newInvokedRef);
-
-            // If we failed to resolve the TypeRef, then don't bother with the ConstructorRef yet
-            if (newInvokedRef is UnresolvedRef)
-            {
-                // Force the ConstructorRef to null if it isn't already
-                if (_constructorRef != null)
-                    SetField(ref _constructorRef, null, false);
-            }
-            else
-            {
-                // If we have a TypeRef that's a value type and we have no arguments, or it's a type parameter, then the constructor is implicit
-                bool hasImplicitConstructor = ((newInvokedRef is TypeRef && (((TypeRef)newInvokedRef).IsValueType && ArgumentCount == 0))
-                    || newInvokedRef is TypeParameterRef);
-
-                // If the TypeRef was resolved or changed, or it's not implicit and we don't have a ConstructorRef yet, or it's implicit
-                // and we have a ConstructorRef, then reset the ConstructorRef as appropriate.
-                if (newInvokedRef != oldInvokedRef || (!hasImplicitConstructor && _constructorRef == null) || (hasImplicitConstructor && _constructorRef != null))
-                {
-                    // If the constructor is implicit, make the ConstructorRef null, otherwise set it to an UnresolvedRef to be resolved
-                    SymbolicRef symbolicRef = null;
-                    if (!hasImplicitConstructor)
-                    {
-                        TypeRefBase typeRefBase = _expression.EvaluateType();
-                        if (typeRefBase != null)
-                            symbolicRef = new UnresolvedRef(typeRefBase, ResolveCategory.Constructor);
-                    }
-                    SetField(ref _constructorRef, symbolicRef, false);
-                }
-
-                // Resolve the ConstructorRef, treating it as the "invoked reference" now in place of the TypeRef
-                oldInvokedRef = _constructorRef;
-                if (_constructorRef is UnresolvedRef)
-                    _constructorRef = (SymbolicRef)_constructorRef.Resolve(ResolveCategory.Constructor, flags);
-                newInvokedRef = _constructorRef;
-            }
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_constructorRef != null && _constructorRef.HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            // The NewObject expression evaluates to the TypeRef being instantiated
-            return (_expression != null ? _expression.EvaluateType(withoutConstants) : null);
-        }
-
-        /// <summary>
-        /// Get the invocation target reference.
-        /// </summary>
-        public override SymbolicRef GetInvocationTargetRef()
-        {
-            // The invocation target is the ConstructorRef being called
-            return _constructorRef;
         }
 
         #endregion

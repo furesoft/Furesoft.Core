@@ -3,27 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Linq;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.Parsing.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of <see cref="PropertyDecl"/>, <see cref="IndexerDecl"/>, and <see cref="EventDecl"/>.
@@ -356,69 +340,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
         public override bool AssociateCommentWhenParsing(CommentBase comment)
         {
             return true;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_body != null && (flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-                _body.Resolve(ResolveCategory.CodeObject, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name, moving up the tree until a complete match is found.
-        /// </summary>
-        public override void ResolveRefUp(string name, Resolver resolver)
-        {
-            if (_body != null)
-            {
-                // Check any accessor parameters, so that 'value' can be resolved if referenced in doc comments
-                foreach (AccessorDeclWithValue accessorDeclWithValue in _body.Find<AccessorDeclWithValue>())
-                    ChildListHelpers.ResolveRef(accessorDeclWithValue.Parameters, name, resolver);
-                _body.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (_type != null && _type.HasUnresolvedRef())
-                return true;
-            if (_name is Expression && ((Expression)_name).HasUnresolvedRef())
-                return true;
-            return base.HasUnresolvedRef();
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="PropertyDecl"/>.
-        /// </summary>
-        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
-        /// of nested types.  It also handles constants and the type being null.</remarks>
-        public TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            return (_type != null ? _type.EvaluateType(withoutConstants) : null);
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="PropertyDecl"/>.
-        /// </summary>
-        /// <remarks>This method evaluates the type expression into a <see cref="TypeRefBase"/>, which will properly evaluate the type arguments
-        /// of nested types.  It also handles constants and the type being null.</remarks>
-        public TypeRefBase EvaluateType()
-        {
-            return (_type != null ? _type.EvaluateType(false) : null);
         }
 
         #endregion

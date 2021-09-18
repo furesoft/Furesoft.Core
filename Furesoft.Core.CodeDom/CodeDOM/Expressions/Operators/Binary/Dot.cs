@@ -1,17 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Performs a member lookup (either directly on a namespace or type, or indirectly on the evaluated type
@@ -130,132 +124,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve the Left side of the Dot
-            if (_left != null)
-            {
-                switch (resolveCategory)
-                {
-                    case ResolveCategory.Type:
-                    case ResolveCategory.Interface:
-                    case ResolveCategory.Constructor:
-                    case ResolveCategory.Attribute:
-                        // If we're expecting a type, interface, constructor, or attribute, then the
-                        // left side must be a namespace or a parent type.
-                        _left = (Expression)_left.Resolve(ResolveCategory.NamespaceOrType, flags);
-                        break;
-                    case ResolveCategory.Method:
-                    case ResolveCategory.Property:
-                    case ResolveCategory.Indexer:
-                    case ResolveCategory.Event:
-                    {
-                        // Handle explicit interface implementations: For these categories, if our parent is a
-                        // declaration, the left side must be an interface, otherwise we expect an object expression.
-                        bool interfaceExpected = (_parent is MethodDeclBase || _parent is PropertyDeclBase);
-                        _left = (Expression)_left.Resolve(interfaceExpected ? ResolveCategory.Interface : ResolveCategory.Expression, flags);
-                        break;
-                    }
-                    default:
-                        // Default to resolving to the specified category
-                        _left = (Expression)_left.Resolve(resolveCategory, flags);
-                        break;
-                }
-            }
-
-            // Resolve the Right side of the Dot
-            if (_right != null)
-                _right = (Expression)_right.Resolve(resolveCategory, flags);
-
-            // Perform some code tree optimizations - we can't do these during parsing, because the right expression must
-            // be resolved first.
-            if (AutomaticCodeCleanup && !flags.HasFlag(ResolveFlags.IsGenerated) && _right is TypeRef)
-            {
-                TypeRef right = (TypeRef)_right;
-
-                // Simplify the code tree by replacing the Dot object with its right expression in some cases:
-                // Convert "System.Type" for built-in types to "Type", so that it will display as a keyword.
-                // Convert "System.Nullable<Type>" to "Nullable<Type>", which will then be displayed as "Type?".
-                // Note that this could technically lead to invalid code if there is no "using System;" in the CodeUnit,
-                // but it's not actually a problem since we *always* render "Nullable<Type>" as "Type?" in both text and GUI.
-                if ((_left is NamespaceRef && right.IsBuiltInType && ((NamespaceRef)_left).Namespace.FullName == "System") || right.IsNullableType)
-                {
-                    _right.IsFirstOnLine = IsFirstOnLine;
-                    return _right;
-                }
-            }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Evaluate the <see cref="Expression"/> to a type or namespace.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/>, <see cref="UnresolvedRef"/>, or <see cref="NamespaceRef"/>.</returns>
-        public override SymbolicRef EvaluateTypeOrNamespace(bool withoutConstants)
-        {
-            // Evaluate the right side
-            SymbolicRef symbolicRef = (_right != null ? _right.EvaluateTypeOrNamespace(withoutConstants) : null);
-
-            // Try to evaluate any nested type arguments using the left side - do NOT do this for TypeParameterRefs,
-            // because they will have already been evaluated by OpenTypeParameterRef.EvaluateTypeArgumentTypes(), and
-            // trying again will not only waste time, but will screw things up.
-            if (symbolicRef is TypeRefBase && !(symbolicRef is TypeParameterRef))
-                symbolicRef = ((TypeRefBase)symbolicRef).EvaluateTypeArgumentTypes(this, _right);
-            return symbolicRef;
-        }
-
-        /// <summary>
-        /// Evaluate the type of the <see cref="Expression"/>.
-        /// </summary>
-        /// <returns>The resulting <see cref="TypeRef"/> or <see cref="UnresolvedRef"/>.</returns>
-        public override TypeRefBase EvaluateType(bool withoutConstants)
-        {
-            return EvaluateTypeOrNamespace(withoutConstants) as TypeRefBase;
-        }
-
-        /// <summary>
-        /// Find a type argument for the specified type parameter.
-        /// </summary>
-        public override TypeRefBase FindTypeArgument(TypeParameterRef typeParameterRef, CodeObject originatingChild)
-        {
-            TypeRefBase typeRefBase = null;
-
-            // First, look on the right side of the Dot - unless we came from there (or we'll have infinite recursion)
-            if (_right != originatingChild)
-            {
-                typeRefBase = _right.FindTypeArgument(typeParameterRef);
-                if (typeRefBase is TypeParameterRef)
-                {
-                    // If we found a type parameter, try to get an actual type from the left side,
-                    // but return the original type parameter if we can't.
-                    TypeRefBase leftTypeRef = _left.EvaluateType();
-                    if (leftTypeRef != null)
-                    {
-                        leftTypeRef = leftTypeRef.FindTypeArgument((TypeParameterRef)typeRefBase);
-                        if (leftTypeRef is TypeRef)
-                            return leftTypeRef;
-                    }
-                }
-            }
-            if (typeRefBase == null)
-            {
-                // If we found nothing on the right (or came from there), try the left side
-                TypeRefBase leftTypeRef = _left.EvaluateType();
-                if (leftTypeRef != null)
-                    typeRefBase = leftTypeRef.FindTypeArgument(typeParameterRef);
-            }
-
-            return typeRefBase;
         }
 
         #endregion

@@ -1,11 +1,10 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
-using Furesoft.Core.CodeDom.Parsing;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a non-conditional alternative portion of an <see cref="If"/> or <see cref="ElseIf"/> (as a child of one of those object types).
@@ -87,24 +86,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
             // Remove any preceeding blank lines if auto-cleanup is on
             if (AutomaticFormattingCleanup && NewLines > 1)
                 NewLines = 1;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        public override void ResolveRefUp(string name, Resolving.Resolver resolver)
-        {
-            if (_body != null)
-            {
-                _body.ResolveRef(name, resolver);
-                if (resolver.HasCompleteMatch) return;  // Abort if we found a match
-            }
-            // Skip past any If/ElseIf parent (we don't want to match anything in its body)
-            if (_parent is IfBase && _parent.Parent != null)
-                _parent.Parent.ResolveRefUp(name, resolver);
-            else if (_parent != null)
-                _parent.ResolveRefUp(name, resolver);
         }
 
         #endregion

@@ -4,16 +4,12 @@
 
 using System;
 using System.Linq;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Utilities;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents user comments, and may either be independent or associated with another <see cref="CodeObject"/>.
@@ -160,7 +156,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments
         }
 
         /// <summary>
-        /// True if the annotation should be listed at the <see cref="CodeUnit"/> and <see cref="Solution"/> levels (for display in an output window).
+        /// True if the annotation should be listed at the <see cref="CodeUnit"/> level (for display in an output window).
         /// </summary>
         public override bool IsListed
         {

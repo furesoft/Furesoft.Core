@@ -5,27 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Mono.Cecil;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Projects.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all symbolic references, such as <see cref="NamespaceRef"/>, <see cref="TypeRefBase"/>
@@ -35,7 +20,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
     /// <remarks>
     /// A symbolic reference can consist of a string (unresolved reference), or a reference to a <see cref="Namespace"/>
     /// or <see cref="Type"/> (derived from <see cref="MemberInfo"/>), or a reference to a Decl code object (when the code is in the
-    /// same solution) or a <see cref="MemberReference"/>/<see cref="MemberInfo"/> object (when the code is in a referenced assembly).
+    /// same solution) or a <see cref="MemberInfo"/> object (when the code is in a referenced assembly).
     /// </remarks>
     public abstract class SymbolicRef : Expression
     {
@@ -67,27 +52,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
             IsFirstOnLine = isFirstOnLine;
         }
 
-        protected SymbolicRef(IMemberDefinition memberDefinition, bool isFirstOnLine)
-        {
-            _reference = memberDefinition;
-            IsFirstOnLine = isFirstOnLine;
-        }
-
-        protected SymbolicRef(GenericParameter genericParameter, bool isFirstOnLine)
-        {
-            _reference = genericParameter;
-            IsFirstOnLine = isFirstOnLine;
-        }
-
         protected SymbolicRef(MemberInfo memberInfo, bool isFirstOnLine)
         {
             _reference = memberInfo;
-            IsFirstOnLine = isFirstOnLine;
-        }
-
-        protected SymbolicRef(ParameterDefinition parameterDefinition, bool isFirstOnLine)
-        {
-            _reference = parameterDefinition;
             IsFirstOnLine = isFirstOnLine;
         }
 
@@ -115,8 +82,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
             {
                 if (_reference is INamedCodeObject)
                     return ((INamedCodeObject)_reference).Name;
-                if (_reference is MemberReference)
-                    return ((MemberReference)_reference).Name;
                 if (_reference is MemberInfo)
                     return ((MemberInfo)_reference).Name;
                 return (_reference != null ? _reference.ToString() : null);
@@ -163,66 +128,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
         public static implicit operator SymbolicRef(Namespace @namespace)
         {
             return @namespace.CreateRef();
-        }
-
-        /// <summary>
-        /// Implicit conversion of a <see cref="TypeDefinition"/> to a <see cref="SymbolicRef"/> (actually, a <see cref="TypeRef"/>).
-        /// </summary>
-        /// <remarks>This allows <see cref="TypeReference"/>s to be passed directly to any method
-        /// expecting a <see cref="SymbolicRef"/> type without having to create a reference first.</remarks>
-        /// <param name="typeReference">The <see cref="TypeReference"/> to be converted.</param>
-        /// <returns>A generated <see cref="TypeRef"/> to the specified <see cref="TypeReference"/>.</returns>
-        public static implicit operator SymbolicRef(TypeReference typeReference)
-        {
-            return TypeRef.Create(typeReference);
-        }
-
-        /// <summary>
-        /// Implicit conversion of a <see cref="MethodReference"/> to a <see cref="SymbolicRef"/> (actually, a <see cref="MethodRef"/> or <see cref="ConstructorRef"/>).
-        /// </summary>
-        /// <remarks>This allows <see cref="MethodReference"/>s to be passed directly
-        /// to any method expecting a <see cref="SymbolicRef"/> type without having to create a reference first.</remarks>
-        /// <param name="methodReference">The <see cref="MethodReference"/> to be converted.</param>
-        /// <returns>A generated <see cref="MethodRef"/> to the specified <see cref="MethodReference"/>.</returns>
-        public static implicit operator SymbolicRef(MethodReference methodReference)
-        {
-            return MethodRef.Create(methodReference);
-        }
-
-        /// <summary>
-        /// Implicit conversion of a <see cref="PropertyReference"/> to a <see cref="SymbolicRef"/> (actually, a <see cref="PropertyRef"/>).
-        /// </summary>
-        /// <remarks>This allows <see cref="PropertyReference"/>s to be passed directly to any method expecting a <see cref="SymbolicRef"/> type without
-        /// having to create a reference first.</remarks>
-        /// <param name="propertyReference">The <see cref="PropertyReference"/> to be converted.</param>
-        /// <returns>A generated <see cref="PropertyRef"/> to the specified <see cref="PropertyReference"/>.</returns>
-        public static implicit operator SymbolicRef(PropertyReference propertyReference)
-        {
-            return PropertyRef.Create(propertyReference);
-        }
-
-        /// <summary>
-        /// Implicit conversion of a <see cref="EventReference"/> to a <see cref="SymbolicRef"/> (actually, a <see cref="EventRef"/>).
-        /// </summary>
-        /// <remarks>This allows <see cref="EventReference"/>s to be passed directly to any method expecting a <see cref="SymbolicRef"/> type without
-        /// having to create a reference first.</remarks>
-        /// <param name="eventReference">The <see cref="EventReference"/> to be converted.</param>
-        /// <returns>A generated <see cref="EventRef"/> to the specified <see cref="EventReference"/>.</returns>
-        public static implicit operator SymbolicRef(EventReference eventReference)
-        {
-            return EventRef.Create(eventReference);
-        }
-
-        /// <summary>
-        /// Implicit conversion of a <see cref="FieldReference"/> to a <see cref="SymbolicRef"/> (actually, a <see cref="FieldRef"/>).
-        /// </summary>
-        /// <remarks>This allows <see cref="FieldReference"/>s to be passed directly to any method expecting a <see cref="SymbolicRef"/> type without
-        /// having to create a reference first.</remarks>
-        /// <param name="fieldReference">The <see cref="FieldReference"/> to be converted.</param>
-        /// <returns>A generated <see cref="FieldRef"/> to the specified <see cref="FieldReference"/>.</returns>
-        public static implicit operator SymbolicRef(FieldReference fieldReference)
-        {
-            return FieldRef.Create(fieldReference);
         }
 
         /// <summary>
@@ -375,56 +280,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
 
         #endregion
 
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Unresolve instead of resolving if the flag is specified
-            if (flags.HasFlag(ResolveFlags.Unresolve))
-                return new UnresolvedRef(this, resolveCategory);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public virtual void ResolveRef(string name, Resolver resolver)
-        { }
-
-        /// <summary>
-        /// Resolve indexers.
-        /// </summary>
-        public virtual void ResolveIndexerRef(Resolver resolver)
-        { }
-
-        #endregion
-
         #region /* RENDERING */
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
             writer.WriteIdentifier(Name, flags);
-        }
-
-        protected static void AsTextDescription(CodeWriter writer, MemberReference memberReference)
-        {
-            const RenderFlags flags = RenderFlags.ShowParentTypes | RenderFlags.NoPreAnnotations;
-            if (memberReference is TypeReference)  // TypeDefinition or GenericParameter
-                TypeRefBase.AsTextTypeReference(writer, (TypeReference)memberReference, flags | RenderFlags.Description);
-            else if (memberReference is MethodDefinition)
-                MethodRef.AsTextMethodDefinition(writer, (MethodDefinition)memberReference, flags);
-            else if (memberReference is PropertyDefinition)
-                PropertyRef.AsTextPropertyDefinition(writer, (PropertyDefinition)memberReference, flags);
-            else if (memberReference is FieldDefinition)
-                FieldRef.AsTextFieldDefinition(writer, (FieldDefinition)memberReference, flags);
-            else if (memberReference is EventDefinition)
-                EventRef.AsTextEventDefinition(writer, (EventDefinition)memberReference, flags);
-            else
-                writer.Write(memberReference.ToString());
         }
 
         protected static void AsTextDescription(CodeWriter writer, MemberInfo memberInfo)
@@ -458,27 +319,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
         }
 
         /// <summary>
-        /// Get a short text description of the specified <see cref="MemberReference"/>.
-        /// This is generally the shortest text representation that uniquely identifies objects, even if
-        /// they have the same name, for example: type or return type, name, type parameters, parameters.
-        /// </summary>
-        public static string GetDescription(MemberReference memberReference)
-        {
-            using (CodeWriter writer = new CodeWriter())
-            {
-                try
-                {
-                    AsTextDescription(writer, memberReference);
-                }
-                catch
-                {
-                    writer.Write(memberReference.Name);
-                }
-                return writer.ToString();
-            }
-        }
-
-        /// <summary>
         /// Get a short text description of the specified <see cref="MemberInfo"/>.
         /// This is generally the shortest text representation that uniquely identifies objects, even if
         /// they have the same name, for example: type or return type, name, type parameters, parameters.
@@ -500,7 +340,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
         }
 
         /// <summary>
-        /// Get the description of an object which is a <see cref="CodeObject"/> or <see cref="MemberReference"/>/<see cref="MemberInfo"/> (or a <c>string</c>).
+        /// Get the description of an object which is a <see cref="CodeObject"/> or <see cref="MemberInfo"/> (or a <c>string</c>).
         /// </summary>
         /// <param name="object">The object to be described.</param>
         /// <returns>The string description of the object.</returns>
@@ -509,8 +349,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
             string description;
             if (@object is CodeObject)
                 description = ((CodeObject)@object).GetDescription();
-            else if (@object is MemberReference)
-                description = GetDescription((MemberReference)@object);
             else if (@object is MemberInfo)
                 description = GetDescription((MemberInfo)@object);
             else

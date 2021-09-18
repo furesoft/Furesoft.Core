@@ -1,23 +1,23 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
-    /// Divides one <see cref="Expression"/> by another, and assigns the result to the left <see cref="Expression"/>.
+    /// Performs a boolean XOR operation on two <see cref="Expression"/>s, and assigns the result to the left <see cref="Expression"/>.
     /// The left <see cref="Expression"/> must be an assignable object ("lvalue").
     /// </summary>
-    public class DivideAssign : Assignment
+    public class BitwiseXorAssign : Assignment
     {
         #region /* CONSTRUCTORS */
 
         /// <summary>
-        /// Create a <see cref="DivideAssign"/> operator.
+        /// Create a <see cref="BitwiseXorAssign"/> operator.
         /// </summary>
-        public DivideAssign(Expression left, Expression right)
+        public BitwiseXorAssign(Expression left, Expression right)
             : base(left, right)
         { }
 
@@ -42,7 +42,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         /// </summary>
         public override string GetInternalName()
         {
-            return Divide.InternalName;
+            return BitwiseXor.InternalName;
         }
 
         #endregion
@@ -52,7 +52,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
-        public new const string ParseToken = "/=";
+        public new const string ParseToken = "^=";
 
         internal static new void AddParsePoints()
         {
@@ -60,14 +60,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         }
 
         /// <summary>
-        /// Parse a <see cref="DivideAssign"/> operator.
+        /// Parse a <see cref="BitwiseXorAssign"/> operator.
         /// </summary>
-        public static new DivideAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public static new BitwiseXorAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            return new DivideAssign(parser, parent);
+            return new BitwiseXorAssign(parser, parent);
         }
 
-        protected DivideAssign(Parser parser, CodeObject parent)
+        protected BitwiseXorAssign(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
 

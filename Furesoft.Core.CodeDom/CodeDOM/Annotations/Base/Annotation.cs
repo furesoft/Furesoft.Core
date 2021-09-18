@@ -3,11 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.Parsing;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Base
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all code annotations, including user comments (derived from <see cref="CommentBase"/>),
@@ -41,7 +40,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Base
         }
 
         /// <summary>
-        /// True if the annotation should be listed at the <see cref="CodeUnit"/> and <see cref="Solution"/> levels (for display in an output window).
+        /// True if the annotation should be listed at the <see cref="CodeUnit"/> level (for display in an output window).
         /// </summary>
         public virtual bool IsListed
         {

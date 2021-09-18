@@ -1,13 +1,12 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
-using Furesoft.Core.CodeDom.Utilities;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef.Base
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// The common base class of all documentation comment tags that have a 'cref' attribute (<see cref="DocSee"/>,
@@ -124,20 +123,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef
                 return _codeRef;
             }
             return base.ParseAttributeValue(parser, name);
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            if (_codeRef is Expression && (flags & (ResolveFlags.Phase1 | ResolveFlags.Phase2)) == 0)
-                _codeRef = ((Expression)_codeRef).Resolve(ResolveCategory.Expression, flags | ResolveFlags.InDocComment | ResolveFlags.InDocCodeRef);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
         }
 
         #endregion

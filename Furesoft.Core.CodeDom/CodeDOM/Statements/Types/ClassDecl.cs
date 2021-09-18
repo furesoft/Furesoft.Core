@@ -3,19 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.Parsing;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
+using Nova.Parsing;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Declares a class, which includes a name plus a body, along with various optional modifiers.
@@ -170,7 +161,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             {
                 foreach (Expression baseTypeExpression in baseTypes)
                 {
-                    TypeRef baseTypeRef = baseTypeExpression.EvaluateType() as TypeRef;
+                    TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
                     if (baseTypeRef != null && baseTypeRef.IsClass)
                         return baseTypeRef;
                 }

@@ -3,20 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
+using Nova.Parsing;
+using Nova.Utilities;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Declares an enumerated type, and includes a name and a body with a list of identifiers
@@ -142,10 +133,16 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             set
             {
                 // Clear the base type if 'int', otherwise create it or update any existing one
-                if (value == null || value.EvaluateType().IsSameRef(TypeRef.IntRef))
+                if (value == null)
                     _baseTypes = null;
                 else
-                    _baseTypes = new ChildList<Expression>(this) { value };
+                {
+                    TypeRefBase typeRefBase = value.SkipPrefixes() as TypeRefBase;
+                    if (typeRefBase != null && typeRefBase.IsSameRef(TypeRef.IntRef))
+                        _baseTypes = null;
+                    else
+                        _baseTypes = new ChildList<Expression>(this) { value };
+                }
             }
         }
 

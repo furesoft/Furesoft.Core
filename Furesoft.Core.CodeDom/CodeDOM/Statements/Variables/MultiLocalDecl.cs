@@ -6,16 +6,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Represents a compound local variable declaration - the declaration of multiple local variables of
@@ -271,40 +265,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             MultiLocalDecl clone = (MultiLocalDecl)base.Clone();
             clone._localDecls = ChildListHelpers.Clone(_localDecls, clone);
             return clone;
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Resolve the Type first, so it can be used to avoid ambiguities while resolving the LocalDecls (such as for method groups)
-            if (_type != null)
-                Type = (Expression)_type.Resolve(ResolveCategory.Type, flags);
-            ChildListHelpers.Resolve(_localDecls, ResolveCategory.CodeObject, flags);
-            return this;
-        }
-
-        /// <summary>
-        /// Resolve child code objects that match the specified name.
-        /// </summary>
-        public override void ResolveRef(string name, Resolver resolver)
-        {
-            ChildListHelpers.ResolveRef(_localDecls, name, resolver);
-        }
-
-        /// <summary>
-        /// Returns true if the code object is an <see cref="UnresolvedRef"/> or has any <see cref="UnresolvedRef"/> children.
-        /// </summary>
-        public override bool HasUnresolvedRef()
-        {
-            if (ChildListHelpers.HasUnresolvedRef(_localDecls))
-                return true;
-            return base.HasUnresolvedRef();
         }
 
         #endregion

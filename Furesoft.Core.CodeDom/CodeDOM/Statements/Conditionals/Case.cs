@@ -1,12 +1,11 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Resolving;
+﻿// The Nova Project by Ken Beckett.
+// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
+// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
+using Nova.Parsing;
+using Nova.Rendering;
+
+namespace Nova.CodeDOM
 {
     /// <summary>
     /// Used as a child of a <see cref="Switch"/>.  Includes a constant expression plus a body (a statement or block).
@@ -110,34 +109,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
             parser.NextToken();  // Move past 'case'
             SetField(ref _constantExpression, Expression.Parse(parser, this, true, ParseTokenTerminator), false);
             ParseTerminatorAndBody(parser);  // Parse ':' and body (if any)
-        }
-
-        #endregion
-
-        #region /* RESOLVING */
-
-        /// <summary>
-        /// Resolve all child symbolic references, using the specified <see cref="ResolveCategory"/> and <see cref="ResolveFlags"/>.
-        /// </summary>
-        public override CodeObject Resolve(ResolveCategory resolveCategory, ResolveFlags flags)
-        {
-            // Normally, the constant expressions of all Cases in a Switch are resolved by the Switch itself (in order
-            // to allow forward references for 'goto case ...' statements with single-pass resolving).  But, just in case
-            // we're an orphaned Case without a Switch parent, resolve the constant expression here.
-            if (!(Parent is Switch))
-                ResolveConstantExpression(flags);
-            return base.Resolve(ResolveCategory.CodeObject, flags);
-        }
-
-        /// <summary>
-        /// Resolve the constant expression of the <see cref="Case"/>.
-        /// </summary>
-        public CodeObject ResolveConstantExpression(ResolveFlags flags)
-        {
-            // Allow any expression - non-constant expressions will be flagged during the analysis phase
-            if (_constantExpression != null)
-                _constantExpression = (Expression)_constantExpression.Resolve(ResolveCategory.Expression, flags);
-            return _constantExpression;
         }
 
         #endregion
