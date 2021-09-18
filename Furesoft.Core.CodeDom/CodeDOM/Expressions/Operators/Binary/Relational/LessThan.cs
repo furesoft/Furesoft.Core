@@ -11,51 +11,15 @@ namespace Nova.CodeDOM
     /// </summary>
     public class LessThan : RelationalOperator
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name of the operator.
         /// </summary>
         public const string InternalName = NamePrefix + "LessThan";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create a <see cref="LessThan"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public LessThan(Expression left, Expression right)
-            : base(left, right)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="BinaryOperator"/>.
-        /// </summary>
-        public override string GetInternalName()
-        {
-            return InternalName;
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -68,14 +32,22 @@ namespace Nova.CodeDOM
         public const int Precedence = 330;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create a <see cref="LessThan"/> operator.
         /// </summary>
-        public const bool LeftAssociative = true;
+        public LessThan(Expression left, Expression right)
+            : base(left, right)
+        { }
 
-        internal static new void AddParsePoints()
+        protected LessThan(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
         {
-            // Use a parse-priority of 200 (GenericMethodDecl uses 0, UnresolvedRef uses 100)
-            Parser.AddOperatorParsePoint(ParseToken, 200, Precedence, LeftAssociative, false, Parse);
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -86,9 +58,13 @@ namespace Nova.CodeDOM
             return new LessThan(parser, parent);
         }
 
-        protected LessThan(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+        /// <summary>
+        /// The internal name of the <see cref="BinaryOperator"/>.
+        /// </summary>
+        public override string GetInternalName()
+        {
+            return InternalName;
+        }
 
         /// <summary>
         /// Get the precedence of the operator.
@@ -98,6 +74,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (GenericMethodDecl uses 0, UnresolvedRef uses 100)
+            Parser.AddOperatorParsePoint(ParseToken, 200, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

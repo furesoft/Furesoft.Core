@@ -12,12 +12,16 @@ namespace Nova.CodeDOM
     {
         /// <summary>The parameter has no modifiers.</summary>
         None,
+
         /// <summary>The parameter is passed by reference.</summary>
         Ref,
+
         /// <summary>The parameter is an out parameter.</summary>
         Out,
+
         /// <summary>The parameter can have 0 to N arguments.</summary>
         Params,
+
         /// <summary>Not supported yet, but included to improve parsing.</summary>
         This
     }

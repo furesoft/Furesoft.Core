@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocSummary : DocComment
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "summary";
 
         /// <summary>
         /// Create a <see cref="DocSummary"/>.
@@ -27,9 +30,13 @@ namespace Nova.CodeDOM
             : base(docComments)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Parse a <see cref="DocSummary"/>.
+        /// </summary>
+        public DocSummary(Parser parser, CodeObject parent)
+        {
+            ParseTag(parser, parent);  // Ignore any attributes
+        }
 
         /// <summary>
         /// The XML tag name for the documentation comment.
@@ -37,32 +44,6 @@ namespace Nova.CodeDOM
         public override string TagName
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Returns the <see cref="DocSummary"/> itself.
-        /// </summary>
-        public override DocSummary GetDocSummary()
-        {
-            return this;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "summary";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         /// <summary>
@@ -74,13 +55,16 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse a <see cref="DocSummary"/>.
+        /// Returns the <see cref="DocSummary"/> itself.
         /// </summary>
-        public DocSummary(Parser parser, CodeObject parent)
+        public override DocSummary GetDocSummary()
         {
-            ParseTag(parser, parent);  // Ignore any attributes
+            return this;
         }
 
-        #endregion
+        internal static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
     }
 }

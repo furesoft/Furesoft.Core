@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocParam : DocNameBase
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "param";
 
         /// <summary>
         /// Create a <see cref="DocPara"/>.
@@ -41,9 +44,12 @@ namespace Nova.CodeDOM
             : base(parameterDecl.CreateRef(), docComments)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Parse a <see cref="DocParam"/>.
+        /// </summary>
+        public DocParam(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// The XML tag name for the documentation comment.
@@ -51,20 +57,6 @@ namespace Nova.CodeDOM
         public override string TagName
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "param";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         /// <summary>
@@ -75,13 +67,9 @@ namespace Nova.CodeDOM
             return new DocParam(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocParam"/>.
-        /// </summary>
-        public DocParam(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
+        internal static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
     }
 }

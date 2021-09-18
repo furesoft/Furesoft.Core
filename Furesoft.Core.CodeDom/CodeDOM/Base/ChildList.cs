@@ -7,19 +7,43 @@ using System.Collections.Generic;
 namespace Nova.CodeDOM
 {
     /// <summary>
+    /// Static helper methods for ChildList - used in these cases so that the
+    /// collection itself can be checked for being null inside the call.
+    /// </summary>
+    public static class ChildListHelpers
+    {
+        /// <summary>
+        /// Deep-clone the collection.
+        /// </summary>
+        public static ChildList<T> Clone<T>(ChildList<T> thisChildList, CodeObject parent) where T : CodeObject
+        {
+            if (thisChildList != null)
+            {
+                ChildList<T> clone = new ChildList<T>(thisChildList.Count, parent);
+                foreach (T child in thisChildList)
+                    clone.Add(child != null ? (T)child.Clone() : null);
+                return clone;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Return the first object in the collection, or null if the collection is null or empty.
+        /// </summary>
+        public static T First<T>(ChildList<T> thisChildList) where T : CodeObject
+        {
+            return ((thisChildList != null && thisChildList.Count > 0) ? thisChildList[0] : null);
+        }
+    }
+
+    /// <summary>
     /// Represents a collection of child <see cref="CodeObject"/>s of a particular type.
     /// Sets the Parent reference of each child object added to the collection.
     /// </summary>
     /// <typeparam name="T">The specific type of objects in the collection (must be <see cref="CodeObject"/> or a derived type).</typeparam>
     public class ChildList<T> : List<T> where T : CodeObject
     {
-        #region /* FIELDS */
-
         protected CodeObject _parent;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="ChildList{T}"/>, optionally using a specified <see cref="Parent"/> object.
@@ -68,9 +92,49 @@ namespace Nova.CodeDOM
             AddRange(enumerable);
         }
 
-        #endregion
+        /// <summary>
+        /// Determines if the code object list only requires a single line for display.
+        /// </summary>
+        public bool IsSingleLine
+        {
+            get
+            {
+                for (int i = 0; i < Count; ++i)
+                {
+                    T child = this[i];
+                    if (child != null)
+                    {
+                        if (i != 0 && child.IsFirstOnLine)
+                            return false;
+                        if (!child.IsSingleLine)
+                            return false;
+                    }
+                }
+                return true;
+            }
+            set
+            {
+                for (int i = 0; i < Count; ++i)
+                {
+                    T child = this[i];
+                    if (child != null)
+                    {
+                        if (i != 0)
+                            child.IsFirstOnLine = !value;
+                        if (value)
+                            child.IsSingleLine = true;
+                    }
+                }
+            }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Get the last item in the collection.
+        /// </summary>
+        public T Last
+        {
+            get { return (Count > 0 ? this[Count - 1] : null); }
+        }
 
         /// <summary>
         /// The Parent object of the collection.
@@ -92,16 +156,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the last item in the collection.
+        /// Create a <see cref="ChildList{T}"/> with the specified number of null entries.
         /// </summary>
-        public T Last
+        public static ChildList<T> CreateListOfNulls(int nullEntryCount)
         {
-            get { return (Count > 0 ? this[Count - 1] : null); }
+            ChildList<T> list = new ChildList<T>(nullEntryCount);
+            for (int i = 0; i < nullEntryCount; ++i)
+                list.Add((T)null);
+            return list;
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add an item to the collection, setting its Parent.
@@ -157,92 +220,5 @@ namespace Nova.CodeDOM
             }
             base.Insert(index, item);
         }
-
-        /// <summary>
-        /// Create a <see cref="ChildList{T}"/> with the specified number of null entries.
-        /// </summary>
-        public static ChildList<T> CreateListOfNulls(int nullEntryCount)
-        {
-            ChildList<T> list = new ChildList<T>(nullEntryCount);
-            for (int i = 0; i < nullEntryCount; ++i)
-                list.Add((T)null);
-            return list;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object list only requires a single line for display.
-        /// </summary>
-        public bool IsSingleLine
-        {
-            get
-            {
-                for (int i = 0; i < Count; ++i)
-                {
-                    T child = this[i];
-                    if (child != null)
-                    {
-                        if (i != 0 && child.IsFirstOnLine)
-                            return false;
-                        if (!child.IsSingleLine)
-                            return false;
-                    }
-                }
-                return true;
-            }
-            set
-            {
-                for (int i = 0; i < Count; ++i)
-                {
-                    T child = this[i];
-                    if (child != null)
-                    {
-                        if (i != 0)
-                            child.IsFirstOnLine = !value;
-                        if (value)
-                            child.IsSingleLine = true;
-                    }
-                }
-            }
-        }
-
-        #endregion
     }
-
-    #region /* STATIC HELPER METHODS */
-
-    /// <summary>
-    /// Static helper methods for ChildList - used in these cases so that the
-    /// collection itself can be checked for being null inside the call.
-    /// </summary>
-    public static class ChildListHelpers
-    {
-        /// <summary>
-        /// Return the first object in the collection, or null if the collection is null or empty.
-        /// </summary>
-        public static T First<T>(ChildList<T> thisChildList) where T : CodeObject
-        {
-            return ((thisChildList != null && thisChildList.Count > 0) ? thisChildList[0] : null);
-        }
-
-        /// <summary>
-        /// Deep-clone the collection.
-        /// </summary>
-        public static ChildList<T> Clone<T>(ChildList<T> thisChildList, CodeObject parent) where T : CodeObject
-        {
-            if (thisChildList != null)
-            {
-                ChildList<T> clone = new ChildList<T>(thisChildList.Count, parent);
-                foreach (T child in thisChildList)
-                    clone.Add(child != null ? (T)child.Clone() : null);
-                return clone;
-            }
-            return null;
-        }
-    }
-
-    #endregion
 }

@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections.Generic;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System.Collections.Generic;
 
 namespace Nova.CodeDOM
 {
@@ -18,65 +17,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DocTag : DocComment
     {
-        #region /* FIELDS */
-
-        protected string _tag;
         protected Dictionary<string, object> _attributes;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected string _tag;
 
         // This class should only be instantiated during the parsing process.
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The XML tag name for the documentation comment.
-        /// </summary>
-        public override string TagName
-        {
-            get { return _tag; }
-        }
-
-        /// <summary>
-        /// A dictionary of child attributes.
-        /// </summary>
-        public Dictionary<string, object> Attributes
-        {
-            get { return _attributes; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create the dictionary of attributes, or return the existing one.
-        /// </summary>
-        public Dictionary<string, object> CreateAttributes()
-        {
-            if (_attributes == null)
-                _attributes = new Dictionary<string, object>();
-            return _attributes;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            DocTag clone = (DocTag)base.Clone();
-            if (_attributes != null && _attributes.Count > 0)
-                clone._attributes = new Dictionary<string, object>(_attributes);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// Parse a <see cref="DocTag"/>.
@@ -100,9 +44,13 @@ namespace Nova.CodeDOM
             parser.AttachMessage(this, "End tag '</" + _tag + ">' without matching start tag!", tagToken);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// A dictionary of child attributes.
+        /// </summary>
+        public Dictionary<string, object> Attributes
+        {
+            get { return _attributes; }
+        }
 
         /// <summary>
         /// True if the code object defaults to starting on a new line.
@@ -112,9 +60,50 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
+        /// <summary>
+        /// The XML tag name for the documentation comment.
+        /// </summary>
+        public override string TagName
+        {
+            get { return _tag; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            DocTag clone = (DocTag)base.Clone();
+            if (_attributes != null && _attributes.Count > 0)
+                clone._attributes = new Dictionary<string, object>(_attributes);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create the dictionary of attributes, or return the existing one.
+        /// </summary>
+        public Dictionary<string, object> CreateAttributes()
+        {
+            if (_attributes == null)
+                _attributes = new Dictionary<string, object>();
+            return _attributes;
+        }
+
+        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
+        {
+            // Don't trim newlines for unrecognized tags, since the tags are always rendered
+            base.AsTextContent(writer, flags & ~RenderFlags.NoTagNewLines);
+        }
+
+        protected override void AsTextEnd(CodeWriter writer, RenderFlags flags)
+        {
+            if (!MissingEndTag && (_content != null || MissingStartTag))
+            {
+                string tagName = TagName;
+                if (tagName != null)
+                    writer.Write("</" + tagName + ">");
+            }
+        }
 
         protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
         {
@@ -136,23 +125,5 @@ namespace Nova.CodeDOM
                 writer.Write(_content == null && !MissingEndTag ? "/>" : ">");
             }
         }
-
-        protected override void AsTextEnd(CodeWriter writer, RenderFlags flags)
-        {
-            if (!MissingEndTag && (_content != null || MissingStartTag))
-            {
-                string tagName = TagName;
-                if (tagName != null)
-                    writer.Write("</" + tagName + ">");
-            }
-        }
-
-        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
-        {
-            // Don't trim newlines for unrecognized tags, since the tags are always rendered
-            base.AsTextContent(writer, flags & ~RenderFlags.NoTagNewLines);
-        }
-
-        #endregion
     }
 }

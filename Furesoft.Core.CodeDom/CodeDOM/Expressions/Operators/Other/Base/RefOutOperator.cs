@@ -11,8 +11,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class RefOutOperator : SingleArgumentOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a Ref/Out operator instance.
         /// </summary>
@@ -28,17 +26,9 @@ namespace Nova.CodeDOM
             : base(variableDecl.CreateRef())
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected RefOutOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the argument has parens around it.
@@ -47,7 +37,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
     }
 }

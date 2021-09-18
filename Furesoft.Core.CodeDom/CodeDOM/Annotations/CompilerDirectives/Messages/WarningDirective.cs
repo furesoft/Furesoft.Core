@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class WarningDirective : MessageDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "warning";
 
         /// <summary>
         /// Create a <see cref="WarningDirective"/>.
@@ -19,28 +22,6 @@ namespace Nova.CodeDOM
         public WarningDirective(string message)
             : base(message)
         { }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "warning";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="WarningDirective"/>.
-        /// </summary>
-        public static WarningDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new WarningDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="WarningDirective"/>.
@@ -51,10 +32,6 @@ namespace Nova.CodeDOM
             ParseMessage(parser);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
         /// </summary>
@@ -63,6 +40,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="WarningDirective"/>.
+        /// </summary>
+        public static WarningDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new WarningDirective(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
     }
 }

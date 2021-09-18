@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Finally : BlockStatement
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "finally";
 
         /// <summary>
         /// Create a <see cref="Finally"/>.
@@ -27,9 +30,26 @@ namespace Nova.CodeDOM
             : base(null, false)
         { }
 
-        #endregion
+        protected Finally(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            MoveComments(parser.LastToken);              // Get any comments before 'finally'
+            parser.NextToken();                          // Move past 'finally'
+            new Block(out _body, parser, this, true);    // Parse the body
+            ParseUnusedAnnotations(parser, this, true);  // Parse any annotations from the Unused list
 
-        #region /* PROPERTIES */
+            // Remove any preceeding blank lines if auto-cleanup is on
+            if (AutomaticFormattingCleanup && NewLines > 1)
+                NewLines = 1;
+        }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has an argument.
+        /// </summary>
+        public override bool HasArgument
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
@@ -39,20 +59,12 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
-        /// The token used to parse the code object.
+        /// Parse a <see cref="Finally"/>.
         /// </summary>
-        public const string ParseToken = "finally";
-
-        internal static void AddParsePoints()
+        public static Finally Parse(Parser parser, CodeObject parent)
         {
-            // Normally, a 'finally' is parsed by the 'try' parse logic (see Try).
-            // This parse-point exists only to catch an orphaned 'finally' statement.
-            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
+            return new Finally(parser, parent);
         }
 
         /// <summary>
@@ -66,39 +78,11 @@ namespace Nova.CodeDOM
             return @finally;
         }
 
-        /// <summary>
-        /// Parse a <see cref="Finally"/>.
-        /// </summary>
-        public static Finally Parse(Parser parser, CodeObject parent)
+        internal static void AddParsePoints()
         {
-            return new Finally(parser, parent);
+            // Normally, a 'finally' is parsed by the 'try' parse logic (see Try).
+            // This parse-point exists only to catch an orphaned 'finally' statement.
+            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
         }
-
-        protected Finally(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            MoveComments(parser.LastToken);              // Get any comments before 'finally'
-            parser.NextToken();                          // Move past 'finally'
-            new Block(out _body, parser, this, true);    // Parse the body
-            ParseUnusedAnnotations(parser, this, true);  // Parse any annotations from the Unused list
-
-            // Remove any preceeding blank lines if auto-cleanup is on
-            if (AutomaticFormattingCleanup && NewLines > 1)
-                NewLines = 1;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has an argument.
-        /// </summary>
-        public override bool HasArgument
-        {
-            get { return false; }
-        }
-
-        #endregion
     }
 }

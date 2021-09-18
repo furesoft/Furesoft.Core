@@ -9,8 +9,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class LocalRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="LocalRef"/>.
         /// </summary>
@@ -25,10 +23,6 @@ namespace Nova.CodeDOM
             : base(declaration, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// True if the referenced <see cref="LocalDecl"/> is const.
         /// </summary>
@@ -36,11 +30,5 @@ namespace Nova.CodeDOM
         {
             get { return ((LocalDecl)_reference).IsConst; }
         }
-
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
     }
 }

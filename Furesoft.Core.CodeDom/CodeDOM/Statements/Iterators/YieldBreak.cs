@@ -16,34 +16,16 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class YieldBreak : YieldStatement
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The second token used to parse the code object.
+        /// </summary>
+        public const string ParseToken2 = "break";
 
         /// <summary>
         /// Create a <see cref="YieldBreak"/>.
         /// </summary>
         public YieldBreak()
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken1 + " " + ParseToken2; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The second token used to parse the code object.
-        /// </summary>
-        public const string ParseToken2 = "break";
 
         /// <summary>
         /// Parse a <see cref="YieldBreak"/>.
@@ -56,10 +38,6 @@ namespace Nova.CodeDOM
             ParseTerminator(parser);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
@@ -68,6 +46,12 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken1 + " " + ParseToken2; }
+        }
     }
 }

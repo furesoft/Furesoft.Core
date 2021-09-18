@@ -12,15 +12,9 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class ConditionalExpressionDirective : ConditionalDirective
     {
-        #region /* FIELDS */
-
         // Conditional directive expressions can only use DirectiveSymbolRefs, 'true' and 'false'
         // literals, and these operators: &&, ||, !, ==, !=
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected ConditionalExpressionDirective(Expression expression)
         {
@@ -31,39 +25,8 @@ namespace Nova.CodeDOM
                 expression.HasParens = false;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The conditional <see cref="Expression"/> of the directive.
-        /// </summary>
-        public Expression Expression
-        {
-            get { return _expression; }
-            set { SetField(ref _expression, value, true); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            ConditionalExpressionDirective clone = (ConditionalExpressionDirective)base.Clone();
-            clone.CloneField(ref clone._expression, _expression);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
         protected ConditionalExpressionDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             Token token = parser.NextTokenSameLine(false);  // Move past 'if' or 'elif'
             if (token != null)
@@ -95,16 +58,29 @@ namespace Nova.CodeDOM
                 parser.CurrentConditionalDirectiveState = _isActive = true;
         }
 
-        #endregion
+        /// <summary>
+        /// The conditional <see cref="Expression"/> of the directive.
+        /// </summary>
+        public Expression Expression
+        {
+            get { return _expression; }
+            set { SetField(ref _expression, value, true); }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            ConditionalExpressionDirective clone = (ConditionalExpressionDirective)base.Clone();
+            clone.CloneField(ref clone._expression, _expression);
+            return clone;
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

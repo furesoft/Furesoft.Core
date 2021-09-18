@@ -12,23 +12,17 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class Operator : Expression
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// Name prefix used for overloadable operator names.
         /// </summary>
         public const string NamePrefix = "op_";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         protected Operator()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected Operator(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -38,22 +32,10 @@ namespace Nova.CodeDOM
             get { return null; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        protected Operator(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
         public abstract int GetPrecedence();
-
-        #endregion
-
-        #region /* RENDERING */
 
         /// <summary>
         /// Convert operator to text.
@@ -62,8 +44,6 @@ namespace Nova.CodeDOM
         {
             writer.Write(Symbol);
         }
-
-        #endregion
     }
 
     // OPERATOR PRECEDENCE AND ASSOCIATIVITY:

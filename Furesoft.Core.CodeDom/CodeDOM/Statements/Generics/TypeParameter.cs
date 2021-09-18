@@ -2,11 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections;
-using System.Collections.Generic;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Nova.CodeDOM
 {
@@ -15,13 +14,42 @@ namespace Nova.CodeDOM
     /// </summary>
     public class TypeParameter : CodeObject, ITypeDecl
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The alternate token used to parse the end of a list of type parameters inside a documentation comment.
+        /// </summary>
+        public const string ParseTokenAltEnd = TypeRefBase.ParseTokenAltArgumentEnd;
+
+        /// <summary>
+        /// The alternate token used to parse the start of a list of type parameters inside a documentation comment.
+        /// </summary>
+        public const string ParseTokenAltStart = TypeRefBase.ParseTokenAltArgumentStart;
+
+        /// <summary>
+        /// The token used to parse the end of a list of type parameters.
+        /// </summary>
+        public const string ParseTokenEnd = TypeRefBase.ParseTokenArgumentEnd;
+
+        /// <summary>
+        /// The token used to parse an 'in' type parameter.
+        /// </summary>
+        public const string ParseTokenIn = "in";
+
+        /// <summary>
+        /// The token used to parse an 'out' type parameter.
+        /// </summary>
+        public const string ParseTokenOut = "out";
+
+        /// <summary>
+        /// The token used to parse between type parameters.
+        /// </summary>
+        public const string ParseTokenSeparator = ParameterDecl.ParseTokenSeparator;
+
+        /// <summary>
+        /// The token used to parse the start of a list of type parameters.
+        /// </summary>
+        public const string ParseTokenStart = TypeRefBase.ParseTokenArgumentStart;
 
         protected string _name;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="TypeParameter"/> with the specified name.
@@ -31,17 +59,23 @@ namespace Nova.CodeDOM
             _name = name;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="TypeParameter"/>.
-        /// </summary>
-        public string Name
+        // Alternate type argument delimiters allowed for code embedded inside documentation comments.
+        // The C# style delimiters are also allowed in doc comments, although they shouldn't show up
+        // usually, since they cause errors with parsing the XML properly - but they could be used
+        // programmatically in certain situations.  Both styles are thus supported inside doc comments,
+        // but the open and close delimiters must match for each pair.  Note that in the case of a
+        // type declaration, the alternate type argument delimiters are ambiguous with block delimiters -
+        // this is handled by looking for a type argument pattern.
+        protected TypeParameter(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            get { return _name; }
-            set { _name = value; }
+            // If we're starting with an attribute, ignore any newline parsed in the base constructor
+            if (parser.TokenText == Attribute.ParseTokenStart)
+                IsFirstOnLine = false;
+
+            Attribute.ParseAttributes(parser, this);  // Parse any attributes
+
+            _name = parser.GetIdentifierText();  // Parse the name
         }
 
         /// <summary>
@@ -50,14 +84,6 @@ namespace Nova.CodeDOM
         public string Category
         {
             get { return "type parameter"; }
-        }
-
-        /// <summary>
-        /// Always <c>0</c>.
-        /// </summary>
-        public int TypeParameterCount
-        {
-            get { return 0; }
         }
 
         /// <summary>
@@ -88,6 +114,14 @@ namespace Nova.CodeDOM
         /// Always <c>false</c>.
         /// </summary>
         public bool IsEnum
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
         {
             get { return false; }
         }
@@ -157,9 +191,143 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
+        /// <summary>
+        /// The name of the <see cref="TypeParameter"/>.
+        /// </summary>
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// The number of newlines preceeding the object (0 to N).
+        /// </summary>
+        public override int NewLines
+        {
+            get { return base.NewLines; }
+            set
+            {
+                // If we're changing to zero, also change all prefix attributes to zero
+                bool isFirstOnLine = (value != 0);
+                if (_annotations != null && !isFirstOnLine && IsFirstOnLine)
+                {
+                    foreach (Annotation annotation in _annotations)
+                    {
+                        if (annotation is Attribute)
+                            annotation.IsFirstOnLine = false;
+                    }
+                }
+
+                base.NewLines = value;
+            }
+        }
+
+        /// <summary>
+        /// Always <c>0</c>.
+        /// </summary>
+        public int TypeParameterCount
+        {
+            get { return 0; }
+        }
+
+        public static void AsTextTypeParameters(CodeWriter writer, ChildList<TypeParameter> typeParameters, RenderFlags flags)
+        {
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            // Render the angle brackets as braces if we're inside a documentation comment
+            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltStart : ParseTokenStart);
+            writer.WriteList(typeParameters, passFlags, typeParameters.Parent);
+            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltEnd : ParseTokenEnd);
+        }
+
+        /// <summary>
+        /// Parse a list of type parameters.
+        /// </summary>
+        public static ChildList<TypeParameter> ParseList(Parser parser, CodeObject parent)
+        {
+            ChildList<TypeParameter> parameters = null;
+            if (parser.TokenText == ParseTokenStart || (parser.InDocComment && parser.TokenText == ParseTokenAltStart
+                && TypeRefBase.PeekTypeArguments(parser, TypeRefBase.ParseTokenAltArgumentEnd, ParseFlags.None)))
+            {
+                string argumentEnd = (parser.TokenText == ParseTokenAltStart ? ParseTokenAltEnd : ParseTokenEnd);
+                parent.MoveAllComments(parser.LastToken);  // Move any skipped comments to the parent
+                parser.NextToken();                        // Move past '<'
+
+                // Create a string of possible terminators (assuming 1 char terminators for now)
+                string terminators = argumentEnd + MethodDeclBase.ParseTokenStart + ConstraintClause.ParseTokenSeparator + Statement.ParseTokenTerminator;
+
+                while (parser.Token != null && (parser.TokenText.Length != 1 || terminators.IndexOf(parser.TokenText[0]) < 0))
+                {
+                    TypeParameter typeParameter = new TypeParameter(parser, parent);
+                    if (typeParameter.Name != null)
+                    {
+                        if (parameters == null)
+                            parameters = new ChildList<TypeParameter>(parent);
+                        parameters.Add(typeParameter);
+                        if (parser.TokenText == ParseTokenSeparator)
+                            parser.NextToken();  // Move past ','
+                    }
+                    else
+                        parser.NextToken();  // Move past bad token (non-identifier)
+                }
+                parser.NextToken();  // Move past '>'
+            }
+            return parameters;
+        }
+
+        /// <summary>
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// </summary>
+        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Add(Name, this);
+        }
+
+        public override void AsText(CodeWriter writer, RenderFlags flags)
+        {
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            if (flags.HasFlag(RenderFlags.PrefixSpace))
+                writer.Write(" ");
+            AsTextAnnotations(writer, passFlags);
+            UpdateLineCol(writer, flags);
+            writer.WriteIdentifier(_name, flags);
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
+        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
+        {
+            return new TypeParameterRef(this, isFirstOnLine, ranks);
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
+        public TypeRef CreateArrayRef(params int[] ranks)
+        {
+            return new TypeParameterRef(this, false, ranks);
+        }
+
+        /// <summary>
+        /// Create a nullable reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef(bool isFirstOnLine)
+        {
+            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
+        }
+
+        /// <summary>
+        /// Create a nullable reference to this <see cref="TypeParameter"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef()
+        {
+            return TypeRef.CreateNullable(CreateRef());
+        }
 
         /// <summary>
         /// Create a reference to the <see cref="TypeParameter"/>.
@@ -212,39 +380,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Create an array reference to this <see cref="TypeParameter"/>.
+        /// Get the base type - always a <see cref="TypeRef"/> to the 'object' type.
         /// </summary>
-        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
-        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
+        public TypeRef GetBaseType()
         {
-            return new TypeParameterRef(this, isFirstOnLine, ranks);
-        }
-
-        /// <summary>
-        /// Create an array reference to this <see cref="TypeParameter"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeParameterRef"/>.</returns>
-        public TypeRef CreateArrayRef(params int[] ranks)
-        {
-            return new TypeParameterRef(this, false, ranks);
-        }
-
-        /// <summary>
-        /// Create a nullable reference to this <see cref="TypeParameter"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef(bool isFirstOnLine)
-        {
-            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
-        }
-
-        /// <summary>
-        /// Create a nullable reference to this <see cref="TypeParameter"/>.
-        /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef()
-        {
-            return TypeRef.CreateNullable(CreateRef());
+            return TypeRef.ObjectRef;
         }
 
         /// <summary>
@@ -253,40 +393,6 @@ namespace Nova.CodeDOM
         public List<TypeParameterConstraint> GetConstraints()
         {
             return ((ITypeParameters)_parent).GetTypeParameterConstraints(this);
-        }
-
-        /// <summary>
-        /// Get the main constraining type (if any - not including interfaces).
-        /// </summary>
-        public TypeRef GetTypeConstraint()
-        {
-            List<TypeParameterConstraint> constraints = GetConstraints();
-            if (constraints != null)
-            {
-                foreach (TypeParameterConstraint constraint in constraints)
-                {
-                    if (constraint is TypeConstraint)
-                    {
-                        // Ignore if an UnresolvedRef, because we can't distinguish class vs interface
-                        TypeRef typeRef = ((TypeConstraint)constraint).Type.SkipPrefixes() as TypeRef;
-                        if (typeRef != null && typeRef.IsClass)
-                            return typeRef;
-                    }
-                    else if (constraint is ClassConstraint)
-                        return TypeRef.ObjectRef;
-                    else if (constraint is StructConstraint)
-                        return TypeRef.ValueTypeRef;
-                }
-            }
-            return TypeRef.ObjectRef;
-        }
-
-        /// <summary>
-        /// Get the base type - always a <see cref="TypeRef"/> to the 'object' type.
-        /// </summary>
-        public TypeRef GetBaseType()
-        {
-            return TypeRef.ObjectRef;
         }
 
         /// <summary>
@@ -311,6 +417,51 @@ namespace Nova.CodeDOM
         public NamedCodeObjectGroup GetConstructors()
         {
             return null;
+        }
+
+        /// <summary>
+        /// Get the delegate parameters of the constraining type (if any).
+        /// </summary>
+        public ICollection GetDelegateParameters()
+        {
+            return GetTypeConstraint().GetDelegateParameters();
+        }
+
+        /// <summary>
+        /// Get the delegate return type of the constraining type (if any).
+        /// </summary>
+        public TypeRefBase GetDelegateReturnType()
+        {
+            return GetTypeConstraint().GetDelegateReturnType();
+        }
+
+        /// <summary>
+        /// Always returns <c>null</c>.
+        /// </summary>
+        public FieldRef GetField(string name)
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
+        public string GetFullName(bool descriptive)
+        {
+            if (Parent is TypeDecl)
+                return ((TypeDecl)Parent).GetFullName(descriptive) + "." + _name;
+            if (Parent is GenericMethodDecl)
+                return ((GenericMethodDecl)Parent).GetFullName(descriptive) + "." + _name;
+            return _name;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName()
+        {
+            return GetFullName(false);
         }
 
         /// <summary>
@@ -349,41 +500,43 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Always returns <c>null</c>.
         /// </summary>
-        public PropertyRef GetProperty(string name)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Always returns <c>null</c>.
-        /// </summary>
-        public FieldRef GetField(string name)
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Always returns <c>null</c>.
-        /// </summary>
         public TypeRef GetNestedType(string name)
         {
             return null;
         }
 
         /// <summary>
-        /// Get the delegate parameters of the constraining type (if any).
+        /// Always returns <c>null</c>.
         /// </summary>
-        public ICollection GetDelegateParameters()
+        public PropertyRef GetProperty(string name)
         {
-            return GetTypeConstraint().GetDelegateParameters();
+            return null;
         }
 
         /// <summary>
-        /// Get the delegate return type of the constraining type (if any).
+        /// Get the main constraining type (if any - not including interfaces).
         /// </summary>
-        public TypeRefBase GetDelegateReturnType()
+        public TypeRef GetTypeConstraint()
         {
-            return GetTypeConstraint().GetDelegateReturnType();
+            List<TypeParameterConstraint> constraints = GetConstraints();
+            if (constraints != null)
+            {
+                foreach (TypeParameterConstraint constraint in constraints)
+                {
+                    if (constraint is TypeConstraint)
+                    {
+                        // Ignore if an UnresolvedRef, because we can't distinguish class vs interface
+                        TypeRef typeRef = ((TypeConstraint)constraint).Type.SkipPrefixes() as TypeRef;
+                        if (typeRef != null && typeRef.IsClass)
+                            return typeRef;
+                    }
+                    else if (constraint is ClassConstraint)
+                        return TypeRef.ObjectRef;
+                    else if (constraint is StructConstraint)
+                        return TypeRef.ValueTypeRef;
+                }
+            }
+            return TypeRef.ObjectRef;
         }
 
         /// <summary>
@@ -395,14 +548,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the constraining type is a subclass of the specified type.
-        /// </summary>
-        public bool IsSubclassOf(TypeRef classTypeRef)
-        {
-            return GetTypeConstraint().IsSubclassOf(classTypeRef);
-        }
-
-        /// <summary>
         /// Determine if the constraining type implements the specified interface type.
         /// </summary>
         public bool IsImplementationOf(TypeRef interfaceTypeRef)
@@ -411,11 +556,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// Determine if the constraining type is a subclass of the specified type.
         /// </summary>
-        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        public bool IsSubclassOf(TypeRef classTypeRef)
         {
-            dictionary.Add(Name, this);
+            return GetTypeConstraint().IsSubclassOf(classTypeRef);
         }
 
         /// <summary>
@@ -425,180 +570,5 @@ namespace Nova.CodeDOM
         {
             dictionary.Remove(Name, this);
         }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
-        public string GetFullName(bool descriptive)
-        {
-            if (Parent is TypeDecl)
-                return ((TypeDecl)Parent).GetFullName(descriptive) + "." + _name;
-            if (Parent is GenericMethodDecl)
-                return ((GenericMethodDecl)Parent).GetFullName(descriptive) + "." + _name;
-            return _name;
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        public string GetFullName()
-        {
-            return GetFullName(false);
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of a list of type parameters.
-        /// </summary>
-        public const string ParseTokenStart = TypeRefBase.ParseTokenArgumentStart;
-
-        /// <summary>
-        /// The token used to parse the end of a list of type parameters.
-        /// </summary>
-        public const string ParseTokenEnd = TypeRefBase.ParseTokenArgumentEnd;
-
-        /// <summary>
-        /// The token used to parse between type parameters.
-        /// </summary>
-        public const string ParseTokenSeparator = ParameterDecl.ParseTokenSeparator;
-
-        /// <summary>
-        /// The token used to parse an 'out' type parameter.
-        /// </summary>
-        public const string ParseTokenOut = "out";
-
-        /// <summary>
-        /// The token used to parse an 'in' type parameter.
-        /// </summary>
-        public const string ParseTokenIn = "in";
-
-        // Alternate type argument delimiters allowed for code embedded inside documentation comments.
-        // The C# style delimiters are also allowed in doc comments, although they shouldn't show up
-        // usually, since they cause errors with parsing the XML properly - but they could be used
-        // programmatically in certain situations.  Both styles are thus supported inside doc comments,
-        // but the open and close delimiters must match for each pair.  Note that in the case of a
-        // type declaration, the alternate type argument delimiters are ambiguous with block delimiters -
-        // this is handled by looking for a type argument pattern.
-
-        /// <summary>
-        /// The alternate token used to parse the start of a list of type parameters inside a documentation comment.
-        /// </summary>
-        public const string ParseTokenAltStart = TypeRefBase.ParseTokenAltArgumentStart;
-
-        /// <summary>
-        /// The alternate token used to parse the end of a list of type parameters inside a documentation comment.
-        /// </summary>
-        public const string ParseTokenAltEnd = TypeRefBase.ParseTokenAltArgumentEnd;
-
-        protected TypeParameter(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            // If we're starting with an attribute, ignore any newline parsed in the base constructor
-            if (parser.TokenText == Attribute.ParseTokenStart)
-                IsFirstOnLine = false;
-
-            Attribute.ParseAttributes(parser, this);  // Parse any attributes
-
-            _name = parser.GetIdentifierText();  // Parse the name
-        }
-
-        /// <summary>
-        /// Parse a list of type parameters.
-        /// </summary>
-        public static ChildList<TypeParameter> ParseList(Parser parser, CodeObject parent)
-        {
-            ChildList<TypeParameter> parameters = null;
-            if (parser.TokenText == ParseTokenStart || (parser.InDocComment && parser.TokenText == ParseTokenAltStart
-                && TypeRefBase.PeekTypeArguments(parser, TypeRefBase.ParseTokenAltArgumentEnd, ParseFlags.None)))
-            {
-                string argumentEnd = (parser.TokenText == ParseTokenAltStart ? ParseTokenAltEnd : ParseTokenEnd);
-                parent.MoveAllComments(parser.LastToken);  // Move any skipped comments to the parent
-                parser.NextToken();                        // Move past '<'
-
-                // Create a string of possible terminators (assuming 1 char terminators for now)
-                string terminators = argumentEnd + MethodDeclBase.ParseTokenStart + ConstraintClause.ParseTokenSeparator + Statement.ParseTokenTerminator;
-
-                while (parser.Token != null && (parser.TokenText.Length != 1 || terminators.IndexOf(parser.TokenText[0]) < 0))
-                {
-                    TypeParameter typeParameter = new TypeParameter(parser, parent);
-                    if (typeParameter.Name != null)
-                    {
-                        if (parameters == null)
-                            parameters = new ChildList<TypeParameter>(parent);
-                        parameters.Add(typeParameter);
-                        if (parser.TokenText == ParseTokenSeparator)
-                            parser.NextToken();  // Move past ','
-                    }
-                    else
-                        parser.NextToken();  // Move past bad token (non-identifier)
-                }
-                parser.NextToken();  // Move past '>'
-            }
-            return parameters;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the object (0 to N).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return base.NewLines; }
-            set
-            {
-                // If we're changing to zero, also change all prefix attributes to zero
-                bool isFirstOnLine = (value != 0);
-                if (_annotations != null && !isFirstOnLine && IsFirstOnLine)
-                {
-                    foreach (Annotation annotation in _annotations)
-                    {
-                        if (annotation is Attribute)
-                            annotation.IsFirstOnLine = false;
-                    }
-                }
-
-                base.NewLines = value;
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsText(CodeWriter writer, RenderFlags flags)
-        {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            if (flags.HasFlag(RenderFlags.PrefixSpace))
-                writer.Write(" ");
-            AsTextAnnotations(writer, passFlags);
-            UpdateLineCol(writer, flags);
-            writer.WriteIdentifier(_name, flags);
-        }
-
-        public static void AsTextTypeParameters(CodeWriter writer, ChildList<TypeParameter> typeParameters, RenderFlags flags)
-        {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            // Render the angle brackets as braces if we're inside a documentation comment
-            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltStart : ParseTokenStart);
-            writer.WriteList(typeParameters, passFlags, typeParameters.Parent);
-            writer.Write(flags.HasFlag(RenderFlags.InDocComment) ? ParseTokenAltEnd : ParseTokenEnd);
-        }
-
-        #endregion
     }
 }

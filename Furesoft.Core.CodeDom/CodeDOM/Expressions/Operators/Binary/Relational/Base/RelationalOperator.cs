@@ -12,20 +12,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class RelationalOperator : BinaryBooleanOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected RelationalOperator(Expression left, Expression right)
             : base(left, right)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected RelationalOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
     }
 }

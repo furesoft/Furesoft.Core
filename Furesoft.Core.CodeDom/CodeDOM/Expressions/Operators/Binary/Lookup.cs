@@ -13,7 +13,20 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Lookup : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = true;
+
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "::";
+
+        /// <summary>
+        /// The precedence of the operator.
+        /// </summary>
+        public const int Precedence = 100;
 
         /// <summary>
         /// Create a <see cref="Lookup"/> operator.
@@ -36,16 +49,16 @@ namespace Nova.CodeDOM
             : base(left.CreateRef(), right)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected Lookup(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
-        /// The symbol associated with the operator.
+        /// True if the expression should have parens by default.
         /// </summary>
-        public override string Symbol
+        public override bool HasParensDefault
         {
-            get { return ParseToken; }
+            get { return false; }
         }
 
         /// <summary>
@@ -56,9 +69,13 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
-
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// Create a Lookup/Dot expression chain from 2 or more expressions.
@@ -71,42 +88,6 @@ namespace Nova.CodeDOM
             return binaryOperator;
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the expression on the right of the right-most Lookup or Dot operator (bypass any '::' and '.' prefixes).
-        /// </summary>
-        public override Expression SkipPrefixes()
-        {
-            return Right.SkipPrefixes();
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "::";
-
-        /// <summary>
-        /// The precedence of the operator.
-        /// </summary>
-        public const int Precedence = 100;
-
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
-        }
-
         /// <summary>
         /// Parse a <see cref="Lookup"/> operator.
         /// </summary>
@@ -114,34 +95,6 @@ namespace Nova.CodeDOM
         {
             return new Lookup(parser, parent);
         }
-
-        protected Lookup(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        /// <summary>
-        /// Get the precedence of the operator.
-        /// </summary>
-        public override int GetPrecedence()
-        {
-            return Precedence;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the expression should have parens by default.
-        /// </summary>
-        public override bool HasParensDefault
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
@@ -154,6 +107,25 @@ namespace Nova.CodeDOM
                 _right.AsText(writer, passFlags);
         }
 
-        #endregion
+        /// <summary>
+        /// Get the precedence of the operator.
+        /// </summary>
+        public override int GetPrecedence()
+        {
+            return Precedence;
+        }
+
+        /// <summary>
+        /// Get the expression on the right of the right-most Lookup or Dot operator (bypass any '::' and '.' prefixes).
+        /// </summary>
+        public override Expression SkipPrefixes()
+        {
+            return Right.SkipPrefixes();
+        }
+
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

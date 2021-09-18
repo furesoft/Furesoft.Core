@@ -12,7 +12,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class RegionDirective : MessageDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "region";
 
         /// <summary>
         /// Create a <see cref="RegionDirective"/>.
@@ -28,40 +31,6 @@ namespace Nova.CodeDOM
             : base(null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// True if this region contains generated code.
-        /// </summary>
-        public bool IsGeneratedRegion
-        {
-            get { return StringUtil.ContainsIgnoreCase(_message, "generated code"); }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "region";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="RegionDirective"/>.
-        /// </summary>
-        public static RegionDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new RegionDirective(parser, parent);
-        }
-
         /// <summary>
         /// Parse a <see cref="RegionDirective"/>.
         /// </summary>
@@ -75,17 +44,12 @@ namespace Nova.CodeDOM
                 parser.IsGenerated = parser.IsGeneratedRegion = true;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// The keyword associated with the compiler directive (if any).
         /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
+        public override string DirectiveKeyword
         {
-            // Always default to a blank line before a region directive
-            return 2;
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -96,18 +60,34 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
-        /// The keyword associated with the compiler directive (if any).
+        /// True if this region contains generated code.
         /// </summary>
-        public override string DirectiveKeyword
+        public bool IsGeneratedRegion
         {
-            get { return ParseToken; }
+            get { return StringUtil.ContainsIgnoreCase(_message, "generated code"); }
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="RegionDirective"/>.
+        /// </summary>
+        public static RegionDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new RegionDirective(parser, parent);
+        }
+
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Always default to a blank line before a region directive
+            return 2;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
     }
 }

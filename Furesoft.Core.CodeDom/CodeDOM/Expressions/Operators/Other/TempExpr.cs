@@ -12,11 +12,7 @@ namespace Nova.CodeDOM
     /// </summary>
     public class TempExpr : Expression
     {
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         { }
-
-        #endregion
     }
 }

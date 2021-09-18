@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Break : Statement
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "break";
 
         /// <summary>
         /// Create a <see cref="Break"/>.
@@ -19,50 +22,12 @@ namespace Nova.CodeDOM
         public Break()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "break";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Pase a <see cref="Break"/>.
-        /// </summary>
-        public static Break Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Break(parser, parent);
-        }
-
         protected Break(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             parser.NextToken();  // Move past 'break'
             ParseTerminator(parser);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -80,6 +45,25 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// Pase a <see cref="Break"/>.
+        /// </summary>
+        public static Break Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Break(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
     }
 }

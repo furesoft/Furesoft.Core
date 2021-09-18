@@ -11,24 +11,24 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class YieldStatement : Statement
     {
-        #region /* CONSTRUCTORS */
-
-        protected YieldStatement()
-        { }
-
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse yield statements.
         /// </summary>
         public const string ParseToken1 = "yield";
 
-        internal static void AddParsePoints()
+        protected YieldStatement()
+        { }
+
+        protected YieldStatement(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has a terminator character by default.
+        /// </summary>
+        public override bool HasTerminatorDefault
         {
-            // Set parse-point on 1st of the 2 keywords
-            Parser.AddParsePoint(ParseToken1, Parse, typeof(IBlock));
+            get { return true; }
         }
 
         /// <summary>
@@ -45,22 +45,10 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected YieldStatement(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has a terminator character by default.
-        /// </summary>
-        public override bool HasTerminatorDefault
+        internal static void AddParsePoints()
         {
-            get { return true; }
+            // Set parse-point on 1st of the 2 keywords
+            Parser.AddParsePoint(ParseToken1, Parse, typeof(IBlock));
         }
-
-        #endregion
     }
 }

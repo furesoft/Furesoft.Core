@@ -12,31 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocCDATA : DocComment
     {
-        #region /* CONSTRUCTORS */
-
-        /// <summary>
-        /// Create a <see cref="DocCDATA"/>.
-        /// </summary>
-        public DocCDATA(string content)
-            : base(content)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The XML tag name for the documentation comment.
-        /// </summary>
-        public override string TagName
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
@@ -47,18 +22,12 @@ namespace Nova.CodeDOM
         /// </summary>
         public const string ParseTokenClose = "]]>";
 
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
-        }
-
         /// <summary>
-        /// Parse a <see cref="DocCDATA"/>.
+        /// Create a <see cref="DocCDATA"/>.
         /// </summary>
-        public static new DocCDATA Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DocCDATA(parser, parent);
-        }
+        public DocCDATA(string content)
+            : base(content)
+        { }
 
         /// <summary>
         /// Parse a <see cref="DocCDATA"/>.
@@ -73,6 +42,52 @@ namespace Nova.CodeDOM
                 _annotationFlags |= AnnotationFlags.NoEndTag;
                 parser.AttachMessage(this, "Start tag '<" + ParseToken + "' without matching end tag!", parser.LastToken);
             }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// The XML tag name for the documentation comment.
+        /// </summary>
+        public override string TagName
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="DocCDATA"/>.
+        /// </summary>
+        public static new DocCDATA Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new DocCDATA(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
+        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
+        {
+            DocText.AsTextText(writer, GetContentForDisplay(flags), flags | RenderFlags.NoTranslations);
+        }
+
+        protected override void AsTextEnd(CodeWriter writer, RenderFlags flags)
+        {
+            if (!MissingEndTag && !flags.HasFlag(RenderFlags.Description))
+                writer.Write(ParseTokenClose);
+        }
+
+        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
+        {
+            if (!flags.HasFlag(RenderFlags.Description) || MissingEndTag)
+                writer.Write("<" + ParseToken);
         }
 
         protected override bool ParseContent(Parser parser)
@@ -105,40 +120,5 @@ namespace Nova.CodeDOM
 
             return false;
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
-        {
-            if (!flags.HasFlag(RenderFlags.Description) || MissingEndTag)
-                writer.Write("<" + ParseToken);
-        }
-
-        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
-        {
-            DocText.AsTextText(writer, GetContentForDisplay(flags), flags | RenderFlags.NoTranslations);
-        }
-
-        protected override void AsTextEnd(CodeWriter writer, RenderFlags flags)
-        {
-            if (!MissingEndTag && !flags.HasFlag(RenderFlags.Description))
-                writer.Write(ParseTokenClose);
-        }
-
-        #endregion
     }
 }

@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Continue : Statement
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "continue";
 
         /// <summary>
         /// Create a <see cref="Continue"/>.
@@ -19,50 +22,12 @@ namespace Nova.CodeDOM
         public Continue()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "continue";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Continue"/>.
-        /// </summary>
-        public static Continue Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Continue(parser, parent);
-        }
-
         protected Continue(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             parser.NextToken();  // Move past 'continue'
             ParseTerminator(parser);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -80,6 +45,25 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="Continue"/>.
+        /// </summary>
+        public static Continue Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Continue(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
     }
 }

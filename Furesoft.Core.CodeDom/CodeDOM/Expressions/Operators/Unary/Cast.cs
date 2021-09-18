@@ -12,13 +12,27 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Cast : PreUnaryOperator
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = true;
+
+        /// <summary>
+        /// The token used to parse the end of the <see cref="Cast"/> operator.
+        /// </summary>
+        public const string ParseTokenEnd = ParseTokenEndGroup;
+
+        /// <summary>
+        /// The token used to parse the start of the <see cref="Cast"/> operator.
+        /// </summary>
+        public const string ParseTokenStart = ParseTokenStartGroup;
+
+        /// <summary>
+        /// The precedence of the operator.
+        /// </summary>
+        public const int Precedence = 200;
 
         protected Expression _type;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Cast"/> operator.
@@ -31,9 +45,38 @@ namespace Nova.CodeDOM
             Type = type;
         }
 
-        #endregion
+        protected Cast(Parser parser, CodeObject parent)
+                    : base(parser, parent, true)
+        {
+            parser.NextToken();  // Move past '('
+            SetField(ref _type, Parse(parser, this, false, ParseTokenEnd, ParseFlags.Type), false);
+            ParseExpectedToken(parser, ParseTokenEnd);  // Move past ')'
+            SetField(ref _expression, Parse(parser, this), false);
+            if (_expression != null)
+            {
+                // Move any EOL or Postfix annotations from the expression up to the parent if there are no
+                // parens in the way - this "normalizes" the annotations to the highest node on the line.
+                if (_expression.HasEOLOrPostAnnotations && parent != parser.GetNormalizationBlocker())
+                    MoveEOLAndPostAnnotations(_expression);
+            }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_type == null || (!_type.IsFirstOnLine && _type.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value && _type != null)
+                {
+                    _type.IsFirstOnLine = false;
+                    _type.IsSingleLine = true;
+                }
+            }
+        }
 
         /// <summary>
         /// The cast target type.
@@ -42,58 +85,6 @@ namespace Nova.CodeDOM
         {
             get { return _type; }
             set { SetField(ref _type, value, true); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="UnaryOperator"/>.
-        /// </summary>
-        public override string GetInternalName()
-        {
-            return NamePrefix + Modifiers.Explicit;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Cast clone = (Cast)base.Clone();
-            clone.CloneField(ref clone._type, _type);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of the <see cref="Cast"/> operator.
-        /// </summary>
-        public const string ParseTokenStart = ParseTokenStartGroup;
-
-        /// <summary>
-        /// The token used to parse the end of the <see cref="Cast"/> operator.
-        /// </summary>
-        public const string ParseTokenEnd = ParseTokenEndGroup;
-
-        /// <summary>
-        /// The precedence of the operator.
-        /// </summary>
-        public const int Precedence = 200;
-
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 300 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Expression parens uses 400)
-            Parser.AddOperatorParsePoint(ParseTokenStart, 300, Precedence, LeftAssociative, true, Parse);
         }
 
         /// <summary>
@@ -140,20 +131,22 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected Cast(Parser parser, CodeObject parent)
-            : base(parser, parent, true)
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
         {
-            parser.NextToken();  // Move past '('
-            SetField(ref _type, Parse(parser, this, false, ParseTokenEnd, ParseFlags.Type), false);
-            ParseExpectedToken(parser, ParseTokenEnd);  // Move past ')'
-            SetField(ref _expression, Parse(parser, this), false);
-            if (_expression != null)
-            {
-                // Move any EOL or Postfix annotations from the expression up to the parent if there are no
-                // parens in the way - this "normalizes" the annotations to the highest node on the line.
-                if (_expression.HasEOLOrPostAnnotations && parent != parser.GetNormalizationBlocker())
-                    MoveEOLAndPostAnnotations(_expression);
-            }
+            Cast clone = (Cast)base.Clone();
+            clone.CloneField(ref clone._type, _type);
+            return clone;
+        }
+
+        /// <summary>
+        /// The internal name of the <see cref="UnaryOperator"/>.
+        /// </summary>
+        public override string GetInternalName()
+        {
+            return NamePrefix + Modifiers.Explicit;
         }
 
         /// <summary>
@@ -164,30 +157,11 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
+        internal static new void AddParsePoints()
         {
-            get { return (base.IsSingleLine && (_type == null || (!_type.IsFirstOnLine && _type.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value && _type != null)
-                {
-                    _type.IsFirstOnLine = false;
-                    _type.IsSingleLine = true;
-                }
-            }
+            // Use a parse-priority of 300 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Expression parens uses 400)
+            Parser.AddOperatorParsePoint(ParseTokenStart, 300, Precedence, LeftAssociative, true, Parse);
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         protected override void AsTextOperator(CodeWriter writer, RenderFlags flags)
         {
@@ -197,7 +171,5 @@ namespace Nova.CodeDOM
                 _type.AsText(writer, passFlags);
             writer.Write(ParseTokenEnd);
         }
-
-        #endregion
     }
 }

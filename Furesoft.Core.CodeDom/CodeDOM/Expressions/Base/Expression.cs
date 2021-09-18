@@ -2,12 +2,11 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
+using Nova.Parsing;
+using Nova.Rendering;
 using System;
 using System.Collections;
 using System.Reflection;
-
-using Nova.Parsing;
-using Nova.Rendering;
 
 namespace Nova.CodeDOM
 {
@@ -22,9 +21,52 @@ namespace Nova.CodeDOM
     /// </remarks>
     public abstract class Expression : CodeObject
     {
+        /// <summary>
+        /// The token used to parse the end of a group.
+        /// </summary>
+        public const string ParseTokenEndGroup = ")";
+
+        /// <summary>
+        /// The token used to parse between expressions in a list.
+        /// </summary>
+        public const string ParseTokenSeparator = ",";
+
+        /// <summary>
+        /// The token used to parse the start of a group.
+        /// </summary>
+        public const string ParseTokenStartGroup = "(";
+
         protected Expression()
         {
             SetFormatFlag(FormatFlags.Grouping, HasParensDefault);
+        }
+
+        /// <summary>
+        /// Parse an <see cref="Expression"/>.
+        /// </summary>
+        protected Expression(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// True if the expression is surrounded by parens.
+        /// </summary>
+        public bool HasParens
+        {
+            get { return _formatFlags.HasFlag(FormatFlags.Grouping); }
+            set
+            {
+                SetFormatFlag(FormatFlags.Grouping, value);
+                _formatFlags |= FormatFlags.GroupingSet;
+            }
+        }
+
+        /// <summary>
+        /// True if the expression should have parens by default.
+        /// </summary>
+        public virtual bool HasParensDefault
+        {
+            get { return false; }  // Default is no parens
         }
 
         /// <summary>
@@ -48,11 +90,47 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if the closing paren or bracket is on a new line.
+        /// </summary>
+        public virtual bool IsEndFirstOnLine
+        {
+            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
+            set
+            {
+                SetFormatFlag(FormatFlags.InfixNewLine, value);
+                if (value)
+                    _formatFlags |= FormatFlags.NewLinesSet;
+            }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return HasFirstOnLineAnnotations; }
+        }
+
+        /// <summary>
         /// True if the expression evaluates to a delegate, or unresolved type or a <see cref="TypeParameterRef"/>.
         /// </summary>
         public virtual bool IsPossibleDelegateType
         {
             get { return IsDelegateType; }
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && !IsEndFirstOnLine); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value)
+                    IsEndFirstOnLine = false;
+            }
         }
 
         /// <summary>
@@ -277,62 +355,6 @@ namespace Nova.CodeDOM
         {
             return new Literal(value);
         }
-
-        /// <summary>
-        /// Get the expression on the left of the left-most <see cref="Dot"/> operator.
-        /// </summary>
-        public virtual Expression FirstPrefix()
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// Get the delegate parameters if the expression evaluates to a delegate type.
-        /// </summary>
-        public virtual ICollection GetDelegateParameters()
-        {
-            TypeRefBase typeRefBase = SkipPrefixes() as TypeRefBase;
-            return (typeRefBase != null ? typeRefBase.GetDelegateParameters() : null);
-        }
-
-        /// <summary>
-        /// Get the delegate return type if the expression evaluates to a delegate type.
-        /// </summary>
-        public virtual TypeRefBase GetDelegateReturnType()
-        {
-            TypeRefBase typeRefBase = SkipPrefixes() as TypeRefBase;
-            return (typeRefBase != null ? typeRefBase.GetDelegateReturnType() : null);
-        }
-
-        /// <summary>
-        /// Get the expression on the right of the right-most <see cref="Lookup"/> or <see cref="Dot"/> operator (bypass any '::' and '.' prefixes).
-        /// </summary>
-        public virtual Expression SkipPrefixes()
-        {
-            return this;
-        }
-
-        /// <summary>
-        /// The token used to parse the end of a group.
-        /// </summary>
-        public const string ParseTokenEndGroup = ")";
-
-        /// <summary>
-        /// The token used to parse between expressions in a list.
-        /// </summary>
-        public const string ParseTokenSeparator = ",";
-
-        /// <summary>
-        /// The token used to parse the start of a group.
-        /// </summary>
-        public const string ParseTokenStartGroup = "(";
-
-        /// <summary>
-        /// Parse an <see cref="Expression"/>.
-        /// </summary>
-        protected Expression(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
 
         /// <summary>
         /// Parse an expression, stopping when default terminators, or the specified terminators, or a higher-precedence
@@ -730,98 +752,6 @@ namespace Nova.CodeDOM
             return (comment is Comment);
         }
 
-        /// <summary>
-        /// Move any comments from the specified <see cref="Token"/> to the left-most sub-expression.
-        /// </summary>
-        public virtual void MoveCommentsToLeftMost(Token token, bool skipParens)
-        {
-            MoveAllComments(token);
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 400 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300)
-            Parser.AddParsePoint(ParseTokenStartGroup, 400, ParseParenthesizedExpression);
-        }
-
-        /// <summary>
-        /// True if the expression is surrounded by parens.
-        /// </summary>
-        public bool HasParens
-        {
-            get { return _formatFlags.HasFlag(FormatFlags.Grouping); }
-            set
-            {
-                SetFormatFlag(FormatFlags.Grouping, value);
-                _formatFlags |= FormatFlags.GroupingSet;
-            }
-        }
-
-        /// <summary>
-        /// True if the expression should have parens by default.
-        /// </summary>
-        public virtual bool HasParensDefault
-        {
-            get { return false; }  // Default is no parens
-        }
-
-        /// <summary>
-        /// True if the closing paren or bracket is on a new line.
-        /// </summary>
-        public virtual bool IsEndFirstOnLine
-        {
-            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
-            set
-            {
-                SetFormatFlag(FormatFlags.InfixNewLine, value);
-                if (value)
-                    _formatFlags |= FormatFlags.NewLinesSet;
-            }
-        }
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return HasFirstOnLineAnnotations; }
-        }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && !IsEndFirstOnLine); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value)
-                    IsEndFirstOnLine = false;
-            }
-        }
-
-        /// <summary>
-        /// Format an expression assigned as an argument to another code object (turns off any parentheses).
-        /// </summary>
-        public void FormatAsArgument()
-        {
-            // Clear the grouping (parentheses) flag regardless of if it was manually set
-            _formatFlags &= ~(FormatFlags.Grouping | FormatFlags.GroupingSet);
-        }
-
-        /// <summary>
-        /// Default format the code object.
-        /// </summary>
-        protected internal override void DefaultFormat()
-        {
-            base.DefaultFormat();
-
-            // Default the parens if they haven't been explicitly set
-            if (!IsGroupingSet)
-                _formatFlags = ((_formatFlags & ~FormatFlags.Grouping) | (HasParensDefault ? FormatFlags.Grouping : 0));
-        }
-
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             int newLines = NewLines;
@@ -877,5 +807,74 @@ namespace Nova.CodeDOM
         }
 
         public abstract void AsTextExpression(CodeWriter writer, RenderFlags flags);
+
+        /// <summary>
+        /// Get the expression on the left of the left-most <see cref="Dot"/> operator.
+        /// </summary>
+        public virtual Expression FirstPrefix()
+        {
+            return this;
+        }
+
+        /// <summary>
+        /// Format an expression assigned as an argument to another code object (turns off any parentheses).
+        /// </summary>
+        public void FormatAsArgument()
+        {
+            // Clear the grouping (parentheses) flag regardless of if it was manually set
+            _formatFlags &= ~(FormatFlags.Grouping | FormatFlags.GroupingSet);
+        }
+
+        /// <summary>
+        /// Get the delegate parameters if the expression evaluates to a delegate type.
+        /// </summary>
+        public virtual ICollection GetDelegateParameters()
+        {
+            TypeRefBase typeRefBase = SkipPrefixes() as TypeRefBase;
+            return (typeRefBase != null ? typeRefBase.GetDelegateParameters() : null);
+        }
+
+        /// <summary>
+        /// Get the delegate return type if the expression evaluates to a delegate type.
+        /// </summary>
+        public virtual TypeRefBase GetDelegateReturnType()
+        {
+            TypeRefBase typeRefBase = SkipPrefixes() as TypeRefBase;
+            return (typeRefBase != null ? typeRefBase.GetDelegateReturnType() : null);
+        }
+
+        /// <summary>
+        /// Move any comments from the specified <see cref="Token"/> to the left-most sub-expression.
+        /// </summary>
+        public virtual void MoveCommentsToLeftMost(Token token, bool skipParens)
+        {
+            MoveAllComments(token);
+        }
+
+        /// <summary>
+        /// Get the expression on the right of the right-most <see cref="Lookup"/> or <see cref="Dot"/> operator (bypass any '::' and '.' prefixes).
+        /// </summary>
+        public virtual Expression SkipPrefixes()
+        {
+            return this;
+        }
+
+        internal static void AddParsePoints()
+        {
+            // Use a parse-priority of 400 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300)
+            Parser.AddParsePoint(ParseTokenStartGroup, 400, ParseParenthesizedExpression);
+        }
+
+        /// <summary>
+        /// Default format the code object.
+        /// </summary>
+        protected internal override void DefaultFormat()
+        {
+            base.DefaultFormat();
+
+            // Default the parens if they haven't been explicitly set
+            if (!IsGroupingSet)
+                _formatFlags = ((_formatFlags & ~FormatFlags.Grouping) | (HasParensDefault ? FormatFlags.Grouping : 0));
+        }
     }
 }

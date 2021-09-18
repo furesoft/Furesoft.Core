@@ -17,39 +17,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Assignment : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create an <see cref="Assignment"/> with the specified left and right expressions.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public Assignment(Expression left, Expression right)
-            : base(left, right)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        /// <summary>
-        /// True if the expression is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            // The result of an assignment is never const, because the lvalue must be a variable
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = false;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -62,14 +33,39 @@ namespace Nova.CodeDOM
         public const int Precedence = 500;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create an <see cref="Assignment"/> with the specified left and right expressions.
         /// </summary>
-        public const bool LeftAssociative = false;
+        public Assignment(Expression left, Expression right)
+            : base(left, right)
+        { }
 
-        internal static new void AddParsePoints()
+        protected Assignment(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// True if the expression should have parens by default.
+        /// </summary>
+        public override bool HasParensDefault
         {
-            // Use a parse-priority of 300 (FieldDecl uses 0, LocalDecl uses 100, MultiEnumMemberDecl uses 200)
-            Parser.AddOperatorParsePoint(ParseToken, 300, Precedence, LeftAssociative, false, Parse);
+            get { return false; }  // No parens for assignments by default
+        }
+
+        /// <summary>
+        /// True if the expression is const.
+        /// </summary>
+        public override bool IsConst
+        {
+            // The result of an assignment is never const, because the lvalue must be a variable
+            get { return false; }
+        }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -80,10 +76,6 @@ namespace Nova.CodeDOM
             return new Assignment(parser, parent);
         }
 
-        protected Assignment(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -92,18 +84,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the expression should have parens by default.
-        /// </summary>
-        public override bool HasParensDefault
+        internal static new void AddParsePoints()
         {
-            get { return false; }  // No parens for assignments by default
+            // Use a parse-priority of 300 (FieldDecl uses 0, LocalDecl uses 100, MultiEnumMemberDecl uses 200)
+            Parser.AddOperatorParsePoint(ParseToken, 300, Precedence, LeftAssociative, false, Parse);
         }
-
-        #endregion
     }
 }

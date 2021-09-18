@@ -14,18 +14,13 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class BinaryOperator : Operator
     {
-        #region /* FIELDS */
-
         protected Expression _left;
-        protected Expression _right;
 
         // If the operator is overloaded, a hidden reference (OperatorRef) to the overloaded
         // operator declaration is stored here.
         protected SymbolicRef _operatorRef;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected Expression _right;
 
         protected BinaryOperator(Expression left, Expression right)
         {
@@ -36,75 +31,8 @@ namespace Nova.CodeDOM
         protected BinaryOperator()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The left-side <see cref="Expression"/>.
-        /// </summary>
-        public Expression Left
-        {
-            get { return _left; }
-            set { SetField(ref _left, value, true); }
-        }
-
-        /// <summary>
-        /// The right-side <see cref="Expression"/>.
-        /// </summary>
-        public Expression Right
-        {
-            get { return _right; }
-            set { SetField(ref _right, value, true); }
-        }
-
-        /// <summary>
-        /// A hidden OperatorRef to an overloaded operator declaration (if any).
-        /// </summary>
-        public override SymbolicRef HiddenRef
-        {
-            get { return _operatorRef; }
-        }
-
-        /// <summary>
-        /// True if the expression is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            // If both sides are const, then the result will be const
-            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="BinaryOperator"/>.
-        /// </summary>
-        public virtual string GetInternalName()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            BinaryOperator clone = (BinaryOperator)base.Clone();
-            clone.CloneField(ref clone._left, _left);
-            clone.CloneField(ref clone._right, _right);
-            clone.CloneField(ref clone._operatorRef, _operatorRef);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
         protected BinaryOperator(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             // Save the starting token of the expression for later
             Token startingToken = parser.ParentStartingToken;
@@ -174,6 +102,109 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if the expression should have parens by default.
+        /// </summary>
+        public override bool HasParensDefault
+        {
+            get { return true; }  // Default to using parens for binary operators
+        }
+
+        /// <summary>
+        /// A hidden OperatorRef to an overloaded operator declaration (if any).
+        /// </summary>
+        public override SymbolicRef HiddenRef
+        {
+            get { return _operatorRef; }
+        }
+
+        /// <summary>
+        /// True if the expression is const.
+        /// </summary>
+        public override bool IsConst
+        {
+            // If both sides are const, then the result will be const
+            get { return (_left != null && _left.IsConst && _right != null && _right.IsConst); }
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get
+            {
+                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
+                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_left != null)
+                    _left.IsSingleLine = value;
+                if (_right != null)
+                    _right.IsSingleLine = value;
+            }
+        }
+
+        /// <summary>
+        /// The left-side <see cref="Expression"/>.
+        /// </summary>
+        public Expression Left
+        {
+            get { return _left; }
+            set { SetField(ref _left, value, true); }
+        }
+
+        /// <summary>
+        /// The right-side <see cref="Expression"/>.
+        /// </summary>
+        public Expression Right
+        {
+            get { return _right; }
+            set { SetField(ref _right, value, true); }
+        }
+
+        public override void AsText(CodeWriter writer, RenderFlags flags)
+        {
+            // Increase the indent level for any binary operator expressions that wrap, unless the parent
+            // is the same operator (required for right-associative operators, such as Assignment - left
+            // associative operators would only indent once anyway, due to the drawing order).
+            base.AsText(writer, flags | (_parent == null || _parent.GetType() != GetType() ? RenderFlags.IncreaseIndent : 0));
+        }
+
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            if (_left != null)
+                _left.AsText(writer, passFlags | RenderFlags.IsPrefix);
+            UpdateLineCol(writer, flags);
+            AsTextOperator(writer, flags);
+            AsTextInfixComments(writer, 0, flags | RenderFlags.PrefixSpace);
+            if (_right != null)
+                _right.AsText(writer, passFlags | RenderFlags.PrefixSpace);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            BinaryOperator clone = (BinaryOperator)base.Clone();
+            clone.CloneField(ref clone._left, _left);
+            clone.CloneField(ref clone._right, _right);
+            clone.CloneField(ref clone._operatorRef, _operatorRef);
+            return clone;
+        }
+
+        /// <summary>
+        /// The internal name of the <see cref="BinaryOperator"/>.
+        /// </summary>
+        public virtual string GetInternalName()
+        {
+            return null;
+        }
+
+        /// <summary>
         /// Move any comments from the specified <see cref="Token"/> to the left-most sub-expression.
         /// </summary>
         public override void MoveCommentsToLeftMost(Token token, bool skipParens)
@@ -182,18 +213,6 @@ namespace Nova.CodeDOM
                 MoveAllComments(token);
             else
                 _left.MoveCommentsToLeftMost(token, false);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the expression should have parens by default.
-        /// </summary>
-        public override bool HasParensDefault
-        {
-            get { return true; }  // Default to using parens for binary operators
         }
 
         protected override void DefaultFormatField(CodeObject field)
@@ -231,51 +250,5 @@ namespace Nova.CodeDOM
                 }
             }
         }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_left == null || (!_left.IsFirstOnLine && _left.IsSingleLine))
-                    && (_right == null || (!_right.IsFirstOnLine && _right.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_left != null)
-                    _left.IsSingleLine = value;
-                if (_right != null)
-                    _right.IsSingleLine = value;
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsText(CodeWriter writer, RenderFlags flags)
-        {
-            // Increase the indent level for any binary operator expressions that wrap, unless the parent
-            // is the same operator (required for right-associative operators, such as Assignment - left
-            // associative operators would only indent once anyway, due to the drawing order).
-            base.AsText(writer, flags | (_parent == null || _parent.GetType() != GetType() ? RenderFlags.IncreaseIndent : 0));
-        }
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            if (_left != null)
-                _left.AsText(writer, passFlags | RenderFlags.IsPrefix);
-            UpdateLineCol(writer, flags);
-            AsTextOperator(writer, flags);
-            AsTextInfixComments(writer, 0, flags | RenderFlags.PrefixSpace);
-            if (_right != null)
-                _right.AsText(writer, passFlags | RenderFlags.PrefixSpace);
-        }
-
-        #endregion
     }
 }

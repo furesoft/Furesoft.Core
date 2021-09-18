@@ -12,17 +12,25 @@ namespace Nova.CodeDOM
     /// </summary>
     /// <remarks>
     /// Possible formats:
-    /// 
+    ///
     /// New Object:
     ///    new non-array-type(args)           // Type with constructor call (args is optional)
     /// With initializers (3.0):
     ///    new non-array-type(args) { init }  // Type/constructor call with object or collection initializer (args and init are optional)
     ///    new non-array-type { init }        // Type with default constructor with object or collection initializer (init is optional)
-    /// 
+    ///
     /// </remarks>
     public class NewObject : NewOperator
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the end of the arguments.
+        /// </summary>
+        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
+
+        /// <summary>
+        /// The token used to parse the start of the arguments.
+        /// </summary>
+        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
 
         // A NewObject has both a TypeRef and an implied, hidden ConstructorRef.  The syntax "new List<int>()" is actually
         // short-hand for "new List<int>.List()".  We store both references, display the TypeRef name, show the 'new' keyword
@@ -30,10 +38,6 @@ namespace Nova.CodeDOM
         // in the tooltip.  This is necessary to handle type aliases, because the TypeRef and ConstructorRef will have different
         // names in this case, and the aliased type can have type arguments while the alias itself can't.
         protected SymbolicRef _constructorRef;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="NewObject"/>.
@@ -64,52 +68,6 @@ namespace Nova.CodeDOM
             : base(typeDecl.CreateRef(), parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The hidden <see cref="ConstructorRef"/> (or <see cref="UnresolvedRef"/>) that represents the constructor being called.
-        /// Will be null if the constructor is implied, such as for the default constructor of a value type.
-        /// </summary>
-        public override SymbolicRef HiddenRef
-        {
-            get { return _constructorRef; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Determine the type of the parameter for the specified argument index.
-        /// </summary>
-        public override TypeRefBase GetParameterType(int argumentIndex)
-        {
-            if (_constructorRef is ConstructorRef)
-            {
-                TypeRefBase parameterTypeRef = MethodRef.GetParameterType(_constructorRef.Reference, argumentIndex, _expression);
-                if (parameterTypeRef != null)
-                    return parameterTypeRef;
-            }
-            // By default, assume we're indexing an array type
-            return TypeRef.IntRef;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of the arguments.
-        /// </summary>
-        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
-
-        /// <summary>
-        /// The token used to parse the end of the arguments.
-        /// </summary>
-        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
-
         /// <summary>
         /// Parse a <see cref="NewObject"/>.
         /// </summary>
@@ -135,16 +93,13 @@ namespace Nova.CodeDOM
             ParseInitializer(parser, this);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// The hidden <see cref="ConstructorRef"/> (or <see cref="UnresolvedRef"/>) that represents the constructor being called.
+        /// Will be null if the constructor is implied, such as for the default constructor of a value type.
+        /// </summary>
+        public override SymbolicRef HiddenRef
         {
-            UpdateLineCol(writer, flags);
-            writer.Write(ParseToken);
-            if (_expression != null)
-                _expression.AsText(writer, flags | RenderFlags.PrefixSpace);
+            get { return _constructorRef; }
         }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
@@ -153,9 +108,19 @@ namespace Nova.CodeDOM
             base.AsTextExpression(writer, flags | (_initializer != null ? RenderFlags.NoParensIfEmpty : 0));
         }
 
-        protected override void AsTextStartArguments(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Determine the type of the parameter for the specified argument index.
+        /// </summary>
+        public override TypeRefBase GetParameterType(int argumentIndex)
         {
-            writer.Write(ParseTokenStart);
+            if (_constructorRef is ConstructorRef)
+            {
+                TypeRefBase parameterTypeRef = MethodRef.GetParameterType(_constructorRef.Reference, argumentIndex, _expression);
+                if (parameterTypeRef != null)
+                    return parameterTypeRef;
+            }
+            // By default, assume we're indexing an array type
+            return TypeRef.IntRef;
         }
 
         protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)
@@ -165,6 +130,17 @@ namespace Nova.CodeDOM
             writer.Write(ParseTokenEnd);
         }
 
-        #endregion
+        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+            writer.Write(ParseToken);
+            if (_expression != null)
+                _expression.AsText(writer, flags | RenderFlags.PrefixSpace);
+        }
+
+        protected override void AsTextStartArguments(CodeWriter writer, RenderFlags flags)
+        {
+            writer.Write(ParseTokenStart);
+        }
     }
 }

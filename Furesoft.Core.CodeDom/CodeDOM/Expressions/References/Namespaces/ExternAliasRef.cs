@@ -10,8 +10,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ExternAliasRef : SymbolicRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="ExternAliasRef"/>.
         /// </summary>
@@ -26,9 +24,21 @@ namespace Nova.CodeDOM
             : base(externAlias, false)
         { }
 
-        #endregion
+        /// <summary>
+        /// The referenced ExternAlias code object.
+        /// </summary>
+        public ExternAlias ExternAlias
+        {
+            get { return (ExternAlias)_reference; }
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the extern alias is 'global'.
+        /// </summary>
+        public bool IsGlobal
+        {
+            get { return ((ExternAlias)_reference).IsGlobal; }
+        }
 
         /// <summary>
         /// The name of the <see cref="ExternAliasRef"/>.
@@ -45,23 +55,5 @@ namespace Nova.CodeDOM
         {
             get { return ((ExternAlias)_reference).RootNamespaceRef.Reference as RootNamespace; }
         }
-
-        /// <summary>
-        /// True if the extern alias is 'global'.
-        /// </summary>
-        public bool IsGlobal
-        {
-            get { return ((ExternAlias)_reference).IsGlobal; }
-        }
-
-        /// <summary>
-        /// The referenced ExternAlias code object.
-        /// </summary>
-        public ExternAlias ExternAlias
-        {
-            get { return (ExternAlias)_reference; }
-        }
-
-        #endregion
     }
 }

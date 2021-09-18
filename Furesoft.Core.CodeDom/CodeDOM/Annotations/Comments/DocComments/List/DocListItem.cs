@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocListItem : DocComment
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "item";
 
         /// <summary>
         /// Create a <see cref="DocListItem"/>.
@@ -29,9 +32,21 @@ namespace Nova.CodeDOM
             Add("\n    ");
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="DocListItem"/>.
+        /// </summary>
+        public DocListItem(Parser parser, CodeObject parent)
+        {
+            ParseTag(parser, parent);  // Ignore any attributes
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// The XML tag name for the documentation comment.
@@ -39,20 +54,6 @@ namespace Nova.CodeDOM
         public override string TagName
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "item";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         /// <summary>
@@ -63,26 +64,9 @@ namespace Nova.CodeDOM
             return new DocListItem(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocListItem"/>.
-        /// </summary>
-        public DocListItem(Parser parser, CodeObject parent)
+        internal static void AddParsePoints()
         {
-            ParseTag(parser, parent);  // Ignore any attributes
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return false; }
-        }
-
-        #endregion
     }
 }

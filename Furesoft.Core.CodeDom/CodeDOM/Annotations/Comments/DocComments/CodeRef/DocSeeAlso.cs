@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocSeeAlso : DocCodeRefBase
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "seealso";
 
         /// <summary>
         /// Create a <see cref="DocSeeAlso"/>.
@@ -20,9 +23,12 @@ namespace Nova.CodeDOM
             : base(codeRef, (string)null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Parse a <see cref="DocSeeAlso"/>.
+        /// </summary>
+        public DocSeeAlso(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// The XML tag name for the documentation comment.
@@ -30,20 +36,6 @@ namespace Nova.CodeDOM
         public override string TagName
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "seealso";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         /// <summary>
@@ -54,13 +46,9 @@ namespace Nova.CodeDOM
             return new DocSeeAlso(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocSeeAlso"/>.
-        /// </summary>
-        public DocSeeAlso(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
+        internal static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
     }
 }

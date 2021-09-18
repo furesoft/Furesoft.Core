@@ -12,17 +12,16 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Goto : Statement
     {
-        #region /* FIELDS */
-
-        // Should evaluate to a GotoTargetRef (LabelRef or a SwitchItemRef) or an UnresolvedRef
-        protected SymbolicRef _target;
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "goto";
 
         // The constant expression used by a "goto case ..."
         protected Expression _constantExpression;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        // Should evaluate to a GotoTargetRef (LabelRef or a SwitchItemRef) or an UnresolvedRef
+        protected SymbolicRef _target;
 
         /// <summary>
         /// Create a <see cref="Goto"/> to a <see cref="Label"/>.
@@ -57,99 +56,8 @@ namespace Nova.CodeDOM
             Target = new UnresolvedRef(Case.ParseToken + " " + _constantExpression.AsString());
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The target <see cref="GotoTargetRef"/> (<see cref="LabelRef"/> or <see cref="SwitchItemRef"/>) or <see cref="UnresolvedRef"/>.
-        /// </summary>
-        public SymbolicRef Target
-        {
-            get { return _target; }
-            set { SetField(ref _target, value, true); }
-        }
-
-        /// <summary>
-        /// The constant expression if this is a "goto case ...", otherwise null.
-        /// </summary>
-        public Expression ConstantExpression
-        {
-            get { return _constantExpression; }
-            set { SetField(ref _constantExpression, value, true); }
-        }
-
-        /// <summary>
-        /// The hidden GotoTargetRef (or UnresolvedRef) that represents the goto target if we have a "goto case ...".
-        /// </summary>
-        public override SymbolicRef HiddenRef
-        {
-            get { return (_constantExpression != null ? _target : null); }
-        }
-
-        /// <summary>
-        /// True if this is a 'goto case ...'.
-        /// </summary>
-        public bool IsGotoCase
-        {
-            get { return (_constantExpression != null); }
-        }
-
-        /// <summary>
-        /// True if this is a 'goto default'.
-        /// </summary>
-        public bool IsGotoDefault
-        {
-            get { return (_target.AsString() == Default.ParseToken); }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Goto clone = (Goto)base.Clone();
-            clone.CloneField(ref clone._target, _target);
-            clone.CloneField(ref clone._constantExpression, _constantExpression);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "goto";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Goto"/>.
-        /// </summary>
-        public static Goto Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Goto(parser, parent);
-        }
-
         protected Goto(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             parser.NextToken();  // Move past 'goto'
             Token startToken = parser.Token;
@@ -178,9 +86,14 @@ namespace Nova.CodeDOM
             ParseTerminator(parser);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// The constant expression if this is a "goto case ...", otherwise null.
+        /// </summary>
+        public Expression ConstantExpression
+        {
+            get { return _constantExpression; }
+            set { SetField(ref _constantExpression, value, true); }
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
@@ -196,6 +109,30 @@ namespace Nova.CodeDOM
         public override bool HasTerminatorDefault
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// The hidden GotoTargetRef (or UnresolvedRef) that represents the goto target if we have a "goto case ...".
+        /// </summary>
+        public override SymbolicRef HiddenRef
+        {
+            get { return (_constantExpression != null ? _target : null); }
+        }
+
+        /// <summary>
+        /// True if this is a 'goto case ...'.
+        /// </summary>
+        public bool IsGotoCase
+        {
+            get { return (_constantExpression != null); }
+        }
+
+        /// <summary>
+        /// True if this is a 'goto default'.
+        /// </summary>
+        public bool IsGotoDefault
+        {
+            get { return (_target.AsString() == Default.ParseToken); }
         }
 
         /// <summary>
@@ -215,9 +152,46 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// The target <see cref="GotoTargetRef"/> (<see cref="LabelRef"/> or <see cref="SwitchItemRef"/>) or <see cref="UnresolvedRef"/>.
+        /// </summary>
+        public SymbolicRef Target
+        {
+            get { return _target; }
+            set { SetField(ref _target, value, true); }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="Goto"/>.
+        /// </summary>
+        public static Goto Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Goto(parser, parent);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Goto clone = (Goto)base.Clone();
+            clone.CloneField(ref clone._target, _target);
+            clone.CloneField(ref clone._constantExpression, _constantExpression);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
@@ -231,7 +205,5 @@ namespace Nova.CodeDOM
             else
                 _target.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

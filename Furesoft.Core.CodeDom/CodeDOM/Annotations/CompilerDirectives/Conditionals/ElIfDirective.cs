@@ -12,7 +12,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ElIfDirective : ConditionalExpressionDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "elif";
 
         /// <summary>
         /// Create an <see cref="ElIfDirective"/> with the specified <see cref="Expression"/>.
@@ -21,18 +24,19 @@ namespace Nova.CodeDOM
             : base(expression)
         { }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Parse an <see cref="ElIfDirective"/>.
+        /// </summary>
+        public ElIfDirective(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
-        /// The token used to parse the code object.
+        /// The keyword associated with the compiler directive (if any).
         /// </summary>
-        public new const string ParseToken = "elif";
-
-        internal static void AddParsePoints()
+        public override string DirectiveKeyword
         {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -43,25 +47,9 @@ namespace Nova.CodeDOM
             return new ElIfDirective(parser, parent);
         }
 
-        /// <summary>
-        /// Parse an <see cref="ElIfDirective"/>.
-        /// </summary>
-        public ElIfDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
-        /// The keyword associated with the compiler directive (if any).
-        /// </summary>
-        public override string DirectiveKeyword
+        internal static void AddParsePoints()
         {
-            get { return ParseToken; }
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
-
-        #endregion
     }
 }

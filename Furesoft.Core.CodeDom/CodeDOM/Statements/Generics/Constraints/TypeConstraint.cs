@@ -13,16 +13,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class TypeConstraint : TypeParameterConstraint
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// Should evaluate to a reference to a class type, interface type, or type parameter type.
         /// </summary>
         protected Expression _type;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="TypeConstraint"/> instance.
@@ -33,37 +27,6 @@ namespace Nova.CodeDOM
             Type = type;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The type <see cref="Expression"/>.
-        /// </summary>
-        public Expression Type
-        {
-            get { return _type; }
-            set { SetField(ref _type, value, true); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            TypeConstraint clone = (TypeConstraint)base.Clone();
-            clone.CloneField(ref clone._type, _type);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// Parse a <see cref="TypeConstraint"/>.
         /// </summary>
@@ -72,10 +35,6 @@ namespace Nova.CodeDOM
         {
             SetField(ref _type, Expression.Parse(parser, this), true);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// Determines if the code object only requires a single line for display.
@@ -94,15 +53,28 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The type <see cref="Expression"/>.
+        /// </summary>
+        public Expression Type
+        {
+            get { return _type; }
+            set { SetField(ref _type, value, true); }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            TypeConstraint clone = (TypeConstraint)base.Clone();
+            clone.CloneField(ref clone._type, _type);
+            return clone;
+        }
 
         protected override void AsTextConstraint(CodeWriter writer, RenderFlags flags)
         {
             _type.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

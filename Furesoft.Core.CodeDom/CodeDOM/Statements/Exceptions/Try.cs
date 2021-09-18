@@ -12,14 +12,13 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Try : BlockStatement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "try";
 
         protected ChildList<Catch> _catches;
         protected Finally _finally;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Try"/>.
@@ -52,108 +51,8 @@ namespace Nova.CodeDOM
             : this(body, null, catches)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// A collection of <see cref="Catch"/>es.
-        /// </summary>
-        public ChildList<Catch> Catches
-        {
-            get { return _catches; }
-        }
-
-        /// <summary>
-        /// True if there are any <see cref="Catch"/>es.
-        /// </summary>
-        public bool HasCatches
-        {
-            get { return (_catches != null && _catches.Count > 0); }
-        }
-
-        /// <summary>
-        /// An optional <see cref="Finally"/>.
-        /// </summary>
-        public Finally Finally
-        {
-            get { return _finally; }
-            set { SetField(ref _finally, value, false); }
-        }
-
-        /// <summary>
-        /// True if there is a <see cref="Finally"/>.
-        /// </summary>
-        public bool HasFinally
-        {
-            get { return (_finally != null); }
-        }
-
-        /// <summary>
-        /// True for multi-part statements, such as try/catch/finally or if/else.
-        /// </summary>
-        public override bool IsMultiPart
-        {
-            get { return (HasCatches || HasFinally); }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create the list of <see cref="Catch"/>s, or return the existing one.
-        /// </summary>
-        public ChildList<Catch> CreateCatches()
-        {
-            if (_catches == null)
-                _catches = new ChildList<Catch>(this);
-            return _catches;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Try clone = (Try)base.Clone();
-            clone._catches = ChildListHelpers.Clone(_catches, clone);
-            clone.CloneField(ref clone._finally, _finally);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "try";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Try"/>.
-        /// </summary>
-        public static Try Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Try(parser, parent);
-        }
-
         protected Try(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             // Flush any unused objects first, so that they don't interfere with skipping
             // compiler directives below, or the parsing of any 'else' part.
@@ -188,9 +87,22 @@ namespace Nova.CodeDOM
                 parser.MoveUnusedToPostUnused();
         }
 
-        #endregion
+        /// <summary>
+        /// A collection of <see cref="Catch"/>es.
+        /// </summary>
+        public ChildList<Catch> Catches
+        {
+            get { return _catches; }
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// An optional <see cref="Finally"/>.
+        /// </summary>
+        public Finally Finally
+        {
+            get { return _finally; }
+            set { SetField(ref _finally, value, false); }
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -198,6 +110,30 @@ namespace Nova.CodeDOM
         public override bool HasArgument
         {
             get { return false; }
+        }
+
+        /// <summary>
+        /// True if there are any <see cref="Catch"/>es.
+        /// </summary>
+        public bool HasCatches
+        {
+            get { return (_catches != null && _catches.Count > 0); }
+        }
+
+        /// <summary>
+        /// True if there is a <see cref="Finally"/>.
+        /// </summary>
+        public bool HasFinally
+        {
+            get { return (_finally != null); }
+        }
+
+        /// <summary>
+        /// True for multi-part statements, such as try/catch/finally or if/else.
+        /// </summary>
+        public override bool IsMultiPart
+        {
+            get { return (HasCatches || HasFinally); }
         }
 
         /// <summary>
@@ -226,9 +162,47 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Parse a <see cref="Try"/>.
+        /// </summary>
+        public static Try Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Try(parser, parent);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Try clone = (Try)base.Clone();
+            clone._catches = ChildListHelpers.Clone(_catches, clone);
+            clone.CloneField(ref clone._finally, _finally);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create the list of <see cref="Catch"/>s, or return the existing one.
+        /// </summary>
+        public ChildList<Catch> CreateCatches()
+        {
+            if (_catches == null)
+                _catches = new ChildList<Catch>(this);
+            return _catches;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
         {
@@ -241,7 +215,5 @@ namespace Nova.CodeDOM
             if (HasFinally && !flags.HasFlag(RenderFlags.Description))
                 _finally.AsText(writer, flags | RenderFlags.PrefixSpace);
         }
-
-        #endregion
     }
 }

@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ThisRef : SelfRef
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "this";
 
         /// <summary>
         /// Create a <see cref="BaseRef"/>.
@@ -27,9 +30,19 @@ namespace Nova.CodeDOM
             : base(false)
         { }
 
-        #endregion
+        protected ThisRef(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            parser.NextToken();  // Move past 'this'
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The keyword associated with the <see cref="SelfRef"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The name of the <see cref="SymbolicRef"/>.
@@ -52,22 +65,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "this";
-
-        internal static new void AddParsePoints()
-        {
-            // When 'this' is used for constructor initializers, it's not at Block scope, and is
-            // parsed by the ConstructorInitializer base class of ThisInitializer instead of here.
-            Parser.AddParsePoint(ParseToken, Parse);
-        }
-
         /// <summary>
         /// Parse a <see cref="ThisRef"/>.
         /// </summary>
@@ -86,24 +83,11 @@ namespace Nova.CodeDOM
             return new ThisRef(parser, parent);
         }
 
-        protected ThisRef(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static new void AddParsePoints()
         {
-            parser.NextToken();  // Move past 'this'
+            // When 'this' is used for constructor initializers, it's not at Block scope, and is
+            // parsed by the ConstructorInitializer base class of ThisInitializer instead of here.
+            Parser.AddParsePoint(ParseToken, Parse);
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
-        /// The keyword associated with the <see cref="SelfRef"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
     }
 }

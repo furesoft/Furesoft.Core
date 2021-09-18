@@ -12,9 +12,14 @@ namespace Nova.CodeDOM
     public interface ITypeParameters
     {
         /// <summary>
-        /// The list of <see cref="TypeParameter"/>s.
+        /// The list of <see cref="ConstraintClause"/>s.
         /// </summary>
-        ChildList<TypeParameter> TypeParameters { get; }
+        ChildList<ConstraintClause> ConstraintClauses { get; }
+
+        /// <summary>
+        /// True if there are any <see cref="ConstraintClause"/>s.
+        /// </summary>
+        bool HasConstraintClauses { get; }
 
         /// <summary>
         /// True if there are any <see cref="TypeParameter"/>s.
@@ -27,9 +32,14 @@ namespace Nova.CodeDOM
         int TypeParameterCount { get; }
 
         /// <summary>
-        /// Create the list of <see cref="TypeParameter"/>s, or return the existing one.
+        /// The list of <see cref="TypeParameter"/>s.
         /// </summary>
-        ChildList<TypeParameter> CreateTypeParameters();
+        ChildList<TypeParameter> TypeParameters { get; }
+
+        /// <summary>
+        /// Add one or more <see cref="ConstraintClause"/>s.
+        /// </summary>
+        void AddConstraintClauses(params ConstraintClause[] constraintClause);
 
         /// <summary>
         /// Add one or more <see cref="TypeParameter"/>s.
@@ -37,28 +47,18 @@ namespace Nova.CodeDOM
         void AddTypeParameters(params TypeParameter[] typeParameters);
 
         /// <summary>
-        /// Get any constraints for the specified <see cref="TypeParameter"/>.
-        /// </summary>
-        List<TypeParameterConstraint> GetTypeParameterConstraints(TypeParameter typeParameter);
-
-        /// <summary>
-        /// The list of <see cref="ConstraintClause"/>s.
-        /// </summary>
-        ChildList<ConstraintClause> ConstraintClauses { get; }
-
-        /// <summary>
-        /// True if there are any <see cref="ConstraintClause"/>s.
-        /// </summary>
-        bool HasConstraintClauses { get; }
-
-        /// <summary>
         /// Create the list of <see cref="ConstraintClause"/>s, or return the existing one.
         /// </summary>
         ChildList<ConstraintClause> CreateConstraintClauses();
 
         /// <summary>
-        /// Add one or more <see cref="ConstraintClause"/>s.
+        /// Create the list of <see cref="TypeParameter"/>s, or return the existing one.
         /// </summary>
-        void AddConstraintClauses(params ConstraintClause[] constraintClause);
+        ChildList<TypeParameter> CreateTypeParameters();
+
+        /// <summary>
+        /// Get any constraints for the specified <see cref="TypeParameter"/>.
+        /// </summary>
+        List<TypeParameterConstraint> GetTypeParameterConstraints(TypeParameter typeParameter);
     }
 }

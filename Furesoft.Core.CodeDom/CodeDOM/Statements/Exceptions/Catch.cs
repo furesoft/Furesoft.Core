@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System;
 
 namespace Nova.CodeDOM
 {
@@ -16,17 +15,16 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Catch : BlockStatement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "catch";
 
         /// <summary>
         /// Can be null (catch all), an Expression that evaluates to a TypeRef of type Exception, or
         /// a LocalDecl of type Exception.
         /// </summary>
         protected CodeObject _target;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Catch"/>.
@@ -78,83 +76,8 @@ namespace Nova.CodeDOM
             Target = type;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The optional target <see cref="Expression"/> or <see cref="LocalDecl"/>.
-        /// </summary>
-        public CodeObject Target
-        {
-            get { return _target; }
-            set
-            {
-                if (value is LocalDecl && value.Parent != null)
-                    throw new Exception("The LocalDecl used for the target variable of a Catch must be new, not one already owned by another Parent object.");
-                SetField(ref _target, value, true);
-            }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Catch clone = (Catch)base.Clone();
-            clone.CloneField(ref clone._target, _target);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "catch";
-
-        internal static void AddParsePoints()
-        {
-            // Normally, a 'catch' is parsed by the 'try' parse logic (see Try).
-            // This parse-point exists only to catch an orphaned 'catch' statement.
-            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse an orphaned <see cref="Catch"/>.
-        /// </summary>
-        public static Catch ParseOrphan(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            Token token = parser.Token;
-            Catch @catch = Parse(parser, parent);
-            parser.AttachMessage(@catch, "Orphaned 'catch' - missing parent 'try'", token);
-            return @catch;
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Catch"/>.
-        /// </summary>
-        public static Catch Parse(Parser parser, CodeObject parent)
-        {
-            return new Catch(parser, parent);
-        }
-
         protected Catch(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             MoveComments(parser.LastToken);  // Get any comments before 'catch'
             parser.NextToken();              // Move past 'catch'
@@ -183,10 +106,6 @@ namespace Nova.CodeDOM
             if (AutomaticFormattingCleanup && NewLines > 1)
                 NewLines = 1;
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -221,14 +140,62 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
         {
-            base.AsTextStatement(writer, flags);
-            AsTextAnnotations(writer, AnnotationFlags.IsInfix1, flags);
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// The optional target <see cref="Expression"/> or <see cref="LocalDecl"/>.
+        /// </summary>
+        public CodeObject Target
+        {
+            get { return _target; }
+            set
+            {
+                if (value is LocalDecl && value.Parent != null)
+                    throw new Exception("The LocalDecl used for the target variable of a Catch must be new, not one already owned by another Parent object.");
+                SetField(ref _target, value, true);
+            }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="Catch"/>.
+        /// </summary>
+        public static Catch Parse(Parser parser, CodeObject parent)
+        {
+            return new Catch(parser, parent);
+        }
+
+        /// <summary>
+        /// Parse an orphaned <see cref="Catch"/>.
+        /// </summary>
+        public static Catch ParseOrphan(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            Token token = parser.Token;
+            Catch @catch = Parse(parser, parent);
+            parser.AttachMessage(@catch, "Orphaned 'catch' - missing parent 'try'", token);
+            return @catch;
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Catch clone = (Catch)base.Clone();
+            clone.CloneField(ref clone._target, _target);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            // Normally, a 'catch' is parsed by the 'try' parse logic (see Try).
+            // This parse-point exists only to catch an orphaned 'catch' statement.
+            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
@@ -237,6 +204,10 @@ namespace Nova.CodeDOM
                 _target.AsText(writer, flags);
         }
 
-        #endregion
+        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        {
+            base.AsTextStatement(writer, flags);
+            AsTextAnnotations(writer, AnnotationFlags.IsInfix1, flags);
+        }
     }
 }

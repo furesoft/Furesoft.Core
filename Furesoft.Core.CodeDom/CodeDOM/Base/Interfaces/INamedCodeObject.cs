@@ -18,14 +18,19 @@ namespace Nova.CodeDOM
     public interface INamedCodeObject
     {
         /// <summary>
+        /// The descriptive category of the <see cref="CodeObject"/>.
+        /// </summary>
+        string Category { get; }
+
+        /// <summary>
         /// The name of the <see cref="CodeObject"/>.
         /// </summary>
         string Name { get; }
 
         /// <summary>
-        /// The descriptive category of the <see cref="CodeObject"/>.
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
         /// </summary>
-        string Category { get; }
+        void AddToDictionary(NamedCodeObjectDictionary dictionary);
 
         /// <summary>
         /// Create a reference to the <see cref="CodeObject"/>.
@@ -43,16 +48,6 @@ namespace Nova.CodeDOM
         T FindParent<T>() where T : CodeObject;
 
         /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
-        /// </summary>
-        void AddToDictionary(NamedCodeObjectDictionary dictionary);
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        void RemoveFromDictionary(NamedCodeObjectDictionary dictionary);
-
-        /// <summary>
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
         /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
@@ -62,5 +57,10 @@ namespace Nova.CodeDOM
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
         string GetFullName();
+
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
+        /// </summary>
+        void RemoveFromDictionary(NamedCodeObjectDictionary dictionary);
     }
 }

@@ -11,23 +11,13 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class BinaryBitwiseOperator : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected BinaryBitwiseOperator(Expression left, Expression right)
             : base(left, right)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected BinaryBitwiseOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the expression should have parens by default.
@@ -36,7 +26,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }  // Default to NO parens for binary bitwise operators
         }
-
-        #endregion
     }
 }

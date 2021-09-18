@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocListDescription : DocComment
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "description";
 
         /// <summary>
         /// Create a <see cref="DocListDescription"/>.
@@ -20,9 +23,21 @@ namespace Nova.CodeDOM
             : base(content)
         { }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="DocListDescription"/>.
+        /// </summary>
+        public DocListDescription(Parser parser, CodeObject parent)
+        {
+            ParseTag(parser, parent);  // Ignore any attributes
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// The XML tag name for the documentation comment.
@@ -30,20 +45,6 @@ namespace Nova.CodeDOM
         public override string TagName
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "description";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         /// <summary>
@@ -54,26 +55,9 @@ namespace Nova.CodeDOM
             return new DocListDescription(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocListDescription"/>.
-        /// </summary>
-        public DocListDescription(Parser parser, CodeObject parent)
+        internal static void AddParsePoints()
         {
-            ParseTag(parser, parent);  // Ignore any attributes
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return false; }
-        }
-
-        #endregion
     }
 }

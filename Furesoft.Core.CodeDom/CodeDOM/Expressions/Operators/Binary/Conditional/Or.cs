@@ -11,30 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Or : BinaryBooleanOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create an <see cref="Or"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public Or(Expression left, Expression right)
-            : base(left, right)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -47,13 +27,22 @@ namespace Nova.CodeDOM
         public const int Precedence = 385;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create an <see cref="Or"/> operator.
         /// </summary>
-        public const bool LeftAssociative = true;
+        public Or(Expression left, Expression right)
+            : base(left, right)
+        { }
 
-        internal static new void AddParsePoints()
+        protected Or(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
         {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -64,10 +53,6 @@ namespace Nova.CodeDOM
             return new Or(parser, parent);
         }
 
-        protected Or(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -76,6 +61,9 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

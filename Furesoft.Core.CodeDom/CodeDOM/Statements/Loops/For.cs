@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System;
 
 namespace Nova.CodeDOM
 {
@@ -20,19 +19,19 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class For : BlockStatement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "for";
+
+        protected Expression _conditional;
 
         /// <summary>
         /// Can be either a LocalDecl or a ChildList of Expressions.
         /// </summary>
         protected object _initializations;
 
-        protected Expression _conditional;
         protected ChildList<Expression> _iterations;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="For"/> with the specified <see cref="CodeObject"/> in the body.
@@ -82,125 +81,8 @@ namespace Nova.CodeDOM
                 Iterations.Add(iteration);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// A <see cref="LocalDecl"/> used as the loop initializer.
-        /// </summary>
-        public LocalDecl Initialization
-        {
-            get { return (_initializations is LocalDecl ? (LocalDecl)_initializations : null); }
-            set
-            {
-                if (value != null && value.Parent != null)
-                    throw new Exception("The LocalDecl used for the initialization variable of a For must be new, not one already owned by another Parent object.");
-                SetField(ref _initializations, value, true);
-            }
-        }
-
-        /// <summary>
-        /// A list of <see cref="Expression"/>s used as the loop initializer.
-        /// </summary>
-        public ChildList<Expression> Initializations
-        {
-            get
-            {
-                if (_initializations is LocalDecl)
-                    return null;
-                if (_initializations == null)
-                    _initializations = new ChildList<Expression>(this);
-                return (ChildList<Expression>)_initializations;
-            }
-        }
-
-        /// <summary>
-        /// The conditional <see cref="Expression"/>.
-        /// </summary>
-        public Expression Conditional
-        {
-            get { return _conditional; }
-            set { SetField(ref _conditional, value, true); }
-        }
-
-        /// <summary>
-        /// The list of <see cref="Expression"/>s used for the loop iterations section.
-        /// </summary>
-        public ChildList<Expression> Iterations
-        {
-            get
-            {
-                if (_iterations == null)
-                    _iterations = new ChildList<Expression>(this);
-                return _iterations;
-            }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            For clone = (For)base.Clone();
-            if (_initializations is ChildList<Expression>)
-                clone._initializations = ChildListHelpers.Clone((ChildList<Expression>)_initializations, clone);
-            else
-                clone.CloneField(ref clone._initializations, _initializations);
-            clone.CloneField(ref clone._conditional, _conditional);
-            clone._iterations = ChildListHelpers.Clone(_iterations, clone);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "for";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="For"/>.
-        /// </summary>
-        public static BlockStatement Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            For @for = new For(parser, parent);
-
-            if (AutomaticCodeCleanup && !parser.IsGenerated)
-            {
-                // Normalize 'for (;;)' to 'while (true)' (with a null conditional)
-                if (@for._initializations == null && @for._conditional == null && @for._iterations == null && !@for.HasInfixComments)
-                {
-                    While @while = new While(@for);
-                    @while.SetLineCol(@for);
-                    return @while;
-                }
-            }
-
-            return @for;
-        }
-
         protected For(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             parser.NextToken();  // Move past 'for'
             ParseExpectedToken(parser, Expression.ParseTokenStartGroup);
@@ -231,9 +113,14 @@ namespace Nova.CodeDOM
                 new Block(out _body, parser, this, false);  // Parse the body
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// The conditional <see cref="Expression"/>.
+        /// </summary>
+        public Expression Conditional
+        {
+            get { return _conditional; }
+            set { SetField(ref _conditional, value, true); }
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -249,6 +136,35 @@ namespace Nova.CodeDOM
         public override bool HasBracesAlways
         {
             get { return false; }
+        }
+
+        /// <summary>
+        /// A <see cref="LocalDecl"/> used as the loop initializer.
+        /// </summary>
+        public LocalDecl Initialization
+        {
+            get { return (_initializations is LocalDecl ? (LocalDecl)_initializations : null); }
+            set
+            {
+                if (value != null && value.Parent != null)
+                    throw new Exception("The LocalDecl used for the initialization variable of a For must be new, not one already owned by another Parent object.");
+                SetField(ref _initializations, value, true);
+            }
+        }
+
+        /// <summary>
+        /// A list of <see cref="Expression"/>s used as the loop initializer.
+        /// </summary>
+        public ChildList<Expression> Initializations
+        {
+            get
+            {
+                if (_initializations is LocalDecl)
+                    return null;
+                if (_initializations == null)
+                    _initializations = new ChildList<Expression>(this);
+                return (ChildList<Expression>)_initializations;
+            }
         }
 
         /// <summary>
@@ -295,9 +211,67 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The list of <see cref="Expression"/>s used for the loop iterations section.
+        /// </summary>
+        public ChildList<Expression> Iterations
+        {
+            get
+            {
+                if (_iterations == null)
+                    _iterations = new ChildList<Expression>(this);
+                return _iterations;
+            }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="For"/>.
+        /// </summary>
+        public static BlockStatement Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            For @for = new For(parser, parent);
+
+            if (AutomaticCodeCleanup && !parser.IsGenerated)
+            {
+                // Normalize 'for (;;)' to 'while (true)' (with a null conditional)
+                if (@for._initializations == null && @for._conditional == null && @for._iterations == null && !@for.HasInfixComments)
+                {
+                    While @while = new While(@for);
+                    @while.SetLineCol(@for);
+                    return @while;
+                }
+            }
+
+            return @for;
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            For clone = (For)base.Clone();
+            if (_initializations is ChildList<Expression>)
+                clone._initializations = ChildListHelpers.Clone((ChildList<Expression>)_initializations, clone);
+            else
+                clone.CloneField(ref clone._initializations, _initializations);
+            clone.CloneField(ref clone._conditional, _conditional);
+            clone._iterations = ChildListHelpers.Clone(_iterations, clone);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
@@ -316,7 +290,5 @@ namespace Nova.CodeDOM
             AsTextInfixComments(writer, AnnotationFlags.IsInfix3, flags);
             writer.WriteList(_iterations, flags, this);
         }
-
-        #endregion
     }
 }

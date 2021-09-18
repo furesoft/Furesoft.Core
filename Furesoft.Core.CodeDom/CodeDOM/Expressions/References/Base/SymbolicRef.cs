@@ -2,13 +2,12 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-
 using Nova.Parsing;
 using Nova.Rendering;
 using Nova.Utilities;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Nova.CodeDOM
 {
@@ -24,15 +23,9 @@ namespace Nova.CodeDOM
     /// </remarks>
     public abstract class SymbolicRef : Expression
     {
-        #region /* FIELDS */
-
         // Reference can be a string (unresolved), INamedCodeObject, AnonymousMethod, or MemberInfo object.
         // It can also be null: for ThisRef, BaseRef, and VarTypeRef.
         protected object _reference;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected SymbolicRef(string name, bool isFirstOnLine)
         {
@@ -69,9 +62,27 @@ namespace Nova.CodeDOM
             _reference = obj;
         }
 
-        #endregion
+        protected SymbolicRef(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The descriptive category of the <see cref="SymbolicRef"/>.
+        /// </summary>
+        public virtual string Category
+        {
+            get
+            {
+                object reference = Reference;
+                if (reference is INamedCodeObject)
+                    return ((INamedCodeObject)reference).Category;
+                if (reference is MemberInfo)
+                    return MemberInfoUtil.GetCategory((MemberInfo)reference);
+                if (reference is ParameterInfo)
+                    return ParameterInfoUtil.GetCategory((ParameterInfo)reference);
+                return null;
+            }
+        }
 
         /// <summary>
         /// The name of the <see cref="SymbolicRef"/>.
@@ -97,26 +108,42 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The descriptive category of the <see cref="SymbolicRef"/>.
+        /// Get a short text description of the specified <see cref="MemberInfo"/>.
+        /// This is generally the shortest text representation that uniquely identifies objects, even if
+        /// they have the same name, for example: type or return type, name, type parameters, parameters.
         /// </summary>
-        public virtual string Category
+        public static string GetDescription(MemberInfo memberInfo)
         {
-            get
+            using (CodeWriter writer = new CodeWriter())
             {
-                object reference = Reference;
-                if (reference is INamedCodeObject)
-                    return ((INamedCodeObject)reference).Category;
-                if (reference is MemberInfo)
-                    return MemberInfoUtil.GetCategory((MemberInfo)reference);
-                if (reference is ParameterInfo)
-                    return ParameterInfoUtil.GetCategory((ParameterInfo)reference);
-                return null;
+                try
+                {
+                    AsTextDescription(writer, memberInfo);
+                }
+                catch
+                {
+                    writer.Write(memberInfo.Name);
+                }
+                return writer.ToString();
             }
         }
 
-        #endregion
-
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// Get the description of an object which is a <see cref="CodeObject"/> or <see cref="MemberInfo"/> (or a <c>string</c>).
+        /// </summary>
+        /// <param name="object">The object to be described.</param>
+        /// <returns>The string description of the object.</returns>
+        public static string GetDescription(object @object)
+        {
+            string description;
+            if (@object is CodeObject)
+                description = ((CodeObject)@object).GetDescription();
+            else if (@object is MemberInfo)
+                description = GetDescription((MemberInfo)@object);
+            else
+                description = @object.ToString();
+            return description;
+        }
 
         /// <summary>
         /// Implicit conversion of a <see cref="Namespace"/> to a <see cref="SymbolicRef"/> (actually, a <see cref="NamespaceRef"/>).
@@ -214,9 +241,11 @@ namespace Nova.CodeDOM
             return statement.CreateRef();
         }
 
-        #endregion
-
-        #region /* METHODS */
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+            writer.WriteIdentifier(Name, flags);
+        }
 
         /// <summary>
         /// Get the declaring type of the referenced object (returns null if none).
@@ -242,16 +271,6 @@ namespace Nova.CodeDOM
             return docSummary;
         }
 
-        #region /* EQUALITY RELATED */
-
-        /// <summary>
-        /// Determine if the current reference refers to the same code object as the specified reference.
-        /// </summary>
-        public virtual bool IsSameRef(SymbolicRef symbolicRef)
-        {
-            return (symbolicRef != null && Reference == symbolicRef.Reference);
-        }
-
         /// <summary>
         /// Calculate a hash code for the referenced object which is the same for all references where IsSameRef() is true.
         /// </summary>
@@ -268,24 +287,12 @@ namespace Nova.CodeDOM
             return (Reference != null ? Reference.GetHashCode() : base.GetHashCode());
         }
 
-        #endregion
-
-        #endregion
-
-        #region /* PARSING */
-
-        protected SymbolicRef(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Determine if the current reference refers to the same code object as the specified reference.
+        /// </summary>
+        public virtual bool IsSameRef(SymbolicRef symbolicRef)
         {
-            UpdateLineCol(writer, flags);
-            writer.WriteIdentifier(Name, flags);
+            return (symbolicRef != null && Reference == symbolicRef.Reference);
         }
 
         protected static void AsTextDescription(CodeWriter writer, MemberInfo memberInfo)
@@ -297,68 +304,32 @@ namespace Nova.CodeDOM
                 case MemberTypes.NestedType:
                     TypeRefBase.AsTextType(writer, (Type)memberInfo, flags | RenderFlags.Description);
                     break;
+
                 case MemberTypes.Constructor:
                     ConstructorRef.AsTextConstructorInfo(writer, (ConstructorInfo)memberInfo, flags);
                     break;
+
                 case MemberTypes.Method:
                     MethodRef.AsTextMethodInfo(writer, (MethodInfo)memberInfo, flags);
                     break;
+
                 case MemberTypes.Property:
                     PropertyRef.AsTextPropertyInfo(writer, (PropertyInfo)memberInfo, flags);
                     break;
+
                 case MemberTypes.Field:
                     FieldRef.AsTextFieldInfo(writer, (FieldInfo)memberInfo, flags);
                     break;
+
                 case MemberTypes.Event:
                     EventRef.AsTextEventInfo(writer, (EventInfo)memberInfo, flags);
                     break;
+
                 default:
                     writer.Write(memberInfo.ToString());
                     break;
             }
         }
-
-        /// <summary>
-        /// Get a short text description of the specified <see cref="MemberInfo"/>.
-        /// This is generally the shortest text representation that uniquely identifies objects, even if
-        /// they have the same name, for example: type or return type, name, type parameters, parameters.
-        /// </summary>
-        public static string GetDescription(MemberInfo memberInfo)
-        {
-            using (CodeWriter writer = new CodeWriter())
-            {
-                try
-                {
-                    AsTextDescription(writer, memberInfo);
-                }
-                catch
-                {
-                    writer.Write(memberInfo.Name);
-                }
-                return writer.ToString();
-            }
-        }
-
-        /// <summary>
-        /// Get the description of an object which is a <see cref="CodeObject"/> or <see cref="MemberInfo"/> (or a <c>string</c>).
-        /// </summary>
-        /// <param name="object">The object to be described.</param>
-        /// <returns>The string description of the object.</returns>
-        public static string GetDescription(object @object)
-        {
-            string description;
-            if (@object is CodeObject)
-                description = ((CodeObject)@object).GetDescription();
-            else if (@object is MemberInfo)
-                description = GetDescription((MemberInfo)@object);
-            else
-                description = @object.ToString();
-            return description;
-        }
-
-        #endregion
-
-        #region /* IsSameRefComparer */
 
         /// <summary>
         /// Determines if one <see cref="SymbolicRef"/> is equivalent to another one, meaning they both refer
@@ -382,7 +353,5 @@ namespace Nova.CodeDOM
                 return obj.GetIsSameRefHashCode();
             }
         }
-
-        #endregion
     }
 }

@@ -11,8 +11,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class OperatorRef : MethodRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="OperatorRef"/> from an <see cref="OperatorDecl"/>.
         /// </summary>
@@ -41,14 +39,8 @@ namespace Nova.CodeDOM
             : base(methodInfo, false)
         { }
 
-        #endregion
-
-        #region /* RENDERING */
-
         // OperatorRefs should only be rendered as a Description (not directly), and they never have type arguments.
         // Descriptions are handled in SymbolicRef rendering, so there's no need to do anything here - the MethodRef
         // base will render the name if an OperatorRef is rendered not in Description mode for some reason.
-
-        #endregion
     }
 }

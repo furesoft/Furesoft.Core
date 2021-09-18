@@ -12,10 +12,13 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class ConstructorInitializer : Call
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseTokenInitializer = ":";
 
         protected ConstructorInitializer(SymbolicRef symbolicRef, params Expression[] parameters)
-            : base(symbolicRef, parameters)
+                    : base(symbolicRef, parameters)
         { }
 
         protected ConstructorInitializer(ConstructorRef constructorRef, params Expression[] parameters)
@@ -26,9 +29,26 @@ namespace Nova.CodeDOM
             : base(constructorDecl.CreateRef(), parameters)
         { }
 
-        #endregion
+        protected ConstructorInitializer(Parser parser, CodeObject parent, string keyword)
+                            : base(parser, parent, true)
+        {
+            Token lastHeaderToken = parser.LastToken;
+            parser.NextToken();  // Move past ':'
+            Token token = parser.Token;
+            SetLineCol(token);
+            MoveFormatting(token);                                         // Move formatting
+            parser.NextToken();                                            // Move past 'this' or 'base'
+            ParseArguments(parser, this, ParseTokenStart, ParseTokenEnd);  // Parse arguments
 
-        #region /* PROPERTIES */
+            MoveComments(lastHeaderToken);  // Move any regular comments from before the ':' this object
+
+            // Set the expression to an unresolved reference using the keyword for the name
+            Expression = new UnresolvedRef(keyword, LineNumber, ColumnNumber);
+
+            // Force constructor initializers to start on a new line if auto-cleanup is on
+            if (AutomaticFormattingCleanup && !parser.IsGenerated)
+                IsFirstOnLine = true;
+        }
 
         /// <summary>
         /// The hidden <see cref="ConstructorRef"/> (or <see cref="UnresolvedRef"/>) that represents the constructor being called.
@@ -38,18 +58,13 @@ namespace Nova.CodeDOM
             get { return _expression as SymbolicRef; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
-        /// The token used to parse the code object.
+        /// True if the code object defaults to starting on a new line.
         /// </summary>
-        public const string ParseTokenInitializer = ":";
+        public override bool IsFirstOnLineDefault
+        {
+            get { return true; }
+        }
 
         /// <summary>
         /// Parse a <see cref="ConstructorInitializer"/>.
@@ -71,55 +86,16 @@ namespace Nova.CodeDOM
             return initializer;
         }
 
-        protected ConstructorInitializer(Parser parser, CodeObject parent, string keyword)
-            : base(parser, parent, true)
-        {
-            Token lastHeaderToken = parser.LastToken;
-            parser.NextToken();  // Move past ':'
-            Token token = parser.Token;
-            SetLineCol(token);
-            MoveFormatting(token);                                         // Move formatting
-            parser.NextToken();                                            // Move past 'this' or 'base'
-            ParseArguments(parser, this, ParseTokenStart, ParseTokenEnd);  // Parse arguments
-
-            MoveComments(lastHeaderToken);  // Move any regular comments from before the ':' this object
-
-            // Set the expression to an unresolved reference using the keyword for the name
-            Expression = new UnresolvedRef(keyword, LineNumber, ColumnNumber);
-
-            // Force constructor initializers to start on a new line if auto-cleanup is on
-            if (AutomaticFormattingCleanup && !parser.IsGenerated)
-                IsFirstOnLine = true;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return true; }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
-        {
-            UpdateLineCol(writer, flags);
-            writer.Write(Symbol);
-        }
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             writer.Write(ParseTokenInitializer + " ");
             base.AsTextExpression(writer, flags);
         }
 
-        #endregion
+        protected override void AsTextName(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+            writer.Write(Symbol);
+        }
     }
 }

@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocException : DocCodeRefBase
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "exception";
 
         /// <summary>
         /// Create a <see cref="DocException"/>.
@@ -27,9 +30,12 @@ namespace Nova.CodeDOM
             : base(codeRef, docComments)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Parse a <see cref="DocException"/>.
+        /// </summary>
+        public DocException(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
         /// The XML tag name for the documentation comment.
@@ -37,20 +43,6 @@ namespace Nova.CodeDOM
         public override string TagName
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "exception";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         /// <summary>
@@ -61,13 +53,9 @@ namespace Nova.CodeDOM
             return new DocException(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocException"/>.
-        /// </summary>
-        public DocException(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
+        internal static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
     }
 }

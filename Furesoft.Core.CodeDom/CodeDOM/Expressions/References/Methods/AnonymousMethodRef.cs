@@ -16,8 +16,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class AnonymousMethodRef : MethodRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="AnonymousMethodRef"/> from an <see cref="AnonymousMethod"/>.
         /// </summary>
@@ -32,10 +30,6 @@ namespace Nova.CodeDOM
             : base(anonymousMethod, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// Always returns null for an <see cref="AnonymousMethodRef"/>.
         /// </summary>
@@ -45,16 +39,10 @@ namespace Nova.CodeDOM
             get { return null; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Determine the return type of the anonymous method (never null - will be 'void' instead).
-        /// </summary>
-        public override TypeRefBase GetReturnType()
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
-            return ((AnonymousMethod)_reference).GetReturnType();
+            // Always render an AnonymousMethodRef as a description (which will render it's delegate type)
+            ((AnonymousMethod)_reference).AsText(writer, flags | RenderFlags.SuppressNewLine | RenderFlags.Description);
         }
 
         /// <summary>
@@ -65,16 +53,12 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Determine the return type of the anonymous method (never null - will be 'void' instead).
+        /// </summary>
+        public override TypeRefBase GetReturnType()
         {
-            // Always render an AnonymousMethodRef as a description (which will render it's delegate type)
-            ((AnonymousMethod)_reference).AsText(writer, flags | RenderFlags.SuppressNewLine | RenderFlags.Description);
+            return ((AnonymousMethod)_reference).GetReturnType();
         }
-
-        #endregion
     }
 }

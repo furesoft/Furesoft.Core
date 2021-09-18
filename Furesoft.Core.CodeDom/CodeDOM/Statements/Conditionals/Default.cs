@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Default : SwitchItem
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "default";
 
         /// <summary>
         /// Create a <see cref="Default"/>.
@@ -27,16 +30,19 @@ namespace Nova.CodeDOM
             : base(null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected Default(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            parser.NextToken();              // Move past 'default'
+            ParseTerminatorAndBody(parser);  // Parse ':' and body (if any)
+        }
 
         /// <summary>
-        /// Always 'default'.
+        /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
-        public override string Name
+        public override bool HasArgument
         {
-            get { return ParseToken; }
+            get { return false; }
         }
 
         /// <summary>
@@ -47,19 +53,12 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
-        /// The token used to parse the code object.
+        /// Always 'default'.
         /// </summary>
-        public const string ParseToken = "default";
-
-        internal static void AddParsePoints()
+        public override string Name
         {
-            // Use a parse-priority of 0 (DefaultValue uses 100)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -73,25 +72,10 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected Default(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            parser.NextToken();              // Move past 'default'
-            ParseTerminatorAndBody(parser);  // Parse ':' and body (if any)
+            // Use a parse-priority of 0 (DefaultValue uses 100)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has an argument.
-        /// </summary>
-        public override bool HasArgument
-        {
-            get { return false; }
-        }
-
-        #endregion
     }
 }

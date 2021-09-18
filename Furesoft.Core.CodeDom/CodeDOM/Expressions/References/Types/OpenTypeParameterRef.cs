@@ -20,8 +20,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class OpenTypeParameterRef : TypeParameterRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="OpenTypeParameterRef"/> from a <see cref="TypeParameter"/>.
         /// </summary>
@@ -106,14 +104,6 @@ namespace Nova.CodeDOM
             : base(type, false, arrayRanks)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Convert into a <see cref="TypeParameterRef"/>.
         /// </summary>
@@ -124,7 +114,5 @@ namespace Nova.CodeDOM
                 return new TypeParameterRef((TypeParameter)reference, IsFirstOnLine, ArrayRanks);
             return new TypeParameterRef((Type)reference, IsFirstOnLine, ArrayRanks);
         }
-
-        #endregion
     }
 }

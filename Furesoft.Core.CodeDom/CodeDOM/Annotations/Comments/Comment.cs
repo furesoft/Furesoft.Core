@@ -2,15 +2,42 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using System.Linq;
-
 using Nova.Parsing;
 using Nova.Rendering;
 using Nova.Utilities;
+using System;
+using System.Linq;
 
 namespace Nova.CodeDOM
 {
+    /// <summary>
+    /// Comment type flags.
+    /// </summary>
+    [Flags]
+    public enum CommentFlags
+    {
+        /// <summary>No flags.</summary>
+        None = 0x00,
+
+        /// <summary>The comment is an "end-of-line" comment - the last item on the current line.</summary>
+        EOL = 0x01,
+
+        /// <summary>The comment is "block" style.</summary>
+        Block = 0x02,
+
+        /// <summary>The comment isn't formatted - for block style, this means no preceeding asterisks on each line.</summary>
+        Raw = 0x04,
+
+        /// <summary>The comment is a 'to-do' comment.</summary>
+        TODO = 0x10,
+
+        /// <summary>The comment documents a 'hack' in the code.</summary>
+        HACK = 0x20,
+
+        /// <summary>The comment represents a special note.</summary>
+        NOTE = 0x40
+    }
+
     /// <summary>
     /// Represents user comments, and may either be independent or associated with another <see cref="CodeObject"/>.
     /// </summary>
@@ -37,23 +64,34 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Comment : CommentBase
     {
-        #region /* STATIC FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "//";
+
+        /// <summary>
+        /// The block-comment end token.
+        /// </summary>
+        public const string ParseTokenBlockEnd = "*/";
+
+        /// <summary>
+        /// The block-comment start token.
+        /// </summary>
+        public const string ParseTokenBlockStart = "/*";
 
         /// <summary>
         /// Determines if special comments are listed.
         /// </summary>
         public static bool ListSpecialComments = true;
 
-        #endregion
-
-        #region /* FIELDS */
-
-        protected string _text;
         protected CommentFlags _commentFlags;
+        protected string _text;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        static Comment()
+        {
+            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
+            ForceReference();
+        }
 
         /// <summary>
         /// Create a <see cref="Comment"/> with the specified text content.
@@ -73,185 +111,6 @@ namespace Nova.CodeDOM
         public Comment(string text)
             : this(text, CommentFlags.None)
         { }
-
-        #endregion
-
-        #region /* STATIC CONSTRUCTOR */
-
-        static Comment()
-        {
-            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
-            ForceReference();
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The text content of the comment.
-        /// </summary>
-        public override string Text
-        {
-            get { return _text; }
-            set
-            {
-                _text = value.Replace("\r\n", "\n");  // Normalize newlines
-                SetSpecialFlags();
-            }
-        }
-
-        /// <summary>
-        /// True if the comment appears at the end-of-line (EOL).
-        /// </summary>
-        public override bool IsEOL
-        {
-            get { return _commentFlags.HasFlag(CommentFlags.EOL); }
-            set { SetCommentFlag(CommentFlags.EOL, value); }
-        }
-
-        /// <summary>
-        /// Determines if the comment has a block style.
-        /// </summary>
-        public bool IsBlock
-        {
-            get { return _commentFlags.HasFlag(CommentFlags.Block); }
-            set { SetCommentFlag(CommentFlags.Block, value); }
-        }
-
-        /// <summary>
-        /// Determines if the comment has a raw format.
-        /// </summary>
-        public bool IsRawFormat
-        {
-            get { return _commentFlags.HasFlag(CommentFlags.Raw); }
-            set { SetCommentFlag(CommentFlags.Raw, value); }
-        }
-
-        /// <summary>
-        /// Determines if the comment is a 'TODO' comment.
-        /// </summary>
-        public bool IsTODO
-        {
-            get { return _commentFlags.HasFlag(CommentFlags.TODO); }
-            set { SetCommentFlag(CommentFlags.TODO, value); }
-        }
-
-        /// <summary>
-        /// Determines if the comment is a 'HACK' comment.
-        /// </summary>
-        public bool IsHack
-        {
-            get { return _commentFlags.HasFlag(CommentFlags.HACK); }
-            set { SetCommentFlag(CommentFlags.HACK, value); }
-        }
-
-        /// <summary>
-        /// Determines if the comment is a 'NOTE' comment.
-        /// </summary>
-        public bool IsNote
-        {
-            get { return _commentFlags.HasFlag(CommentFlags.NOTE); }
-            set { SetCommentFlag(CommentFlags.NOTE, value); }
-        }
-
-        /// <summary>
-        /// True if the annotation should be listed at the <see cref="CodeUnit"/> level (for display in an output window).
-        /// </summary>
-        public override bool IsListed
-        {
-            get { return (ListSpecialComments && (_commentFlags.HasFlag(CommentFlags.TODO) || _commentFlags.HasFlag(CommentFlags.HACK))); }
-        }
-
-        /// <summary>
-        /// The comment flags.
-        /// </summary>
-        public CommentFlags CommentFlags
-        {
-            get { return _commentFlags; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        protected internal void SetSpecialFlags()
-        {
-            _commentFlags |= CheckForSpecialComment(_text);
-        }
-
-        /// <summary>
-        /// Check if text represents a "special" comment.
-        /// </summary>
-        /// <returns>CommentFlag for special comment type, or None.</returns>
-        protected internal CommentFlags CheckForSpecialComment(string comment)
-        {
-            if (ContainsSpecial(comment, "TODO"))
-                return CommentFlags.TODO;
-            if (ContainsSpecial(comment, "HACK"))
-                return CommentFlags.HACK;
-            if (ContainsSpecial(comment, "NOTE"))
-                return CommentFlags.NOTE;
-            return CommentFlags.None;
-        }
-
-        protected bool ContainsSpecial(string text, string special)
-        {
-            // Match special comment indicators by finding a case-insensitive match
-            int index = text.IndexOf(special, StringComparison.CurrentCultureIgnoreCase);
-            if (index >= 0)
-            {
-                if (index >= 1)
-                {
-                    // Ignore if there is an immediately preceeding alpha char, or a '/' (nested in another comment) or '"' ignoring spaces
-                    char preceeding = text[index - 1];
-                    if (char.IsLetter(preceeding))
-                        return false;
-                    int preIndex = index - 1;
-                    while (preceeding == ' ' && preIndex > 0)
-                        preceeding = text[--preIndex];
-                    if (preceeding == '/' || preceeding == '"')
-                        return false;
-                }
-                // Ignore if there is a trailing alpha char
-                int end = index + special.Length;
-                if (end < text.Length && char.IsLetter(text, end))
-                    return false;
-                return true;
-            }
-            return false;
-        }
-
-        protected internal void SetCommentFlag(CommentFlags flag, bool value)
-        {
-            if (value)
-                _commentFlags |= flag;
-            else
-                _commentFlags &= ~flag;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "//";
-
-        /// <summary>
-        /// The block-comment start token.
-        /// </summary>
-        public const string ParseTokenBlockStart = "/*";
-
-        /// <summary>
-        /// The block-comment end token.
-        /// </summary>
-        public const string ParseTokenBlockEnd = "*/";
-
-        // NOTE: No parse-points are installed for comments - instead, the parser calls the
-        //       parsing constructor directly based upon the token type.  This is because we
-        //       want to treat entire comments as individual tokens to preserve whitespace.
 
         /// <summary>
         /// Parse a <see cref="Comment"/>.
@@ -381,31 +240,64 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Remove the specified number of prefixed spaces from each line of the comment.
-        /// Fails if any non-blank lines don't start with at least the specified number of spaces.
+        /// The comment flags.
         /// </summary>
-        public bool RemoveSpaces(int spaces)
+        public CommentFlags CommentFlags
         {
-            string[] lines = _text.Split('\n');
-            if (Enumerable.Any(lines, delegate(string line) { return StringUtil.CharCount(line, ' ', 0) < spaces && line.Length > 0; }))
-                return false;
-            _text = null;
-            foreach (string line in lines)
-                _text += (_text == null ? "" : "\n") + (string.IsNullOrEmpty(line) ? "" : line.Remove(0, spaces));
-            return true;
+            get { return _commentFlags; }
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// Determines if the comment has a block style.
+        /// </summary>
+        public bool IsBlock
+        {
+            get { return _commentFlags.HasFlag(CommentFlags.Block); }
+            set { SetCommentFlag(CommentFlags.Block, value); }
+        }
 
         /// <summary>
-        /// True if there is no space between the comment delimiter and the comment text.
+        /// True if the comment appears at the end-of-line (EOL).
         /// </summary>
-        public bool NoSpaceAfterDelimiter
+        public override bool IsEOL
         {
-            get { return _annotationFlags.HasFlag(AnnotationFlags.NoSpace); }
-            set { SetAnnotationFlag(AnnotationFlags.NoSpace, value); }
+            get { return _commentFlags.HasFlag(CommentFlags.EOL); }
+            set { SetCommentFlag(CommentFlags.EOL, value); }
+        }
+
+        /// <summary>
+        /// Determines if the comment is a 'HACK' comment.
+        /// </summary>
+        public bool IsHack
+        {
+            get { return _commentFlags.HasFlag(CommentFlags.HACK); }
+            set { SetCommentFlag(CommentFlags.HACK, value); }
+        }
+
+        /// <summary>
+        /// True if the annotation should be listed at the <see cref="CodeUnit"/> level (for display in an output window).
+        /// </summary>
+        public override bool IsListed
+        {
+            get { return (ListSpecialComments && (_commentFlags.HasFlag(CommentFlags.TODO) || _commentFlags.HasFlag(CommentFlags.HACK))); }
+        }
+
+        /// <summary>
+        /// Determines if the comment is a 'NOTE' comment.
+        /// </summary>
+        public bool IsNote
+        {
+            get { return _commentFlags.HasFlag(CommentFlags.NOTE); }
+            set { SetCommentFlag(CommentFlags.NOTE, value); }
+        }
+
+        /// <summary>
+        /// Determines if the comment has a raw format.
+        /// </summary>
+        public bool IsRawFormat
+        {
+            get { return _commentFlags.HasFlag(CommentFlags.Raw); }
+            set { SetCommentFlag(CommentFlags.Raw, value); }
         }
 
         /// <summary>
@@ -422,9 +314,36 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Determines if the comment is a 'TODO' comment.
+        /// </summary>
+        public bool IsTODO
+        {
+            get { return _commentFlags.HasFlag(CommentFlags.TODO); }
+            set { SetCommentFlag(CommentFlags.TODO, value); }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// True if there is no space between the comment delimiter and the comment text.
+        /// </summary>
+        public bool NoSpaceAfterDelimiter
+        {
+            get { return _annotationFlags.HasFlag(AnnotationFlags.NoSpace); }
+            set { SetAnnotationFlag(AnnotationFlags.NoSpace, value); }
+        }
+
+        /// <summary>
+        /// The text content of the comment.
+        /// </summary>
+        public override string Text
+        {
+            get { return _text; }
+            set
+            {
+                _text = value.Replace("\r\n", "\n");  // Normalize newlines
+                SetSpecialFlags();
+            }
+        }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -530,32 +449,77 @@ namespace Nova.CodeDOM
             return result;
         }
 
-        #endregion
+        // NOTE: No parse-points are installed for comments - instead, the parser calls the
+        //       parsing constructor directly based upon the token type.  This is because we
+        //       want to treat entire comments as individual tokens to preserve whitespace.
+        /// <summary>
+        /// Remove the specified number of prefixed spaces from each line of the comment.
+        /// Fails if any non-blank lines don't start with at least the specified number of spaces.
+        /// </summary>
+        public bool RemoveSpaces(int spaces)
+        {
+            string[] lines = _text.Split('\n');
+            if (Enumerable.Any(lines, delegate (string line) { return StringUtil.CharCount(line, ' ', 0) < spaces && line.Length > 0; }))
+                return false;
+            _text = null;
+            foreach (string line in lines)
+                _text += (_text == null ? "" : "\n") + (string.IsNullOrEmpty(line) ? "" : line.Remove(0, spaces));
+            return true;
+        }
+
+        /// <summary>
+        /// Check if text represents a "special" comment.
+        /// </summary>
+        /// <returns>CommentFlag for special comment type, or None.</returns>
+        protected internal CommentFlags CheckForSpecialComment(string comment)
+        {
+            if (ContainsSpecial(comment, "TODO"))
+                return CommentFlags.TODO;
+            if (ContainsSpecial(comment, "HACK"))
+                return CommentFlags.HACK;
+            if (ContainsSpecial(comment, "NOTE"))
+                return CommentFlags.NOTE;
+            return CommentFlags.None;
+        }
+
+        protected internal void SetCommentFlag(CommentFlags flag, bool value)
+        {
+            if (value)
+                _commentFlags |= flag;
+            else
+                _commentFlags &= ~flag;
+        }
+
+        protected internal void SetSpecialFlags()
+        {
+            _commentFlags |= CheckForSpecialComment(_text);
+        }
+
+        protected bool ContainsSpecial(string text, string special)
+        {
+            // Match special comment indicators by finding a case-insensitive match
+            int index = text.IndexOf(special, StringComparison.CurrentCultureIgnoreCase);
+            if (index >= 0)
+            {
+                if (index >= 1)
+                {
+                    // Ignore if there is an immediately preceeding alpha char, or a '/' (nested in another comment) or '"' ignoring spaces
+                    char preceeding = text[index - 1];
+                    if (char.IsLetter(preceeding))
+                        return false;
+                    int preIndex = index - 1;
+                    while (preceeding == ' ' && preIndex > 0)
+                        preceeding = text[--preIndex];
+                    if (preceeding == '/' || preceeding == '"')
+                        return false;
+                }
+                // Ignore if there is a trailing alpha char
+                int end = index + special.Length;
+                if (end < text.Length && char.IsLetter(text, end))
+                    return false;
+                return true;
+            }
+            return false;
+        }
     }
-
-    #region /* COMMENT TYPE FLAGS */
-
-    /// <summary>
-    /// Comment type flags.
-    /// </summary>
-    [Flags]
-    public enum CommentFlags
-    {
-        /// <summary>No flags.</summary>
-        None  = 0x00,
-        /// <summary>The comment is an "end-of-line" comment - the last item on the current line.</summary>
-        EOL   = 0x01,
-        /// <summary>The comment is "block" style.</summary>
-        Block = 0x02,
-        /// <summary>The comment isn't formatted - for block style, this means no preceeding asterisks on each line.</summary>
-        Raw   = 0x04,
-        /// <summary>The comment is a 'to-do' comment.</summary>
-        TODO  = 0x10,
-        /// <summary>The comment documents a 'hack' in the code.</summary>
-        HACK  = 0x20,
-        /// <summary>The comment represents a special note.</summary>
-        NOTE  = 0x40
-    }
-
-    #endregion
 }

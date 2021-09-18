@@ -11,30 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class TypeOf : TypeOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create a <see cref="TypeOf"/> operator - the expression must evaluate to a <see cref="TypeRef"/> in valid code.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public TypeOf(Expression type)
-            : base(type)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -47,13 +27,24 @@ namespace Nova.CodeDOM
         public const int Precedence = 100;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create a <see cref="TypeOf"/> operator - the expression must evaluate to a <see cref="TypeRef"/> in valid code.
         /// </summary>
-        public const bool LeftAssociative = true;
+        public TypeOf(Expression type)
+            : base(type)
+        { }
 
-        internal static new void AddParsePoints()
+        protected TypeOf(Parser parser, CodeObject parent)
+                    : base(parser, parent)
         {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+            ParseKeywordAndArgument(parser, ParseFlags.Type);
+        }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -64,12 +55,6 @@ namespace Nova.CodeDOM
             return new TypeOf(parser, parent);
         }
 
-        protected TypeOf(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            ParseKeywordAndArgument(parser, ParseFlags.Type);
-        }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -78,6 +63,9 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

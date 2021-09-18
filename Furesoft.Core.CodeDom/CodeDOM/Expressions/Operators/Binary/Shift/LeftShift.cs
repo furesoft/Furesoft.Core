@@ -11,51 +11,15 @@ namespace Nova.CodeDOM
     /// </summary>
     public class LeftShift : BinaryShiftOperator
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name of the operator.
         /// </summary>
         public const string InternalName = NamePrefix + "LeftShift";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create a <see cref="LeftShift"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public LeftShift(Expression left, Expression right)
-            : base(left, right)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="BinaryOperator"/>.
-        /// </summary>
-        public override string GetInternalName()
-        {
-            return InternalName;
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -68,13 +32,22 @@ namespace Nova.CodeDOM
         public const int Precedence = 320;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create a <see cref="LeftShift"/> operator.
         /// </summary>
-        public const bool LeftAssociative = true;
+        public LeftShift(Expression left, Expression right)
+            : base(left, right)
+        { }
 
-        internal static new void AddParsePoints()
+        protected LeftShift(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
         {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -85,9 +58,13 @@ namespace Nova.CodeDOM
             return new LeftShift(parser, parent);
         }
 
-        protected LeftShift(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+        /// <summary>
+        /// The internal name of the <see cref="BinaryOperator"/>.
+        /// </summary>
+        public override string GetInternalName()
+        {
+            return InternalName;
+        }
 
         /// <summary>
         /// Get the precedence of the operator.
@@ -97,6 +74,9 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

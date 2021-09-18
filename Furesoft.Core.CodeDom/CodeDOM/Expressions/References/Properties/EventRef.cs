@@ -2,9 +2,8 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Reflection;
-
 using Nova.Rendering;
+using System.Reflection;
 
 namespace Nova.CodeDOM
 {
@@ -13,8 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class EventRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="EventRef"/>.
         /// </summary>
@@ -43,9 +40,35 @@ namespace Nova.CodeDOM
             : base(eventInfo, false)
         { }
 
-        #endregion
+        public static void AsTextEventInfo(CodeWriter writer, EventInfo eventInfo, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
+            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
+                Attribute.AsTextAttributes(writer, eventInfo);
+            writer.Write(ModifiersHelpers.AsString(GetEventModifiers(eventInfo)));
+            TypeRefBase.AsTextType(writer, eventInfo.EventHandlerType, passFlags);
+            writer.Write(" ");
+            TypeRefBase.AsTextType(writer, eventInfo.DeclaringType, passFlags);
+            writer.Write(Dot.ParseToken + eventInfo.Name);
+        }
 
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// Get the declaring type of the specified event object.
+        /// </summary>
+        /// <param name="eventObj">The event object (an <see cref="EventDecl"/> or <see cref="EventInfo"/>).</param>
+        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
+        public static TypeRefBase GetDeclaringType(object eventObj)
+        {
+            TypeRefBase declaringTypeRef;
+            if (eventObj is EventDecl)
+            {
+                TypeDecl declaringTypeDecl = ((EventDecl)eventObj).DeclaringType;
+                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
+            }
+            else //if (eventObj is EventInfo)
+                declaringTypeRef = TypeRef.Create(((EventInfo)eventObj).DeclaringType);
+            return declaringTypeRef;
+        }
 
         /// <summary>
         /// Get any modifiers from the specified <see cref="EventInfo"/>.
@@ -74,10 +97,6 @@ namespace Nova.CodeDOM
             return modifiers;
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Get the declaring type of the referenced event.
         /// </summary>
@@ -94,41 +113,5 @@ namespace Nova.CodeDOM
 
             return declaringTypeRef;
         }
-
-        /// <summary>
-        /// Get the declaring type of the specified event object.
-        /// </summary>
-        /// <param name="eventObj">The event object (an <see cref="EventDecl"/> or <see cref="EventInfo"/>).</param>
-        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
-        public static TypeRefBase GetDeclaringType(object eventObj)
-        {
-            TypeRefBase declaringTypeRef;
-            if (eventObj is EventDecl)
-            {
-                TypeDecl declaringTypeDecl = ((EventDecl)eventObj).DeclaringType;
-                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
-            }
-            else //if (eventObj is EventInfo)
-                declaringTypeRef = TypeRef.Create(((EventInfo)eventObj).DeclaringType);
-            return declaringTypeRef;
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public static void AsTextEventInfo(CodeWriter writer, EventInfo eventInfo, RenderFlags flags)
-        {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
-                Attribute.AsTextAttributes(writer, eventInfo);
-            writer.Write(ModifiersHelpers.AsString(GetEventModifiers(eventInfo)));
-            TypeRefBase.AsTextType(writer, eventInfo.EventHandlerType, passFlags);
-            writer.Write(" ");
-            TypeRefBase.AsTextType(writer, eventInfo.DeclaringType, passFlags);
-            writer.Write(Dot.ParseToken + eventInfo.Name);
-        }
-
-        #endregion
     }
 }

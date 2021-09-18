@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ErrorDirective : MessageDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "error";
 
         /// <summary>
         /// Create an <see cref="ErrorDirective"/>.
@@ -19,28 +22,6 @@ namespace Nova.CodeDOM
         public ErrorDirective(string message)
             : base(message)
         { }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "error";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="ErrorDirective"/>.
-        /// </summary>
-        public static ErrorDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new ErrorDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse an <see cref="ErrorDirective"/>.
@@ -51,10 +32,6 @@ namespace Nova.CodeDOM
             ParseMessage(parser);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
         /// </summary>
@@ -63,6 +40,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
+        /// <summary>
+        /// Parse an <see cref="ErrorDirective"/>.
+        /// </summary>
+        public static ErrorDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new ErrorDirective(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
     }
 }

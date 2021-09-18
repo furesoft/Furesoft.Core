@@ -12,11 +12,6 @@ namespace Nova.CodeDOM
     public interface IParameters
     {
         /// <summary>
-        /// A collection of <see cref="ParameterDecl"/>s.
-        /// </summary>
-        ChildList<ParameterDecl> Parameters { get; }
-
-        /// <summary>
         /// True if the there are any parameters.
         /// </summary>
         bool HasParameters { get; }
@@ -25,5 +20,10 @@ namespace Nova.CodeDOM
         /// The number of parameters.
         /// </summary>
         int ParameterCount { get; }
+
+        /// <summary>
+        /// A collection of <see cref="ParameterDecl"/>s.
+        /// </summary>
+        ChildList<ParameterDecl> Parameters { get; }
     }
 }

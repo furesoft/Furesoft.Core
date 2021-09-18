@@ -11,20 +11,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class CheckedOperator : SingleArgumentOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected CheckedOperator(Expression expression)
             : base(expression)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected CheckedOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
     }
 }

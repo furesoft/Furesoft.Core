@@ -2,11 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using System.Reflection;
-
 using Nova.Rendering;
 using Nova.Utilities;
+using System;
+using System.Reflection;
 
 namespace Nova.CodeDOM
 {
@@ -20,8 +19,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ConstructorRef : MethodRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ConstructorRef"/> from a <see cref="ConstructorDecl"/>.
         /// </summary>
@@ -49,10 +46,6 @@ namespace Nova.CodeDOM
         public ConstructorRef(ConstructorInfo constructorInfo)
             : base(constructorInfo, false)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The name of the <see cref="ConstructorRef"/>.
@@ -86,9 +79,20 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        public static void AsTextConstructorInfo(CodeWriter writer, ConstructorInfo constructorInfo, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
 
-        #region /* STATIC METHODS */
+            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
+                Attribute.AsTextAttributes(writer, constructorInfo);
+            writer.Write(ModifiersHelpers.AsString(GetMethodModifiers(constructorInfo)));
+            Type declaringType = constructorInfo.DeclaringType;
+            AsTextType(writer, declaringType, passFlags);
+            Dot.AsTextDot(writer);
+            if (declaringType != null)
+                writer.WriteName(declaringType.IsGenericType ? TypeUtil.NonGenericName(declaringType) : declaringType.Name, passFlags);
+            AsTextMethodParameters(writer, constructorInfo, flags);
+        }
 
         /// <summary>
         /// Find the constructor of the specified <see cref="TypeDecl"/> with the specified signature.
@@ -199,18 +203,6 @@ namespace Nova.CodeDOM
             return Find(typeRefBase, false, parameterTypes);
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the return type of the constructor (never null).
-        /// </summary>
-        public override TypeRefBase GetReturnType()
-        {
-            return GetReturnType(this, _reference);
-        }
-
         /// <summary>
         /// Get the return type of the constructor (never null).
         /// </summary>
@@ -240,6 +232,23 @@ namespace Nova.CodeDOM
             return typeRefBase;
         }
 
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            // Display constructors as their declaring type name, including any type arguments (this
+            // is the easy way to display them with the proper type arguments and any enclosing types,
+            // if appropriate).
+            UpdateLineCol(writer, flags);
+            TypeRefBase typeRef = GetDeclaringType();
+            if (typeRef != null)
+                typeRef.AsText(writer, flags & ~RenderFlags.UpdateLineCol);
+            else if (_reference is ConstructorDecl)
+            {
+                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
+                // go ahead and display it's name.
+                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
+            }
+        }
+
         /// <summary>
         /// Get the declaring type of the referenced constructor.
         /// </summary>
@@ -260,42 +269,12 @@ namespace Nova.CodeDOM
             return base.GetDeclaringType();
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Get the return type of the constructor (never null).
+        /// </summary>
+        public override TypeRefBase GetReturnType()
         {
-            // Display constructors as their declaring type name, including any type arguments (this
-            // is the easy way to display them with the proper type arguments and any enclosing types,
-            // if appropriate).
-            UpdateLineCol(writer, flags);
-            TypeRefBase typeRef = GetDeclaringType();
-            if (typeRef != null)
-                typeRef.AsText(writer, flags &~ RenderFlags.UpdateLineCol);
-            else if (_reference is ConstructorDecl)
-            {
-                // If we failed to get the declaring type, and we have an "orphaned" ConstructorDecl,
-                // go ahead and display it's name.
-                writer.WriteName(((ConstructorDecl)_reference).Name, flags);
-            }
+            return GetReturnType(this, _reference);
         }
-
-        public static void AsTextConstructorInfo(CodeWriter writer, ConstructorInfo constructorInfo, RenderFlags flags)
-        {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-
-            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
-                Attribute.AsTextAttributes(writer, constructorInfo);
-            writer.Write(ModifiersHelpers.AsString(GetMethodModifiers(constructorInfo)));
-            Type declaringType = constructorInfo.DeclaringType;
-            AsTextType(writer, declaringType, passFlags);
-            Dot.AsTextDot(writer);
-            if (declaringType != null)
-                writer.WriteName(declaringType.IsGenericType ? TypeUtil.NonGenericName(declaringType) : declaringType.Name, passFlags);
-            AsTextMethodParameters(writer, constructorInfo, flags);
-        }
-
-        #endregion
     }
 }

@@ -2,13 +2,12 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
+using Nova.Rendering;
+using Nova.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-
-using Nova.Rendering;
-using Nova.Utilities;
 
 namespace Nova.CodeDOM
 {
@@ -21,8 +20,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ParameterRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ParameterRef"/>.
         /// </summary>
@@ -51,20 +48,16 @@ namespace Nova.CodeDOM
             : base(parameterInfo, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The name of the <see cref="SymbolicRef"/>.
+        /// True if the referenced parameter is an 'out' parameter.
         /// </summary>
-        public override string Name
+        public bool IsOut
         {
             get
             {
                 if (_reference is ParameterDecl)
-                    return ((ParameterDecl)_reference).Name;
-                return ((ParameterInfo)_reference).Name;
+                    return ((ParameterDecl)_reference).IsOut;
+                return ParameterInfoUtil.IsOut((ParameterInfo)_reference);
             }
         }
 
@@ -95,21 +88,37 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced parameter is an 'out' parameter.
+        /// The name of the <see cref="SymbolicRef"/>.
         /// </summary>
-        public bool IsOut
+        public override string Name
         {
             get
             {
                 if (_reference is ParameterDecl)
-                    return ((ParameterDecl)_reference).IsOut;
-                return ParameterInfoUtil.IsOut((ParameterInfo)_reference);
+                    return ((ParameterDecl)_reference).Name;
+                return ((ParameterInfo)_reference).Name;
             }
         }
 
-        #endregion
+        public static void AsTextParameterInfo(CodeWriter writer, ParameterInfo parameterInfo, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
 
-        #region /* STATIC METHODS */
+            Attribute.AsTextAttributes(writer, parameterInfo);
+
+            ParameterModifier modifier = GetParameterModifier(parameterInfo);
+            if (modifier != ParameterModifier.None)
+                writer.Write(ParameterDecl.ParameterModifierToString(modifier) + " ");
+
+            Type parameterType = parameterInfo.ParameterType;
+            if (parameterType.IsByRef)
+            {
+                // Dereference (remove the trailing '&') if it's a reference type
+                parameterType = parameterType.GetElementType();
+            }
+            TypeRefBase.AsTextType(writer, parameterType, passFlags);
+            writer.Write(" " + parameterInfo.Name);
+        }
 
         /// <summary>
         /// Find the parameter on the specified <see cref="MethodDeclBase"/> with the specified name.
@@ -189,10 +198,6 @@ namespace Nova.CodeDOM
             return Find(typeRefBase, name, false);
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Get the <see cref="ParameterModifier"/> for the specified <see cref="ParameterInfo"/>.
         /// </summary>
@@ -209,19 +214,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the parameter in the collection with the specified index is a 'params' parameter.
-        /// </summary>
-        public static bool ParameterIsParams(ICollection parameters, int index)
-        {
-            bool isParams;
-            if (parameters is List<ParameterDecl>)
-                isParams = (((List<ParameterDecl>)parameters)[index].IsParams);
-            else //if (parameters is ParameterInfo[])
-                isParams = ParameterInfoUtil.IsParams(((ParameterInfo[])parameters)[index]);
-            return isParams;
-        }
-
-        /// <summary>
         /// Get the type of the parameter in the collection with the specified index, using the specified parent expression to evaluate any type argument types.
         /// </summary>
         public static TypeRefBase GetParameterType(ICollection parameters, int index, Expression parentExpression)
@@ -234,30 +226,17 @@ namespace Nova.CodeDOM
             return parameterTypeRef;
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        public static void AsTextParameterInfo(CodeWriter writer, ParameterInfo parameterInfo, RenderFlags flags)
+        /// <summary>
+        /// Determine if the parameter in the collection with the specified index is a 'params' parameter.
+        /// </summary>
+        public static bool ParameterIsParams(ICollection parameters, int index)
         {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-
-            Attribute.AsTextAttributes(writer, parameterInfo);
-
-            ParameterModifier modifier = GetParameterModifier(parameterInfo);
-            if (modifier != ParameterModifier.None)
-                writer.Write(ParameterDecl.ParameterModifierToString(modifier) + " ");
-
-            Type parameterType = parameterInfo.ParameterType;
-            if (parameterType.IsByRef)
-            {
-                // Dereference (remove the trailing '&') if it's a reference type
-                parameterType = parameterType.GetElementType();
-            }
-            TypeRefBase.AsTextType(writer, parameterType, passFlags);
-            writer.Write(" " + parameterInfo.Name);
+            bool isParams;
+            if (parameters is List<ParameterDecl>)
+                isParams = (((List<ParameterDecl>)parameters)[index].IsParams);
+            else //if (parameters is ParameterInfo[])
+                isParams = ParameterInfoUtil.IsParams(((ParameterInfo[])parameters)[index]);
+            return isParams;
         }
-
-        #endregion
     }
 }

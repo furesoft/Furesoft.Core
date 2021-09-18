@@ -12,22 +12,16 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class SymbolDirective : CompilerDirective
     {
-        #region /* FIELDS */
-
         protected string _symbol;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected SymbolDirective(string symbol)
         {
             _symbol = symbol;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected SymbolDirective(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// The associated symbol name.
@@ -38,13 +32,10 @@ namespace Nova.CodeDOM
             set { _symbol = value; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        protected SymbolDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        {
+            writer.Write(_symbol);
+        }
 
         protected void ParseSymbol(Parser parser)
         {
@@ -55,16 +46,5 @@ namespace Nova.CodeDOM
                 parser.NextToken();          // Move past name
             }
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        {
-            writer.Write(_symbol);
-        }
-
-        #endregion
     }
 }

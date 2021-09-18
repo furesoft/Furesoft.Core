@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System;
 
 namespace Nova.CodeDOM
 {
@@ -19,22 +18,16 @@ namespace Nova.CodeDOM
     /// </remarks>
     public abstract class CompilerDirective : Annotation
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "#";
 
         protected CompilerDirective()
         {
             if (HasNoIndentationDefault)
                 SetFormatFlag(FormatFlags.NoIndentation, true);
         }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "#";
 
         protected CompilerDirective(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -51,17 +44,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// The keyword associated with the compiler directive (if any).
         /// </summary>
-        public override bool AssociateCommentWhenParsing(CommentBase comment)
+        public virtual string DirectiveKeyword
         {
-            // Only associate regular comments with compiler directives, not doc comments
-            return (comment is Comment);
+            get { return null; }
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the compiler directive has an argument.
@@ -72,15 +60,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// Determines if the compiler directive should be indented.
         /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
+        public virtual bool HasNoIndentationDefault
         {
-            // Default to a preceeding blank line if the object has first-on-line annotations, or if
-            // it's not also a CompilerDirective type.
-            if (HasFirstOnLineAnnotations || !(previous is CompilerDirective))
-                return 2;
-            return 1;
+            get { return true; }  // Default is no indentation for compiler directives
         }
 
         /// <summary>
@@ -98,32 +82,13 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the compiler directive should be indented.
+        /// Determine if the specified comment should be associated with the current code object during parsing.
         /// </summary>
-        public virtual bool HasNoIndentationDefault
+        public override bool AssociateCommentWhenParsing(CommentBase comment)
         {
-            get { return true; }  // Default is no indentation for compiler directives
+            // Only associate regular comments with compiler directives, not doc comments
+            return (comment is Comment);
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
-        /// The keyword associated with the compiler directive (if any).
-        /// </summary>
-        public virtual string DirectiveKeyword
-        {
-            get { return null; }
-        }
-
-        protected virtual string ToStringDirective(RenderFlags flags)
-        {
-            return DirectiveKeyword;
-        }
-
-        protected virtual void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        { }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -162,6 +127,24 @@ namespace Nova.CodeDOM
                 writer.EndIndentation(this);
         }
 
-        #endregion
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Default to a preceeding blank line if the object has first-on-line annotations, or if
+            // it's not also a CompilerDirective type.
+            if (HasFirstOnLineAnnotations || !(previous is CompilerDirective))
+                return 2;
+            return 1;
+        }
+
+        protected virtual void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        { }
+
+        protected virtual string ToStringDirective(RenderFlags flags)
+        {
+            return DirectiveKeyword;
+        }
     }
 }

@@ -2,12 +2,11 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
+using Nova.Parsing;
+using Nova.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-
-using Nova.Parsing;
-using Nova.Rendering;
 
 namespace Nova.CodeDOM
 {
@@ -16,14 +15,38 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class TypeParameterConstraint : CodeObject
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse between constraints.
+        /// </summary>
+        public const string ParseTokenSeparator = Expression.ParseTokenSeparator;
 
         protected TypeParameterConstraint()
         { }
 
-        #endregion
+        protected TypeParameterConstraint(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// The attribute of the constraint.
+        /// </summary>
+        public virtual GenericParameterAttributes ConstraintAttribute
+        {
+            get { return GenericParameterAttributes.None; }
+        }
+
+        public virtual string ConstraintText
+        {
+            get { return ""; }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// Create a collection of type parameter constraints for the specified type parameter.
@@ -43,31 +66,6 @@ namespace Nova.CodeDOM
             return typeParameterConstraints;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The attribute of the constraint.
-        /// </summary>
-        public virtual GenericParameterAttributes ConstraintAttribute
-        {
-            get { return GenericParameterAttributes.None; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse between constraints.
-        /// </summary>
-        public const string ParseTokenSeparator = Expression.ParseTokenSeparator;
-
-        protected TypeParameterConstraint(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Parse a <see cref="TypeParameterConstraint"/>.
         /// </summary>
@@ -79,38 +77,20 @@ namespace Nova.CodeDOM
                 case ClassConstraint.ParseToken:
                     constraint = new ClassConstraint(parser, parent);
                     break;
+
                 case StructConstraint.ParseToken:
                     constraint = new StructConstraint(parser, parent);
                     break;
+
                 case NewConstraint.ParseToken:
                     constraint = new NewConstraint(parser, parent);
                     break;
+
                 default:
                     constraint = new TypeConstraint(parser, parent);
                     break;
             }
             return constraint;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public virtual string ConstraintText
-        {
-            get { return ""; }
         }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
@@ -130,7 +110,5 @@ namespace Nova.CodeDOM
         {
             writer.Write(ConstraintText);
         }
-
-        #endregion
     }
 }

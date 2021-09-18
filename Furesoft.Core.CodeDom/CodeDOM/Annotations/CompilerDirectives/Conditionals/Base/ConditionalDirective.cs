@@ -2,11 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections.Generic;
-
 using Nova.Parsing;
 using Nova.Rendering;
 using Nova.Utilities;
+using System.Collections.Generic;
 
 namespace Nova.CodeDOM
 {
@@ -15,21 +14,15 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class ConditionalDirective : ConditionalDirectiveBase
     {
-        #region /* FIELDS */
-
         protected bool _isActive;
         protected string _skippedText;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected ConditionalDirective()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected ConditionalDirective(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// True if this part of a chain of conditional directives is the active one.
@@ -51,13 +44,24 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        public override void AsText(CodeWriter writer, RenderFlags flags)
+        {
+            base.AsText(writer, flags);
 
-        #region /* PARSING */
-
-        protected ConditionalDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+            if (!string.IsNullOrEmpty(_skippedText) && !flags.HasFlag(RenderFlags.Description))
+            {
+                bool isPrefix = flags.HasFlag(RenderFlags.IsPrefix);
+                string[] lines = _skippedText.Split('\n');
+                foreach (string line in lines)
+                {
+                    if (!isPrefix)
+                        writer.WriteLine();
+                    writer.Write(line);
+                    if (isPrefix)
+                        writer.WriteLine();
+                }
+            }
+        }
 
         protected void SkipSection(Parser parser)
         {
@@ -151,30 +155,5 @@ namespace Nova.CodeDOM
                 _skippedText = _skippedText.Replace("\n" + new string(' ', minimumPrefixedSpaces), "\n");
             }
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsText(CodeWriter writer, RenderFlags flags)
-        {
-            base.AsText(writer, flags);
-
-            if (!string.IsNullOrEmpty(_skippedText) && !flags.HasFlag(RenderFlags.Description))
-            {
-                bool isPrefix = flags.HasFlag(RenderFlags.IsPrefix);
-                string[] lines = _skippedText.Split('\n');
-                foreach (string line in lines)
-                {
-                    if (!isPrefix)
-                        writer.WriteLine();
-                    writer.Write(line);
-                    if (isPrefix)
-                        writer.WriteLine();
-                }
-            }
-        }
-
-        #endregion
     }
 }

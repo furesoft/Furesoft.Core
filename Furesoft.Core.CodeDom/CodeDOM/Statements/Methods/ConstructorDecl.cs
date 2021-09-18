@@ -14,16 +14,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ConstructorDecl : MethodDeclBase
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// Optional ThisInitializer or BaseInitializer call to another constructor.
         /// </summary>
         protected ConstructorInitializer _initializer;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="ConstructorDecl"/>.
@@ -53,25 +47,28 @@ namespace Nova.CodeDOM
             : base(null, null, body, parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="ConstructorDecl"/>.
-        /// </summary>
-        public override string Name
+        protected ConstructorDecl(Parser parser, CodeObject parent, ParseFlags flags)
+                    : base(parser, parent)
         {
-            get
-            {
-                // Always use the name of the current parent TypeDecl if possible.
-                if (_parent is TypeDecl)
-                    return ((TypeDecl)_parent).Name;
+            ParseMethodNameAndType(parser, parent, true, true);
+            _name = null;                          // Clear name (we use the parent's name instead)
+            ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
 
-                // The _name field should normally be null, but might be a string in rare
-                // cases, such as a compiler-generated ConstructorDecl for a Type parent.
-                return (string)_name;
-            }
+            // Move any trailing compiler directives to the Infix2 position (assume we have an initializer)
+            MoveAnnotations(AnnotationFlags.IsPostfix, AnnotationFlags.IsInfix2);
+
+            ParseParameters(parser);  // Parse the parameters
+
+            // Check for compiler directives, storing them as infix annotations on the parent
+            Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsInfix2);
+
+            SetField(ref _initializer, ConstructorInitializer.Parse(parser, this), false);
+
+            // If we don't have an initializer, move any trailing compiler directives to the Postfix position
+            if (_initializer == null)
+                MoveAnnotations(AnnotationFlags.IsInfix2, AnnotationFlags.IsPostfix);
+
+            ParseTerminatorOrBody(parser, flags);
         }
 
         /// <summary>
@@ -91,9 +88,62 @@ namespace Nova.CodeDOM
             set { SetField(ref _initializer, value, true); }
         }
 
-        #endregion
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_initializer == null || (!_initializer.IsFirstOnLine && _initializer.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_initializer != null)
+                {
+                    if (value)
+                        _initializer.IsFirstOnLine = false;
+                    _initializer.IsSingleLine = value;
+                }
+            }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// The name of the <see cref="ConstructorDecl"/>.
+        /// </summary>
+        public override string Name
+        {
+            get
+            {
+                // Always use the name of the current parent TypeDecl if possible.
+                if (_parent is TypeDecl)
+                    return ((TypeDecl)_parent).Name;
+
+                // The _name field should normally be null, but might be a string in rare
+                // cases, such as a compiler-generated ConstructorDecl for a Type parent.
+                return (string)_name;
+            }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="ConstructorDecl"/>.
+        /// </summary>
+        public static ConstructorDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // Validate that we have an unused identifier token that matches our parent TypeDecl name
+            // (otherwise, abort and give MethodDecl a chance to parse it)
+            if (parser.HasUnusedIdentifier && parent is TypeDecl && parser.LastUnusedTokenText == ((TypeDecl)parent).Name)
+                return new ConstructorDecl(parser, parent, flags);
+            return null;
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            ConstructorDecl clone = (ConstructorDecl)base.Clone();
+            clone.CloneField(ref clone._initializer, _initializer);
+            return clone;
+        }
 
         /// <summary>
         /// Create a reference to the <see cref="ConstructorDecl"/>.
@@ -122,66 +172,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            ConstructorDecl clone = (ConstructorDecl)base.Clone();
-            clone.CloneField(ref clone._initializer, _initializer);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 0 (MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400)
-            Parser.AddParsePoint(ParameterDecl.ParseTokenStart, Parse, typeof(TypeDecl));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="ConstructorDecl"/>.
-        /// </summary>
-        public static ConstructorDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // Validate that we have an unused identifier token that matches our parent TypeDecl name
-            // (otherwise, abort and give MethodDecl a chance to parse it)
-            if (parser.HasUnusedIdentifier && parent is TypeDecl && parser.LastUnusedTokenText == ((TypeDecl)parent).Name)
-                return new ConstructorDecl(parser, parent, flags);
-            return null;
-        }
-
-        protected ConstructorDecl(Parser parser, CodeObject parent, ParseFlags flags)
-            : base(parser, parent)
-        {
-            ParseMethodNameAndType(parser, parent, true, true);
-            _name = null;                          // Clear name (we use the parent's name instead)
-            ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
-
-            // Move any trailing compiler directives to the Infix2 position (assume we have an initializer)
-            MoveAnnotations(AnnotationFlags.IsPostfix, AnnotationFlags.IsInfix2);
-
-            ParseParameters(parser);  // Parse the parameters
-
-            // Check for compiler directives, storing them as infix annotations on the parent
-            Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsInfix2);
-
-            SetField(ref _initializer, ConstructorInitializer.Parse(parser, this), false);
-
-            // If we don't have an initializer, move any trailing compiler directives to the Postfix position
-            if (_initializer == null)
-                MoveAnnotations(AnnotationFlags.IsInfix2, AnnotationFlags.IsPostfix);
-
-            ParseTerminatorOrBody(parser, flags);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
         /// Reformat the <see cref="Block"/> body.
         /// </summary>
         public override void ReformatBlock()
@@ -193,46 +183,15 @@ namespace Nova.CodeDOM
                 _initializer.IsFirstOnLine = _body.IsFirstOnLine;
         }
 
-        protected override void DefaultFormatField(CodeObject field)
+        internal static void AddParsePoints()
         {
-            base.DefaultFormatField(field);
-
-            // Default the constructor initializer IsFirstOnLine setting to match the body
-            if (!field.IsNewLinesSet)
-                field.SetNewLines((_body != null && _body.IsFirstOnLine) ? 1 : 0);
+            // Use a parse-priority of 0 (MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400)
+            Parser.AddParsePoint(ParameterDecl.ParseTokenStart, Parse, typeof(TypeDecl));
         }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_initializer == null || (!_initializer.IsFirstOnLine && _initializer.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_initializer != null)
-                {
-                    if (value)
-                        _initializer.IsFirstOnLine = false;
-                    _initializer.IsSingleLine = value;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
             writer.Write(Name);
-        }
-
-        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
-        {
-            if (_initializer == null)
-                base.AsTextSuffix(writer, flags);
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
@@ -248,6 +207,19 @@ namespace Nova.CodeDOM
             base.AsTextAfter(writer, flags);
         }
 
-        #endregion
+        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
+        {
+            if (_initializer == null)
+                base.AsTextSuffix(writer, flags);
+        }
+
+        protected override void DefaultFormatField(CodeObject field)
+        {
+            base.DefaultFormatField(field);
+
+            // Default the constructor initializer IsFirstOnLine setting to match the body
+            if (!field.IsNewLinesSet)
+                field.SetNewLines((_body != null && _body.IsFirstOnLine) ? 1 : 0);
+        }
     }
 }

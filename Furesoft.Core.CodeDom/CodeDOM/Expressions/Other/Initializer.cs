@@ -2,11 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections.Generic;
-using System.Linq;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Nova.CodeDOM
 {
@@ -15,14 +14,18 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Initializer : Expression
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the end of an initializer.
+        /// </summary>
+        public const string ParseTokenEnd = "}";
 
-        protected ChildList<Expression> _expressions;
+        /// <summary>
+        /// The token used to parse the start of an initializer.
+        /// </summary>
+        public const string ParseTokenStart = "{";
+
         protected byte _endNewLines;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected ChildList<Expression> _expressions;
 
         /// <summary>
         /// Create an <see cref="Initializer"/>, with the optional child <see cref="Expression"/>s.
@@ -32,109 +35,6 @@ namespace Nova.CodeDOM
             CreateExpressions().AddRange(expressions);
             foreach (Expression expression in expressions)
                 expression.FormatAsArgument();
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// A collection of child <see cref="Expression"/>s.
-        /// </summary>
-        public ChildList<Expression> Expressions
-        {
-            get { return _expressions; }
-        }
-
-        /// <summary>
-        /// True if there are any child <see cref="Expression"/>s.
-        /// </summary>
-        public bool HasExpressions
-        {
-            get { return (_expressions != null && _expressions.Count > 0); }
-        }
-
-        /// <summary>
-        /// The "Infix" End-Of-Line comment for the Initializer (if any) - appears after the open brace.
-        /// </summary>
-        /// <remarks>
-        /// This property allows for the very convenient setting of Infix EOL comments in object initializers.
-        /// Although there is support for multiple Infix EOL comments on the same object, this property doesn't
-        /// support that, returning the first one that it finds, and replacing all existing ones when set.
-        /// </remarks>
-        public string InfixEOLComment
-        {
-            get
-            {
-                // Just return the first Infix EOL comment if there is more than one
-                if (_annotations != null)
-                {
-                    Comment comment = (Comment)Enumerable.FirstOrDefault(_annotations, delegate(Annotation annotation) { return annotation is Comment && annotation.IsEOL && annotation.IsInfix; });
-                    if (comment != null)
-                        return comment.Text;
-                }
-                return null;
-            }
-            set
-            {
-                // Remove all existing Infix EOL comments before adding the new one
-                RemoveAllAnnotationsWhere<Comment>(delegate(Comment annotation) { return annotation.IsEOL && annotation.IsInfix; });
-                if (value != null)
-                    AttachAnnotation(new Comment(value, CommentFlags.EOL) { IsInfix = true });
-            }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create the list of <see cref="Expression"/>s, or return the existing one.
-        /// </summary>
-        /// <returns></returns>
-        public ChildList<Expression> CreateExpressions()
-        {
-            if (_expressions == null)
-                _expressions = new ChildList<Expression>(this);
-            return _expressions;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Initializer clone = (Initializer)base.Clone();
-            clone._expressions = ChildListHelpers.Clone(_expressions, clone);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of an initializer.
-        /// </summary>
-        public const string ParseTokenStart = "{";
-
-        /// <summary>
-        /// The token used to parse the end of an initializer.
-        /// </summary>
-        public const string ParseTokenEnd = "}";
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 400 (GenericMethodDecl uses 0, UnresolvedRef uses 100, PropertyDeclBase uses 200, BlockDecl uses 300)
-            Parser.AddParsePoint(ParseTokenStart, 400, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="Initializer"/>.
-        /// </summary>
-        public static Initializer Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Initializer(parser, parent);
         }
 
         /// <summary>
@@ -168,9 +68,88 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The number of newlines preceeding the closing '}' (0 to N).
+        /// </summary>
+        public int EndNewLines
+        {
+            get { return _endNewLines; }
+            set { _endNewLines = (byte)value; }
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// A collection of child <see cref="Expression"/>s.
+        /// </summary>
+        public ChildList<Expression> Expressions
+        {
+            get { return _expressions; }
+        }
+
+        /// <summary>
+        /// True if there are any child <see cref="Expression"/>s.
+        /// </summary>
+        public bool HasExpressions
+        {
+            get { return (_expressions != null && _expressions.Count > 0); }
+        }
+
+        /// <summary>
+        /// Always <c>false</c>.
+        /// </summary>
+        public override bool HasTerminator
+        {
+            // Intializers don't have terminators (any terminator will belong to the parent), so disable use of this flag
+            get { return false; }
+            set { }
+        }
+
+        /// <summary>
+        /// The "Infix" End-Of-Line comment for the Initializer (if any) - appears after the open brace.
+        /// </summary>
+        /// <remarks>
+        /// This property allows for the very convenient setting of Infix EOL comments in object initializers.
+        /// Although there is support for multiple Infix EOL comments on the same object, this property doesn't
+        /// support that, returning the first one that it finds, and replacing all existing ones when set.
+        /// </remarks>
+        public string InfixEOLComment
+        {
+            get
+            {
+                // Just return the first Infix EOL comment if there is more than one
+                if (_annotations != null)
+                {
+                    Comment comment = (Comment)Enumerable.FirstOrDefault(_annotations, delegate (Annotation annotation) { return annotation is Comment && annotation.IsEOL && annotation.IsInfix; });
+                    if (comment != null)
+                        return comment.Text;
+                }
+                return null;
+            }
+            set
+            {
+                // Remove all existing Infix EOL comments before adding the new one
+                RemoveAllAnnotationsWhere<Comment>(delegate (Comment annotation) { return annotation.IsEOL && annotation.IsInfix; });
+                if (value != null)
+                    AttachAnnotation(new Comment(value, CommentFlags.EOL) { IsInfix = true });
+            }
+        }
+
+        /// <summary>
+        /// True if the closing paren or bracket is on a new line.
+        /// </summary>
+        public override bool IsEndFirstOnLine
+        {
+            get { return (_endNewLines > 0); }
+            set
+            {
+                if (value)
+                {
+                    if (_endNewLines == 0)
+                        _endNewLines = 1;
+                }
+                else
+                    _endNewLines = 0;
+            }
+        }
 
         /// <summary>
         /// Determines if the code object only requires a single line for display.
@@ -196,45 +175,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The number of newlines preceeding the closing '}' (0 to N).
+        /// Parse an <see cref="Initializer"/>.
         /// </summary>
-        public int EndNewLines
+        public static Initializer Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            get { return _endNewLines; }
-            set { _endNewLines = (byte)value; }
+            return new Initializer(parser, parent);
         }
-
-        /// <summary>
-        /// True if the closing paren or bracket is on a new line.
-        /// </summary>
-        public override bool IsEndFirstOnLine
-        {
-            get { return (_endNewLines > 0); }
-            set
-            {
-                if (value)
-                {
-                    if (_endNewLines == 0)
-                        _endNewLines = 1;
-                }
-                else
-                    _endNewLines = 0;
-            }
-        }
-
-        /// <summary>
-        /// Always <c>false</c>.
-        /// </summary>
-        public override bool HasTerminator
-        {
-            // Intializers don't have terminators (any terminator will belong to the parent), so disable use of this flag
-            get { return false; }
-            set { }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -322,6 +268,88 @@ namespace Nova.CodeDOM
             writer.Write(ParseTokenEnd);
         }
 
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Initializer clone = (Initializer)base.Clone();
+            clone._expressions = ChildListHelpers.Clone(_expressions, clone);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create the list of <see cref="Expression"/>s, or return the existing one.
+        /// </summary>
+        /// <returns></returns>
+        public ChildList<Expression> CreateExpressions()
+        {
+            if (_expressions == null)
+                _expressions = new ChildList<Expression>(this);
+            return _expressions;
+        }
+
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 400 (GenericMethodDecl uses 0, UnresolvedRef uses 100, PropertyDeclBase uses 200, BlockDecl uses 300)
+            Parser.AddParsePoint(ParseTokenStart, 400, Parse);
+        }
+
+        protected int[] CalculateColumnWidths(CodeWriter writer)
+        {
+            // Check for alignment of Initializer members into columns
+            List<int> columnWidths = new List<int> { 0 };
+            if (_expressions != null && _expressions.Count > 1)
+            {
+                int column = 0;
+                bool isFirst = true;
+                bool multiLine = false;
+                int lineLength = 0;
+                int maxLineLength = 0;
+                foreach (Expression expression in _expressions)
+                {
+                    // Determine the current column, handling line wraps
+                    if (expression.IsFirstOnLine)
+                    {
+                        column = 0;
+                        if (!isFirst)
+                            multiLine = true;
+                        if (lineLength > maxLineLength)
+                            maxLineLength = lineLength;
+                        lineLength = 0;
+                    }
+                    else
+                    {
+                        if (++column > columnWidths.Count - 1)
+                            columnWidths.Add(0);
+                    }
+
+                    // Don't align if there is a newline in a multi-column list.  Also, don't align object initializers for now.
+                    Comment postfixComment = expression.GetComment(delegate (Comment comment) { return comment.IsPostfix; });
+                    if ((multiLine && postfixComment != null && postfixComment.NewLines > 1 && columnWidths.Count > 1) || expression is Assignment)
+                    {
+                        columnWidths = null;
+                        break;
+                    }
+
+                    int length = expression.AsTextLength(RenderFlags.LengthFlags, writer.AlignmentStateStack);
+                    if (length > columnWidths[column])
+                        columnWidths[column] = length;
+                    lineLength += length + 2;  // Calculate approximate line length, including ", "
+                    isFirst = false;
+                }
+                if (columnWidths != null)
+                {
+                    // Abort alignment if not multi-line, or if the alignment exceeds the max column *and* increases the width by more than 20%
+                    int alignmentWidth = Enumerable.Sum(columnWidths, delegate (int width) { return width + 2; });
+                    if (!multiLine || (alignmentWidth > MaximumLineLength && (double)alignmentWidth / maxLineLength > 1.2))
+                        columnWidths = null;
+                }
+            }
+
+            return (columnWidths != null ? columnWidths.ToArray() : null);
+        }
+
         protected int[] CalculateNestedColumnWidths()
         {
             // Format tables made of nested Initializers into columns if possible
@@ -356,62 +384,5 @@ namespace Nova.CodeDOM
             }
             return (columnWidths != null ? columnWidths.ToArray() : null);
         }
-
-        protected int[] CalculateColumnWidths(CodeWriter writer)
-        {
-            // Check for alignment of Initializer members into columns
-            List<int> columnWidths = new List<int> { 0 };
-            if (_expressions != null && _expressions.Count > 1)
-            {
-                int column = 0;
-                bool isFirst = true;
-                bool multiLine = false;
-                int lineLength = 0;
-                int maxLineLength = 0;
-                foreach (Expression expression in _expressions)
-                {
-                    // Determine the current column, handling line wraps
-                    if (expression.IsFirstOnLine)
-                    {
-                        column = 0;
-                        if (!isFirst)
-                            multiLine = true;
-                        if (lineLength > maxLineLength)
-                            maxLineLength = lineLength;
-                        lineLength = 0;
-                    }
-                    else
-                    {
-                        if (++column > columnWidths.Count - 1)
-                            columnWidths.Add(0);
-                    }
-
-                    // Don't align if there is a newline in a multi-column list.  Also, don't align object initializers for now.
-                    Comment postfixComment = expression.GetComment(delegate(Comment comment) { return comment.IsPostfix; });
-                    if ((multiLine && postfixComment != null && postfixComment.NewLines > 1 && columnWidths.Count > 1) || expression is Assignment)
-                    {
-                        columnWidths = null;
-                        break;
-                    }
-
-                    int length = expression.AsTextLength(RenderFlags.LengthFlags, writer.AlignmentStateStack);
-                    if (length > columnWidths[column])
-                        columnWidths[column] = length;
-                    lineLength += length + 2;  // Calculate approximate line length, including ", "
-                    isFirst = false;
-                }
-                if (columnWidths != null)
-                {
-                    // Abort alignment if not multi-line, or if the alignment exceeds the max column *and* increases the width by more than 20%
-                    int alignmentWidth = Enumerable.Sum(columnWidths, delegate(int width) { return width + 2; });
-                    if (!multiLine || (alignmentWidth > MaximumLineLength && (double)alignmentWidth / maxLineLength > 1.2))
-                        columnWidths = null;
-                }
-            }
-
-            return (columnWidths != null ? columnWidths.ToArray() : null);
-        }
-
-        #endregion
     }
 }

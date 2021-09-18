@@ -22,8 +22,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class TypeParameterRef : TypeRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Construct a <see cref="TypeParameterRef"/> from a <see cref="TypeParameter"/>.
         /// </summary>
@@ -108,21 +106,12 @@ namespace Nova.CodeDOM
             : base(type, false, arrayRanks)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The name of the <see cref="SymbolicRef"/>.
+        /// Always <c>false</c>.
         /// </summary>
-        public override string Name
+        public override bool IsConst
         {
-            get
-            {
-                if (_reference is TypeParameter)
-                    return ((TypeParameter)_reference).Name;
-                return ((Type)_reference).Name;
-            }
+            get { return false; }
         }
 
         /// <summary>
@@ -136,7 +125,7 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Always <c>true</c>.
         /// </summary>
-        public override bool IsPossibleDelegateType
+        public override bool IsGenericParameter
         {
             get { return true; }
         }
@@ -144,7 +133,7 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Always <c>true</c>.
         /// </summary>
-        public override bool IsGenericParameter
+        public override bool IsPossibleDelegateType
         {
             get { return true; }
         }
@@ -186,18 +175,23 @@ namespace Nova.CodeDOM
                         return true;
                     Type[] constraints = ((Type)_reference).GetGenericParameterConstraints();
                     if (constraints.Length > 0)
-                        return Enumerable.Any(constraints, delegate(Type constraintType) { return constraintType.IsValueType; });
+                        return Enumerable.Any(constraints, delegate (Type constraintType) { return constraintType.IsValueType; });
                 }
                 return false;
             }
         }
 
         /// <summary>
-        /// Always <c>false</c>.
+        /// The name of the <see cref="SymbolicRef"/>.
         /// </summary>
-        public override bool IsConst
+        public override string Name
         {
-            get { return false; }
+            get
+            {
+                if (_reference is TypeParameter)
+                    return ((TypeParameter)_reference).Name;
+                return ((Type)_reference).Name;
+            }
         }
 
         /// <summary>
@@ -213,9 +207,114 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Get the declaring generic type (returns null if the parent is a method).
+        /// </summary>
+        public override TypeRefBase GetDeclaringType()
+        {
+            return GetDeclaringTypeOrMethod() as TypeRef;
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Get the declaring generic type or method.
+        /// </summary>
+        public TypeRefBase GetDeclaringTypeOrMethod()
+        {
+            object reference = GetReferencedType();
+            if (reference is TypeParameter)
+            {
+                CodeObject parent = ((TypeParameter)reference).Parent;
+                if (parent is GenericMethodDecl)
+                {
+                    GenericMethodDecl methodDecl = (GenericMethodDecl)parent;
+                    return methodDecl.CreateRef(ChildList<Expression>.CreateListOfNulls(methodDecl.TypeParameterCount));
+                }
+                if (parent is ITypeDecl)
+                {
+                    ITypeDecl typeDecl = (ITypeDecl)parent;
+                    return typeDecl.CreateRef(ChildList<Expression>.CreateListOfNulls(typeDecl.TypeParameterCount));
+                }
+            }
+            else if (reference is Type)
+            {
+                Type typeParameter = (Type)reference;
+                if (typeParameter.DeclaringMethod != null)
+                    return MethodRef.Create(typeParameter.DeclaringMethod);
+                Type declaringType = ((Type)reference).DeclaringType;
+                return (declaringType != null ? Create(declaringType) : null);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the name of the declaring generic type or method.
+        /// </summary>
+        public string GetDeclaringTypeOrMethodName()
+        {
+            return GetDeclaringTypeOrMethodName(GetReferencedType());
+        }
+
+        /// <summary>
+        /// Calculate a hash code for the referenced object which is the same for all references where IsSameRef() is true.
+        /// </summary>
+        public override int GetIsSameRefHashCode()
+        {
+            // Make the hash codes as unique as possible while still ensuring that they are identical
+            // for any objects for which IsSameRef() returns true.
+            int hashCode = Name.GetHashCode();
+            string namespaceName = NamespaceName;
+            if (namespaceName != null) hashCode ^= namespaceName.GetHashCode();
+            if (_arrayRanks != null)
+            {
+                foreach (int rank in _arrayRanks)
+                    hashCode = (hashCode << 1) ^ rank;
+            }
+            return hashCode;
+        }
+
+        /// <summary>
+        /// Get the actual type reference (TypeParameter or Type).
+        /// </summary>
+        /// <returns>The TypeParameter or Type.</returns>
+        public override object GetReferencedType()
+        {
+            return Reference;
+        }
+
+        /// <summary>
+        /// Get the type constraints (if any) for this type parameter.
+        /// </summary>
+        public List<TypeRefBase> GetTypeConstraints()
+        {
+            List<TypeRefBase> constraintTypeRefs = null;
+            if (_reference is TypeParameter)
+            {
+                List<TypeParameterConstraint> constraints = ((TypeParameter)_reference).GetConstraints();
+                if (constraints != null)
+                {
+                    foreach (TypeParameterConstraint constraint in constraints)
+                    {
+                        if (constraint is TypeConstraint)
+                        {
+                            if (constraintTypeRefs == null)
+                                constraintTypeRefs = new List<TypeRefBase>();
+                            constraintTypeRefs.Add(((TypeConstraint)constraint).Type.SkipPrefixes() as TypeRefBase);
+                        }
+                    }
+                }
+            }
+            else //if (_reference is Type)
+            {
+                Type[] constraintTypes = ((Type)_reference).GetGenericParameterConstraints();
+                if (constraintTypes.Length > 0)
+                {
+                    constraintTypeRefs = new List<TypeRefBase>();
+                    foreach (Type typeConstraint in constraintTypes)
+                        constraintTypeRefs.Add(Create(typeConstraint));
+                }
+            }
+            return constraintTypeRefs;
+        }
 
         /// <summary>
         /// Determine if the current reference refers to the same code object as the specified reference.
@@ -255,80 +354,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Calculate a hash code for the referenced object which is the same for all references where IsSameRef() is true.
-        /// </summary>
-        public override int GetIsSameRefHashCode()
-        {
-            // Make the hash codes as unique as possible while still ensuring that they are identical
-            // for any objects for which IsSameRef() returns true.
-            int hashCode = Name.GetHashCode();
-            string namespaceName = NamespaceName;
-            if (namespaceName != null) hashCode ^= namespaceName.GetHashCode();
-            if (_arrayRanks != null)
-            {
-                foreach (int rank in _arrayRanks)
-                    hashCode = (hashCode << 1) ^ rank;
-            }
-            return hashCode;
-        }
-
-        /// <summary>
-        /// Get the actual type reference (TypeParameter or Type).
-        /// </summary>
-        /// <returns>The TypeParameter or Type.</returns>
-        public override object GetReferencedType()
-        {
-            return Reference;
-        }
-
-        /// <summary>
-        /// Get the declaring generic type or method.
-        /// </summary>
-        public TypeRefBase GetDeclaringTypeOrMethod()
-        {
-            object reference = GetReferencedType();
-            if (reference is TypeParameter)
-            {
-                CodeObject parent = ((TypeParameter)reference).Parent;
-                if (parent is GenericMethodDecl)
-                {
-                    GenericMethodDecl methodDecl = (GenericMethodDecl)parent;
-                    return methodDecl.CreateRef(ChildList<Expression>.CreateListOfNulls(methodDecl.TypeParameterCount));
-                }
-                if (parent is ITypeDecl)
-                {
-                    ITypeDecl typeDecl = (ITypeDecl)parent;
-                    return typeDecl.CreateRef(ChildList<Expression>.CreateListOfNulls(typeDecl.TypeParameterCount));
-                }
-            }
-            else if (reference is Type)
-            {
-                Type typeParameter = (Type)reference;
-                if (typeParameter.DeclaringMethod != null)
-                    return MethodRef.Create(typeParameter.DeclaringMethod);
-                Type declaringType = ((Type)reference).DeclaringType;
-                return (declaringType != null ? Create(declaringType) : null);
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the declaring generic type (returns null if the parent is a method).
-        /// </summary>
-        public override TypeRefBase GetDeclaringType()
-        {
-            return GetDeclaringTypeOrMethod() as TypeRef;
-        }
-
-        /// <summary>
-        /// Get the name of the declaring generic type or method.
-        /// </summary>
-        public string GetDeclaringTypeOrMethodName()
-        {
-            return GetDeclaringTypeOrMethodName(GetReferencedType());
-        }
-
-        /// <summary>
         /// Get the name of the declaring generic type or method for the specified type parameter
         /// (<see cref="TypeParameter"/> or <see cref="Type"/>).
         /// </summary>
@@ -350,42 +375,5 @@ namespace Nova.CodeDOM
             }
             return null;
         }
-
-        /// <summary>
-        /// Get the type constraints (if any) for this type parameter.
-        /// </summary>
-        public List<TypeRefBase> GetTypeConstraints()
-        {
-            List<TypeRefBase> constraintTypeRefs = null;
-            if (_reference is TypeParameter)
-            {
-                List<TypeParameterConstraint> constraints = ((TypeParameter)_reference).GetConstraints();
-                if (constraints != null)
-                {
-                    foreach (TypeParameterConstraint constraint in constraints)
-                    {
-                        if (constraint is TypeConstraint)
-                        {
-                            if (constraintTypeRefs == null)
-                                constraintTypeRefs = new List<TypeRefBase>();
-                            constraintTypeRefs.Add(((TypeConstraint)constraint).Type.SkipPrefixes() as TypeRefBase);
-                        }
-                    }
-                }
-            }
-            else //if (_reference is Type)
-            {
-                Type[] constraintTypes = ((Type)_reference).GetGenericParameterConstraints();
-                if (constraintTypes.Length > 0)
-                {
-                    constraintTypeRefs = new List<TypeRefBase>();
-                    foreach (Type typeConstraint in constraintTypes)
-                        constraintTypeRefs.Add(Create(typeConstraint));
-                }
-            }
-            return constraintTypeRefs;
-        }
-
-        #endregion
     }
 }

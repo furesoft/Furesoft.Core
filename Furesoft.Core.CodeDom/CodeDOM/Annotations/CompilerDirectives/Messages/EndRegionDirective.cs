@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class EndRegionDirective : MessageDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "endregion";
 
         /// <summary>
         /// Create an <see cref="EndRegionDirective"/>.
@@ -27,28 +30,6 @@ namespace Nova.CodeDOM
             : base(null)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "endregion";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="EndRegionDirective"/>.
-        /// </summary>
-        public static EndRegionDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new EndRegionDirective(parser, parent);
-        }
-
         /// <summary>
         /// Parse an <see cref="EndRegionDirective"/>.
         /// </summary>
@@ -63,24 +44,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// The keyword associated with the compiler directive (if any).
         /// </summary>
-        public override bool AssociateCommentWhenParsing(CommentBase comment)
+        public override string DirectiveKeyword
         {
-            return false;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
-        /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
-        {
-            // Always default to a blank line before an end-region directive
-            return 2;
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -91,18 +59,34 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
-        /// The keyword associated with the compiler directive (if any).
+        /// Parse an <see cref="EndRegionDirective"/>.
         /// </summary>
-        public override string DirectiveKeyword
+        public static EndRegionDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            get { return ParseToken; }
+            return new EndRegionDirective(parser, parent);
         }
 
-        #endregion
+        /// <summary>
+        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// </summary>
+        public override bool AssociateCommentWhenParsing(CommentBase comment)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Always default to a blank line before an end-region directive
+            return 2;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
     }
 }

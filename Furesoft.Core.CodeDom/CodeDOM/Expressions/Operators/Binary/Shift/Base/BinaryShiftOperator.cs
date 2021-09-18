@@ -11,24 +11,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class BinaryShiftOperator : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected BinaryShiftOperator(Expression left, Expression right)
             : base(left, right)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        #endregion
-
-        #region /* PARSING */
-
         protected BinaryShiftOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
     }
 }

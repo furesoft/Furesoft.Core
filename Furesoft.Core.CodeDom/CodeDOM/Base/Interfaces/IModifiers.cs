@@ -10,19 +10,9 @@ namespace Nova.CodeDOM
     public interface IModifiers
     {
         /// <summary>
-        /// Optional <see cref="Modifiers"/> for the code object.
+        /// True if the code object has internal access.
         /// </summary>
-        Modifiers Modifiers { get; }
-
-        /// <summary>
-        /// True if the code object is static.
-        /// </summary>
-        bool IsStatic { get; set; }
-
-        /// <summary>
-        /// True if the code object has public access.
-        /// </summary>
-        bool IsPublic { get; set; }
+        bool IsInternal { get; set; }
 
         /// <summary>
         /// True if the code object has private access.
@@ -35,9 +25,19 @@ namespace Nova.CodeDOM
         bool IsProtected { get; set; }
 
         /// <summary>
-        /// True if the code object has internal access.
+        /// True if the code object has public access.
         /// </summary>
-        bool IsInternal { get; set; }
+        bool IsPublic { get; set; }
+
+        /// <summary>
+        /// True if the code object is static.
+        /// </summary>
+        bool IsStatic { get; set; }
+
+        /// <summary>
+        /// Optional <see cref="Modifiers"/> for the code object.
+        /// </summary>
+        Modifiers Modifiers { get; }
 
         /// <summary>
         /// Get the access rights of the code object.

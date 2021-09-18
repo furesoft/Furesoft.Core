@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System;
 
 namespace Nova.CodeDOM
 {
@@ -23,14 +22,18 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ForEach : BlockStatement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "foreach";
 
-        protected LocalDecl _iteration;
+        /// <summary>
+        /// The token used to parse the 'in' part.
+        /// </summary>
+        public const string ParseTokenIn = "in";
+
         protected Expression _collection;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected LocalDecl _iteration;
 
         /// <summary>
         /// Create a <see cref="ForEach"/>.
@@ -52,85 +55,8 @@ namespace Nova.CodeDOM
             Collection = collection;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The <see cref="LocalDecl"/> iteration variable.
-        /// </summary>
-        public LocalDecl Iteration
-        {
-            get { return _iteration; }
-            set
-            {
-                if (value != null && value.Parent != null)
-                    throw new Exception("The LocalDecl used for the iteration variable of a ForEach must be new, not one already owned by another Parent object.");
-                SetField(ref _iteration, value, true);
-            }
-        }
-
-        /// <summary>
-        /// The collection being iterated over.
-        /// </summary>
-        public Expression Collection
-        {
-            get { return _collection; }
-            set { SetField(ref _collection, value, true); }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            ForEach clone = (ForEach)base.Clone();
-            clone.CloneField(ref clone._iteration, _iteration);
-            clone.CloneField(ref clone._collection, _collection);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "foreach";
-
-        /// <summary>
-        /// The token used to parse the 'in' part.
-        /// </summary>
-        public const string ParseTokenIn = "in";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="ForEach"/>.
-        /// </summary>
-        public static ForEach Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new ForEach(parser, parent);
-        }
-
         protected ForEach(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             parser.NextToken();  // Move past 'foreach'
             ParseExpectedToken(parser, Expression.ParseTokenStartGroup);  // Move past '('
@@ -142,9 +68,14 @@ namespace Nova.CodeDOM
             new Block(out _body, parser, this, false);  // Parse the body
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// The collection being iterated over.
+        /// </summary>
+        public Expression Collection
+        {
+            get { return _collection; }
+            set { SetField(ref _collection, value, true); }
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -191,9 +122,51 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The <see cref="LocalDecl"/> iteration variable.
+        /// </summary>
+        public LocalDecl Iteration
+        {
+            get { return _iteration; }
+            set
+            {
+                if (value != null && value.Parent != null)
+                    throw new Exception("The LocalDecl used for the iteration variable of a ForEach must be new, not one already owned by another Parent object.");
+                SetField(ref _iteration, value, true);
+            }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="ForEach"/>.
+        /// </summary>
+        public static ForEach Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new ForEach(parser, parent);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            ForEach clone = (ForEach)base.Clone();
+            clone.CloneField(ref clone._iteration, _iteration);
+            clone.CloneField(ref clone._collection, _collection);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
@@ -202,7 +175,5 @@ namespace Nova.CodeDOM
             writer.Write(ParseTokenIn);
             _collection.AsText(writer, flags | RenderFlags.PrefixSpace);
         }
-
-        #endregion
     }
 }

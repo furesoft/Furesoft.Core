@@ -12,13 +12,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Case : SwitchItem
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "case";
 
         protected Expression _constantExpression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Case"/>.
@@ -38,9 +37,13 @@ namespace Nova.CodeDOM
             ConstantExpression = constant;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected Case(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            parser.NextToken();  // Move past 'case'
+            SetField(ref _constantExpression, Expression.Parse(parser, this, true, ParseTokenTerminator), false);
+            ParseTerminatorAndBody(parser);  // Parse ':' and body (if any)
+        }
 
         /// <summary>
         /// The constant <see cref="Expression"/> of the <see cref="Case"/>.
@@ -50,70 +53,6 @@ namespace Nova.CodeDOM
             get { return _constantExpression; }
             set { SetField(ref _constantExpression, value, true); }
         }
-
-        /// <summary>
-        /// The name of the <see cref="Case"/>.
-        /// </summary>
-        public override string Name
-        {
-            get { return ParseToken + " " + (_constantExpression != null ? _constantExpression.AsString() : null); }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Case clone = (Case)base.Clone();
-            clone.CloneField(ref clone._constantExpression, _constantExpression);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "case";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Case"/>.
-        /// </summary>
-        public static Case Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Case(parser, parent);
-        }
-
-        protected Case(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            parser.NextToken();  // Move past 'case'
-            SetField(ref _constantExpression, Expression.Parse(parser, this, true, ParseTokenTerminator), false);
-            ParseTerminatorAndBody(parser);  // Parse ':' and body (if any)
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
@@ -140,16 +79,49 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// The name of the <see cref="Case"/>.
+        /// </summary>
+        public override string Name
+        {
+            get { return ParseToken + " " + (_constantExpression != null ? _constantExpression.AsString() : null); }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="Case"/>.
+        /// </summary>
+        public static Case Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Case(parser, parent);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Case clone = (Case)base.Clone();
+            clone.CloneField(ref clone._constantExpression, _constantExpression);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_constantExpression != null)
                 _constantExpression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

@@ -11,51 +11,15 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Negative : PreUnaryOperator
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name of the operator.
         /// </summary>
         public const string InternalName = NamePrefix + "UnaryNegation";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create a <see cref="Negative"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public Negative(Expression expression)
-            : base(expression)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="UnaryOperator"/>.
-        /// </summary>
-        public override string GetInternalName()
-        {
-            return InternalName;
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -68,14 +32,22 @@ namespace Nova.CodeDOM
         public const int Precedence = 200;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create a <see cref="Negative"/> operator.
         /// </summary>
-        public const bool LeftAssociative = true;
+        public Negative(Expression expression)
+            : base(expression)
+        { }
 
-        internal static new void AddParsePoints()
+        protected Negative(Parser parser, CodeObject parent)
+                    : base(parser, parent, false)
+        { }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
         {
-            // Use a parse-priority of 100 (Subtract uses 0)
-            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, true, Parse);
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -86,9 +58,13 @@ namespace Nova.CodeDOM
             return new Negative(parser, parent);
         }
 
-        protected Negative(Parser parser, CodeObject parent)
-            : base(parser, parent, false)
-        { }
+        /// <summary>
+        /// The internal name of the <see cref="UnaryOperator"/>.
+        /// </summary>
+        public override string GetInternalName()
+        {
+            return InternalName;
+        }
 
         /// <summary>
         /// Get the precedence of the operator.
@@ -98,6 +74,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (Subtract uses 0)
+            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, true, Parse);
+        }
     }
 }

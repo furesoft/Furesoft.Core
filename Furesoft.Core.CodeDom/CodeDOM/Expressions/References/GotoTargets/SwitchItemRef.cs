@@ -11,8 +11,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class SwitchItemRef : GotoTargetRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="SwitchItemRef"/>.
         /// </summary>
@@ -27,16 +25,10 @@ namespace Nova.CodeDOM
             : base(declaration, false)
         { }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
-            ((SwitchItem)_reference).AsTextGotoTarget(writer, flags &~ RenderFlags.UpdateLineCol);
+            ((SwitchItem)_reference).AsTextGotoTarget(writer, flags & ~RenderFlags.UpdateLineCol);
         }
-
-        #endregion
     }
 }

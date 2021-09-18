@@ -16,59 +16,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public abstract class NewOperator : ArgumentsOperator
     {
-        #region /* FIELDS */
-
         /// <summary>
-        /// Optional array initializer.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        protected Initializer _initializer;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
-        protected NewOperator(Expression expression, params Expression[] parameters)
-            : base(expression, parameters)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// Optional array initializer.
-        /// </summary>
-        public Initializer Initializer
-        {
-            get { return _initializer; }
-            set { SetField(ref _initializer, value, true); }
-        }
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            NewOperator clone = (NewOperator)base.Clone();
-            clone.CloneField(ref clone._initializer, _initializer);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -81,13 +32,50 @@ namespace Nova.CodeDOM
         public const int Precedence = 100;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Optional array initializer.
         /// </summary>
-        public const bool LeftAssociative = true;
+        protected Initializer _initializer;
 
-        internal static new void AddParsePoints()
+        protected NewOperator(Expression expression, params Expression[] parameters)
+            : base(expression, parameters)
+        { }
+
+        protected NewOperator(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// Optional array initializer.
+        /// </summary>
+        public Initializer Initializer
         {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+            get { return _initializer; }
+            set { SetField(ref _initializer, value, true); }
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_initializer == null || (!_initializer.IsFirstOnLine && _initializer.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_initializer != null)
+                {
+                    _initializer.IsFirstOnLine = !value;
+                    _initializer.IsSingleLine = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -123,14 +111,14 @@ namespace Nova.CodeDOM
             return result;
         }
 
-        protected NewOperator(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        protected void ParseInitializer(Parser parser, CodeObject parent)
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
         {
-            if (parser.TokenText == Initializer.ParseTokenStart)
-                SetField(ref _initializer, new Initializer(parser, parent), false);
+            NewOperator clone = (NewOperator)base.Clone();
+            clone.CloneField(ref clone._initializer, _initializer);
+            return clone;
         }
 
         /// <summary>
@@ -141,30 +129,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
+        internal static new void AddParsePoints()
         {
-            get { return (base.IsSingleLine && (_initializer == null || (!_initializer.IsFirstOnLine && _initializer.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_initializer != null)
-                {
-                    _initializer.IsFirstOnLine = !value;
-                    _initializer.IsSingleLine = value;
-                }
-            }
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
         }
-
-        #endregion
-
-        #region /* RENDERING */
 
         protected override void AsTextInitializer(CodeWriter writer, RenderFlags flags)
         {
@@ -179,6 +147,10 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        protected void ParseInitializer(Parser parser, CodeObject parent)
+        {
+            if (parser.TokenText == Initializer.ParseTokenStart)
+                SetField(ref _initializer, new Initializer(parser, parent), false);
+        }
     }
 }

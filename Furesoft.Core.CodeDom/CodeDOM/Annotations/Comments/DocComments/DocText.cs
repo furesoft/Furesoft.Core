@@ -2,9 +2,8 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-
 using Nova.Rendering;
+using System;
 
 namespace Nova.CodeDOM
 {
@@ -17,50 +16,12 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DocText : DocComment
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="DocText"/>.
         /// </summary>
         public DocText(string text)
             : base(text)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The text content of the object.
-        /// </summary>
-        public override string Text
-        {
-            get { return (string)_content; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Add the specified text to the documentation comment.
-        /// </summary>
-        public override void Add(string text)
-        {
-            _content += text;
-        }
-
-        /// <summary>
-        /// Throws an exception if called.
-        /// </summary>
-        public override void Add(DocComment docComment)
-        {
-            throw new Exception("Can't add DocComment objects to DocText objects (add them both to a parent DocComment instead).");
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the code object defaults to starting on a new line.
@@ -70,15 +31,12 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// The text content of the object.
+        /// </summary>
+        public override string Text
         {
-            writer.EscapeUnicode = false;
-            AsTextText(writer, (string)_content, flags);
-            writer.EscapeUnicode = true;
+            get { return (string)_content; }
         }
 
         public static void AsTextText(CodeWriter writer, string text, RenderFlags flags)
@@ -99,6 +57,27 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Add the specified text to the documentation comment.
+        /// </summary>
+        public override void Add(string text)
+        {
+            _content += text;
+        }
+
+        /// <summary>
+        /// Throws an exception if called.
+        /// </summary>
+        public override void Add(DocComment docComment)
+        {
+            throw new Exception("Can't add DocComment objects to DocText objects (add them both to a parent DocComment instead).");
+        }
+
+        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
+        {
+            writer.EscapeUnicode = false;
+            AsTextText(writer, (string)_content, flags);
+            writer.EscapeUnicode = true;
+        }
     }
 }

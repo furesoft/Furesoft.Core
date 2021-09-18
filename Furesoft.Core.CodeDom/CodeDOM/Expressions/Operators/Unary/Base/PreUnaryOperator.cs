@@ -13,15 +13,9 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class PreUnaryOperator : UnaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected PreUnaryOperator(Expression expression)
             : base(expression)
         { }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected PreUnaryOperator(Parser parser, CodeObject parent, bool skipParsing)
             : base(parser, parent)
@@ -38,10 +32,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
@@ -49,7 +39,5 @@ namespace Nova.CodeDOM
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

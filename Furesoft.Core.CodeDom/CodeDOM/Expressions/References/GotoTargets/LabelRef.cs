@@ -9,8 +9,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class LabelRef : GotoTargetRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="LabelRef"/>.
         /// </summary>
@@ -24,7 +22,5 @@ namespace Nova.CodeDOM
         public LabelRef(Label declaration)
             : base(declaration, false)
         { }
-
-        #endregion
     }
 }

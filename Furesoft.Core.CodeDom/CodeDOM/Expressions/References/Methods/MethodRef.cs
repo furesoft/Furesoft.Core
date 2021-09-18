@@ -2,14 +2,13 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
 
 namespace Nova.CodeDOM
 {
@@ -28,16 +27,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class MethodRef : TypeRefBase
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// True if the type arguments are inferred.
         /// </summary>
         public bool HasInferredTypeArguments;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="MethodRef"/> from a <see cref="MethodDeclBase"/>.
@@ -152,37 +145,16 @@ namespace Nova.CodeDOM
             // declaring type must be supplied when they are invoked - these are defaulted in ConstructorRef if omitted.
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The name of the <see cref="MethodRef"/>.
+        /// A <see cref="MethodRef"/> can't have array ranks, so this property always returns null, and throws
+        /// an exception if set to a non-null value.
         /// </summary>
-        public override string Name
+        public override List<int> ArrayRanks
         {
-            get
+            set
             {
-                if (_reference is INamedCodeObject)
-                    return ((INamedCodeObject)_reference).Name;
-                if (_reference is MethodInfo)
-                    return ((MethodInfo)_reference).Name;
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced method is generic.
-        /// </summary>
-        public bool IsGenericMethod
-        {
-            get
-            {
-                if (_reference is MethodDeclBase)
-                    return ((MethodDeclBase)_reference).IsGenericMethod;
-                if (_reference is MethodInfo)
-                    return ((MethodInfo)_reference).IsGenericMethod;
-                return false;
+                if (value != null)
+                    throw new Exception("Can't set array ranks on a MethodRef!");
             }
         }
 
@@ -202,36 +174,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The number of parameters the referenced method has.
-        /// </summary>
-        public int ParameterCount
-        {
-            get
-            {
-                if (_reference is MethodDeclBase)
-                    return ((MethodDeclBase)_reference).ParameterCount;
-                if (_reference is MethodInfo)
-                    return ((MethodInfo)_reference).GetParameters().Length;
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Get the parameters of the referenced method object (as either a <see cref="ChildList{ParameterDecl}"/> or a <see cref="ParameterInfo"/>[].
-        /// </summary>
-        public ICollection Parameters
-        {
-            get
-            {
-                if (_reference is MethodDeclBase)
-                    return ((MethodDeclBase)_reference).Parameters;
-                if (_reference is MethodInfo)
-                    return ((MethodInfo)_reference).GetParameters();
-                return null;
-            }
-        }
-
-        /// <summary>
         /// True if the referenced method is abstract.
         /// </summary>
         public bool IsAbstract
@@ -247,34 +189,42 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced method is static.
+        /// True if the referenced method is generic.
         /// </summary>
-        public override bool IsStatic
+        public bool IsGenericMethod
         {
             get
             {
                 if (_reference is MethodDeclBase)
-                    return ((MethodDeclBase)_reference).IsStatic;
+                    return ((MethodDeclBase)_reference).IsGenericMethod;
                 if (_reference is MethodInfo)
-                    return ((MethodInfo)_reference).IsStatic;
+                    return ((MethodInfo)_reference).IsGenericMethod;
                 return false;
             }
         }
 
         /// <summary>
-        /// True if the referenced method has public access.
+        /// True if the referenced method has internal access.
         /// </summary>
-        public override bool IsPublic
+        public override bool IsInternal
         {
             get
             {
-                if (HasArrayRanks) return GetElementType().IsPublic;
+                if (HasArrayRanks) return GetElementType().IsInternal;
                 if (_reference is MethodDeclBase)
-                    return ((MethodDeclBase)_reference).IsPublic;
+                    return ((MethodDeclBase)_reference).IsInternal;
                 if (_reference is MethodInfo)
-                    return ((MethodInfo)_reference).IsPublic;
+                    return ((MethodInfo)_reference).IsAssembly;
                 return false;
             }
+        }
+
+        /// <summary>
+        /// True if the referenced method is an override.
+        /// </summary>
+        public bool IsOverride
+        {
+            get { return IsOverridden(_reference); }
         }
 
         /// <summary>
@@ -310,17 +260,32 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced method has internal access.
+        /// True if the referenced method has public access.
         /// </summary>
-        public override bool IsInternal
+        public override bool IsPublic
         {
             get
             {
-                if (HasArrayRanks) return GetElementType().IsInternal;
+                if (HasArrayRanks) return GetElementType().IsPublic;
                 if (_reference is MethodDeclBase)
-                    return ((MethodDeclBase)_reference).IsInternal;
+                    return ((MethodDeclBase)_reference).IsPublic;
                 if (_reference is MethodInfo)
-                    return ((MethodInfo)_reference).IsAssembly;
+                    return ((MethodInfo)_reference).IsPublic;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced method is static.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get
+            {
+                if (_reference is MethodDeclBase)
+                    return ((MethodDeclBase)_reference).IsStatic;
+                if (_reference is MethodInfo)
+                    return ((MethodInfo)_reference).IsStatic;
                 return false;
             }
         }
@@ -341,29 +306,115 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced method is an override.
+        /// The name of the <see cref="MethodRef"/>.
         /// </summary>
-        public bool IsOverride
+        public override string Name
         {
-            get { return IsOverridden(_reference); }
-        }
-
-        /// <summary>
-        /// A <see cref="MethodRef"/> can't have array ranks, so this property always returns null, and throws
-        /// an exception if set to a non-null value.
-        /// </summary>
-        public override List<int> ArrayRanks
-        {
-            set
+            get
             {
-                if (value != null)
-                    throw new Exception("Can't set array ranks on a MethodRef!");
+                if (_reference is INamedCodeObject)
+                    return ((INamedCodeObject)_reference).Name;
+                if (_reference is MethodInfo)
+                    return ((MethodInfo)_reference).Name;
+                return null;
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The number of parameters the referenced method has.
+        /// </summary>
+        public int ParameterCount
+        {
+            get
+            {
+                if (_reference is MethodDeclBase)
+                    return ((MethodDeclBase)_reference).ParameterCount;
+                if (_reference is MethodInfo)
+                    return ((MethodInfo)_reference).GetParameters().Length;
+                return 0;
+            }
+        }
 
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// Get the parameters of the referenced method object (as either a <see cref="ChildList{ParameterDecl}"/> or a <see cref="ParameterInfo"/>[].
+        /// </summary>
+        public ICollection Parameters
+        {
+            get
+            {
+                if (_reference is MethodDeclBase)
+                    return ((MethodDeclBase)_reference).Parameters;
+                if (_reference is MethodInfo)
+                    return ((MethodInfo)_reference).GetParameters();
+                return null;
+            }
+        }
+
+        public static void AsTextMethodInfo(CodeWriter writer, MethodInfo methodInfo, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
+
+            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
+            {
+                Attribute.AsTextAttributes(writer, methodInfo);
+                Attribute.AsTextAttributes(writer, methodInfo.ReturnParameter, AttributeTarget.Return);
+            }
+            Modifiers modifiers = GetMethodModifiers(methodInfo);
+            writer.Write(ModifiersHelpers.AsString(modifiers));
+            bool isConversionOperator = (modifiers.HasFlag(Modifiers.Explicit) || modifiers.HasFlag(Modifiers.Implicit));
+            if (!isConversionOperator)
+            {
+                Type returnType = methodInfo.ReturnType;
+                AsTextType(writer, returnType, passFlags);
+                writer.Write(" ");
+            }
+            Type declaringType = methodInfo.DeclaringType;
+            AsTextType(writer, declaringType, passFlags);
+            Dot.AsTextDot(writer);
+
+            if (methodInfo.IsGenericMethod)
+                AsTextGenericMember(writer, methodInfo.Name, methodInfo.GetGenericArguments(), passFlags);
+            else if (methodInfo.Name.StartsWith(Operator.NamePrefix))
+            {
+                // Convert the internal name into the appropriate symbol
+                writer.Write(OperatorDecl.ParseToken + " ");
+                if (isConversionOperator)
+                    AsTextType(writer, methodInfo.ReturnType, passFlags);
+                else
+                    writer.Write(OperatorDecl.GetOperatorSymbol(methodInfo.Name));
+            }
+            else
+                writer.Write(methodInfo.Name);
+
+            AsTextMethodParameters(writer, methodInfo, passFlags);
+
+            // Render type constraints (if any)
+            if (methodInfo.IsGenericMethod)
+                AsTextConstraints(writer, methodInfo.GetGenericMethodDefinition().GetGenericArguments());
+        }
+
+        public static void AsTextMethodParameters(CodeWriter writer, MethodBase methodBase, RenderFlags flags)
+        {
+            writer.Write(MethodDeclBase.ParseTokenStart);
+            ICollection parameters = GetMethodParameters(methodBase);
+            if (parameters is ParameterInfo[])
+                AsTextParameters(writer, (ParameterInfo[])parameters, flags);
+            else
+                writer.WriteList((ChildList<ParameterDecl>)parameters, flags, null);
+            writer.Write(MethodDeclBase.ParseTokenEnd);
+        }
+
+        public static void AsTextParameters(CodeWriter writer, ParameterInfo[] parameters, RenderFlags flags)
+        {
+            for (int i = 0; i < parameters.Length; ++i)
+            {
+                ParameterInfo parameterInfo = parameters[i];
+                if (i > 0)
+                    writer.Write(ParameterDecl.ParseTokenSeparator + " ");
+
+                ParameterRef.AsTextParameterInfo(writer, parameterInfo, flags);
+            }
+        }
 
         /// <summary>
         /// Construct a <see cref="MethodRef"/> or <see cref="ConstructorRef"/> from a <see cref="MethodBase"/>.
@@ -549,6 +600,44 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Get the declaring type of the specified method object.
+        /// </summary>
+        /// <param name="methodObj">The method object (a <see cref="MethodDeclBase"/> or <see cref="MethodBase"/>).</param>
+        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
+        public static TypeRefBase GetDeclaringType(object methodObj)
+        {
+            TypeRefBase declaringTypeRef = null;
+            if (methodObj is MethodDeclBase)
+            {
+                TypeDecl declaringTypeDecl = ((MethodDeclBase)methodObj).DeclaringType;
+                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
+            }
+            else if (methodObj is MethodBase)
+                declaringTypeRef = TypeRef.Create(((MethodBase)methodObj).DeclaringType);
+            return declaringTypeRef;
+        }
+
+        /// <summary>
+        /// Determine the delegate type of the parameter of the specified method object with the specified argument index.
+        /// </summary>
+        /// <param name="obj">The code object (an IParameters CodeObject, MethodInfo, ConstructorInfo, or PropertyInfo for an indexer;
+        /// or an IVariableDecl CodeObject, FieldInfo, PropertyInfo, or EventInfo that has a delegate type).</param>
+        /// <param name="parameterIndex">The index of the parameter.</param>
+        /// <param name="parentExpression">The parent expression of the code object.</param>
+        /// <returns>The TypeRefBase representing the delegate type of the parameter, otherwise null.</returns>
+        public static TypeRefBase GetDelegateParameterType(object obj, int parameterIndex, Expression parentExpression)
+        {
+            // Get the parameter type
+            TypeRefBase delegateType = GetParameterType(obj, parameterIndex, parentExpression);
+
+            // Return null if the type isn't a delegate type
+            if (delegateType != null && !delegateType.IsDelegateType)
+                delegateType = null;
+
+            return delegateType;
+        }
+
+        /// <summary>
         /// Get any modifiers from the specified <see cref="MethodBase"/>.
         /// </summary>
         public static Modifiers GetMethodModifiers(MethodBase methodBase)
@@ -587,6 +676,14 @@ namespace Nova.CodeDOM
                     modifiers |= Modifiers.Implicit;
             }
             return modifiers;
+        }
+
+        /// <summary>
+        /// Get the parameters of a MethodBase, handling the VarArgs calling convention.
+        /// </summary>
+        public static ICollection GetMethodParameters(MethodBase methodBase)
+        {
+            return methodBase.GetParameters();
         }
 
         /// <summary>
@@ -783,14 +880,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the parameters of a MethodBase, handling the VarArgs calling convention.
-        /// </summary>
-        public static ICollection GetMethodParameters(MethodBase methodBase)
-        {
-            return methodBase.GetParameters();
-        }
-
-        /// <summary>
         /// Get any constraints for the specified type parameter on the specified method, or on the base virtual method if the method is an override.
         /// </summary>
         public static List<TypeParameterConstraint> GetTypeParameterConstraints(MethodInfo methodInfo, Type typeParameter)
@@ -811,26 +900,6 @@ namespace Nova.CodeDOM
                 }
             }
             return constraints;
-        }
-
-        /// <summary>
-        /// Determine the delegate type of the parameter of the specified method object with the specified argument index.
-        /// </summary>
-        /// <param name="obj">The code object (an IParameters CodeObject, MethodInfo, ConstructorInfo, or PropertyInfo for an indexer;
-        /// or an IVariableDecl CodeObject, FieldInfo, PropertyInfo, or EventInfo that has a delegate type).</param>
-        /// <param name="parameterIndex">The index of the parameter.</param>
-        /// <param name="parentExpression">The parent expression of the code object.</param>
-        /// <returns>The TypeRefBase representing the delegate type of the parameter, otherwise null.</returns>
-        public static TypeRefBase GetDelegateParameterType(object obj, int parameterIndex, Expression parentExpression)
-        {
-            // Get the parameter type
-            TypeRefBase delegateType = GetParameterType(obj, parameterIndex, parentExpression);
-
-            // Return null if the type isn't a delegate type
-            if (delegateType != null && !delegateType.IsDelegateType)
-                delegateType = null;
-
-            return delegateType;
         }
 
         /// <summary>
@@ -867,26 +936,40 @@ namespace Nova.CodeDOM
             return methods;
         }
 
-        #endregion
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            // If we have no dot prefix, and the ShowParentTypes flag is set, then render all parent types
+            // (this shouldn't occur in display of code, but only when displaying an evaluated type reference,
+            // such as in a tooltip).  Generic methods won't include type arguments for enclosing types, so
+            // we don't have to worry about them.
+            if (!flags.HasFlag(RenderFlags.HasDotPrefix) && flags.HasFlag(RenderFlags.ShowParentTypes))
+            {
+                TypeRefBase typeRef = GetDeclaringType();
+                if (typeRef != null)
+                {
+                    typeRef.AsText(writer, flags);
+                    writer.Write(Dot.ParseToken);
+                    flags |= RenderFlags.HasDotPrefix;
+                }
+            }
+            else
+                UpdateLineCol(writer, flags);
 
-        #region /* METHODS */
+            if (_reference is MethodDeclBase)
+                writer.WriteIdentifier(((MethodDeclBase)_reference).Name, flags);
+            else if (_reference is MethodInfo)
+                writer.WriteIdentifier(((MethodInfo)_reference).Name, flags);
+
+            if (!HasInferredTypeArguments || flags.HasFlag(RenderFlags.Description))
+                AsTextTypeArguments(writer, _typeArguments, flags);
+        }
 
         /// <summary>
-        /// Get the return type of the method (never null - will be type 'void' instead).
+        /// Invalid for a <see cref="MethodRef"/> - throws an exception if called.
         /// </summary>
-        public virtual TypeRefBase GetReturnType()
+        public override List<int> CreateArrayRanks()
         {
-            TypeRefBase returnTypeRef = null;
-            if (_reference is MethodDeclBase)
-                returnTypeRef = ((MethodDeclBase)_reference).ReturnType.SkipPrefixes() as TypeRefBase;
-            else if (_reference is MethodInfo)
-            {
-                MethodInfo methodInfo = (MethodInfo)_reference;
-                Type returnType = methodInfo.ReturnType;
-                returnTypeRef = TypeRef.Create(returnType);
-            }
-
-            return returnTypeRef;
+            throw new Exception("Can't create array ranks on a MethodRef!");
         }
 
         /// <summary>
@@ -907,21 +990,19 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the declaring type of the specified method object.
+        /// Get the delegate parameters if the expression evaluates to a delegate type.
         /// </summary>
-        /// <param name="methodObj">The method object (a <see cref="MethodDeclBase"/> or <see cref="MethodBase"/>).</param>
-        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
-        public static TypeRefBase GetDeclaringType(object methodObj)
+        public override ICollection GetDelegateParameters()
         {
-            TypeRefBase declaringTypeRef = null;
-            if (methodObj is MethodDeclBase)
-            {
-                TypeDecl declaringTypeDecl = ((MethodDeclBase)methodObj).DeclaringType;
-                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
-            }
-            else if (methodObj is MethodBase)
-                declaringTypeRef = TypeRef.Create(((MethodBase)methodObj).DeclaringType);
-            return declaringTypeRef;
+            return Parameters;
+        }
+
+        /// <summary>
+        /// Get the delegate return type if the expression evaluates to a delegate type.
+        /// </summary>
+        public override TypeRefBase GetDelegateReturnType()
+        {
+            return GetReturnType();
         }
 
         /// <summary>
@@ -929,6 +1010,19 @@ namespace Nova.CodeDOM
         /// </summary>
         public override TypeRefBase GetElementType()
         {
+            return null;
+        }
+
+        /// <summary>
+        /// Get the full name of the object, including the namespace name.
+        /// </summary>
+        public override string GetFullName()
+        {
+            object reference = GetReferencedType();
+            if (reference is MethodDeclBase)
+                return ((MethodDeclBase)reference).GetFullName();
+            if (reference is MethodBase)
+                return MemberInfoUtil.GetFullName((MethodBase)reference);
             return null;
         }
 
@@ -971,6 +1065,24 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Get the return type of the method (never null - will be type 'void' instead).
+        /// </summary>
+        public virtual TypeRefBase GetReturnType()
+        {
+            TypeRefBase returnTypeRef = null;
+            if (_reference is MethodDeclBase)
+                returnTypeRef = ((MethodDeclBase)_reference).ReturnType.SkipPrefixes() as TypeRefBase;
+            else if (_reference is MethodInfo)
+            {
+                MethodInfo methodInfo = (MethodInfo)_reference;
+                Type returnType = methodInfo.ReturnType;
+                returnTypeRef = TypeRef.Create(returnType);
+            }
+
+            return returnTypeRef;
+        }
+
+        /// <summary>
         /// Get the type parameter of the referenced method declaration with the specified index (returns null if not found).
         /// </summary>
         public TypeParameterRef GetTypeParameter(int index)
@@ -1003,30 +1115,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the delegate parameters if the expression evaluates to a delegate type.
-        /// </summary>
-        public override ICollection GetDelegateParameters()
-        {
-            return Parameters;
-        }
-
-        /// <summary>
-        /// Get the delegate return type if the expression evaluates to a delegate type.
-        /// </summary>
-        public override TypeRefBase GetDelegateReturnType()
-        {
-            return GetReturnType();
-        }
-
-        /// <summary>
-        /// Invalid for a <see cref="MethodRef"/> - throws an exception if called.
-        /// </summary>
-        public override List<int> CreateArrayRanks()
-        {
-            throw new Exception("Can't create array ranks on a MethodRef!");
-        }
-
-        /// <summary>
         /// Always returns the current <see cref="MethodRef"/> object, because it doesn't make sense to add array ranks to a MethodRef.
         /// </summary>
         public override TypeRefBase MakeArrayRef(List<int> ranksToBeCopied)
@@ -1035,126 +1123,9 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the full name of the object, including the namespace name.
-        /// </summary>
-        public override string GetFullName()
-        {
-            object reference = GetReferencedType();
-            if (reference is MethodDeclBase)
-                return ((MethodDeclBase)reference).GetFullName();
-            if (reference is MethodBase)
-                return MemberInfoUtil.GetFullName((MethodBase)reference);
-            return null;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
         /// Does nothing, because it makes no sense to parse array ranks on a <see cref="MethodRef"/>.
         /// </summary>
         public override void ParseArrayRanks(Parser parser)
         { }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            // If we have no dot prefix, and the ShowParentTypes flag is set, then render all parent types
-            // (this shouldn't occur in display of code, but only when displaying an evaluated type reference,
-            // such as in a tooltip).  Generic methods won't include type arguments for enclosing types, so
-            // we don't have to worry about them.
-            if (!flags.HasFlag(RenderFlags.HasDotPrefix) && flags.HasFlag(RenderFlags.ShowParentTypes))
-            {
-                TypeRefBase typeRef = GetDeclaringType();
-                if (typeRef != null)
-                {
-                    typeRef.AsText(writer, flags);
-                    writer.Write(Dot.ParseToken);
-                    flags |= RenderFlags.HasDotPrefix;
-                }
-            }
-            else
-                UpdateLineCol(writer, flags);
-
-            if (_reference is MethodDeclBase)
-                writer.WriteIdentifier(((MethodDeclBase)_reference).Name, flags);
-            else if (_reference is MethodInfo)
-                writer.WriteIdentifier(((MethodInfo)_reference).Name, flags);
-
-            if (!HasInferredTypeArguments || flags.HasFlag(RenderFlags.Description))
-                AsTextTypeArguments(writer, _typeArguments, flags);
-        }
-
-        public static void AsTextMethodInfo(CodeWriter writer, MethodInfo methodInfo, RenderFlags flags)
-        {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-
-            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
-            {
-                Attribute.AsTextAttributes(writer, methodInfo);
-                Attribute.AsTextAttributes(writer, methodInfo.ReturnParameter, AttributeTarget.Return);
-            }
-            Modifiers modifiers = GetMethodModifiers(methodInfo);
-            writer.Write(ModifiersHelpers.AsString(modifiers));
-            bool isConversionOperator = (modifiers.HasFlag(Modifiers.Explicit) || modifiers.HasFlag(Modifiers.Implicit));
-            if (!isConversionOperator)
-            {
-                Type returnType = methodInfo.ReturnType;
-                AsTextType(writer, returnType, passFlags);
-                writer.Write(" ");
-            }
-            Type declaringType = methodInfo.DeclaringType;
-            AsTextType(writer, declaringType, passFlags);
-            Dot.AsTextDot(writer);
-
-            if (methodInfo.IsGenericMethod)
-                AsTextGenericMember(writer, methodInfo.Name, methodInfo.GetGenericArguments(), passFlags);
-            else if (methodInfo.Name.StartsWith(Operator.NamePrefix))
-            {
-                // Convert the internal name into the appropriate symbol
-                writer.Write(OperatorDecl.ParseToken + " ");
-                if (isConversionOperator)
-                    AsTextType(writer, methodInfo.ReturnType, passFlags);
-                else
-                    writer.Write(OperatorDecl.GetOperatorSymbol(methodInfo.Name));
-            }
-            else
-                writer.Write(methodInfo.Name);
-
-            AsTextMethodParameters(writer, methodInfo, passFlags);
-
-            // Render type constraints (if any)
-            if (methodInfo.IsGenericMethod)
-                AsTextConstraints(writer, methodInfo.GetGenericMethodDefinition().GetGenericArguments());
-        }
-
-        public static void AsTextMethodParameters(CodeWriter writer, MethodBase methodBase, RenderFlags flags)
-        {
-            writer.Write(MethodDeclBase.ParseTokenStart);
-            ICollection parameters = GetMethodParameters(methodBase);
-            if (parameters is ParameterInfo[])
-                AsTextParameters(writer, (ParameterInfo[])parameters, flags);
-            else
-                writer.WriteList((ChildList<ParameterDecl>)parameters, flags, null);
-            writer.Write(MethodDeclBase.ParseTokenEnd);
-        }
-
-        public static void AsTextParameters(CodeWriter writer, ParameterInfo[] parameters, RenderFlags flags)
-        {
-            for (int i = 0; i < parameters.Length; ++i)
-            {
-                ParameterInfo parameterInfo = parameters[i];
-                if (i > 0)
-                    writer.Write(ParameterDecl.ParseTokenSeparator + " ");
-
-                ParameterRef.AsTextParameterInfo(writer, parameterInfo, flags);
-            }
-        }
-
-        #endregion
     }
 }

@@ -13,22 +13,24 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class MessageDirective : CompilerDirective
     {
-        #region /* FIELDS */
-
         protected string _message;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected MessageDirective(string message)
         {
             _message = message;
         }
 
-        #endregion
+        protected MessageDirective(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the compiler directive has an argument.
+        /// </summary>
+        public override bool HasArgument
+        {
+            get { return !string.IsNullOrEmpty(_message); }
+        }
 
         /// <summary>
         /// The text content of the message.
@@ -39,13 +41,10 @@ namespace Nova.CodeDOM
             set { _message = value; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        protected MessageDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        {
+            writer.Write(_message);
+        }
 
         protected void ParseMessage(Parser parser)
         {
@@ -55,28 +54,5 @@ namespace Nova.CodeDOM
             if (token != null)
                 _message = parser.GetTokenToEOL();
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the compiler directive has an argument.
-        /// </summary>
-        public override bool HasArgument
-        {
-            get { return !string.IsNullOrEmpty(_message); }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        {
-            writer.Write(_message);
-        }
-
-        #endregion
     }
 }

@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocSee : DocCodeRefBase
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "see";
 
         /// <summary>
         /// Create a <see cref="DocSee"/>.
@@ -20,9 +23,20 @@ namespace Nova.CodeDOM
             : base(codeRef, (string)null)
         { }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="DocSee"/>.
+        /// </summary>
+        public DocSee(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return false; }
+        }
 
         /// <summary>
         /// The XML tag name for the documentation comment.
@@ -30,20 +44,6 @@ namespace Nova.CodeDOM
         public override string TagName
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "see";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         /// <summary>
@@ -54,25 +54,9 @@ namespace Nova.CodeDOM
             return new DocSee(parser, parent);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocSee"/>.
-        /// </summary>
-        public DocSee(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
+        internal static void AddParsePoints()
         {
-            get { return false; }
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
-
-        #endregion
     }
 }

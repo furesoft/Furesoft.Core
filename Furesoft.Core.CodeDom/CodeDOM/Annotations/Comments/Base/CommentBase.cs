@@ -11,20 +11,14 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class CommentBase : Annotation
     {
-        #region /* FIELDS */
-
         protected byte _prefixSpaceCount;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected CommentBase()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected CommentBase(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// The count of prefix spaces (if any) before the comment delimiter.
@@ -34,18 +28,6 @@ namespace Nova.CodeDOM
             get { return _prefixSpaceCount; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        protected CommentBase(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
         /// </summary>
@@ -54,11 +36,5 @@ namespace Nova.CodeDOM
             // Always default to a blank line before a stand-alone comment
             return 2;
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        #endregion
     }
 }

@@ -12,15 +12,9 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class PostUnaryOperator : UnaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected PostUnaryOperator(Expression expression)
             : base(expression)
         { }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected PostUnaryOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -32,17 +26,11 @@ namespace Nova.CodeDOM
             parser.NextToken();  // Skip past the operator
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             _expression.AsText(writer, flags);
             UpdateLineCol(writer, flags);
             AsTextOperator(writer, flags);
         }
-
-        #endregion
     }
 }

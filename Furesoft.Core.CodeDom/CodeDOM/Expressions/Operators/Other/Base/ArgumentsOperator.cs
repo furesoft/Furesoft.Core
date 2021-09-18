@@ -13,14 +13,8 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class ArgumentsOperator : Operator
     {
-        #region /* FIELDS */
-
-        protected Expression _expression;
         protected ChildList<Expression> _arguments;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected Expression _expression;
 
         protected ArgumentsOperator(Expression expression, params Expression[] arguments)
         {
@@ -37,17 +31,16 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected ArgumentsOperator(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
-        /// The <see cref="Expression"/> being invoked.
+        /// The number of arguments.
         /// </summary>
-        public virtual Expression Expression
+        public int ArgumentCount
         {
-            get { return _expression; }
-            set { SetField(ref _expression, value, true); }
+            get { return (_arguments != null ? _arguments.Count : 0); }
         }
 
         /// <summary>
@@ -59,6 +52,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// The <see cref="Expression"/> being invoked.
+        /// </summary>
+        public virtual Expression Expression
+        {
+            get { return _expression; }
+            set { SetField(ref _expression, value, true); }
+        }
+
+        /// <summary>
         /// True if there are any arguments.
         /// </summary>
         public bool HasArguments
@@ -67,25 +69,31 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The number of arguments.
+        /// Determines if the code object only requires a single line for display.
         /// </summary>
-        public int ArgumentCount
+        public override bool IsSingleLine
         {
-            get { return (_arguments != null ? _arguments.Count : 0); }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create the list of argument <see cref="Expression"/>s, or return the existing one.
-        /// </summary>
-        public ChildList<Expression> CreateArguments()
-        {
-            if (_arguments == null)
-                _arguments = new ChildList<Expression>(this);
-            return _arguments;
+            get
+            {
+                return (base.IsSingleLine && (_expression == null || (!_expression.IsFirstOnLine && _expression.IsSingleLine))
+                    && (_arguments == null || _arguments.Count == 0 || ((_arguments[0] == null || !_arguments[0].IsFirstOnLine) && _arguments.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_expression != null)
+                {
+                    if (value)
+                        _expression.IsFirstOnLine = false;
+                    _expression.IsSingleLine = value;
+                }
+                if (_arguments != null && _arguments.Count > 0)
+                {
+                    if (value)
+                        _arguments[0].IsFirstOnLine = false;
+                    _arguments.IsSingleLine = value;
+                }
+            }
         }
 
         /// <summary>
@@ -96,12 +104,29 @@ namespace Nova.CodeDOM
             CreateArguments().AddRange(expressions);
         }
 
-        /// <summary>
-        /// Determine the type of the parameter for the specified argument index.
-        /// </summary>
-        public virtual TypeRefBase GetParameterType(int argumentIndex)
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
-            return null;
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            bool attributeCall = flags.HasFlag(RenderFlags.Attribute);
+
+            // Get the parent position and wrap the name/arguments in its own indent logic to preserve
+            // the parent position until the initializer is rendered.
+            writer.SetParentOffset();
+            writer.BeginIndentOnNewLine(this);
+
+            AsTextName(writer, passFlags | (flags & RenderFlags.Attribute));  // Special case - allow the Attribute flag to pass
+            if ((_arguments != null && _arguments.Count > 0) || (!flags.HasFlag(RenderFlags.NoParensIfEmpty) && !attributeCall) || HasInfixComments)
+            {
+                writer.BeginIndentOnNewLineRelativeToLastIndent(this, _expression);
+                AsTextStartArguments(writer, flags);
+                AsTextInfixComments(writer, 0, flags);
+                writer.WriteList(_arguments, passFlags, this);
+                AsTextEndArguments(writer, flags);
+                writer.EndIndentation(this);
+            }
+
+            writer.EndIndentation(this);
+            AsTextInitializer(writer, flags);
         }
 
         /// <summary>
@@ -115,13 +140,32 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
+        /// <summary>
+        /// Create the list of argument <see cref="Expression"/>s, or return the existing one.
+        /// </summary>
+        public ChildList<Expression> CreateArguments()
+        {
+            if (_arguments == null)
+                _arguments = new ChildList<Expression>(this);
+            return _arguments;
+        }
 
-        #region /* PARSING */
+        /// <summary>
+        /// Determine the type of the parameter for the specified argument index.
+        /// </summary>
+        public virtual TypeRefBase GetParameterType(int argumentIndex)
+        {
+            return null;
+        }
 
-        protected ArgumentsOperator(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        protected abstract void AsTextEndArguments(CodeWriter writer, RenderFlags flags);
+
+        protected virtual void AsTextInitializer(CodeWriter writer, RenderFlags flags)
         { }
+
+        protected abstract void AsTextName(CodeWriter writer, RenderFlags flags);
+
+        protected abstract void AsTextStartArguments(CodeWriter writer, RenderFlags flags);
 
         protected void ParseArguments(Parser parser, CodeObject parent, string parseTokenStart, string parseTokenEnd, bool allowSingleNullArgument)
         {
@@ -159,76 +203,5 @@ namespace Nova.CodeDOM
         {
             ParseArguments(parser, parent, parseTokenStart, parseTokenEnd, false);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_expression == null || (!_expression.IsFirstOnLine && _expression.IsSingleLine))
-                    && (_arguments == null || _arguments.Count == 0 || ((_arguments[0] == null || !_arguments[0].IsFirstOnLine) && _arguments.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_expression != null)
-                {
-                    if (value)
-                        _expression.IsFirstOnLine = false;
-                    _expression.IsSingleLine = value;
-                }
-                if (_arguments != null && _arguments.Count > 0)
-                {
-                    if (value)
-                        _arguments[0].IsFirstOnLine = false;
-                    _arguments.IsSingleLine = value;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected abstract void AsTextName(CodeWriter writer, RenderFlags flags);
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            bool attributeCall = flags.HasFlag(RenderFlags.Attribute);
-
-            // Get the parent position and wrap the name/arguments in its own indent logic to preserve
-            // the parent position until the initializer is rendered.
-            writer.SetParentOffset();
-            writer.BeginIndentOnNewLine(this);
-
-            AsTextName(writer, passFlags | (flags & RenderFlags.Attribute));  // Special case - allow the Attribute flag to pass
-            if ((_arguments != null && _arguments.Count > 0) || (!flags.HasFlag(RenderFlags.NoParensIfEmpty) && !attributeCall) || HasInfixComments)
-            {
-                writer.BeginIndentOnNewLineRelativeToLastIndent(this, _expression);
-                AsTextStartArguments(writer, flags);
-                AsTextInfixComments(writer, 0, flags);
-                writer.WriteList(_arguments, passFlags, this);
-                AsTextEndArguments(writer, flags);
-                writer.EndIndentation(this);
-            }
-
-            writer.EndIndentation(this);
-            AsTextInitializer(writer, flags);
-        }
-
-        protected abstract void AsTextStartArguments(CodeWriter writer, RenderFlags flags);
-        protected abstract void AsTextEndArguments(CodeWriter writer, RenderFlags flags);
-
-        protected virtual void AsTextInitializer(CodeWriter writer, RenderFlags flags)
-        { }
-
-        #endregion
     }
 }

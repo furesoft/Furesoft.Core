@@ -12,8 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class SelfRef : SymbolicRef
     {
-        #region /* CONSTRUCTORS */
-
         protected SelfRef(bool isFirstOnLine)
             : base((INamedCodeObject)null, isFirstOnLine)
         { }
@@ -22,21 +20,9 @@ namespace Nova.CodeDOM
             : base((INamedCodeObject)null, false)
         { }
 
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
-
-        #region /* PARSING */
-
         protected SelfRef(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
-
-        #region /* RENDERING */
 
         /// <summary>
         /// The keyword associated with the <see cref="SelfRef"/>.
@@ -51,7 +37,5 @@ namespace Nova.CodeDOM
             UpdateLineCol(writer, flags);
             writer.Write(Keyword);
         }
-
-        #endregion
     }
 }

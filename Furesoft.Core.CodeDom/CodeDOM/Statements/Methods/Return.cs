@@ -13,13 +13,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Return : Statement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "return";
 
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Return"/>.
@@ -40,65 +39,8 @@ namespace Nova.CodeDOM
             : this(null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The return <see cref="Expression"/>.
-        /// </summary>
-        public Expression Expression
-        {
-            get { return _expression; }
-            set { SetField(ref _expression, value, true); }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Return clone = (Return)base.Clone();
-            clone.CloneField(ref clone._expression, _expression);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "return";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Return"/>.
-        /// </summary>
-        public static Return Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Return(parser, parent);
-        }
-
         protected Return(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             parser.NextToken();  // Move past 'return'
             SetField(ref _expression, Expression.Parse(parser, this, true), false);
@@ -110,9 +52,14 @@ namespace Nova.CodeDOM
                 _expression.HasParens = false;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// The return <see cref="Expression"/>.
+        /// </summary>
+        public Expression Expression
+        {
+            get { return _expression; }
+            set { SetField(ref _expression, value, true); }
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -156,16 +103,41 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Parse a <see cref="Return"/>.
+        /// </summary>
+        public static Return Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Return(parser, parent);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Return clone = (Return)base.Clone();
+            clone.CloneField(ref clone._expression, _expression);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

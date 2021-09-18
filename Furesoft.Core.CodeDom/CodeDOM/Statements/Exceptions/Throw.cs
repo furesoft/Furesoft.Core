@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System;
 
 namespace Nova.CodeDOM
 {
@@ -16,13 +15,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Throw : Statement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "throw";
 
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Throw"/>.
@@ -38,9 +36,13 @@ namespace Nova.CodeDOM
         public Throw()
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected Throw(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            parser.NextToken();  // Move past 'throw'
+            SetField(ref _expression, Expression.Parse(parser, this, true), false);
+            ParseTerminator(parser);
+        }
 
         /// <summary>
         /// The optional exception <see cref="Expression"/>.
@@ -50,62 +52,6 @@ namespace Nova.CodeDOM
             get { return _expression; }
             set { SetField(ref _expression, value, true); }
         }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Throw clone = (Throw)base.Clone();
-            clone.CloneField(ref clone._expression, _expression);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "throw";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Throw"/>.
-        /// </summary>
-        public static Throw Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Throw(parser, parent);
-        }
-
-        protected Throw(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            parser.NextToken();  // Move past 'throw'
-            SetField(ref _expression, Expression.Parse(parser, this, true), false);
-            ParseTerminator(parser);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -148,16 +94,41 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Parse a <see cref="Throw"/>.
+        /// </summary>
+        public static Throw Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Throw(parser, parent);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Throw clone = (Throw)base.Clone();
+            clone.CloneField(ref clone._expression, _expression);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

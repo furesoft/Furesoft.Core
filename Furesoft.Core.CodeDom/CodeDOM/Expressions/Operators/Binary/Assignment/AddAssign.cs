@@ -12,7 +12,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class AddAssign : Assignment
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "+=";
 
         /// <summary>
         /// Create an <see cref="AddAssign"/> operator.
@@ -28,9 +31,9 @@ namespace Nova.CodeDOM
             : base(left.CreateRef(), right)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected AddAssign(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -38,32 +41,6 @@ namespace Nova.CodeDOM
         public override string Symbol
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="BinaryOperator"/>.
-        /// </summary>
-        public override string GetInternalName()
-        {
-            return Add.InternalName;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "+=";
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
         }
 
         /// <summary>
@@ -74,10 +51,17 @@ namespace Nova.CodeDOM
             return new AddAssign(parser, parent);
         }
 
-        protected AddAssign(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+        /// <summary>
+        /// The internal name of the <see cref="BinaryOperator"/>.
+        /// </summary>
+        public override string GetInternalName()
+        {
+            return Add.InternalName;
+        }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

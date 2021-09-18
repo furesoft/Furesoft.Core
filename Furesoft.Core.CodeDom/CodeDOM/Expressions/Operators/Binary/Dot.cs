@@ -18,73 +18,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Dot : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create a <see cref="Dot"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public Dot(Expression left, SymbolicRef right)
-            : base(left, right)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        /// <summary>
-        /// True if the expression is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            get { return (_right != null && _right.IsConst); }
-        }
-
-        #endregion
-
-        #region /* STATIC METHODS */
-
-        /// <summary>
-        /// Create a Dot expression chain from 2 or more expressions, cloning any SymbolicRefs for convenience.
-        /// </summary>
-        public static Dot Create(Expression left, params SymbolicRef[] symbolicRefs)
-        {
-            Dot dot = new Dot(left is SymbolicRef ? (SymbolicRef)left.Clone() : left, (SymbolicRef)symbolicRefs[0].Clone());
-            for (int i = 1; i < symbolicRefs.Length; ++i)
-                dot = new Dot(dot, (SymbolicRef)symbolicRefs[i].Clone());
-            return dot;
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the expression on the right of the right-most Lookup or Dot operator (bypass any '::' and '.' prefixes).
-        /// </summary>
-        public override Expression SkipPrefixes()
-        {
-            return Right.SkipPrefixes();
-        }
-
-        /// <summary>
-        /// Get the expression on the left of the left-most dot operator.
-        /// </summary>
-        public override Expression FirstPrefix()
-        {
-            return Left.FirstPrefix();
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -97,38 +34,15 @@ namespace Nova.CodeDOM
         public const int Precedence = 100;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create a <see cref="Dot"/> operator.
         /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Dot"/> operator.
-        /// </summary>
-        public static Dot Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Dot(parser, parent);
-        }
-
-        protected Dot(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        public Dot(Expression left, SymbolicRef right)
+            : base(left, right)
         { }
 
-        /// <summary>
-        /// Get the precedence of the operator.
-        /// </summary>
-        public override int GetPrecedence()
-        {
-            return Precedence;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
+        protected Dot(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// True if the expression should have parens by default.
@@ -138,9 +52,45 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
+        /// <summary>
+        /// True if the expression is const.
+        /// </summary>
+        public override bool IsConst
+        {
+            get { return (_right != null && _right.IsConst); }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
+        }
+
+        public static void AsTextDot(CodeWriter writer)
+        {
+            writer.Write(ParseToken);
+        }
+
+        /// <summary>
+        /// Create a Dot expression chain from 2 or more expressions, cloning any SymbolicRefs for convenience.
+        /// </summary>
+        public static Dot Create(Expression left, params SymbolicRef[] symbolicRefs)
+        {
+            Dot dot = new Dot(left is SymbolicRef ? (SymbolicRef)left.Clone() : left, (SymbolicRef)symbolicRefs[0].Clone());
+            for (int i = 1; i < symbolicRefs.Length; ++i)
+                dot = new Dot(dot, (SymbolicRef)symbolicRefs[i].Clone());
+            return dot;
+        }
+
+        /// <summary>
+        /// Parse a <see cref="Dot"/> operator.
+        /// </summary>
+        public static Dot Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Dot(parser, parent);
+        }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
@@ -154,11 +104,33 @@ namespace Nova.CodeDOM
                 _right.AsText(writer, passFlags | RenderFlags.HasDotPrefix | (flags & RenderFlags.Attribute));  // Special case - allow the Attribute flag to pass
         }
 
-        public static void AsTextDot(CodeWriter writer)
+        /// <summary>
+        /// Get the expression on the left of the left-most dot operator.
+        /// </summary>
+        public override Expression FirstPrefix()
         {
-            writer.Write(ParseToken);
+            return Left.FirstPrefix();
         }
 
-        #endregion
+        /// <summary>
+        /// Get the precedence of the operator.
+        /// </summary>
+        public override int GetPrecedence()
+        {
+            return Precedence;
+        }
+
+        /// <summary>
+        /// Get the expression on the right of the right-most Lookup or Dot operator (bypass any '::' and '.' prefixes).
+        /// </summary>
+        public override Expression SkipPrefixes()
+        {
+            return Right.SkipPrefixes();
+        }
+
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

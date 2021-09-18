@@ -20,7 +20,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public abstract class Statement : CodeObject
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the terminator for a <see cref="Statement"/>.
+        /// </summary>
+        public const string ParseTokenTerminator = ";";
 
         protected Statement()
         {
@@ -34,96 +37,9 @@ namespace Nova.CodeDOM
             : base(statement)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/> (null if none).
-        /// </summary>
-        public virtual string Keyword
-        {
-            get { return null; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the terminator for a <see cref="Statement"/>.
-        /// </summary>
-        public const string ParseTokenTerminator = ";";
-
         protected Statement(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         { }
-
-        protected void ParseKeywordAndArgument(Parser parser, ref Expression argument)
-        {
-            parser.NextToken();  // Move past the keyword
-
-            Token firstToken = parser.Token;
-            bool openParen = ParseExpectedToken(parser, Expression.ParseTokenStartGroup);  // Move past '('
-
-            SetField(ref argument, Expression.Parse(parser, this, true, Expression.ParseTokenEndGroup), false);
-            if (openParen)
-            {
-                // Move any comments after the '(' to the argument expression
-                if (argument != null)
-                    argument.MoveCommentsToLeftMost(firstToken, false);
-
-                if (ParseExpectedToken(parser, Expression.ParseTokenEndGroup))  // Move past ')'
-                {
-                    if (parser.LastToken.IsFirstOnLine)
-                        IsEndFirstOnLine = true;
-                }
-            }
-        }
-
-        /// <summary>
-        /// This method is used when we must parse backwards through the Unused list to get a type.
-        /// </summary>
-        protected void ParseUnusedType(Parser parser, ref Expression type)
-        {
-            if (!ModifiersHelpers.IsModifier(parser.LastUnusedTokenText))
-            {
-                Expression expression = parser.RemoveLastUnusedExpression();
-                MoveFormatting(expression);
-                SetField(ref type, expression, false);
-            }
-        }
-
-        /// <summary>
-        /// Parse the terminator at the end of a <see cref="Statement"/>.
-        /// </summary>
-        protected void ParseTerminator(Parser parser)
-        {
-            MoveCommentsAsPost(parser.LastToken);   // Get any comments before the ';' as post comments
-
-            // Parse the terminator, attaching an error if it's missing
-            if (parser.TokenText == Terminator)
-            {
-                HasTerminator = true;
-                parser.NextToken();
-            }
-            else
-                parser.AttachMessage(this, "'" + Terminator + "' expected", parser.Token);
-        }
-
-        /// <summary>
-        /// Determine if the specified comment should be associated with the current code object during parsing.
-        /// </summary>
-        public override bool AssociateCommentWhenParsing(CommentBase comment)
-        {
-            // Only associate regular comments with statements by default, not doc comments
-            // (this will be overridden for TypeDecls and type member decls).
-            return (comment is Comment);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -142,19 +58,28 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The terminator character for the <see cref="Statement"/>.
-        /// </summary>
-        public virtual string Terminator
-        {
-            get { return ParseTokenTerminator; }  // Default terminator character
-        }
-
-        /// <summary>
         /// True if the <see cref="Statement"/> has a terminator character by default.
         /// </summary>
         public virtual bool HasTerminatorDefault
         {
             get { return false; }  // Default is no terminator
+        }
+
+        /// <summary>
+        /// True if the closing paren or bracket is on a new line.
+        /// </summary>
+        public bool IsEndFirstOnLine
+        {
+            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
+            set { SetFormatFlag(FormatFlags.InfixNewLine, value); }
+        }
+
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/> (null if none).
+        /// </summary>
+        public virtual string Keyword
+        {
+            get { return null; }
         }
 
         /// <summary>
@@ -173,63 +98,21 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the closing paren or bracket is on a new line.
+        /// The terminator character for the <see cref="Statement"/>.
         /// </summary>
-        public bool IsEndFirstOnLine
+        public virtual string Terminator
         {
-            get { return _formatFlags.HasFlag(FormatFlags.InfixNewLine); }
-            set { SetFormatFlag(FormatFlags.InfixNewLine, value); }
+            get { return ParseTokenTerminator; }  // Default terminator character
         }
 
-        protected override void DefaultFormatField(CodeObject field)
+        /// <summary>
+        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// </summary>
+        public override bool AssociateCommentWhenParsing(CommentBase comment)
         {
-            base.DefaultFormatField(field);
-
-            // Turn off parens for child expressions by default
-            if (field is Expression && (((Expression)field).HasParens && !field.IsGroupingSet))
-                field.SetFormatFlag(FormatFlags.Grouping, false);
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected virtual void AsTextPrefix(CodeWriter writer, RenderFlags flags)
-        { }
-
-        protected virtual void AsTextStatement(CodeWriter writer, RenderFlags flags)
-        {
-            UpdateLineCol(writer, flags);
-            writer.Write(Keyword);
-        }
-
-        protected virtual void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
-        {
-            writer.Write(" ");
-        }
-
-        protected virtual void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        { }
-
-        protected virtual void AsTextSuffix(CodeWriter writer, RenderFlags flags)
-        {
-            if (!flags.HasFlag(RenderFlags.Description))
-                AsTextTerminator(writer, flags);
-        }
-
-        protected internal void AsTextTerminator(CodeWriter writer, RenderFlags flags)
-        {
-            if (HasTerminator)
-            {
-                writer.Write(Terminator);
-                CheckForAlignment(writer);  // Check for alignment of any EOL comments
-            }
-        }
-
-        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
-        {
-            if (!flags.HasFlag(RenderFlags.NoPostAnnotations))
-                AsTextAnnotations(writer, AnnotationFlags.IsPostfix, flags);
+            // Only associate regular comments with statements by default, not doc comments
+            // (this will be overridden for TypeDecls and type member decls).
+            return (comment is Comment);
         }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
@@ -288,6 +171,103 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        protected internal void AsTextTerminator(CodeWriter writer, RenderFlags flags)
+        {
+            if (HasTerminator)
+            {
+                writer.Write(Terminator);
+                CheckForAlignment(writer);  // Check for alignment of any EOL comments
+            }
+        }
+
+        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
+        {
+            if (!flags.HasFlag(RenderFlags.NoPostAnnotations))
+                AsTextAnnotations(writer, AnnotationFlags.IsPostfix, flags);
+        }
+
+        protected virtual void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        { }
+
+        protected virtual void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
+        {
+            writer.Write(" ");
+        }
+
+        protected virtual void AsTextPrefix(CodeWriter writer, RenderFlags flags)
+        { }
+
+        protected virtual void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+            writer.Write(Keyword);
+        }
+
+        protected virtual void AsTextSuffix(CodeWriter writer, RenderFlags flags)
+        {
+            if (!flags.HasFlag(RenderFlags.Description))
+                AsTextTerminator(writer, flags);
+        }
+
+        protected override void DefaultFormatField(CodeObject field)
+        {
+            base.DefaultFormatField(field);
+
+            // Turn off parens for child expressions by default
+            if (field is Expression && (((Expression)field).HasParens && !field.IsGroupingSet))
+                field.SetFormatFlag(FormatFlags.Grouping, false);
+        }
+
+        protected void ParseKeywordAndArgument(Parser parser, ref Expression argument)
+        {
+            parser.NextToken();  // Move past the keyword
+
+            Token firstToken = parser.Token;
+            bool openParen = ParseExpectedToken(parser, Expression.ParseTokenStartGroup);  // Move past '('
+
+            SetField(ref argument, Expression.Parse(parser, this, true, Expression.ParseTokenEndGroup), false);
+            if (openParen)
+            {
+                // Move any comments after the '(' to the argument expression
+                if (argument != null)
+                    argument.MoveCommentsToLeftMost(firstToken, false);
+
+                if (ParseExpectedToken(parser, Expression.ParseTokenEndGroup))  // Move past ')'
+                {
+                    if (parser.LastToken.IsFirstOnLine)
+                        IsEndFirstOnLine = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Parse the terminator at the end of a <see cref="Statement"/>.
+        /// </summary>
+        protected void ParseTerminator(Parser parser)
+        {
+            MoveCommentsAsPost(parser.LastToken);   // Get any comments before the ';' as post comments
+
+            // Parse the terminator, attaching an error if it's missing
+            if (parser.TokenText == Terminator)
+            {
+                HasTerminator = true;
+                parser.NextToken();
+            }
+            else
+                parser.AttachMessage(this, "'" + Terminator + "' expected", parser.Token);
+        }
+
+        /// <summary>
+        /// This method is used when we must parse backwards through the Unused list to get a type.
+        /// </summary>
+        protected void ParseUnusedType(Parser parser, ref Expression type)
+        {
+            if (!ModifiersHelpers.IsModifier(parser.LastUnusedTokenText))
+            {
+                Expression expression = parser.RemoveLastUnusedExpression();
+                MoveFormatting(expression);
+                SetField(ref type, expression, false);
+            }
+        }
     }
 }

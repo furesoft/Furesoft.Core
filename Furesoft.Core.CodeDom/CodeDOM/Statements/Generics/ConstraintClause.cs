@@ -22,14 +22,18 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ConstraintClause : CodeObject
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "where";
 
-        protected SymbolicRef _typeParameter;
+        /// <summary>
+        /// The token used to parse between the constraint type parameter and constraints.
+        /// </summary>
+        public const string ParseTokenSeparator = ":";
+
         protected ChildList<TypeParameterConstraint> _constraints;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected SymbolicRef _typeParameter;
 
         /// <summary>
         /// Create a <see cref="ConstraintClause"/>.
@@ -53,66 +57,6 @@ namespace Nova.CodeDOM
         public ConstraintClause(TypeParameter typeParameter, params TypeParameterConstraint[] constraints)
             : this(typeParameter.CreateRef(), constraints)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The <see cref="TypeParameter"/> being constrained.
-        /// </summary>
-        public SymbolicRef TypeParameter
-        {
-            get { return _typeParameter; }
-            set { SetField(ref _typeParameter, value, true); }
-        }
-
-        /// <summary>
-        /// The list of <see cref="TypeParameterConstraint"/>s.
-        /// </summary>
-        public ChildList<TypeParameterConstraint> Constraints
-        {
-            get { return _constraints; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create the list of <see cref="TypeParameterConstraint"/>s, or return the existing one.
-        /// </summary>
-        public ChildList<TypeParameterConstraint> CreateConstraints()
-        {
-            if (_constraints == null)
-                _constraints = new ChildList<TypeParameterConstraint>(this);
-            return _constraints;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            ConstraintClause clone = (ConstraintClause)base.Clone();
-            clone.CloneField(ref clone._typeParameter, _typeParameter);
-            clone._constraints = ChildListHelpers.Clone(_constraints, clone);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "where";
-
-        /// <summary>
-        /// The token used to parse between the constraint type parameter and constraints.
-        /// </summary>
-        public const string ParseTokenSeparator = ":";
 
         /// <summary>
         /// Parse a <see cref="ConstraintClause"/>.
@@ -146,23 +90,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse a list of constraint clauses.
+        /// The list of <see cref="TypeParameterConstraint"/>s.
         /// </summary>
-        public static ChildList<ConstraintClause> ParseList(Parser parser, CodeObject parent)
+        public ChildList<TypeParameterConstraint> Constraints
         {
-            ChildList<ConstraintClause> constraints = null;
-            while (parser.TokenText == ParseToken)
-            {
-                if (constraints == null)
-                    constraints = new ChildList<ConstraintClause>(parent);
-                constraints.Add(new ConstraintClause(parser, parent));
-            }
-            return constraints;
+            get { return _constraints; }
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the code object defaults to starting on a new line.
@@ -201,9 +134,35 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The <see cref="TypeParameter"/> being constrained.
+        /// </summary>
+        public SymbolicRef TypeParameter
+        {
+            get { return _typeParameter; }
+            set { SetField(ref _typeParameter, value, true); }
+        }
 
-        #region /* RENDERING */
+        public static void AsTextConstraints(CodeWriter writer, ChildList<ConstraintClause> constraints, RenderFlags flags)
+        {
+            if (constraints != null && constraints.Count > 0)
+                writer.WriteList(constraints, flags | RenderFlags.NoItemSeparators | (constraints[0].IsFirstOnLine ? 0 : RenderFlags.PrefixSpace), constraints.Parent);
+        }
+
+        /// <summary>
+        /// Parse a list of constraint clauses.
+        /// </summary>
+        public static ChildList<ConstraintClause> ParseList(Parser parser, CodeObject parent)
+        {
+            ChildList<ConstraintClause> constraints = null;
+            while (parser.TokenText == ParseToken)
+            {
+                if (constraints == null)
+                    constraints = new ChildList<ConstraintClause>(parent);
+                constraints.Add(new ConstraintClause(parser, parent));
+            }
+            return constraints;
+        }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
@@ -240,12 +199,25 @@ namespace Nova.CodeDOM
             AsTextAfter(writer, passFlags | (flags & RenderFlags.NoPostAnnotations));
         }
 
-        public static void AsTextConstraints(CodeWriter writer, ChildList<ConstraintClause> constraints, RenderFlags flags)
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
         {
-            if (constraints != null && constraints.Count > 0)
-                writer.WriteList(constraints, flags | RenderFlags.NoItemSeparators | (constraints[0].IsFirstOnLine ? 0 : RenderFlags.PrefixSpace), constraints.Parent);
+            ConstraintClause clone = (ConstraintClause)base.Clone();
+            clone.CloneField(ref clone._typeParameter, _typeParameter);
+            clone._constraints = ChildListHelpers.Clone(_constraints, clone);
+            return clone;
         }
 
-        #endregion
+        /// <summary>
+        /// Create the list of <see cref="TypeParameterConstraint"/>s, or return the existing one.
+        /// </summary>
+        public ChildList<TypeParameterConstraint> CreateConstraints()
+        {
+            if (_constraints == null)
+                _constraints = new ChildList<TypeParameterConstraint>(this);
+            return _constraints;
+        }
     }
 }

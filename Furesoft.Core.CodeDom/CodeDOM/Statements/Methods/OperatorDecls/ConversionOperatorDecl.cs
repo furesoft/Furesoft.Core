@@ -17,8 +17,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ConversionOperatorDecl : OperatorDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ConversionOperatorDecl"/>.
         /// </summary>
@@ -33,9 +31,20 @@ namespace Nova.CodeDOM
             : base(GetInternalName(modifiers), destinationType, modifiers, new[] { parameter })
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Parse a <see cref="ConversionOperatorDecl"/>.
+        /// </summary>
+        public ConversionOperatorDecl(Parser parser, CodeObject parent, ParseFlags flags)
+            : base(parser, parent, false, flags)
+        {
+            parser.NextToken();                                 // Move past 'operator'
+            _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
+            _name = GetInternalName(_modifiers);                // Get the name
+            ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
+            SetField(ref _returnType, Expression.Parse(parser, this, true, Expression.ParseTokenStartGroup), false);
+            ParseParameters(parser);
+            ParseTerminatorOrBody(parser, flags);
+        }
 
         /// <summary>
         /// True if the conversion is explicit.
@@ -53,20 +62,6 @@ namespace Nova.CodeDOM
             get { return _modifiers.HasFlag(Modifiers.Implicit); }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        private static string GetInternalName(Modifiers modifiers)
-        {
-            string name = Operator.NamePrefix;
-            if (modifiers.HasFlag(Modifiers.Implicit))
-                name += Modifiers.Implicit.ToString();
-            else if (modifiers.HasFlag(Modifiers.Explicit))
-                name += Modifiers.Explicit.ToString();
-            return name;
-        }
-
         /// <summary>
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
@@ -80,29 +75,6 @@ namespace Nova.CodeDOM
                 name = ((TypeDecl)_parent).GetFullName(descriptive) + "." + name;
             return name;
         }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// Parse a <see cref="ConversionOperatorDecl"/>.
-        /// </summary>
-        public ConversionOperatorDecl(Parser parser, CodeObject parent, ParseFlags flags)
-            : base(parser, parent, false, flags)
-        {
-            parser.NextToken();                                 // Move past 'operator'
-            _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
-            _name = GetInternalName(_modifiers);                // Get the name
-            ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
-            SetField(ref _returnType, Expression.Parse(parser, this, true, Expression.ParseTokenStartGroup), false);
-            ParseParameters(parser);
-            ParseTerminatorOrBody(parser, flags);
-        }
-
-        #endregion
-
-        #region /* RENDERING */
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
@@ -122,6 +94,14 @@ namespace Nova.CodeDOM
             AsTextName(writer, flags);
         }
 
-        #endregion
+        private static string GetInternalName(Modifiers modifiers)
+        {
+            string name = Operator.NamePrefix;
+            if (modifiers.HasFlag(Modifiers.Implicit))
+                name += Modifiers.Implicit.ToString();
+            else if (modifiers.HasFlag(Modifiers.Explicit))
+                name += Modifiers.Explicit.ToString();
+            return name;
+        }
     }
 }

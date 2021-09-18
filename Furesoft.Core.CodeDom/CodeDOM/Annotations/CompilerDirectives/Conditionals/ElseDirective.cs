@@ -12,35 +12,16 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ElseDirective : ConditionalDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "else";
 
         /// <summary>
         /// Create an <see cref="ElseDirective"/>.
         /// </summary>
         public ElseDirective()
         { }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "else";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="ElseDirective"/>.
-        /// </summary>
-        public static ElseDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new ElseDirective(parser, parent);
-        }
 
         /// <summary>
         /// Parse an <see cref="ElseDirective"/>.
@@ -58,9 +39,13 @@ namespace Nova.CodeDOM
                 parser.CurrentConditionalDirectiveState = _isActive = true;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// The keyword associated with the compiler directive (if any).
+        /// </summary>
+        public override string DirectiveKeyword
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// True if the compiler directive has an argument.
@@ -70,18 +55,17 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
-        /// The keyword associated with the compiler directive (if any).
+        /// Parse an <see cref="ElseDirective"/>.
         /// </summary>
-        public override string DirectiveKeyword
+        public static ElseDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            get { return ParseToken; }
+            return new ElseDirective(parser, parent);
         }
 
-        #endregion
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
     }
 }

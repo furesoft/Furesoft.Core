@@ -12,8 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class MethodDecl : MethodDeclBase
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="MethodDecl"/> with the specified name, return type, and modifiers.
         /// </summary>
@@ -56,31 +54,16 @@ namespace Nova.CodeDOM
             : base(name, returnType, new Block(), parameters)
         { }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create a reference to the <see cref="MethodDecl"/>.
-        /// </summary>
-        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
-        /// <returns>A <see cref="MethodRef"/>.</returns>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
+        protected MethodDecl(Parser parser, CodeObject parent, bool parse, ParseFlags flags)
+                    : base(parser, parent)
         {
-            return new MethodRef(this, isFirstOnLine);
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        internal static void AddParsePoints()
-        {
-            // Methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            // Use a parse-priority of 50 (ConstructorDecl uses 0, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400).
-            Parser.AddParsePoint(ParseTokenStart, 50, Parse, typeof(IBlock));
+            if (parse)
+            {
+                ParseMethodNameAndType(parser, parent, true, false);
+                ParseParameters(parser);
+                ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
+                ParseTerminatorOrBody(parser, flags);
+            }
         }
 
         /// <summary>
@@ -107,18 +90,23 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected MethodDecl(Parser parser, CodeObject parent, bool parse, ParseFlags flags)
-            : base(parser, parent)
+        /// <summary>
+        /// Create a reference to the <see cref="MethodDecl"/>.
+        /// </summary>
+        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
+        /// <returns>A <see cref="MethodRef"/>.</returns>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
         {
-            if (parse)
-            {
-                ParseMethodNameAndType(parser, parent, true, false);
-                ParseParameters(parser);
-                ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
-                ParseTerminatorOrBody(parser, flags);
-            }
+            return new MethodRef(this, isFirstOnLine);
         }
 
-        #endregion
+        internal static void AddParsePoints()
+        {
+            // Methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            // Use a parse-priority of 50 (ConstructorDecl uses 0, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400).
+            Parser.AddParsePoint(ParseTokenStart, 50, Parse, typeof(IBlock));
+        }
     }
 }

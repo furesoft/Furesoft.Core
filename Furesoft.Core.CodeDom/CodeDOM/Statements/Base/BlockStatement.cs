@@ -2,11 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using System.Collections.Generic;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace Nova.CodeDOM
 {
@@ -19,18 +18,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class BlockStatement : Statement, IBlock
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// The body is always a Block, which in turn may contain zero or more other code objects,
         /// and it can also be null in special cases (such as for method signatures with no body,
         /// delegate declarations, or a While with the semi-colon on the same line).
         /// </summary>
         protected Block _body;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="BlockStatement"/>.
@@ -69,9 +62,9 @@ namespace Nova.CodeDOM
             _body.Parent = this;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected BlockStatement(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// The <see cref="Block"/> body.
@@ -92,11 +85,88 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if the <see cref="Statement"/> has an argument.
+        /// </summary>
+        public override bool HasArgument
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True if the <see cref="BlockStatement"/> has braces.
+        /// </summary>
+        public bool HasBraces
+        {
+            get { return (_body != null && _body.HasBraces); }
+            set
+            {
+                if (HasBracesAlways && !value)
+                    throw new Exception("Braces can't be turned off for the given type of block statement!");
+                CreateBody().HasBraces = value;
+            }
+        }
+
+        /// <summary>
+        /// True if the <see cref="BlockStatement"/> always requires braces.
+        /// </summary>
+        public virtual bool HasBracesAlways
+        {
+            get { return true; }
+        }
+
+        /// <summary>
         /// True for all <see cref="BlockStatement"/>s that have a header (all except <see cref="CodeUnit"/> and <see cref="BlockDecl"/>).
         /// </summary>
         public virtual bool HasHeader
         {
             get { return true; }
+        }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has a terminator character by default.
+        /// </summary>
+        public override bool HasTerminatorDefault
+        {
+            get { return (_body == null); }
+        }
+
+        /// <summary>
+        /// True if the <see cref="BlockStatement"/> has compact empty braces by default.
+        /// </summary>
+        public virtual bool IsCompactIfEmptyDefault
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True for multi-part statements, such as try/catch/finally or if/else.
+        /// </summary>
+        public virtual bool IsMultiPart
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_body == null || (!_body.IsFirstOnLine && _body.IsSingleLine))); }
+            set
+            {
+                // Make sure there's a body, and set its IsFirstOnLine and IsSingleLine properties appropriately
+                CreateBody();
+                _body.IsFirstOnLine = !value;
+                _body.IsSingleLine = value;
+            }
+        }
+
+        /// <summary>
+        /// True if the code object only requires a single line for display by default.
+        /// </summary>
+        public override bool IsSingleLineDefault
+        {
+            get { return false; }
         }
 
         /// <summary>
@@ -110,25 +180,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True for multi-part statements, such as try/catch/finally or if/else.
+        /// True if the <see cref="BlockStatement"/> requires an empty statement if it has an empty block with no braces.
         /// </summary>
-        public virtual bool IsMultiPart
+        public virtual bool RequiresEmptyStatement
         {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Create a body if one doesn't exist yet.
-        /// </summary>
-        public Block CreateBody()
-        {
-            if (_body == null)
-                Body = new Block();
-            return _body;
+            get { return true; }
         }
 
         /// <summary>
@@ -159,52 +215,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Insert a <see cref="CodeObject"/> at the specified index in the <see cref="BlockStatement"/> body.
-        /// </summary>
-        /// <param name="index">The index at which to insert.</param>
-        /// <param name="obj">The CodeObject to be inserted.</param>
-        public virtual void Insert(int index, CodeObject obj)
-        {
-            CreateBody().Insert(index, obj);
-        }
-
-        /// <summary>
-        /// Remove the specified <see cref="CodeObject"/> from the <see cref="BlockStatement"/> body.
-        /// </summary>
-        public virtual void Remove(CodeObject obj)
-        {
-            if (_body != null)
-                _body.Remove(obj);
-        }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> at the specified index from the <see cref="BlockStatement"/>.
-        /// </summary>
-        public void RemoveAt(int index)
-        {
-            if (_body != null)
-                _body.RemoveAt(index);
-        }
-
-        /// <summary>
-        /// Remove all <see cref="CodeObject"/>s from the <see cref="BlockStatement"/> body.
-        /// </summary>
-        public virtual void RemoveAll()
-        {
-            if (_body != null)
-                _body.RemoveAll();
-        }
-
-        /// <summary>
-        /// Replace the specified <see cref="CodeObject"/> with a new one.
-        /// </summary>
-        /// <returns>True if the code object was found and replaced, otherwise false.</returns>
-        public bool Replace(CodeObject oldObject, CodeObject newObject)
-        {
-            return (_body != null && _body.Replace(oldObject, newObject));
-        }
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -222,6 +232,16 @@ namespace Nova.CodeDOM
         public bool Contains(CodeObject codeObject)
         {
             return (_body != null && _body.Contains(codeObject));
+        }
+
+        /// <summary>
+        /// Create a body if one doesn't exist yet.
+        /// </summary>
+        public Block CreateBody()
+        {
+            if (_body == null)
+                Body = new Block();
+            return _body;
         }
 
         /// <summary>
@@ -286,13 +306,107 @@ namespace Nova.CodeDOM
             return (_body != null ? _body.FindIndexOf(codeObject) : -1);
         }
 
-        #endregion
+        /// <summary>
+        /// Insert a <see cref="CodeObject"/> at the specified index in the <see cref="BlockStatement"/> body.
+        /// </summary>
+        /// <param name="index">The index at which to insert.</param>
+        /// <param name="obj">The CodeObject to be inserted.</param>
+        public virtual void Insert(int index, CodeObject obj)
+        {
+            CreateBody().Insert(index, obj);
+        }
 
-        #region /* PARSING */
+        /// <summary>
+        /// Reformat the <see cref="Block"/> body.
+        /// </summary>
+        public virtual void ReformatBlock()
+        {
+            if (_body != null)
+            {
+                if (!_body.IsGroupingSet)
+                    _body.SetFormatFlag(FormatFlags.Grouping, ShouldHaveBraces());
+                if (!IsNewLinesSet)
+                {
+                    IsSingleLine = (IsSingleLineDefault && _body.IsSingleLineDefault && _body.Count < 2);
+                    if (_body.Count == 0 && IsCompactIfEmptyDefault)
+                        _body.SetNewLines(0);
+                }
+            }
+        }
 
-        protected BlockStatement(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
+        /// <summary>
+        /// Remove the specified <see cref="CodeObject"/> from the <see cref="BlockStatement"/> body.
+        /// </summary>
+        public virtual void Remove(CodeObject obj)
+        {
+            if (_body != null)
+                _body.Remove(obj);
+        }
+
+        /// <summary>
+        /// Remove all <see cref="CodeObject"/>s from the <see cref="BlockStatement"/> body.
+        /// </summary>
+        public virtual void RemoveAll()
+        {
+            if (_body != null)
+                _body.RemoveAll();
+        }
+
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> at the specified index from the <see cref="BlockStatement"/>.
+        /// </summary>
+        public void RemoveAt(int index)
+        {
+            if (_body != null)
+                _body.RemoveAt(index);
+        }
+
+        /// <summary>
+        /// Replace the specified <see cref="CodeObject"/> with a new one.
+        /// </summary>
+        /// <returns>True if the code object was found and replaced, otherwise false.</returns>
+        public bool Replace(CodeObject oldObject, CodeObject newObject)
+        {
+            return (_body != null && _body.Replace(oldObject, newObject));
+        }
+
+        /// <summary>
+        /// Determines if the body of the <see cref="BlockStatement"/> should be formatted with braces.
+        /// </summary>
+        public virtual bool ShouldHaveBraces()
+        {
+            // Check if braces aren't optional for the statement
+            if (HasBracesAlways)
+                return true;
+            // No braces are required if we have no body, or it's empty
+            if (_body == null || _body.Count == 0)
+                return false;
+            // Braces are required (by default) if we have multiple objects in the block
+            // (this behavior is overridden by SwitchItem, where multiple objects are legal without braces).
+            if (_body.Count > 1)
+                return true;
+            // We only have a single child statement - use braces if it's not single-line
+            return !_body[0].IsSingleLine;
+        }
+
+        /// <summary>
+        /// Default format the code object.
+        /// </summary>
+        protected internal override void DefaultFormat()
+        {
+            base.DefaultFormat();
+
+            // Default the braces if they haven't been explicitly set
+            if (!IsGroupingSet)
+                _formatFlags = ((_formatFlags & ~FormatFlags.Grouping) | (ShouldHaveBraces() ? FormatFlags.Grouping : 0));
+        }
+
+        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
+        {
+            base.AsTextAfter(writer, flags);
+            if (_body != null && !flags.HasFlag(RenderFlags.Description))
+                _body.AsText(writer, flags);
+        }
 
         protected void ParseKeywordArgumentBody(Parser parser, ref Expression argument, bool allowNullBody, bool noPostProcessing)
         {
@@ -322,148 +436,5 @@ namespace Nova.CodeDOM
                     new Block(out _body, parser, this, true);  // Parse the body
             }
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has an argument.
-        /// </summary>
-        public override bool HasArgument
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Reformat the <see cref="Block"/> body.
-        /// </summary>
-        public virtual void ReformatBlock()
-        {
-            if (_body != null)
-            {
-                if (!_body.IsGroupingSet)
-                    _body.SetFormatFlag(FormatFlags.Grouping, ShouldHaveBraces());
-                if (!IsNewLinesSet)
-                {
-                    IsSingleLine = (IsSingleLineDefault && _body.IsSingleLineDefault && _body.Count < 2);
-                    if (_body.Count == 0 && IsCompactIfEmptyDefault)
-                        _body.SetNewLines(0);
-                }
-            }
-        }
-
-        /// <summary>
-        /// True if the code object only requires a single line for display by default.
-        /// </summary>
-        public override bool IsSingleLineDefault
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_body == null || (!_body.IsFirstOnLine && _body.IsSingleLine))); }
-            set
-            {
-                // Make sure there's a body, and set its IsFirstOnLine and IsSingleLine properties appropriately
-                CreateBody();
-                _body.IsFirstOnLine = !value;
-                _body.IsSingleLine = value;
-            }
-        }
-
-        /// <summary>
-        /// True if the <see cref="BlockStatement"/> always requires braces.
-        /// </summary>
-        public virtual bool HasBracesAlways
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Determines if the body of the <see cref="BlockStatement"/> should be formatted with braces.
-        /// </summary>
-        public virtual bool ShouldHaveBraces()
-        {
-            // Check if braces aren't optional for the statement
-            if (HasBracesAlways)
-                return true;
-            // No braces are required if we have no body, or it's empty
-            if (_body == null || _body.Count == 0)
-                return false;
-            // Braces are required (by default) if we have multiple objects in the block
-            // (this behavior is overridden by SwitchItem, where multiple objects are legal without braces).
-            if (_body.Count > 1)
-                return true;
-            // We only have a single child statement - use braces if it's not single-line
-            return !_body[0].IsSingleLine;
-        }
-
-        /// <summary>
-        /// True if the <see cref="BlockStatement"/> has braces.
-        /// </summary>
-        public bool HasBraces
-        {
-            get { return (_body != null && _body.HasBraces); }
-            set
-            {
-                if (HasBracesAlways && !value)
-                    throw new Exception("Braces can't be turned off for the given type of block statement!");
-                CreateBody().HasBraces = value;
-            }
-        }
-
-        /// <summary>
-        /// True if the <see cref="BlockStatement"/> has compact empty braces by default.
-        /// </summary>
-        public virtual bool IsCompactIfEmptyDefault
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="BlockStatement"/> requires an empty statement if it has an empty block with no braces.
-        /// </summary>
-        public virtual bool RequiresEmptyStatement
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has a terminator character by default.
-        /// </summary>
-        public override bool HasTerminatorDefault
-        {
-            get { return (_body == null); }
-        }
-
-        /// <summary>
-        /// Default format the code object.
-        /// </summary>
-        protected internal override void DefaultFormat()
-        {
-            base.DefaultFormat();
-
-            // Default the braces if they haven't been explicitly set
-            if (!IsGroupingSet)
-                _formatFlags = ((_formatFlags & ~FormatFlags.Grouping) | (ShouldHaveBraces() ? FormatFlags.Grouping : 0));
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
-        {
-            base.AsTextAfter(writer, flags);
-            if (_body != null && !flags.HasFlag(RenderFlags.Description))
-                _body.AsText(writer, flags);
-        }
-
-        #endregion
     }
 }

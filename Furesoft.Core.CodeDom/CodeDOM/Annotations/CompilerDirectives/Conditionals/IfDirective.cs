@@ -15,7 +15,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class IfDirective : ConditionalExpressionDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "if";
 
         /// <summary>
         /// Create an <see cref="IfDirective"/> with the specified <see cref="Expression"/>.
@@ -24,18 +27,19 @@ namespace Nova.CodeDOM
             : base(expression)
         { }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Parse an <see cref="IfDirective"/>.
+        /// </summary>
+        public IfDirective(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        { }
 
         /// <summary>
-        /// The token used to parse the code object.
+        /// The keyword associated with the compiler directive (if any).
         /// </summary>
-        public new const string ParseToken = "if";
-
-        internal static void AddParsePoints()
+        public override string DirectiveKeyword
         {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -47,25 +51,9 @@ namespace Nova.CodeDOM
             return new IfDirective(parser, parent);
         }
 
-        /// <summary>
-        /// Parse an <see cref="IfDirective"/>.
-        /// </summary>
-        public IfDirective(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
-        /// The keyword associated with the compiler directive (if any).
-        /// </summary>
-        public override string DirectiveKeyword
+        internal static void AddParsePoints()
         {
-            get { return ParseToken; }
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
-
-        #endregion
     }
 }

@@ -20,7 +20,25 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Call : ArgumentsOperator
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// True if the operator is left-associative, or false if it's right-associative.
+        /// </summary>
+        public const bool LeftAssociative = true;
+
+        /// <summary>
+        /// The token used to parse the end of the parameters.
+        /// </summary>
+        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
+
+        /// <summary>
+        /// The token used to parse the start of the parameters.
+        /// </summary>
+        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
+
+        /// <summary>
+        /// The precedence of the operator.
+        /// </summary>
+        public const int Precedence = 100;
 
         /// <summary>
         /// Create a <see cref="Call"/>.
@@ -36,71 +54,8 @@ namespace Nova.CodeDOM
             : this(methodDecl.CreateRef(), arguments)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        #endregion
-
-        #region / * METHODS */
-
-        /// <summary>
-        /// Determine the type of the parameter for the specified argument index.
-        /// </summary>
-        public override TypeRefBase GetParameterType(int argumentIndex)
-        {
-            if (_expression != null)
-            {
-                TypeRefBase invokedRef = _expression.SkipPrefixes() as TypeRefBase;
-                if (invokedRef != null)
-                    return invokedRef.GetDelegateParameterType(argumentIndex);
-            }
-            return null;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of the parameters.
-        /// </summary>
-        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
-
-        /// <summary>
-        /// The token used to parse the end of the parameters.
-        /// </summary>
-        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
-
-        /// <summary>
-        /// The precedence of the operator.
-        /// </summary>
-        public const int Precedence = 100;
-
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 200 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Cast uses 300, Expression parens uses 400)
-            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Call"/>.
-        /// </summary>
-        public static Call Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // Verify that we have an unused expression before proceeding
-            if (parser.HasUnusedExpression)
-                return new Call(parser, parent, false);
-            return null;
-        }
-
         protected Call(Parser parser, CodeObject parent, bool isInitializer)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             if (isInitializer) return;
 
@@ -123,6 +78,31 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Parse a <see cref="Call"/>.
+        /// </summary>
+        public static Call Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // Verify that we have an unused expression before proceeding
+            if (parser.HasUnusedExpression)
+                return new Call(parser, parent, false);
+            return null;
+        }
+
+        /// <summary>
+        /// Determine the type of the parameter for the specified argument index.
+        /// </summary>
+        public override TypeRefBase GetParameterType(int argumentIndex)
+        {
+            if (_expression != null)
+            {
+                TypeRefBase invokedRef = _expression.SkipPrefixes() as TypeRefBase;
+                if (invokedRef != null)
+                    return invokedRef.GetDelegateParameterType(argumentIndex);
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
         public override int GetPrecedence()
@@ -130,9 +110,18 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Cast uses 300, Expression parens uses 400)
+            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
+        }
 
-        #region /* RENDERING */
+        protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)
+        {
+            if (IsEndFirstOnLine)
+                writer.WriteLine();
+            writer.Write(ParseTokenEnd);
+        }
 
         protected override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
@@ -144,14 +133,5 @@ namespace Nova.CodeDOM
         {
             writer.Write(ParseTokenStart);
         }
-
-        protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)
-        {
-            if (IsEndFirstOnLine)
-                writer.WriteLine();
-            writer.Write(ParseTokenEnd);
-        }
-
-        #endregion
     }
 }

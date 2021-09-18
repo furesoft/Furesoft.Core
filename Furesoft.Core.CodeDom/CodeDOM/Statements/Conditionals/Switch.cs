@@ -13,13 +13,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Switch : BlockStatement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "switch";
 
         protected Expression _target;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Switch"/> on the specified target <see cref="Expression"/>.
@@ -39,73 +38,8 @@ namespace Nova.CodeDOM
                 Add(item);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The target <see cref="Expression"/>.
-        /// </summary>
-        public Expression Target
-        {
-            get { return _target; }
-            set { SetField(ref _target, value, true); }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Add a <see cref="SwitchItem"/>.
-        /// </summary>
-        public void Add(SwitchItem item)
-        {
-            base.Add(item);
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            Switch clone = (Switch)base.Clone();
-            clone.CloneField(ref clone._target, _target);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "switch";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="Switch"/>.
-        /// </summary>
-        public static Switch Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Switch(parser, parent);
-        }
-
         protected Switch(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             // Parse keyword, argument, and body
             // Do NOT do any post-processing in the body parsing, because we're going to do it below
@@ -174,10 +108,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
@@ -203,9 +133,53 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// The target <see cref="Expression"/>.
+        /// </summary>
+        public Expression Target
+        {
+            get { return _target; }
+            set { SetField(ref _target, value, true); }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="Switch"/>.
+        /// </summary>
+        public static Switch Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Switch(parser, parent);
+        }
+
+        /// <summary>
+        /// Add a <see cref="SwitchItem"/>.
+        /// </summary>
+        public void Add(SwitchItem item)
+        {
+            base.Add(item);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            Switch clone = (Switch)base.Clone();
+            clone.CloneField(ref clone._target, _target);
+            return clone;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
         {
@@ -255,7 +229,5 @@ namespace Nova.CodeDOM
         {
             _target.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

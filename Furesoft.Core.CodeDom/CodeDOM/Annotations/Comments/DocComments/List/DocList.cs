@@ -13,16 +13,20 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocList : DocComment
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The name of the list 'type' attribute.
+        /// </summary>
+        public const string AttributeName = "type";
+
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "list";
 
         /// <summary>
         /// The type of the <see cref="DocList"/> (should be 'bullet', 'number', or 'table').
         /// </summary>
         protected string _type;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="DocList"/> with the specified type.
@@ -42,9 +46,18 @@ namespace Nova.CodeDOM
             Add("\n");
         }
 
-        #endregion
+        protected DocList(Parser parser, CodeObject parent)
+        {
+            ParseTag(parser, parent);
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The XML tag name for the documentation comment.
+        /// </summary>
+        public override string TagName
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The type of the <see cref="DocList"/> (should be 'bullet', 'number', or 'table').
@@ -56,33 +69,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The XML tag name for the documentation comment.
-        /// </summary>
-        public override string TagName
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "list";
-
-        /// <summary>
-        /// The name of the list 'type' attribute.
-        /// </summary>
-        public const string AttributeName = "type";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
-        }
-
-        /// <summary>
         /// Parse a <see cref="DocList"/>.
         /// </summary>
         public static new DocList Parse(Parser parser, CodeObject parent, ParseFlags flags)
@@ -90,9 +76,15 @@ namespace Nova.CodeDOM
             return new DocList(parser, parent);
         }
 
-        protected DocList(Parser parser, CodeObject parent)
+        internal static void AddParsePoints()
         {
-            ParseTag(parser, parent);
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
+        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
+        {
+            if (!flags.HasFlag(RenderFlags.Description))
+                writer.Write("<" + TagName + " " + AttributeName + "=\"" + _type + "\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
         }
 
         protected override object ParseAttributeValue(Parser parser, string name)
@@ -102,17 +94,5 @@ namespace Nova.CodeDOM
                 _type = value.ToString().Trim();
             return value;
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
-        {
-            if (!flags.HasFlag(RenderFlags.Description))
-                writer.Write("<" + TagName + " " + AttributeName + "=\"" + _type + "\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
-        }
-
-        #endregion
     }
 }

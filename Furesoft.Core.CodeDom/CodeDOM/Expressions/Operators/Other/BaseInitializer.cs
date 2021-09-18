@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class BaseInitializer : ConstructorInitializer
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = BaseRef.ParseToken;
 
         /// <summary>
         /// Create a <see cref="BaseInitializer"/> operator.
@@ -34,9 +37,12 @@ namespace Nova.CodeDOM
             : base(constructorDecl, parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Parse a <see cref="BaseInitializer"/> operator.
+        /// </summary>
+        public BaseInitializer(Parser parser, CodeObject parent)
+            : base(parser, parent, ParseToken)
+        { }
 
         /// <summary>
         /// The symbol associated with the operator.
@@ -45,23 +51,5 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = BaseRef.ParseToken;
-
-        /// <summary>
-        /// Parse a <see cref="BaseInitializer"/> operator.
-        /// </summary>
-        public BaseInitializer(Parser parser, CodeObject parent)
-            : base(parser, parent, ParseToken)
-        { }
-
-        #endregion
     }
 }

@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class If : IfBase
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "if";
 
         /// <summary>
         /// Create an <see cref="If"/>.
@@ -55,9 +58,11 @@ namespace Nova.CodeDOM
             : base(conditional, elseIf)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected If(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            ParseIf(parser, parent);  // Delegate to base class to parse 'if'
+        }
 
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
@@ -65,20 +70,6 @@ namespace Nova.CodeDOM
         public override string Keyword
         {
             get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "if";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
 
         /// <summary>
@@ -89,12 +80,9 @@ namespace Nova.CodeDOM
             return new If(parser, parent);
         }
 
-        protected If(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static void AddParsePoints()
         {
-            ParseIf(parser, parent);  // Delegate to base class to parse 'if'
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
-
-        #endregion
     }
 }

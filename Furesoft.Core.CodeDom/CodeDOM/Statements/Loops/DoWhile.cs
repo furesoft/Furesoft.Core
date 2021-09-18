@@ -18,7 +18,10 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DoWhile : Statement
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = While.ParseToken;
 
         /// <summary>
         /// Create a <see cref="DoWhile"/>.
@@ -27,35 +30,6 @@ namespace Nova.CodeDOM
         {
             _parent = parent;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The conditional <see cref="Expression"/>.
-        /// </summary>
-        public Expression Conditional
-        {
-            get { return ((While)_parent).Conditional; }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = While.ParseToken;
 
         /// <summary>
         /// Parse a <see cref="DoWhile"/>.
@@ -73,9 +47,13 @@ namespace Nova.CodeDOM
             MoveEOLComment(parser.LastToken);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// The conditional <see cref="Expression"/>.
+        /// </summary>
+        public Expression Conditional
+        {
+            get { return ((While)_parent).Conditional; }
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has a terminator character by default.
@@ -85,9 +63,13 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
@@ -95,7 +77,5 @@ namespace Nova.CodeDOM
             if (conditional != null)
                 conditional.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

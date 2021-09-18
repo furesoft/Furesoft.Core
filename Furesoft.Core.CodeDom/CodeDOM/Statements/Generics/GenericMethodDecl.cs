@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections.Generic;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System.Collections.Generic;
 
 namespace Nova.CodeDOM
 {
@@ -14,14 +13,28 @@ namespace Nova.CodeDOM
     /// </summary>
     public class GenericMethodDecl : MethodDecl, ITypeParameters
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The alternate token used to parse the start of type arguments inside documentation comments.
+        /// </summary>
+        public const string ParseTokenAltArgumentEnd = TypeRefBase.ParseTokenAltArgumentEnd;
 
-        protected ChildList<TypeParameter> _typeParameters;
+        /// <summary>
+        /// The alternate token used to parse the start of type arguments inside documentation comments.
+        /// </summary>
+        public const string ParseTokenAltArgumentStart = TypeRefBase.ParseTokenAltArgumentStart;
+
+        /// <summary>
+        /// The token used to parse the end of the type arguments.
+        /// </summary>
+        public const string ParseTokenArgumentEnd = TypeRefBase.ParseTokenArgumentEnd;
+
+        /// <summary>
+        /// The token used to parse the start of the type arguments.
+        /// </summary>
+        public const string ParseTokenArgumentStart = TypeRefBase.ParseTokenArgumentStart;
+
         protected ChildList<ConstraintClause> _constraintClauses;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        protected ChildList<TypeParameter> _typeParameters;
 
         /// <summary>
         /// Create a <see cref="GenericMethodDecl"/> with the specified name, return type, and modifiers.
@@ -67,32 +80,25 @@ namespace Nova.CodeDOM
             : base(name, returnType, parameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The list of <see cref="TypeParameter"/>s.
-        /// </summary>
-        public ChildList<TypeParameter> TypeParameters
+        protected internal GenericMethodDecl(Parser parser, CodeObject parent, bool typeParametersAlreadyParsed, ParseFlags flags)
+                            : base(parser, parent, false, flags)
         {
-            get { return _typeParameters; }
-        }
-
-        /// <summary>
-        /// True if there are any <see cref="TypeParameter"/>s.
-        /// </summary>
-        public bool HasTypeParameters
-        {
-            get { return (_typeParameters != null && _typeParameters.Count > 0); }
-        }
-
-        /// <summary>
-        /// The number of <see cref="TypeParameter"/>s.
-        /// </summary>
-        public int TypeParameterCount
-        {
-            get { return (_typeParameters != null ? _typeParameters.Count : 0); }
+            if (typeParametersAlreadyParsed)
+            {
+                // The type parameters were already parsed on the unused Dot expression - fetch them from there
+                UnresolvedRef unresolvedRef = (UnresolvedRef)((Dot)parser.LastUnusedCodeObject).Right;
+                _typeParameters = new ChildList<TypeParameter>(this);
+                foreach (Expression expression in unresolvedRef.TypeArguments)
+                    _typeParameters.Add(new TypeParameter(expression is UnresolvedRef ? ((UnresolvedRef)expression).Name : null));
+                unresolvedRef.TypeArguments = null;
+            }
+            ParseMethodNameAndType(parser, parent, true, false);
+            ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
+            if (!typeParametersAlreadyParsed)
+                _typeParameters = TypeParameter.ParseList(parser, this);  // Parse any type parameters
+            ParseParameters(parser);
+            _constraintClauses = ConstraintClause.ParseList(parser, this);  // Parse any constraint clauses
+            ParseTerminatorOrBody(parser, flags);
         }
 
         /// <summary>
@@ -112,6 +118,14 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if there are any <see cref="TypeParameter"/>s.
+        /// </summary>
+        public bool HasTypeParameters
+        {
+            get { return (_typeParameters != null && _typeParameters.Count > 0); }
+        }
+
+        /// <summary>
         /// Always <c>true</c>.
         /// </summary>
         public override bool IsGenericMethod
@@ -119,36 +133,79 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
-        /// Create the list of <see cref="TypeParameter"/>s, or return the existing one.
+        /// Determines if the code object only requires a single line for display.
         /// </summary>
-        public ChildList<TypeParameter> CreateTypeParameters()
+        public override bool IsSingleLine
         {
-            if (_typeParameters == null)
-                _typeParameters = new ChildList<TypeParameter>(this);
-            return _typeParameters;
+            get
+            {
+                return (base.IsSingleLine && (_typeParameters == null || _typeParameters.Count == 0 || (!_typeParameters[0].IsFirstOnLine && _typeParameters.IsSingleLine))
+                    && (_constraintClauses == null || _constraintClauses.Count == 0 || (!_constraintClauses[0].IsFirstOnLine && _constraintClauses.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value)
+                {
+                    if (_typeParameters != null && _typeParameters.Count > 0)
+                    {
+                        _typeParameters[0].IsFirstOnLine = false;
+                        _typeParameters.IsSingleLine = true;
+                    }
+                    if (_constraintClauses != null && _constraintClauses.Count > 0)
+                    {
+                        _constraintClauses[0].IsFirstOnLine = false;
+                        _constraintClauses.IsSingleLine = true;
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// Add one or more <see cref="TypeParameter"/>s.
+        /// The number of <see cref="TypeParameter"/>s.
         /// </summary>
-        public void AddTypeParameters(params TypeParameter[] typeParameters)
+        public int TypeParameterCount
         {
-            CreateTypeParameters().AddRange(typeParameters);
+            get { return (_typeParameters != null ? _typeParameters.Count : 0); }
         }
 
         /// <summary>
-        /// Create the list of <see cref="ConstraintClause"/>s, or return the existing one.
+        /// The list of <see cref="TypeParameter"/>s.
         /// </summary>
-        public ChildList<ConstraintClause> CreateConstraintClauses()
+        public ChildList<TypeParameter> TypeParameters
         {
-            if (_constraintClauses == null)
-                _constraintClauses = new ChildList<ConstraintClause>(this);
-            return _constraintClauses;
+            get { return _typeParameters; }
+        }
+
+        /// <summary>
+        /// Parse a <see cref="GenericMethodDecl"/>.
+        /// </summary>
+        public static new GenericMethodDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // If our parent is a TypeDecl, verify that we have an unused identifier (a Dot operator is possible
+            // for explicit interface implementations, but is handled by MethodDecl, which then calls the constructor
+            // below).  Otherwise, require a possible return type in addition to the identifier.  Also verify that
+            // we seem to match a type argument list pattern followed by a '('.
+            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
+            if (((parent is TypeDecl && parser.HasUnusedIdentifier) || parser.HasUnusedTypeRefAndIdentifier)
+                && TypeRefBase.PeekTypeArguments(parser, TypeRefBase.ParseTokenArgumentEnd, flags) && parser.LastPeekedTokenText == ParseTokenStart)
+                return new GenericMethodDecl(parser, parent, false, flags);
+            return null;
+        }
+
+        /// <summary>
+        /// Parse a <see cref="GenericMethodDecl"/> using alternate type argument delimiters.
+        /// </summary>
+        public static GenericMethodDecl ParseAlt(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // Verify that this alternate form is inside a doc comment (subroutines will look for the appropriate
+            // delimiters according to the parser state) in addition to passing other verifications as above.
+            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
+            if (parser.InDocComment && ((parent is TypeDecl && parser.HasUnusedIdentifier) || parser.HasUnusedTypeRefAndIdentifier)
+                && TypeRefBase.PeekTypeArguments(parser, TypeRefBase.ParseTokenAltArgumentEnd, flags) && parser.LastPeekedTokenText == ParseTokenStart)
+                return new GenericMethodDecl(parser, parent, false, flags);
+            return null;
         }
 
         /// <summary>
@@ -160,33 +217,32 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get any constraints for the specified <see cref="TypeParameter"/> on this method, or on the base virtual method if this method is an override.
+        /// Add one or more <see cref="TypeParameter"/>s.
         /// </summary>
-        public List<TypeParameterConstraint> GetTypeParameterConstraints(TypeParameter typeParameter)
+        public void AddTypeParameters(params TypeParameter[] typeParameters)
         {
-            // Override methods don't specify constraints - they inherit them from the base virtual method.
-            // In order to handle invalid code, just look in the first occurrence of constraints, searching
-            // any base method if the current one is an override.
-            if (_constraintClauses != null && _constraintClauses.Count > 0)
-            {
-                foreach (ConstraintClause constraintClause in _constraintClauses)
-                {
-                    if (constraintClause.TypeParameter.Reference == typeParameter)
-                        return constraintClause.Constraints;
-                }
-            }
-            else
-            {
-                MethodRef baseMethodRef = FindBaseMethod();
-                if (baseMethodRef != null)
-                {
-                    // If the constraints are from a base method, we have to translate the type parameter
-                    int index = FindTypeParameterIndex(typeParameter);
-                    TypeParameterRef typeParameterRef = baseMethodRef.GetTypeParameter(index);
-                    return baseMethodRef.GetTypeParameterConstraints(typeParameterRef);
-                }
-            }
-            return null;
+            CreateTypeParameters().AddRange(typeParameters);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            GenericMethodDecl clone = (GenericMethodDecl)base.Clone();
+            clone._typeParameters = ChildListHelpers.Clone(_typeParameters, clone);
+            clone._constraintClauses = ChildListHelpers.Clone(_constraintClauses, clone);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create the list of <see cref="ConstraintClause"/>s, or return the existing one.
+        /// </summary>
+        public ChildList<ConstraintClause> CreateConstraintClauses()
+        {
+            if (_constraintClauses == null)
+                _constraintClauses = new ChildList<ConstraintClause>(this);
+            return _constraintClauses;
         }
 
         /// <summary>
@@ -236,14 +292,13 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
+        /// Create the list of <see cref="TypeParameter"/>s, or return the existing one.
         /// </summary>
-        public override CodeObject Clone()
+        public ChildList<TypeParameter> CreateTypeParameters()
         {
-            GenericMethodDecl clone = (GenericMethodDecl)base.Clone();
-            clone._typeParameters = ChildListHelpers.Clone(_typeParameters, clone);
-            clone._constraintClauses = ChildListHelpers.Clone(_constraintClauses, clone);
-            return clone;
+            if (_typeParameters == null)
+                _typeParameters = new ChildList<TypeParameter>(this);
+            return _typeParameters;
         }
 
         /// <summary>
@@ -259,19 +314,6 @@ namespace Nova.CodeDOM
                 ++index;
             }
             return -1;
-        }
-
-        /// <summary>
-        /// Get the type parameter at the specified index.
-        /// </summary>
-        public TypeParameter GetTypeParameter(int index)
-        {
-            if (_typeParameters != null)
-            {
-                if (index >= 0 && index < _typeParameters.Count)
-                    return _typeParameters[index];
-            }
-            return null;
         }
 
         /// <summary>
@@ -292,36 +334,54 @@ namespace Nova.CodeDOM
             return name;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Get the type parameter at the specified index.
+        /// </summary>
+        public TypeParameter GetTypeParameter(int index)
+        {
+            if (_typeParameters != null)
+            {
+                if (index >= 0 && index < _typeParameters.Count)
+                    return _typeParameters[index];
+            }
+            return null;
+        }
 
         /// <summary>
-        /// The token used to parse the start of the type arguments.
+        /// Get any constraints for the specified <see cref="TypeParameter"/> on this method, or on the base virtual method if this method is an override.
         /// </summary>
-        public const string ParseTokenArgumentStart = TypeRefBase.ParseTokenArgumentStart;
-
-        /// <summary>
-        /// The token used to parse the end of the type arguments.
-        /// </summary>
-        public const string ParseTokenArgumentEnd = TypeRefBase.ParseTokenArgumentEnd;
+        public List<TypeParameterConstraint> GetTypeParameterConstraints(TypeParameter typeParameter)
+        {
+            // Override methods don't specify constraints - they inherit them from the base virtual method.
+            // In order to handle invalid code, just look in the first occurrence of constraints, searching
+            // any base method if the current one is an override.
+            if (_constraintClauses != null && _constraintClauses.Count > 0)
+            {
+                foreach (ConstraintClause constraintClause in _constraintClauses)
+                {
+                    if (constraintClause.TypeParameter.Reference == typeParameter)
+                        return constraintClause.Constraints;
+                }
+            }
+            else
+            {
+                MethodRef baseMethodRef = FindBaseMethod();
+                if (baseMethodRef != null)
+                {
+                    // If the constraints are from a base method, we have to translate the type parameter
+                    int index = FindTypeParameterIndex(typeParameter);
+                    TypeParameterRef typeParameterRef = baseMethodRef.GetTypeParameter(index);
+                    return baseMethodRef.GetTypeParameterConstraints(typeParameterRef);
+                }
+            }
+            return null;
+        }
 
         // Alternate type argument delimiters are allowed for code embedded inside documentation comments.
         // The C# style delimiters are also allowed in doc comments, although they shouldn't show up
         // usually, since they cause errors with parsing the XML properly - but they could be used
         // programmatically in certain situations.  Both styles are thus supported inside doc comments,
         // but the open and close delimiters must match for each pair.
-
-        /// <summary>
-        /// The alternate token used to parse the start of type arguments inside documentation comments.
-        /// </summary>
-        public const string ParseTokenAltArgumentStart = TypeRefBase.ParseTokenAltArgumentStart;
-
-        /// <summary>
-        /// The alternate token used to parse the start of type arguments inside documentation comments.
-        /// </summary>
-        public const string ParseTokenAltArgumentEnd = TypeRefBase.ParseTokenAltArgumentEnd;
-
         internal static new void AddParsePoints()
         {
             // Generic methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
@@ -334,105 +394,11 @@ namespace Nova.CodeDOM
             Parser.AddParsePoint(ParseTokenAltArgumentStart, ParseAlt, typeof(IBlock));
         }
 
-        /// <summary>
-        /// Parse a <see cref="GenericMethodDecl"/>.
-        /// </summary>
-        public static new GenericMethodDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // If our parent is a TypeDecl, verify that we have an unused identifier (a Dot operator is possible
-            // for explicit interface implementations, but is handled by MethodDecl, which then calls the constructor
-            // below).  Otherwise, require a possible return type in addition to the identifier.  Also verify that
-            // we seem to match a type argument list pattern followed by a '('.
-            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
-            if (((parent is TypeDecl && parser.HasUnusedIdentifier) || parser.HasUnusedTypeRefAndIdentifier)
-                && TypeRefBase.PeekTypeArguments(parser, TypeRefBase.ParseTokenArgumentEnd, flags) && parser.LastPeekedTokenText == ParseTokenStart)
-                return new GenericMethodDecl(parser, parent, false, flags);
-            return null;
-        }
-
-        /// <summary>
-        /// Parse a <see cref="GenericMethodDecl"/> using alternate type argument delimiters.
-        /// </summary>
-        public static GenericMethodDecl ParseAlt(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // Verify that this alternate form is inside a doc comment (subroutines will look for the appropriate
-            // delimiters according to the parser state) in addition to passing other verifications as above.
-            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
-            if (parser.InDocComment && ((parent is TypeDecl && parser.HasUnusedIdentifier) || parser.HasUnusedTypeRefAndIdentifier)
-                && TypeRefBase.PeekTypeArguments(parser, TypeRefBase.ParseTokenAltArgumentEnd, flags) && parser.LastPeekedTokenText == ParseTokenStart)
-                return new GenericMethodDecl(parser, parent, false, flags);
-            return null;
-        }
-
-        protected internal GenericMethodDecl(Parser parser, CodeObject parent, bool typeParametersAlreadyParsed, ParseFlags flags)
-            : base(parser, parent, false, flags)
-        {
-            if (typeParametersAlreadyParsed)
-            {
-                // The type parameters were already parsed on the unused Dot expression - fetch them from there
-                UnresolvedRef unresolvedRef = (UnresolvedRef)((Dot)parser.LastUnusedCodeObject).Right;
-                _typeParameters = new ChildList<TypeParameter>(this);
-                foreach (Expression expression in unresolvedRef.TypeArguments)
-                    _typeParameters.Add(new TypeParameter(expression is UnresolvedRef ? ((UnresolvedRef)expression).Name : null));
-                unresolvedRef.TypeArguments = null;
-            }
-            ParseMethodNameAndType(parser, parent, true, false);
-            ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
-            if (!typeParametersAlreadyParsed)
-                _typeParameters = TypeParameter.ParseList(parser, this);  // Parse any type parameters
-            ParseParameters(parser);
-            _constraintClauses = ConstraintClause.ParseList(parser, this);  // Parse any constraint clauses
-            ParseTerminatorOrBody(parser, flags);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_typeParameters == null || _typeParameters.Count == 0 || (!_typeParameters[0].IsFirstOnLine && _typeParameters.IsSingleLine))
-                    && (_constraintClauses == null || _constraintClauses.Count == 0 || (!_constraintClauses[0].IsFirstOnLine && _constraintClauses.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value)
-                {
-                    if (_typeParameters != null && _typeParameters.Count > 0)
-                    {
-                        _typeParameters[0].IsFirstOnLine = false;
-                        _typeParameters.IsSingleLine = true;
-                    }
-                    if (_constraintClauses != null && _constraintClauses.Count > 0)
-                    {
-                        _constraintClauses[0].IsFirstOnLine = false;
-                        _constraintClauses.IsSingleLine = true;
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
         {
             base.AsTextName(writer, flags);
             if (HasTypeParameters)
                 TypeParameter.AsTextTypeParameters(writer, _typeParameters, flags);
-        }
-
-        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
-        {
-            if (!HasConstraintClauses)
-                base.AsTextSuffix(writer, flags);
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
@@ -441,6 +407,10 @@ namespace Nova.CodeDOM
             base.AsTextAfter(writer, flags);
         }
 
-        #endregion
+        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
+        {
+            if (!HasConstraintClauses)
+                base.AsTextSuffix(writer, flags);
+        }
     }
 }

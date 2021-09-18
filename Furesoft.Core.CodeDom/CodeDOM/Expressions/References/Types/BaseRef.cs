@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class BaseRef : SelfRef
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "base";
 
         /// <summary>
         /// Create a <see cref="BaseRef"/>.
@@ -27,9 +30,19 @@ namespace Nova.CodeDOM
             : base(false)
         { }
 
-        #endregion
+        protected BaseRef(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            parser.NextToken();  // Move past 'base'
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The keyword associated with the <see cref="SelfRef"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The name of the <see cref="SymbolicRef"/>.
@@ -53,20 +66,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "base";
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse);
-        }
-
         /// <summary>
         /// Parse a <see cref="BaseRef"/>.
         /// </summary>
@@ -75,24 +74,9 @@ namespace Nova.CodeDOM
             return new BaseRef(parser, parent);
         }
 
-        protected BaseRef(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal static new void AddParsePoints()
         {
-            parser.NextToken();  // Move past 'base'
+            Parser.AddParsePoint(ParseToken, Parse);
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
-        /// The keyword associated with the <see cref="SelfRef"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
     }
 }

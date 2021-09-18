@@ -12,15 +12,14 @@ namespace Nova.CodeDOM
     /// </summary>
     public class PragmaChecksumDirective : PragmaDirective
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "checksum";
 
+        protected string _crc;
         protected string _fileName;
         protected string _guid;
-        protected string _crc;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="PragmaChecksumDirective"/>.
@@ -30,61 +29,6 @@ namespace Nova.CodeDOM
             FileName = fileName;
             GUID = guid;
             CRC = crc;
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The associated file name.
-        /// </summary>
-        public string FileName
-        {
-            get { return _fileName; }
-            set { _fileName = value; }
-        }
-
-        /// <summary>
-        /// The associated GUID.
-        /// </summary>
-        public string GUID
-        {
-            get { return _guid; }
-            set { _guid = value; }
-        }
-
-        /// <summary>
-        /// The associated CRC value.
-        /// </summary>
-        public string CRC
-        {
-            get { return _crc; }
-            set { _crc = value; }
-        }
-
-        public override string PragmaType { get { return ParseToken; } }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "checksum";
-
-        internal static new void AddParsePoints()
-        {
-            AddPragmaParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="PragmaChecksumDirective"/>.
-        /// </summary>
-        public static new PragmaChecksumDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new PragmaChecksumDirective(parser, parent);
         }
 
         /// <summary>
@@ -116,16 +60,52 @@ namespace Nova.CodeDOM
             MoveEOLComment(parser.LastToken);
         }
 
-        #endregion
+        /// <summary>
+        /// The associated CRC value.
+        /// </summary>
+        public string CRC
+        {
+            get { return _crc; }
+            set { _crc = value; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// The associated file name.
+        /// </summary>
+        public string FileName
+        {
+            get { return _fileName; }
+            set { _fileName = value; }
+        }
+
+        /// <summary>
+        /// The associated GUID.
+        /// </summary>
+        public string GUID
+        {
+            get { return _guid; }
+            set { _guid = value; }
+        }
+
+        public override string PragmaType { get { return ParseToken; } }
+
+        /// <summary>
+        /// Parse a <see cref="PragmaChecksumDirective"/>.
+        /// </summary>
+        public static new PragmaChecksumDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new PragmaChecksumDirective(parser, parent);
+        }
+
+        internal static new void AddParsePoints()
+        {
+            AddPragmaParsePoint(ParseToken, Parse);
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             base.AsTextArgument(writer, flags);
             writer.Write(" " + _fileName + " " + _guid + " " + _crc);
         }
-
-        #endregion
     }
 }

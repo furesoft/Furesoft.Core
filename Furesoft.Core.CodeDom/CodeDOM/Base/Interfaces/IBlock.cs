@@ -21,6 +21,11 @@ namespace Nova.CodeDOM
         bool HasHeader { get; }
 
         /// <summary>
+        /// True if the <see cref="Block"/> is formatted on a single line.
+        /// </summary>
+        bool IsSingleLine { get; set; }
+
+        /// <summary>
         /// True if the <see cref="Block"/> is at the top-level.
         /// </summary>
         bool IsTopLevel { get; }
@@ -41,6 +46,11 @@ namespace Nova.CodeDOM
         void Insert(int index, CodeObject codeObject);
 
         /// <summary>
+        /// Reformat the <see cref="Block"/> body.
+        /// </summary>
+        void ReformatBlock();
+
+        /// <summary>
         /// Remove the specified <see cref="CodeObject"/>.
         /// </summary>
         void Remove(CodeObject codeObject);
@@ -49,15 +59,5 @@ namespace Nova.CodeDOM
         /// Remove all objects from the <see cref="Block"/>.
         /// </summary>
         void RemoveAll();
-
-        /// <summary>
-        /// Reformat the <see cref="Block"/> body.
-        /// </summary>
-        void ReformatBlock();
-
-        /// <summary>
-        /// True if the <see cref="Block"/> is formatted on a single line.
-        /// </summary>
-        bool IsSingleLine { get; set; }
     }
 }

@@ -13,20 +13,12 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class BinaryBooleanOperator : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         protected BinaryBooleanOperator(Expression left, Expression right)
             : base(left, right)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected BinaryBooleanOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
     }
 }

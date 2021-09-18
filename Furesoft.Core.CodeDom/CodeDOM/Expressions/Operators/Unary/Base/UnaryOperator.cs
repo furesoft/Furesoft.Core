@@ -11,26 +11,25 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class UnaryOperator : Operator
     {
-        #region /* FIELDS */
-
         protected Expression _expression;
 
         // If the operator is overloaded, a hidden reference (OperatorRef) to the overloaded
         // operator declaration is stored here.
         protected SymbolicRef _operatorRef;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
         protected UnaryOperator(Expression expression)
         {
             Expression = expression;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected UnaryOperator(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            // Get rid of parens around the expression if they're not necessary
+            if (AutomaticFormattingCleanup && !parser.IsGenerated && _expression != null
+                && !(_expression is Operator && ((Operator)_expression).GetPrecedence() > GetPrecedence()))
+                _expression.HasParens = false;
+        }
 
         /// <summary>
         /// The associated <see cref="Expression"/>.
@@ -58,46 +57,6 @@ namespace Nova.CodeDOM
             get { return (_expression != null && _expression.IsConst); }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// The internal name of the <see cref="UnaryOperator"/>.
-        /// </summary>
-        public virtual string GetInternalName()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            UnaryOperator clone = (UnaryOperator)base.Clone();
-            clone.CloneField(ref clone._expression, _expression);
-            clone.CloneField(ref clone._operatorRef, _operatorRef);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        protected UnaryOperator(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            // Get rid of parens around the expression if they're not necessary
-            if (AutomaticFormattingCleanup && !parser.IsGenerated && _expression != null
-                && !(_expression is Operator && ((Operator)_expression).GetPrecedence() > GetPrecedence()))
-                _expression.HasParens = false;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// Determines if the code object only requires a single line for display.
         /// </summary>
@@ -115,6 +74,25 @@ namespace Nova.CodeDOM
             }
         }
 
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            UnaryOperator clone = (UnaryOperator)base.Clone();
+            clone.CloneField(ref clone._expression, _expression);
+            clone.CloneField(ref clone._operatorRef, _operatorRef);
+            return clone;
+        }
+
+        /// <summary>
+        /// The internal name of the <see cref="UnaryOperator"/>.
+        /// </summary>
+        public virtual string GetInternalName()
+        {
+            return null;
+        }
+
         protected override void DefaultFormatField(CodeObject field)
         {
             base.DefaultFormatField(field);
@@ -124,7 +102,5 @@ namespace Nova.CodeDOM
             Expression expression = (Expression)field;
             expression.HasParens = (expression is Operator && ((Operator)expression).GetPrecedence() > GetPrecedence());
         }
-
-        #endregion
     }
 }

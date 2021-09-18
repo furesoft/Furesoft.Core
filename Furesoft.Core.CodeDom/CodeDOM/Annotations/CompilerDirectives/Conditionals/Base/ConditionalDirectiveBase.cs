@@ -11,19 +11,11 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ConditionalDirectiveBase : CompilerDirective
     {
-        #region /* CONSTRUCTORS */
-
         protected ConditionalDirectiveBase()
         { }
-
-        #endregion
-
-        #region /* PARSING */
 
         protected ConditionalDirectiveBase(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
     }
 }

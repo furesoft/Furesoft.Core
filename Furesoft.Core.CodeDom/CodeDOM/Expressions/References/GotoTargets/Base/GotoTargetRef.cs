@@ -9,8 +9,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class GotoTargetRef : SymbolicRef
     {
-        #region /* CONSTRUCTORS */
-
         protected GotoTargetRef(Label declaration, bool isFirstOnLine)
             : base(declaration, isFirstOnLine)
         { }
@@ -18,7 +16,5 @@ namespace Nova.CodeDOM
         protected GotoTargetRef(SwitchItem declaration, bool isFirstOnLine)
             : base(declaration, isFirstOnLine)
         { }
-
-        #endregion
     }
 }

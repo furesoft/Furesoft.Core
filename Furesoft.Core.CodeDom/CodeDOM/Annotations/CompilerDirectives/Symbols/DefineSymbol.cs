@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DefineSymbol : SymbolDirective
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "define";
 
         /// <summary>
         /// Create a <see cref="DefineSymbol"/>.
@@ -19,28 +22,6 @@ namespace Nova.CodeDOM
         public DefineSymbol(string symbol)
             : base(symbol)
         { }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "define";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="DefineSymbol"/>.
-        /// </summary>
-        public static DefineSymbol Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DefineSymbol(parser, parent);
-        }
 
         /// <summary>
         /// Parse a <see cref="DefineSymbol"/>.
@@ -52,10 +33,6 @@ namespace Nova.CodeDOM
             parser.CodeUnit.DefineCompilerDirectiveSymbol(_symbol);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
         /// The keyword associated with the compiler directive (if any).
         /// </summary>
@@ -64,6 +41,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="DefineSymbol"/>.
+        /// </summary>
+        public static DefineSymbol Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new DefineSymbol(parser, parent);
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
     }
 }

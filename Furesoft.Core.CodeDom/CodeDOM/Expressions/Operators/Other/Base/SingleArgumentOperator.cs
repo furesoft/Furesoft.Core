@@ -13,22 +13,16 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class SingleArgumentOperator : Operator
     {
-        #region /* FIELDS */
-
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected SingleArgumentOperator(Expression expression)
         {
             Expression = expression;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected SingleArgumentOperator(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// The <see cref="Expression"/> being operated on.
@@ -38,54 +32,6 @@ namespace Nova.CodeDOM
             get { return _expression; }
             set { SetField(ref _expression, value, true); }
         }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            SingleArgumentOperator clone = (SingleArgumentOperator)base.Clone();
-            clone.CloneField(ref clone._expression, _expression);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        protected SingleArgumentOperator(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        protected void ParseKeywordAndArgument(Parser parser, ParseFlags flags)
-        {
-            // Save the starting token of the expression for later
-            Token startingToken = parser.ParentStartingToken;
-
-            parser.NextToken();  // Move past the keyword
-
-            // If the argument has parens, it's a normal operator, like 'typeof()', otherwise it's a top-level
-            // operator (ref/out) and we have to parse it as such.
-            if (HasArgumentParens)
-            {
-                ParseExpectedToken(parser, ParseTokenStartGroup);  // Move past '('
-                SetField(ref _expression, Parse(parser, this, false, ParseTokenEndGroup, flags), false);
-                ParseExpectedToken(parser, ParseTokenEndGroup);  // Move past ')'
-            }
-            else
-                SetField(ref _expression, Parse(parser, this, true, null, flags), false);
-
-            // Set the parent starting token to the beginning of the expression
-            parser.ParentStartingToken = startingToken;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the argument has parens around it.
@@ -112,10 +58,6 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             RenderFlags passFlags = (flags & RenderFlags.PassMask);
@@ -129,6 +71,36 @@ namespace Nova.CodeDOM
                 writer.Write(ParseTokenEndGroup);
         }
 
-        #endregion
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            SingleArgumentOperator clone = (SingleArgumentOperator)base.Clone();
+            clone.CloneField(ref clone._expression, _expression);
+            return clone;
+        }
+
+        protected void ParseKeywordAndArgument(Parser parser, ParseFlags flags)
+        {
+            // Save the starting token of the expression for later
+            Token startingToken = parser.ParentStartingToken;
+
+            parser.NextToken();  // Move past the keyword
+
+            // If the argument has parens, it's a normal operator, like 'typeof()', otherwise it's a top-level
+            // operator (ref/out) and we have to parse it as such.
+            if (HasArgumentParens)
+            {
+                ParseExpectedToken(parser, ParseTokenStartGroup);  // Move past '('
+                SetField(ref _expression, Parse(parser, this, false, ParseTokenEndGroup, flags), false);
+                ParseExpectedToken(parser, ParseTokenEndGroup);  // Move past ')'
+            }
+            else
+                SetField(ref _expression, Parse(parser, this, true, null, flags), false);
+
+            // Set the parent starting token to the beginning of the expression
+            parser.ParentStartingToken = startingToken;
+        }
     }
 }

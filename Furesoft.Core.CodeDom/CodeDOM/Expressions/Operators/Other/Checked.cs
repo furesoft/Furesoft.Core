@@ -11,30 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Checked : CheckedOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create a <see cref="Checked"/> operator with the specified <see cref="Expression"/>.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public Checked(Expression expression)
-            : base(expression)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -47,14 +27,24 @@ namespace Nova.CodeDOM
         public const int Precedence = 100;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create a <see cref="Checked"/> operator with the specified <see cref="Expression"/>.
         /// </summary>
-        public const bool LeftAssociative = true;
+        public Checked(Expression expression)
+            : base(expression)
+        { }
 
-        internal static new void AddParsePoints()
+        protected Checked(Parser parser, CodeObject parent)
+                    : base(parser, parent)
         {
-            // Use a parse-priority of 100 (CheckedBlock uses 0)
-            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
+            ParseKeywordAndArgument(parser, ParseFlags.NotAType);
+        }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -65,12 +55,6 @@ namespace Nova.CodeDOM
             return new Checked(parser, parent);
         }
 
-        protected Checked(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            ParseKeywordAndArgument(parser, ParseFlags.NotAType);
-        }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -79,6 +63,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (CheckedBlock uses 0)
+            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

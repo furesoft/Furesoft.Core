@@ -14,14 +14,18 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class DocCodeRefBase : DocComment
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The name of the code-ref attribute.
+        /// </summary>
+        public const string AttributeName = "cref";
+
+        /// <summary>
+        /// Determines if code references are parsed as code or plain text.
+        /// </summary>
+        public static bool ParseRefsAsCode = true;
 
         // Should evaluate to a code object reference (Expression - SymbolicRef, Dot, Call), but can also be a string.
         protected object _codeRef;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected DocCodeRefBase(Expression codeRef, string text)
             : base(text)
@@ -35,9 +39,10 @@ namespace Nova.CodeDOM
             CodeRef = codeRef;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected DocCodeRefBase(Parser parser, CodeObject parent)
+        {
+            ParseTag(parser, parent);
+        }
 
         /// <summary>
         /// The associated <see cref="CodeObject"/> or string.
@@ -48,9 +53,27 @@ namespace Nova.CodeDOM
             set { SetField(ref _codeRef, value, true); }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get
+            {
+                return (base.IsSingleLine && (_codeRef == null || (_codeRef is string && ((string)_codeRef).IndexOf('\n') < 0)
+                    || (_codeRef is CodeObject && !((CodeObject)_codeRef).IsFirstOnLine && ((CodeObject)_codeRef).IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_codeRef is CodeObject)
+                {
+                    if (value)
+                        ((CodeObject)_codeRef).IsFirstOnLine = false;
+                    ((CodeObject)_codeRef).IsSingleLine = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Deep-clone the code object.
@@ -62,23 +85,22 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The name of the code-ref attribute.
-        /// </summary>
-        public const string AttributeName = "cref";
-
-        /// <summary>
-        /// Determines if code references are parsed as code or plain text.
-        /// </summary>
-        public static bool ParseRefsAsCode = true;
-
-        protected DocCodeRefBase(Parser parser, CodeObject parent)
+        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
         {
-            ParseTag(parser, parent);
+            if (!flags.HasFlag(RenderFlags.Description))
+                writer.Write("<" + TagName + " " + AttributeName + "=\"");
+            if (_codeRef != null)
+            {
+                // Turn on translation of '<', '&', and '>' for content
+                writer.InDocCommentContent = true;
+                if (_codeRef is Expression)
+                    ((Expression)_codeRef).AsText(writer, flags);
+                else if (_codeRef is string)
+                    DocText.AsTextText(writer, (string)_codeRef, flags);
+                writer.InDocCommentContent = false;
+            }
+            if (!flags.HasFlag(RenderFlags.Description))
+                writer.Write("\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
         }
 
         protected override object ParseAttributeValue(Parser parser, string name)
@@ -124,55 +146,5 @@ namespace Nova.CodeDOM
             }
             return base.ParseAttributeValue(parser, name);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_codeRef == null || (_codeRef is string && ((string)_codeRef).IndexOf('\n') < 0)
-                    || (_codeRef is CodeObject && !((CodeObject)_codeRef).IsFirstOnLine && ((CodeObject)_codeRef).IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_codeRef is CodeObject)
-                {
-                    if (value)
-                        ((CodeObject)_codeRef).IsFirstOnLine = false;
-                    ((CodeObject)_codeRef).IsSingleLine = value;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
-        {
-            if (!flags.HasFlag(RenderFlags.Description))
-                writer.Write("<" + TagName + " " + AttributeName + "=\"");
-            if (_codeRef != null)
-            {
-                // Turn on translation of '<', '&', and '>' for content
-                writer.InDocCommentContent = true;
-                if (_codeRef is Expression)
-                    ((Expression)_codeRef).AsText(writer, flags);
-                else if (_codeRef is string)
-                    DocText.AsTextText(writer, (string)_codeRef, flags);
-                writer.InDocCommentContent = false;
-            }
-            if (!flags.HasFlag(RenderFlags.Description))
-                writer.Write("\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
-        }
-
-        #endregion
     }
 }

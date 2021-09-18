@@ -2,18 +2,74 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
+using Nova.Parsing;
+using Nova.Rendering;
+using Nova.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
 
-using Nova.Parsing;
-using Nova.Rendering;
-using Nova.Utilities;
-
 namespace Nova.CodeDOM
 {
+    /// <summary>
+    /// Represents a constant value of a specified enum type, stored in the underlying type of the enum.
+    /// </summary>
+    /// <remarks>
+    /// This class is necessary because we can't dynamically create an instance of the enum type with the appropriate
+    /// value since the type of the enum might be an <see cref="EnumDecl"/>, and we can't rely on being able to create a
+    /// <see cref="Type"/> that represents such a declaration because there could possibly be compilation errors.
+    /// </remarks>
+    public class EnumConstant
+    {
+        /// <summary>
+        /// The constant value of the enum, as an object of the underlying type
+        /// </summary>
+        public object ConstantValue;
+
+        /// <summary>
+        /// The <see cref="EnumDecl"/> or <see cref="Type"/> representing the type of the enum.
+        /// </summary>
+        public TypeRef EnumTypeRef;
+
+        /// <summary>
+        /// Create an <see cref="EnumConstant"/>.
+        /// </summary>
+        public EnumConstant(TypeRef enumTypeRef, object constantValue)
+        {
+            EnumTypeRef = enumTypeRef;
+
+            // Just in case, default a null constant value to a 0 'int' value
+            if (constantValue == null)
+                constantValue = 0;
+            // If the constant is another EnumConstant, extract it's value
+            else if (constantValue is EnumConstant)
+                constantValue = ((EnumConstant)constantValue).ConstantValue;
+
+            // Force the constant value to that of the underlying type of the enum if necessary and possible.
+            // This is required because the evaluation of constant expressions will promote smaller types to
+            // ints, and the enum's underlying type might be smaller.  It's better to do this here rather
+            // than inside all of the EvaluateConstants() methods in the various operators.
+            ConstantValue = TypeRef.ChangeTypeOfConstant(constantValue, enumTypeRef.GetUnderlyingTypeOfEnum());
+        }
+
+        /// <summary>
+        /// Create an <see cref="EnumConstant"/>.
+        /// </summary>
+        public EnumConstant(Type enumType, object constantValue)
+            : this(new TypeRef(enumType), constantValue)
+        { }
+
+        /// <summary>
+        /// True if the <see cref="EnumConstant"/> belongs to a bit-flags enum.
+        /// </summary>
+        public bool IsBitFlags
+        {
+            get { return EnumTypeRef.IsBitFlagsEnum; }
+        }
+    }
+
     /// <summary>
     /// Represents a reference to an <see cref="ITypeDecl"/> (<see cref="TypeDecl"/>, <see cref="TypeParameter"/>,
     /// <see cref="Alias"/>) or an external <see cref="Type"/>.
@@ -28,11 +84,11 @@ namespace Nova.CodeDOM
     /// can be directly referenced.  In the hybrid case of a generic Type with one or more TypeDecls as type
     /// parameters, the TypeRef will reference the generic Type with empty type arguments, with the actual type
     /// parameters stored in the TypeRef.
-    /// 
+    ///
     /// If the TypeRef is actually a VarTypeRef, then the _reference member will be null, and the Reference
     /// property must be used to get the reference.  In this case, the Reference can be a string if the type
     /// of the VarTypeRef's type is an UnresolvedRef.
-    /// 
+    ///
     /// A TypeRef may also reference a constant, which has both a type and a value.  Most constants are of
     /// built-in types, and the reference will be to the 'int' or 'string' object, etc.  For enums, the
     /// reference will be to an EnumConstant object, which stores a TypeRef to the enum type plus an object
@@ -41,8 +97,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class TypeRef : TypeRefBase
     {
-        #region /* STATICS */
-
         /// <summary>
         /// A hash set of primitive type names (the "System" namespace prefix is NOT included on the names).
         /// </summary>
@@ -113,165 +167,75 @@ namespace Nova.CodeDOM
                 { "System.Decimal", typeof(decimal) }
             };
 
+        public static TypeRef ArrayRef;
+
+        public static TypeRef AsyncCallbackRef;
+
+        public static TypeRef BoolRef;
+
+        public static TypeRef ByteRef;
+
+        public static TypeRef CharRef;
+
+        public static TypeRef[,] CommonTypeRefMap;
+
+        public static TypeRef DecimalRef;
+
+        public static TypeRef DelegateRef;
+
+        public static TypeRef Dictionary2Ref;
+
+        public static TypeRef DoubleRef;
+
+        public static TypeRef EnumRef;
+
+        public static TypeRef FlagsAttributeRef;
+
+        public static TypeRef FloatRef;
+
+        public static TypeRef IAsyncResultRef;
+
+        public static TypeRef ICloneableRef;
+
+        public static TypeRef ICollection1Ref;
+
+        public static TypeRef ICollectionRef;
+
+        public static TypeRef IEnumerable1Ref;
+
+        public static TypeRef IEnumerableRef;
+
+        public static TypeRef IList1Ref;
+
+        public static TypeRef IListRef;
+
+        public static TypeRef IntRef;
+
+        public static TypeRef ISerializableRef;
+
+        public static Dictionary<string, TypeRef> KeywordToTypeRefMap = new Dictionary<string, TypeRef>(16);
+
+        public static TypeRef LongRef;
+
+        public static TypeRef MulticastDelegateRef;
+
+        public static TypeRef Nullable1Ref;
+
         // These static TypeRefs can be re-used anywhere *except* for references that appear
         // directly in source code (because they may have different formatting information).
         public static TypeRef ObjectRef;
-        public static TypeRef VoidRef;
+
         public static TypeRef SByteRef;
-        public static TypeRef ByteRef;
         public static TypeRef ShortRef;
-        public static TypeRef UShortRef;
-        public static TypeRef IntRef;
-        public static TypeRef UIntRef;
-        public static TypeRef LongRef;
-        public static TypeRef ULongRef;
-        public static TypeRef CharRef;
-        public static TypeRef BoolRef;
         public static TypeRef StringRef;
-        public static TypeRef FloatRef;
-        public static TypeRef DoubleRef;
-        public static TypeRef DecimalRef;
-
-        public static TypeRef ArrayRef;
-        public static TypeRef ValueTypeRef;
-        public static TypeRef EnumRef;
-        public static TypeRef Nullable1Ref;
         public static TypeRef TypeTypeRef;
-
-        public static TypeRef Dictionary2Ref;
-        public static TypeRef IEnumerableRef;
-        public static TypeRef IEnumerable1Ref;
-        public static TypeRef ICollectionRef;
-        public static TypeRef ICollection1Ref;
-        public static TypeRef IListRef;
-        public static TypeRef IList1Ref;
-        public static TypeRef ICloneableRef;
-        public static TypeRef ISerializableRef;
-
-        public static TypeRef FlagsAttributeRef;
-        public static TypeRef DelegateRef;
-        public static TypeRef MulticastDelegateRef;
-        public static TypeRef AsyncCallbackRef;
-        public static TypeRef IAsyncResultRef;
         public static TypeRef TypeUtilTRef;
-
-        public static Dictionary<string, TypeRef> KeywordToTypeRefMap = new Dictionary<string, TypeRef>(16);
-        public static TypeRef[,] CommonTypeRefMap;
-
-        private static readonly Dictionary<Type, TypeRef> TypeToTypeRefMap = new Dictionary<Type, TypeRef>(); 
-
-        /// <summary>
-        /// Initialize static <see cref="TypeRef"/>s to the standard mscorlib types.
-        /// </summary>
-        public static void InitializeTypeRefs()
-        {
-            TypeToTypeRefMap.Clear();
-
-            ObjectRef    = FindTypeRef(typeof(object));
-            VoidRef      = FindTypeRef(typeof(void));
-            SByteRef     = FindTypeRef(typeof(sbyte));
-            ByteRef      = FindTypeRef(typeof(byte));
-            ShortRef     = FindTypeRef(typeof(short));
-            UShortRef    = FindTypeRef(typeof(ushort));
-            IntRef       = FindTypeRef(typeof(int));
-            UIntRef      = FindTypeRef(typeof(uint));
-            LongRef      = FindTypeRef(typeof(long));
-            ULongRef     = FindTypeRef(typeof(ulong));
-            CharRef      = FindTypeRef(typeof(char));
-            BoolRef      = FindTypeRef(typeof(bool));
-            StringRef    = FindTypeRef(typeof(string));
-            FloatRef     = FindTypeRef(typeof(float));
-            DoubleRef    = FindTypeRef(typeof(double));
-            DecimalRef   = FindTypeRef(typeof(decimal));
-
-            TypeTypeRef  = FindTypeRef(typeof(Type));
-            ArrayRef     = FindTypeRef(typeof(Array));
-            EnumRef      = FindTypeRef(typeof(Enum));
-            ValueTypeRef = FindTypeRef(typeof(ValueType));
-            Nullable1Ref = FindTypeRef(typeof(Nullable<>));
-
-            Dictionary2Ref   = FindTypeRef(typeof(Dictionary<,>));
-            IEnumerableRef   = FindTypeRef(typeof(IEnumerable));
-            IEnumerable1Ref  = FindTypeRef(typeof(IEnumerable<>));
-            ICollectionRef   = FindTypeRef(typeof(ICollection));
-            ICollection1Ref  = FindTypeRef(typeof(ICollection<>));
-            IListRef         = FindTypeRef(typeof(IList));
-            IList1Ref        = FindTypeRef(typeof(IList<>));
-            ICloneableRef    = FindTypeRef(typeof(ICloneable));
-            ISerializableRef = FindTypeRef(typeof(ISerializable));
-
-            FlagsAttributeRef        = FindTypeRef(typeof(FlagsAttribute));
-            DelegateRef              = FindTypeRef(typeof(Delegate));
-            MulticastDelegateRef     = FindTypeRef(typeof(MulticastDelegate));
-
-            AsyncCallbackRef         = FindTypeRef(typeof(AsyncCallback));
-            IAsyncResultRef          = FindTypeRef(typeof(IAsyncResult));
-            TypeUtilTRef             = FindTypeRef(typeof(TypeUtil.T));
-
-            // Initialize the keyword-to-type map.
-            KeywordToTypeRefMap = new Dictionary<string, TypeRef>(16)
-            {
-                { "object",  ObjectRef  },
-                { "void",    VoidRef    },
-                { "sbyte",   SByteRef   },
-                { "byte",    ByteRef    },
-                { "short",   ShortRef   },
-                { "ushort",  UShortRef  },
-                { "int",     IntRef     },
-                { "uint",    UIntRef    },
-                { "long",    LongRef    },
-                { "ulong",   ULongRef   },
-                { "char",    CharRef    },
-                { "bool",    BoolRef    },
-                { "string",  StringRef  },
-                { "float",   FloatRef   },
-                { "double",  DoubleRef  },
-                { "decimal", DecimalRef }
-            };
-
-            // Initialize the common-type map.  The TypeCode enum looks like this:
-            // 0-Empty, 1-Object, 2-DBNull, 3-Boolean, 4-Char, 5-SByte, 6-Byte, 7-Int16, 8-UInt16, 9-Int32,
-            // 10-UInt32, 11-Int64, 12-UInt64, 13-Single, 14-Double, 15-Decimal, 16-DateTime, 17-String
-            // We will 'cheat' a bit here and use knowledge of this ordering to create a mapping table
-            // for just 4-Char through 14-Double for common type calculations.
-            CommonTypeRefMap = new[,]
-                {  // char        sbyte       byte        short       ushort      int         uint        long        ulong       float      double     decimal
-                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // char
-                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // sbyte
-                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // byte
-                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // short
-                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // ushort
-                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // int
-                    { UIntRef,    LongRef,    UIntRef,    LongRef,    UIntRef,    LongRef,    UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // uint
-                    { LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // long
-                    { ULongRef,   ObjectRef,  ULongRef,   ObjectRef,  ULongRef,   ObjectRef,  ULongRef,   ObjectRef,  ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // ulong
-                    { FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,  DoubleRef, ObjectRef  },  // float
-                    { DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef, DoubleRef, ObjectRef  },  // double
-                    { DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, ObjectRef, ObjectRef, DecimalRef }   // decimal
-                };
-        }
-
-        /// <summary>
-        /// Find or create a <see cref="TypeRef"/> that represents the appropriate <see cref="Type"/>
-        /// that has the same FullName as the specified <see cref="Type"/>.
-        /// </summary>
-        public static TypeRef FindTypeRef(Type type)
-        {
-            TypeRef typeRef;
-
-            // When using reflection, the 'loaded' mscorlib will always be the same as that used by the currently
-            // running app, so we can just initialize using the 'typeof' type.
-            // Once a TypeRef is created for a particular Type, always re-use it.
-            if (TypeToTypeRefMap.TryGetValue(type, out typeRef))
-                return typeRef;
-            typeRef = new TypeRef(type);
-            TypeToTypeRefMap.Add(type, typeRef);
-            return typeRef;
-        }
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        public static TypeRef UIntRef;
+        public static TypeRef ULongRef;
+        public static TypeRef UShortRef;
+        public static TypeRef ValueTypeRef;
+        public static TypeRef VoidRef;
+        private static readonly Dictionary<Type, TypeRef> TypeToTypeRefMap = new Dictionary<Type, TypeRef>();
 
         /// <summary>
         /// Create a <see cref="TypeRef"/> from an <see cref="ITypeDecl"/>.
@@ -553,27 +517,59 @@ namespace Nova.CodeDOM
                 _formatFlags |= FormatFlags.Const;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The name of the <see cref="TypeRef"/>.
+        /// Construct a reference to a built-in type or nullable type, or non-built-in nullable type.
         /// </summary>
-        public override string Name
+        protected TypeRef(Parser parser, CodeObject parent, bool isBuiltIn, ParseFlags flags)
+            : base(parser, parent)
         {
-            get
+            // Handle built-in types
+            if (isBuiltIn)
             {
-                if (_reference is ITypeDecl)
-                    return ((ITypeDecl)_reference).Name;
-                if (_reference is Type)
+                // Resolve built-in type name to actual Type
+                TypeRef typeRef = KeywordToTypeRefMap[parser.TokenText];
+                _reference = typeRef.Reference;
+                parser.NextToken();  // Move past type name
+
+                // Check for nullable types
+                if (parser.Token != null)
                 {
-                    Type type = (Type)_reference;
-                    return (type.IsGenericType ? TypeUtil.NonGenericName(type) : type.Name);
+                    // For better performance, go ahead and parse any trailing '?' now if we have a value type, there's
+                    // no whitespace before the '?', and our parent isn't an Is operator.  Otherwise, the '?' might be
+                    // a Conditional, so we'll allow it to try parsing it instead - if it fails, we'll end up back here
+                    // later in ParseNullableType, which will take care of it.
+                    if (parser.TokenText == ParseTokenNullable && typeRef.IsValueType
+                        && parser.Token.LeadingWhitespace.Length == 0 && !(_parent is Is))
+                    {
+                        parser.NextToken();  // Move past '?'
+                        typeRef = (TypeRef)typeRef.Clone();
+                        typeRef.SetLineCol(this);
+                        CreateTypeArguments().Add(typeRef);
+                        _reference = Nullable1Ref.Reference;
+                    }
                 }
-                if (_reference is EnumConstant)  // Enum constant
-                    return ((EnumConstant)_reference).EnumTypeRef.Name;
-                return (_reference != null ? _reference.GetType().Name : null);  // Constant
+            }
+            else  // Handle nullable types
+            {
+                _reference = Nullable1Ref.Reference;
+                parser.NextToken();  // Move past '?'
+                Expression expression = parser.RemoveLastUnusedExpression();
+                Expression leftExpression = expression;
+                while (leftExpression is BinaryOperator)
+                    leftExpression = ((BinaryOperator)leftExpression).Left;
+                if (leftExpression != null)
+                    SetLineCol(leftExpression);
+                IsFirstOnLine = expression.IsFirstOnLine;
+                expression.IsFirstOnLine = false;
+                CreateTypeArguments().Add(expression);
+            }
+
+            // Handle array types
+            if (parser.TokenText == ParseTokenArrayStart && !flags.HasFlag(ParseFlags.NoArrays))
+            {
+                Token next = parser.PeekNextToken();
+                if (next != null && (next.Text == ParseTokenArrayEnd || next.Text == ParseTokenSeparator))
+                    ParseArrayRanks(parser);
             }
         }
 
@@ -595,26 +591,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The associated <see cref="Namespace"/> name.
-        /// </summary>
-        public virtual string NamespaceName
-        {
-            get
-            {
-                if (_reference is ITypeDecl)
-                {
-                    Namespace @namespace = ((ITypeDecl)_reference).GetNamespace();
-                    return (@namespace != null ? @namespace.FullName : null);
-                }
-                if (_reference is Type)
-                    return ((Type)_reference).Namespace;
-                if (_reference is EnumConstant)
-                    return ((EnumConstant)_reference).EnumTypeRef.NamespaceName;
-                return _reference.GetType().Namespace;
-            }
-        }
-
-        /// <summary>
         /// True if the referenced type is abstract.
         /// </summary>
         public bool IsAbstract
@@ -627,6 +603,26 @@ namespace Nova.CodeDOM
                     return ((ITypeDecl)reference).IsAbstract;
                 if (reference is Type)
                     return ((Type)reference).IsAbstract;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced type is a bit-flags enum.
+        /// </summary>
+        public bool IsBitFlagsEnum
+        {
+            get
+            {
+                if (IsEnum)
+                {
+                    if (_reference is EnumDecl)
+                        return ((EnumDecl)_reference).IsBitFlags;
+                    if (_reference is Type)
+                        return TypeUtil.IsBitFlagsEnum((Type)_reference);
+                    if (_reference is EnumConstant)
+                        return ((EnumConstant)_reference).EnumTypeRef.IsBitFlagsEnum;
+                }
                 return false;
             }
         }
@@ -664,20 +660,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced type is a user-defined class (excludes 'object' and 'string').
+        /// True if the referenced type has a constant value.
         /// </summary>
-        public bool IsUserClass
+        public override bool IsConst
         {
-            get
-            {
-                if (HasArrayRanks) return false;
-                object reference = GetReferencedType();
-                if (reference is ITypeDecl)
-                    return ((ITypeDecl)reference).IsClass;
-                if (reference is Type)
-                    return TypeUtil.IsUserClass((Type)reference);
-                return false;
-            }
+            get { return (_formatFlags.HasFlag(FormatFlags.Const)); }
         }
 
         /// <summary>
@@ -710,26 +697,6 @@ namespace Nova.CodeDOM
                     return ((ITypeDecl)reference).IsEnum;
                 if (reference is Type)
                     return ((Type)reference).IsEnum;
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced type is a bit-flags enum.
-        /// </summary>
-        public bool IsBitFlagsEnum
-        {
-            get
-            {
-                if (IsEnum)
-                {
-                    if (_reference is EnumDecl)
-                        return ((EnumDecl)_reference).IsBitFlags;
-                    if (_reference is Type)
-                        return TypeUtil.IsBitFlagsEnum((Type)_reference);
-                    if (_reference is EnumConstant)
-                        return ((EnumConstant)_reference).EnumTypeRef.IsBitFlagsEnum;
-                }
                 return false;
             }
         }
@@ -779,6 +746,23 @@ namespace Nova.CodeDOM
                     return ((ITypeDecl)reference).IsInterface;
                 if (reference is Type)
                     return ((Type)reference).IsInterface;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced type has internal access.
+        /// </summary>
+        public override bool IsInternal
+        {
+            get
+            {
+                if (HasArrayRanks) return GetElementType().IsInternal;
+                object reference = GetReferencedType();
+                if (reference is IModifiers)
+                    return ((IModifiers)reference).IsInternal;
+                if (reference is Type)
+                    return TypeUtil.IsInternal((Type)reference);
                 return false;
             }
         }
@@ -839,6 +823,91 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// True if the referenced type has private access.
+        /// </summary>
+        public override bool IsPrivate
+        {
+            get
+            {
+                if (HasArrayRanks) return GetElementType().IsPrivate;
+                object reference = GetReferencedType();
+                if (reference is IModifiers)
+                    return ((IModifiers)reference).IsPrivate;
+                if (reference is Type)
+                    return TypeUtil.IsPrivate((Type)reference);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced type has protected access.
+        /// </summary>
+        public override bool IsProtected
+        {
+            get
+            {
+                if (HasArrayRanks) return GetElementType().IsProtected;
+                object reference = GetReferencedType();
+                if (reference is IModifiers)
+                    return ((IModifiers)reference).IsProtected;
+                if (reference is Type)
+                    return TypeUtil.IsProtected((Type)reference);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced type has public access.
+        /// </summary>
+        public override bool IsPublic
+        {
+            get
+            {
+                if (HasArrayRanks) return GetElementType().IsPublic;
+                object reference = GetReferencedType();
+                if (reference is IModifiers)
+                    return ((IModifiers)reference).IsPublic;
+                if (reference is Type)
+                    return ((Type)reference).IsPublic;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced type is static.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get
+            {
+                if (HasArrayRanks) return GetElementType().IsStatic;
+                object reference = GetReferencedType();
+                if (reference is IModifiers)
+                    return ((IModifiers)reference).IsStatic;
+                if (reference is Type)
+                    return TypeUtil.IsStatic((Type)reference);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced type is a user-defined class (excludes 'object' and 'string').
+        /// </summary>
+        public bool IsUserClass
+        {
+            get
+            {
+                if (HasArrayRanks) return false;
+                object reference = GetReferencedType();
+                if (reference is ITypeDecl)
+                    return ((ITypeDecl)reference).IsClass;
+                if (reference is Type)
+                    return TypeUtil.IsUserClass((Type)reference);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// True if the referenced type is a user-defined struct (excludes primitive types including 'void' and 'decimal', and enums).
         /// </summary>
         public bool IsUserStruct
@@ -878,101 +947,68 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced type has a constant value.
+        /// The name of the <see cref="TypeRef"/>.
         /// </summary>
-        public override bool IsConst
-        {
-            get { return (_formatFlags.HasFlag(FormatFlags.Const)); }
-        }
-
-        /// <summary>
-        /// True if the referenced type is static.
-        /// </summary>
-        public override bool IsStatic
+        public override string Name
         {
             get
             {
-                if (HasArrayRanks) return GetElementType().IsStatic;
-                object reference = GetReferencedType();
-                if (reference is IModifiers)
-                    return ((IModifiers)reference).IsStatic;
-                if (reference is Type)
-                    return TypeUtil.IsStatic((Type)reference);
-                return false;
+                if (_reference is ITypeDecl)
+                    return ((ITypeDecl)_reference).Name;
+                if (_reference is Type)
+                {
+                    Type type = (Type)_reference;
+                    return (type.IsGenericType ? TypeUtil.NonGenericName(type) : type.Name);
+                }
+                if (_reference is EnumConstant)  // Enum constant
+                    return ((EnumConstant)_reference).EnumTypeRef.Name;
+                return (_reference != null ? _reference.GetType().Name : null);  // Constant
             }
         }
 
         /// <summary>
-        /// True if the referenced type has public access.
+        /// The associated <see cref="Namespace"/> name.
         /// </summary>
-        public override bool IsPublic
+        public virtual string NamespaceName
         {
             get
             {
-                if (HasArrayRanks) return GetElementType().IsPublic;
-                object reference = GetReferencedType();
-                if (reference is IModifiers)
-                    return ((IModifiers)reference).IsPublic;
-                if (reference is Type)
-                    return ((Type)reference).IsPublic;
-                return false;
+                if (_reference is ITypeDecl)
+                {
+                    Namespace @namespace = ((ITypeDecl)_reference).GetNamespace();
+                    return (@namespace != null ? @namespace.FullName : null);
+                }
+                if (_reference is Type)
+                    return ((Type)_reference).Namespace;
+                if (_reference is EnumConstant)
+                    return ((EnumConstant)_reference).EnumTypeRef.NamespaceName;
+                return _reference.GetType().Namespace;
             }
         }
 
         /// <summary>
-        /// True if the referenced type has private access.
+        /// Change the type of the specified constant to the specified type if possible.
         /// </summary>
-        public override bool IsPrivate
+        public static object ChangeTypeOfConstant(object constantValue, TypeRefBase typeRefBase)
         {
-            get
+            if (constantValue != null && typeRefBase != null)
             {
-                if (HasArrayRanks) return GetElementType().IsPrivate;
-                object reference = GetReferencedType();
-                if (reference is IModifiers)
-                    return ((IModifiers)reference).IsPrivate;
-                if (reference is Type)
-                    return TypeUtil.IsPrivate((Type)reference);
-                return false;
+                bool isNullableType = false;
+                if (typeRefBase.IsNullableType)
+                {
+                    isNullableType = true;
+                    typeRefBase = typeRefBase.TypeArguments[0].SkipPrefixes() as TypeRefBase;
+                }
+                object reference = (typeRefBase != null ? typeRefBase.Reference : null);
+
+                Type constantType = reference as Type;
+                if (isNullableType)
+                    constantType = typeof(Nullable<>).MakeGenericType(constantType);
+                if (constantType != null && constantValue.GetType() != constantType)
+                    constantValue = TypeUtil.ChangeType(constantValue, constantType);
             }
+            return constantValue;
         }
-
-        /// <summary>
-        /// True if the referenced type has protected access.
-        /// </summary>
-        public override bool IsProtected
-        {
-            get
-            {
-                if (HasArrayRanks) return GetElementType().IsProtected;
-                object reference = GetReferencedType();
-                if (reference is IModifiers)
-                    return ((IModifiers)reference).IsProtected;
-                if (reference is Type)
-                    return TypeUtil.IsProtected((Type)reference);
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced type has internal access.
-        /// </summary>
-        public override bool IsInternal
-        {
-            get
-            {
-                if (HasArrayRanks) return GetElementType().IsInternal;
-                object reference = GetReferencedType();
-                if (reference is IModifiers)
-                    return ((IModifiers)reference).IsInternal;
-                if (reference is Type)
-                    return TypeUtil.IsInternal((Type)reference);
-                return false;
-            }
-        }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Construct a <see cref="TypeRef"/> from a <see cref="Type"/>.
@@ -1116,6 +1152,16 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Create a type expression for the specified <see cref="Type"/>, handling nested types.
+        /// </summary>
+        public static Expression CreateNested(Type type)
+        {
+            if (type.IsNested)
+                return new Dot(CreateNested(type.DeclaringType), Create(type));
+            return Create(type);
+        }
+
+        /// <summary>
         /// Create a <see cref="TypeRef"/> to a nullable version of the specified type expression.
         /// </summary>
         public static TypeRef CreateNullable(Expression typeExpression, bool isFirstOnLine, List<int> arrayRanks)
@@ -1146,16 +1192,6 @@ namespace Nova.CodeDOM
         public static TypeRef CreateNullable(Expression typeExpression)
         {
             return CreateNullable(typeExpression, false, null);
-        }
-
-        /// <summary>
-        /// Create a type expression for the specified <see cref="Type"/>, handling nested types.
-        /// </summary>
-        public static Expression CreateNested(Type type)
-        {
-            if (type.IsNested)
-                return new Dot(CreateNested(type.DeclaringType), Create(type));
-            return Create(type);
         }
 
         /// <summary>
@@ -1227,15 +1263,6 @@ namespace Nova.CodeDOM
             return Find(symbolicRef, typeName, false);
         }
 
-        protected internal static TypeRefBase CreateTypeRef(object obj, string name, bool isFirstOnLine)
-        {
-            if (obj is TypeDecl)
-                return new TypeRef((TypeDecl)obj, isFirstOnLine);
-            if (obj is Type)
-                return new TypeRef((Type)obj, isFirstOnLine);
-            return new UnresolvedRef(name, isFirstOnLine);
-        }
-
         /// <summary>
         /// Find a nested type in the specified <see cref="TypeDecl"/> with the specified name.
         /// </summary>
@@ -1288,771 +1315,21 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get all (non-static) constructors for the specified code object.
+        /// Find or create a <see cref="TypeRef"/> that represents the appropriate <see cref="Type"/>
+        /// that has the same FullName as the specified <see cref="Type"/>.
         /// </summary>
-        public static NamedCodeObjectGroup GetConstructors(object obj, bool currentPartOnly)
+        public static TypeRef FindTypeRef(Type type)
         {
-            if (obj is ITypeDecl)
-                return ((ITypeDecl)obj).GetConstructors(currentPartOnly);
-            if (obj is Type)
-            {
-                Type type = (Type)obj;
-                if (TypeUtil.IsDelegateType(type))
-                {
-                    // Delegates have a constructor that takes an object and an IntPtr that is used internally
-                    // by the compiler during code generation.  We have to create a dummy constructor that will
-                    // allow a MethodRef to be passed to it, in order to make the C# syntax work.  The Parent
-                    // can't be set to the Type, but the Type can be acquired from the parameter's type.
-                    ConstructorDecl constructorDecl =
-                        new ConstructorDecl(new[] { new ParameterDecl(DelegateDecl.DelegateConstructorParameterName, new TypeRef(type)) }) { IsGenerated = true, Name = TypeUtil.NonGenericName(type) };
-                    return new NamedCodeObjectGroup(constructorDecl);
-                }
-                // Find both public and protected instance constructors
-                return new NamedCodeObjectGroup(type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance));
-            }
-            return null;
-        }
+            TypeRef typeRef;
 
-        /// <summary>
-        /// Get all (non-static) constructors for the specified code object.
-        /// </summary>
-        public static NamedCodeObjectGroup GetConstructors(object obj)
-        {
-            return GetConstructors(obj, false);
-        }
-
-        /// <summary>
-        /// Change the type of the specified constant to the specified type if possible.
-        /// </summary>
-        public static object ChangeTypeOfConstant(object constantValue, TypeRefBase typeRefBase)
-        {
-            if (constantValue != null && typeRefBase != null)
-            {
-                bool isNullableType = false;
-                if (typeRefBase.IsNullableType)
-                {
-                    isNullableType = true;
-                    typeRefBase = typeRefBase.TypeArguments[0].SkipPrefixes() as TypeRefBase;
-                }
-                object reference = (typeRefBase != null ? typeRefBase.Reference : null);
-
-                Type constantType = reference as Type;
-                if (isNullableType)
-                    constantType = typeof(Nullable<>).MakeGenericType(constantType);
-                if (constantType != null && constantValue.GetType() != constantType)
-                    constantValue = TypeUtil.ChangeType(constantValue, constantType);
-            }
-            return constantValue;
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Get the base type of the referenced type.
-        /// </summary>
-        public TypeRefBase GetBaseType()
-        {
-            if (HasArrayRanks) return ArrayRef;
-            TypeRefBase baseTypeRef = null;
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                baseTypeRef = ((ITypeDecl)reference).GetBaseType();
-            else if (reference is Type)
-                baseTypeRef = Create(((Type)reference).BaseType);
-            return baseTypeRef;
-        }
-
-        /// <summary>
-        /// Get the non-static constructor for the referenced type.
-        /// </summary>
-        public ConstructorRef GetConstructor(params TypeRefBase[] parameterTypes)
-        {
-            if (HasArrayRanks)
-                return ArrayRef.GetConstructor(parameterTypes);
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                return ((ITypeDecl)reference).GetConstructor(parameterTypes);
-            if (reference is Type)
-            {
-                Type[] types = GetTypeRefsAsTypes(parameterTypes);
-                if (types != null)
-                {
-                    ConstructorInfo constructorInfo = ((Type)reference).GetConstructor(types);
-                    if (constructorInfo != null)
-                        return new ConstructorRef(constructorInfo);
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get all (non-static) constructors for the referenced type.
-        /// </summary>
-        public NamedCodeObjectGroup GetConstructors(bool currentPartOnly)
-        {
-            return GetConstructors(Reference, currentPartOnly);
-        }
-
-        /// <summary>
-        /// Get all (non-static) constructors for the referenced type.
-        /// </summary>
-        public NamedCodeObjectGroup GetConstructors()
-        {
-            return GetConstructors(Reference, false);
-        }
-
-        /// <summary>
-        /// Get the method with the specified name, binding flags, and parameter types.
-        /// </summary>
-        public MethodRef GetMethod(string name, BindingFlags bindingFlags, params TypeRefBase[] parameterTypes)
-        {
-            if (HasArrayRanks)
-                return ArrayRef.GetMethod(name, bindingFlags, parameterTypes);
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                return ((ITypeDecl)reference).GetMethod(name, parameterTypes);
-            if (reference is Type)
-            {
-                Type[] types = GetTypeRefsAsTypes(parameterTypes);
-                if (types != null)
-                {
-                    MethodInfo methodInfo = TypeUtil.GetMethod((Type)reference, name, bindingFlags, types);
-                    if (methodInfo != null)
-                        return new MethodRef(methodInfo);
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the method with the specified name and parameter types.
-        /// </summary>
-        public MethodRef GetMethod(string name, params TypeRefBase[] parameterTypes)
-        {
-            return GetMethod(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy, parameterTypes);
-        }
-
-        /// <summary>
-        /// Convert a TypeRefBase[] to a Type[].  Returns null if any conversion fails.
-        /// </summary>
-        private static Type[] GetTypeRefsAsTypes(TypeRefBase[] typeRefs)
-        {
-            int count = (typeRefs != null ? typeRefs.Length : 0);
-            Type[] types = new Type[count];
-            for (int i = 0; i < count; ++i)
-            {
-                object reference = typeRefs[i].GetReferencedType();
-                if (reference is Type)
-                    types[i] = (Type)reference;
-                else
-                    return null;
-            }
-            return types;
-        }
-
-        /// <summary>
-        /// Get all methods with the specified name.
-        /// </summary>
-        public void GetMethods(string name, bool searchBaseClasses, NamedCodeObjectGroup results)
-        {
-            if (HasArrayRanks)
-                ArrayRef.GetMethods(name, searchBaseClasses, results);
-            else
-            {
-                object reference = GetReferencedType();
-                if (reference is ITypeDecl)
-                    ((ITypeDecl)reference).GetMethods(name, searchBaseClasses, results);
-                else if (reference is Type)
-                    GetMethods((Type)reference, name, searchBaseClasses, results);
-            }
-        }
-
-        /// <summary>
-        /// Get all methods with the specified name.
-        /// </summary>
-        /// <param name="name">The method name.</param>
-        /// <param name="searchBaseClasses">Pass <c>false</c> to NOT search base classes.</param>
-        public List<MethodRef> GetMethods(string name, bool searchBaseClasses)
-        {
-            NamedCodeObjectGroup results = new NamedCodeObjectGroup();
-            GetMethods(name, searchBaseClasses, results);
-            return MethodRef.MethodRefsFromGroup(results);
-        }
-
-        /// <summary>
-        /// Get all methods with the specified name.
-        /// </summary>
-        /// <param name="name">The method name.</param>
-        public List<MethodRef> GetMethods(string name)
-        {
-            return GetMethods(name, true);
-        }
-
-        private static void GetMethods(Type type, string name, bool searchBaseClasses, NamedCodeObjectGroup results)
-        {
-            try
-            {
-                // Get all methods with the specified name
-                MemberInfo[] members = type.GetMember(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance
-                    | (searchBaseClasses ? BindingFlags.FlattenHierarchy : BindingFlags.DeclaredOnly));
-                foreach (MemberInfo memberInfo in members)
-                {
-                    if (memberInfo is MethodBase)
-                        results.Add(memberInfo);
-                }
-
-                // If we're searching an interface, we have to manually search base interfaces
-                if (type.IsInterface)
-                {
-                    foreach (Type interfaceType in type.GetInterfaces())
-                    {
-                        members = interfaceType.GetMember(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-                        foreach (MemberInfo memberInfo in members)
-                        {
-                            if (memberInfo is MethodBase)
-                                results.Add(memberInfo);
-                        }
-                    }
-                }
-            }
-            catch
-            {
-                // Ignore any exceptions - can be caused by missing dependent assemblies
-            }
-        }
-
-        /// <summary>
-        /// Get the property with the specified name.
-        /// </summary>
-        public PropertyRef GetProperty(string name)
-        {
-            if (HasArrayRanks)
-                return ArrayRef.GetProperty(name);
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                return ((ITypeDecl)reference).GetProperty(name);
-            if (reference is Type)
-            {
-                PropertyInfo propertyInfo = TypeUtil.GetProperty((Type)reference, name);
-                if (propertyInfo != null)
-                    return new PropertyRef(propertyInfo);
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the field with the specified name.
-        /// </summary>
-        public FieldRef GetField(string name)
-        {
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                return ((ITypeDecl)reference).GetField(name);
-            if (reference is Type)
-            {
-                FieldInfo fieldInfo = ((Type)reference).GetField(name);
-                if (fieldInfo != null)
-                    return new FieldRef(fieldInfo);
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the nested type with the specified name.
-        /// </summary>
-        public TypeRef GetNestedType(string name)
-        {
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                return ((ITypeDecl)reference).GetNestedType(name);
-            if (reference is Type)
-            {
-                Type type = ((Type)reference).GetNestedType(name);
-                if (type != null)
-                    return new TypeRef(type);
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the delegate parameters if the expression evaluates to a delegate type.
-        /// </summary>
-        public override ICollection GetDelegateParameters()
-        {
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                return ((ITypeDecl)reference).GetDelegateParameters();
-            if (reference is Type)
-                return TypeUtil.GetDelegateParameters((Type)reference);
-            // It would be nice to replace any type parameters in the types of the parameters with type
-            // arguments if possible as in GetDelegateReturnType() below, but this is not feasible since
-            // we can't modify the types of the parameter objects, and we need the parameter objects in
-            // order to check ref/out flags.  The only way to do this would be to allocate new collections
-            // of fake ParameterDecl objects with evaluated types, but that gets really messy.  Instead,
-            // callers of this method have to worry about evaluating any type parameters.
-            return null;
-        }
-
-        /// <summary>
-        /// Get the delegate return type if the expression evaluates to a delegate type.
-        /// </summary>
-        public override TypeRefBase GetDelegateReturnType()
-        {
-            TypeRefBase returnTypeRef = null;
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                returnTypeRef = ((ITypeDecl)reference).GetDelegateReturnType();
-            else if (reference is Type)
-            {
-                Type type = (Type)reference;
-                if (TypeUtil.IsDelegateType(type))
-                {
-                    MethodInfo delegateInvokeMethodInfo = TypeUtil.GetInvokeMethod(type);
-                    if (delegateInvokeMethodInfo != null)
-                    {
-                        Type returnType = delegateInvokeMethodInfo.ReturnType;
-                        returnTypeRef = Create(returnType);
-                    }
-                }
-            }
-            return returnTypeRef;
-        }
-
-        /// <summary>
-        /// Get the number of specified type arguments.
-        /// </summary>
-        public int GetLocalTypeArgumentCount()
-        {
-            int count = 0;
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                count = ((ITypeDecl)reference).TypeParameterCount;
-            else if (reference is Type)
-                count = TypeUtil.GetLocalGenericArgumentCount((Type)reference);
-            return count;
-        }
-
-        /// <summary>
-        /// Get the declared type parameters (if any) of the referenced type as type arguments.
-        /// </summary>
-        public ChildList<Expression> GetTypeParametersAsArguments()
-        {
-            ChildList<Expression> typeArguments = null;
-            object reference = GetReferencedType();
-            if (reference is TypeDecl)
-            {
-                ChildList<TypeParameter> typeParameters = ((TypeDecl)reference).TypeParameters;
-                if (typeParameters != null)
-                {
-                    typeArguments = new ChildList<Expression>(typeParameters.Count);
-                    foreach (TypeParameter typeParameter in typeParameters)
-                        typeArguments.Add(typeParameter.CreateRef());
-                }
-            }
-            else if (reference is Type)
-            {
-                Type[] genericArguments = TypeUtil.GetLocalGenericArguments((Type)reference);
-                if (genericArguments.Length > 0)
-                {
-                    typeArguments = new ChildList<Expression>(genericArguments.Length);
-                    foreach (Type genericArgument in genericArguments)
-                        typeArguments.Add(Create(genericArgument));
-                }
-            }
-            else if (reference is Alias)
-            {
-                TypeRef aliasedTypeRef = ((Alias)reference).Type;
-                if (aliasedTypeRef != null)
-                    typeArguments = aliasedTypeRef.GetTypeParametersAsArguments();
-            }
-            return typeArguments;
-        }
-
-        /// <summary>
-        /// Get the <see cref="TypeCode"/> of the referenced type.
-        /// </summary>
-        public TypeCode GetTypeCode()
-        {
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-            {
-                TypeCode typeCode;
-                if (TypeNameToTypeCodeMap.TryGetValue(((ITypeDecl)reference).Name, out typeCode) && ((ITypeDecl)reference).GetNamespace().Name == "System")
-                    return typeCode;
-            }
-            else if (reference is Type)
-                return Type.GetTypeCode((Type)reference);
-            return TypeCode.Object;
-        }
-
-        /// <summary>
-        /// Determine if the current reference refers to the same code object as the specified reference.
-        /// </summary>
-        public override bool IsSameRef(SymbolicRef symbolicRef)
-        {
-            // Comparing the type name and namespace is the most efficient method.
-            // Just comparing the type objects wouldn't always work - such as when types are present both in an assembly
-            // reference, and also as CodeDOM objects (either in the current project, or a referenced project), which can
-            // occur if one or both types are in a project with assembly references instead of project references to a type
-            // that is defined in the current solution, which isn't uncommon (it will occur in "master" solutions that include
-            // projects that are also used in other solutions, and also if a project in the solution uses a non-supported
-            // language and so is referenced by its assembly.  It would also fail in the case that both types are partial types
-            // of the same type declaration (meaning two parts of an ITypeDecl in the same project).  Finally, it would fail if
-            // the types are the same type from assemblies with different versions, such as from different versions of the .NET
-            // framework, which can easily occur if different projects in the same solution target different framework versions.
-            TypeRef typeRef = (symbolicRef is AliasRef ? ((AliasRef)symbolicRef).Type : symbolicRef as TypeRef);
-            return (typeRef != null && Name == typeRef.Name && NamespaceName == typeRef.NamespaceName
-                && HasSameTypeArguments(typeRef) && HasSameArrayRanks(typeRef));
-        }
-
-        /// <summary>
-        /// Determine if this <see cref="TypeRef"/> has the same type arguments as the specified <see cref="TypeRef"/>.
-        /// </summary>
-        protected bool HasSameTypeArguments(TypeRef typeRef)
-        {
-            ChildList<Expression> typeArguments1 = TypeArguments;
-            ChildList<Expression> typeArguments2 = typeRef.TypeArguments;
-            int typeArgumentCount = (typeArguments1 != null ? typeArguments1.Count : 0);
-            if (typeArgumentCount != (typeArguments2 != null ? typeArguments2.Count : 0))
-                return false;
-            if (typeArgumentCount > 0)
-            {
-                for (int i = 0; i < typeArgumentCount; ++i)
-                {
-                    Expression typeArg1 = typeArguments1[i];
-                    Expression typeArg2 = typeArguments2[i];
-                    if (typeArg1 == null && typeArg2 == null)
-                        continue;
-                    if (typeArg1 == null || typeArg2 == null)
-                        return false;
-                    TypeRefBase typeArgRef1 = typeArg1.SkipPrefixes() as TypeRefBase;
-                    TypeRefBase typeArgRef2 = typeArg2.SkipPrefixes() as TypeRefBase;
-                    if (typeArgRef1 == null || typeArgRef2 == null)
-                        return false;
-                    if (typeArgRef1.IsSameRef(typeArgRef2))
-                        continue;
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// Determine if this <see cref="TypeRef"/> has the same array ranks as the specified <see cref="TypeRef"/>.
-        /// </summary>
-        protected bool HasSameArrayRanks(TypeRef typeRef)
-        {
-            int arrayRanksCount = (ArrayRanks != null ? ArrayRanks.Count : 0);
-            if (arrayRanksCount != (typeRef.ArrayRanks != null ? typeRef.ArrayRanks.Count : 0))
-                return false;
-            if (arrayRanksCount > 0 && !CollectionUtil.CompareList(ArrayRanks, typeRef.ArrayRanks))
-                return false;
-            return true;
-        }
-
-        /// <summary>
-        /// Calculate a hash code for the referenced object which is the same for all references where IsSameRef() is true.
-        /// </summary>
-        /// <remarks>
-        /// We don't want to override GetHashCode(), because we want all TypeRefs to have unique hashes so they can be
-        /// used as dictionary keys.  However, we also sometimes want hashes to be the same if IsSameRef() is true - this
-        /// method allows for that.
-        /// </remarks>
-        public override int GetIsSameRefHashCode()
-        {
-            // Make the hash codes as unique as possible while still ensuring that they are identical
-            // for any objects for which IsSameRef() returns true.
-            int hashCode = Name.GetHashCode();
-            string namespaceName = NamespaceName;
-            if (namespaceName != null) hashCode ^= namespaceName.GetHashCode();
-            List<int> arrayRanks = ArrayRanks;
-            if (arrayRanks != null)
-            {
-                foreach (int rank in arrayRanks)
-                    hashCode = (hashCode << 1) ^ rank;
-            }
-            ChildList<Expression> typeArguments = TypeArguments;
-            if (typeArguments != null)
-            {
-                foreach (Expression typeArgument in typeArguments)
-                {
-                    if (typeArgument != null)
-                    {
-                        TypeRefBase typeRefBase = typeArgument.SkipPrefixes() as TypeRefBase;
-                        if (typeRefBase != null)
-                            hashCode ^= typeRefBase.GetIsSameRefHashCode();
-                    }
-                }
-            }
-            return hashCode;
-        }
-
-        /// <summary>
-        /// Determine if the specified <see cref="TypeRefBase"/> refers to the same generic type, regardless of actual type arguments.
-        /// </summary>
-        public override bool IsSameGenericType(TypeRefBase typeRefBase)
-        {
-            TypeRef typeRef = (typeRefBase is AliasRef ? ((AliasRef)typeRefBase).Type : typeRefBase as TypeRef);
-            return (typeRef != null && Name == typeRef.Name && NamespaceName == typeRef.NamespaceName
-                && (_typeArguments != null ? _typeArguments.Count : 0) == typeRef.TypeArgumentCount && HasSameArrayRanks(typeRef));
-        }
-
-        /// <summary>
-        /// True if the current type is assignable from the specified type.
-        /// </summary>
-        public bool IsAssignableFrom(TypeRef typeRef)
-        {
-            return (typeRef != null && (IsSameRef(typeRef) || typeRef.IsSubclassOf(this) || typeRef.IsImplementationOf(this)));
-        }
-
-        /// <summary>
-        /// Determines if the current <see cref="TypeRef"/> is a subclass of the specified <see cref="TypeRef"/>.
-        /// </summary>
-        public bool IsSubclassOf(TypeRef classTypeRef)
-        {
-            TypeRefBase baseTypeRef = GetBaseType();
-            return (baseTypeRef is TypeRef && (baseTypeRef.IsSameRef(classTypeRef) || ((TypeRef)baseTypeRef).IsSubclassOf(classTypeRef)));
-        }
-
-        /// <summary>
-        /// Determines if the current <see cref="TypeRef"/> implements the specified interface <see cref="TypeRef"/>.
-        /// </summary>
-        public bool IsImplementationOf(TypeRef interfaceTypeRef)
-        {
-            if (interfaceTypeRef == null)
-                return false;
-
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-            {
-                // We need to (recursively) resolve any open type arguments here, because the
-                // declarations won't have access to the type parameters.
-                // Only look at type declarations that can implement interfaces.
-                if (reference is BaseListTypeDecl && !(reference is EnumDecl))
-                {
-                    BaseListTypeDecl baseListTypeDecl = (BaseListTypeDecl)reference;
-                    List<Expression> baseTypes = baseListTypeDecl.GetAllBaseTypes();
-                    if (baseTypes != null)
-                    {
-                        // Check all interfaces implemented directly by the type declaration
-                        foreach (Expression baseTypeExpression in baseTypes)
-                        {
-                            TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
-                            if (baseTypeRef != null && baseTypeRef.IsInterface)
-                            {
-                                // Resolve any open type arguments, and compare the interface to the target
-                                if (baseTypeRef.IsSameRef(interfaceTypeRef))
-                                    return true;
-                            }
-                        }
-                        // If we didn't find a match yet, search any base type and/or all interfaces for implemented interfaces
-                        foreach (Expression baseTypeExpression in baseTypes)
-                        {
-                            TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
-                            if (baseTypeRef != null)
-                            {
-                                if (baseTypeRef.IsImplementationOf(interfaceTypeRef))
-                                    return true;
-                            }
-                        }
-                    }
-                }
-                return false;
-            }
-            if (reference is Type)
-            {
-                bool interfaceTypeRefIsGeneric = interfaceTypeRef.IsGenericType;
-
-                // Search all interfaces implemented by the type or any base types
-                foreach (Type @interface in ((Type)reference).GetInterfaces())
-                {
-                    // Make sure the generic status matches
-                    if (@interface.IsGenericType == interfaceTypeRefIsGeneric)
-                    {
-                        // Because we might need to resolve any open type arguments, we have to convert the
-                        // interface to a TypeRef before we can compare it to the target interface.  We also
-                        // have to do this because 'interfaceTypeRef' might refer to an InterfaceDecl even
-                        // though this reference refers to a Type.
-                        TypeRef interfaceRef = Create(@interface);
-                        if (interfaceRef.IsSameRef(interfaceTypeRef))
-                            return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Get all interfaces directly implemented by the type.
-        /// </summary>
-        public List<TypeRef> GetInterfaces(bool includeBaseInterfaces)
-        {
-            List<TypeRef> interfaces = new List<TypeRef>();
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-            {
-                // Only look at type declarations that can implement interfaces.
-                if (reference is BaseListTypeDecl && !(reference is EnumDecl))
-                {
-                    BaseListTypeDecl baseListTypeDecl = (BaseListTypeDecl)reference;
-                    List<Expression> baseTypes = baseListTypeDecl.GetAllBaseTypes();
-                    if (baseTypes != null)
-                    {
-                        // Check all interfaces implemented directly by the type declaration
-                        foreach (Expression baseTypeExpression in baseTypes)
-                        {
-                            TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
-                            if (baseTypeRef != null)
-                            {
-                                if (baseTypeRef.IsInterface)
-                                    interfaces.Add(baseTypeRef);
-                                if (includeBaseInterfaces)
-                                    interfaces.AddRange(baseTypeRef.GetInterfaces(true));
-                            }
-                        }
-                    }
-                }
-            }
-            else if (reference is Type)
-            {
-                Type[] allInterfaces = ((Type)reference).GetInterfaces();
-                if (!includeBaseInterfaces)
-                {
-                    // Stupid reflection doesn't provide a way to get just those interfaces implemented directly
-                    // by the current type, so the best we can do is get all interfaces, then subtract those
-                    // implemented by base types (even though this can produce incorrect results if the same
-                    // interface is implemented at more than one level.
-                    Type baseType = ((Type)reference).BaseType;
-                    if (baseType != null && baseType != typeof(object))
-                    {
-                        Type[] baseInterfaces = baseType.GetInterfaces();
-                        if (baseInterfaces.Length > 0)
-                            allInterfaces = Array.FindAll(allInterfaces, delegate(Type i) { return !ArrayUtil.Contains(baseInterfaces, i); });
-                    }
-                }
-                foreach (Type @interface in allInterfaces)
-                {
-                    TypeRef interfaceRef = Create(@interface);
-                    interfaces.Add(interfaceRef);
-                }
-            }
-            return interfaces;
-        }
-
-        /// <summary>
-        /// Get all interfaces directly implemented by the type.
-        /// </summary>
-        public List<TypeRef> GetInterfaces()
-        {
-            return GetInterfaces(false);
-        }
-
-        /// <summary>
-        /// Get the the underlying type if this is an enum type (otherwise returns null).
-        /// </summary>
-        public TypeRefBase GetUnderlyingTypeOfEnum()
-        {
-            if (IsEnum)
-            {
-                object reference = GetReferencedType();
-                if (reference is EnumDecl)
-                    return ((EnumDecl)reference).UnderlyingType.SkipPrefixes() as TypeRefBase;
-                if (reference is Type)
-                    return Create(Enum.GetUnderlyingType((Type)reference));
-                if (reference is EnumConstant)
-                    return ((EnumConstant)reference).EnumTypeRef.GetUnderlyingTypeOfEnum();
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the actual type reference, retrieving from any constant value if necessary.
-        /// </summary>
-        /// <returns>The <see cref="ITypeDecl"/> (<see cref="TypeDecl"/> or <see cref="TypeParameter"/>, but NOT <see cref="Alias"/>)
-        /// or <see cref="Type"/> (or null if the type is unresolved).</returns>
-        public override object GetReferencedType()
-        {
-            object reference = Reference;
-            if (IsConst)
-            {
-                if (reference is ITypeDecl || reference is Type)
-                    return reference;
-                if (reference is EnumConstant)
-                    return ((EnumConstant)reference).EnumTypeRef.Reference;
-                return reference.GetType();
-            }
-            return reference;
-        }
-
-        /// <summary>
-        /// Get a <see cref="TypeRef"/> for the actual type, excluding any constant values.
-        /// </summary>
-        public override TypeRefBase GetTypeWithoutConstant()
-        {
-            if (IsConst)
-            {
-                // For an ITypeDecl or Type, return a new TypeRef without the Const flag set
-                if (_reference is ITypeDecl || _reference is Type)
-                {
-                    TypeRef newTypeRef = (TypeRef)Clone();
-                    newTypeRef.SetFormatFlag(FormatFlags.Const, false);
-                    return newTypeRef;
-                }
-                // For an enum or primitive-type constant, return a TypeRef to the type
-                if (_reference is EnumConstant)
-                    return ((EnumConstant)_reference).EnumTypeRef;
-                return new TypeRef(_reference.GetType(), IsFirstOnLine);
-            }
-            return this;
-        }
-
-        /// <summary>
-        /// Get the value of any represented constant.  For enums, an <see cref="EnumConstant"/> object will be
-        /// returned, which has both the Enum type and a constant value of its underlying type.
-        /// </summary>
-        public override object GetConstantValue()
-        {
-            if (IsConst)
-            {
-                if (_reference is ITypeDecl || _reference is Type)
-                    return null;
-                return _reference;
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the declaring type.
-        /// </summary>
-        public override TypeRefBase GetDeclaringType()
-        {
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-            {
-                CodeObject parent = ((ITypeDecl)reference).Parent;
-                return (parent is TypeDecl ? ((TypeDecl)parent).CreateRef() : null);
-            }
-            if (reference is Type)
-            {
-                Type declaringType = ((Type)reference).DeclaringType;
-                return (declaringType != null ? new TypeRef(declaringType) : null);
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the full name of the object, including the namespace name.
-        /// </summary>
-        public override string GetFullName()
-        {
-            object reference = GetReferencedType();
-            if (reference is ITypeDecl)
-                return ((ITypeDecl)reference).GetFullName();
-            if (reference is Type)
-                return ((Type)reference).Namespace + "." + ((Type)reference).Name;  // FullName might return null!
-            return null;
+            // When using reflection, the 'loaded' mscorlib will always be the same as that used by the currently
+            // running app, so we can just initialize using the 'typeof' type.
+            // Once a TypeRef is created for a particular Type, always re-use it.
+            if (TypeToTypeRefMap.TryGetValue(type, out typeRef))
+                return typeRef;
+            typeRef = new TypeRef(type);
+            TypeToTypeRefMap.Add(type, typeRef);
+            return typeRef;
         }
 
         /// <summary>
@@ -2156,104 +1433,130 @@ namespace Nova.CodeDOM
             return commonType;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        internal static new void AddParsePoints()
-        {
-            // Parse built-in types and '?' nullable types here in TypeRef, because they will
-            // parse as resolved TypeRefs.  Generic types and arrays are parsed in UnresolvedRef,
-            // because they may or may not parse as resolved.
-
-            // Install parse-points for all built-in type names (without any scope restrictions) - this
-            // will also parse built-in nullable types.
-            foreach (KeyValuePair<string, TypeRef> keyValue in KeywordToTypeRefMap)
-                Parser.AddParsePoint(keyValue.Key, ParseType);
-
-            // Parse nullable types - use a parse-priority of 100 (Conditional uses 0)
-            Parser.AddParsePoint(ParseTokenNullable, 100, ParseNullableType);
-        }
-
         /// <summary>
-        /// Parse a built-in type, or a nullable built-in type.
+        /// Get all (non-static) constructors for the specified code object.
         /// </summary>
-        private static TypeRef ParseType(Parser parser, CodeObject parent, ParseFlags flags)
+        public static NamedCodeObjectGroup GetConstructors(object obj, bool currentPartOnly)
         {
-            return new TypeRef(parser, parent, true, flags);
-        }
-
-        /// <summary>
-        /// Parse a '?' nullable type.
-        /// </summary>
-        private static SymbolicRef ParseNullableType(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // If we get here, Conditional has already failed to parse the '?' (because it failed to find a ':'),
-            // so this *should* truly be a nullable type, but still make sure it has an unused expression.
-            if (parser.HasUnusedExpression)
-                return new TypeRef(parser, parent, false, flags);
+            if (obj is ITypeDecl)
+                return ((ITypeDecl)obj).GetConstructors(currentPartOnly);
+            if (obj is Type)
+            {
+                Type type = (Type)obj;
+                if (TypeUtil.IsDelegateType(type))
+                {
+                    // Delegates have a constructor that takes an object and an IntPtr that is used internally
+                    // by the compiler during code generation.  We have to create a dummy constructor that will
+                    // allow a MethodRef to be passed to it, in order to make the C# syntax work.  The Parent
+                    // can't be set to the Type, but the Type can be acquired from the parameter's type.
+                    ConstructorDecl constructorDecl =
+                        new ConstructorDecl(new[] { new ParameterDecl(DelegateDecl.DelegateConstructorParameterName, new TypeRef(type)) }) { IsGenerated = true, Name = TypeUtil.NonGenericName(type) };
+                    return new NamedCodeObjectGroup(constructorDecl);
+                }
+                // Find both public and protected instance constructors
+                return new NamedCodeObjectGroup(type.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance));
+            }
             return null;
         }
 
         /// <summary>
-        /// Construct a reference to a built-in type or nullable type, or non-built-in nullable type.
+        /// Get all (non-static) constructors for the specified code object.
         /// </summary>
-        protected TypeRef(Parser parser, CodeObject parent, bool isBuiltIn, ParseFlags flags)
-            : base(parser, parent)
+        public static NamedCodeObjectGroup GetConstructors(object obj)
         {
-            // Handle built-in types
-            if (isBuiltIn)
-            {
-                // Resolve built-in type name to actual Type
-                TypeRef typeRef = KeywordToTypeRefMap[parser.TokenText];
-                _reference = typeRef.Reference;
-                parser.NextToken();  // Move past type name
-
-                // Check for nullable types
-                if (parser.Token != null)
-                {
-                    // For better performance, go ahead and parse any trailing '?' now if we have a value type, there's
-                    // no whitespace before the '?', and our parent isn't an Is operator.  Otherwise, the '?' might be
-                    // a Conditional, so we'll allow it to try parsing it instead - if it fails, we'll end up back here
-                    // later in ParseNullableType, which will take care of it.
-                    if (parser.TokenText == ParseTokenNullable && typeRef.IsValueType
-                        && parser.Token.LeadingWhitespace.Length == 0 && !(_parent is Is))
-                    {
-                        parser.NextToken();  // Move past '?'
-                        typeRef = (TypeRef)typeRef.Clone();
-                        typeRef.SetLineCol(this);
-                        CreateTypeArguments().Add(typeRef);
-                        _reference = Nullable1Ref.Reference;
-                    }
-                }
-            }
-            else  // Handle nullable types
-            {
-                _reference = Nullable1Ref.Reference;
-                parser.NextToken();  // Move past '?'
-                Expression expression = parser.RemoveLastUnusedExpression();
-                Expression leftExpression = expression;
-                while (leftExpression is BinaryOperator)
-                    leftExpression = ((BinaryOperator)leftExpression).Left;
-                if (leftExpression != null)
-                    SetLineCol(leftExpression);
-                IsFirstOnLine = expression.IsFirstOnLine;
-                expression.IsFirstOnLine = false;
-                CreateTypeArguments().Add(expression);
-            }
-
-            // Handle array types
-            if (parser.TokenText == ParseTokenArrayStart && !flags.HasFlag(ParseFlags.NoArrays))
-            {
-                Token next = parser.PeekNextToken();
-                if (next != null && (next.Text == ParseTokenArrayEnd || next.Text == ParseTokenSeparator))
-                    ParseArrayRanks(parser);
-            }
+            return GetConstructors(obj, false);
         }
 
-        #endregion
+        /// <summary>
+        /// Initialize static <see cref="TypeRef"/>s to the standard mscorlib types.
+        /// </summary>
+        public static void InitializeTypeRefs()
+        {
+            TypeToTypeRefMap.Clear();
 
-        #region /* RENDERING */
+            ObjectRef = FindTypeRef(typeof(object));
+            VoidRef = FindTypeRef(typeof(void));
+            SByteRef = FindTypeRef(typeof(sbyte));
+            ByteRef = FindTypeRef(typeof(byte));
+            ShortRef = FindTypeRef(typeof(short));
+            UShortRef = FindTypeRef(typeof(ushort));
+            IntRef = FindTypeRef(typeof(int));
+            UIntRef = FindTypeRef(typeof(uint));
+            LongRef = FindTypeRef(typeof(long));
+            ULongRef = FindTypeRef(typeof(ulong));
+            CharRef = FindTypeRef(typeof(char));
+            BoolRef = FindTypeRef(typeof(bool));
+            StringRef = FindTypeRef(typeof(string));
+            FloatRef = FindTypeRef(typeof(float));
+            DoubleRef = FindTypeRef(typeof(double));
+            DecimalRef = FindTypeRef(typeof(decimal));
+
+            TypeTypeRef = FindTypeRef(typeof(Type));
+            ArrayRef = FindTypeRef(typeof(Array));
+            EnumRef = FindTypeRef(typeof(Enum));
+            ValueTypeRef = FindTypeRef(typeof(ValueType));
+            Nullable1Ref = FindTypeRef(typeof(Nullable<>));
+
+            Dictionary2Ref = FindTypeRef(typeof(Dictionary<,>));
+            IEnumerableRef = FindTypeRef(typeof(IEnumerable));
+            IEnumerable1Ref = FindTypeRef(typeof(IEnumerable<>));
+            ICollectionRef = FindTypeRef(typeof(ICollection));
+            ICollection1Ref = FindTypeRef(typeof(ICollection<>));
+            IListRef = FindTypeRef(typeof(IList));
+            IList1Ref = FindTypeRef(typeof(IList<>));
+            ICloneableRef = FindTypeRef(typeof(ICloneable));
+            ISerializableRef = FindTypeRef(typeof(ISerializable));
+
+            FlagsAttributeRef = FindTypeRef(typeof(FlagsAttribute));
+            DelegateRef = FindTypeRef(typeof(Delegate));
+            MulticastDelegateRef = FindTypeRef(typeof(MulticastDelegate));
+
+            AsyncCallbackRef = FindTypeRef(typeof(AsyncCallback));
+            IAsyncResultRef = FindTypeRef(typeof(IAsyncResult));
+            TypeUtilTRef = FindTypeRef(typeof(TypeUtil.T));
+
+            // Initialize the keyword-to-type map.
+            KeywordToTypeRefMap = new Dictionary<string, TypeRef>(16)
+            {
+                { "object",  ObjectRef  },
+                { "void",    VoidRef    },
+                { "sbyte",   SByteRef   },
+                { "byte",    ByteRef    },
+                { "short",   ShortRef   },
+                { "ushort",  UShortRef  },
+                { "int",     IntRef     },
+                { "uint",    UIntRef    },
+                { "long",    LongRef    },
+                { "ulong",   ULongRef   },
+                { "char",    CharRef    },
+                { "bool",    BoolRef    },
+                { "string",  StringRef  },
+                { "float",   FloatRef   },
+                { "double",  DoubleRef  },
+                { "decimal", DecimalRef }
+            };
+
+            // Initialize the common-type map.  The TypeCode enum looks like this:
+            // 0-Empty, 1-Object, 2-DBNull, 3-Boolean, 4-Char, 5-SByte, 6-Byte, 7-Int16, 8-UInt16, 9-Int32,
+            // 10-UInt32, 11-Int64, 12-UInt64, 13-Single, 14-Double, 15-Decimal, 16-DateTime, 17-String
+            // We will 'cheat' a bit here and use knowledge of this ordering to create a mapping table
+            // for just 4-Char through 14-Double for common type calculations.
+            CommonTypeRefMap = new[,]
+                {  // char        sbyte       byte        short       ushort      int         uint        long        ulong       float      double     decimal
+                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // char
+                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // sbyte
+                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // byte
+                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // short
+                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // ushort
+                    { IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     IntRef,     LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // int
+                    { UIntRef,    LongRef,    UIntRef,    LongRef,    UIntRef,    LongRef,    UIntRef,    LongRef,    ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // uint
+                    { LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    LongRef,    ObjectRef,  FloatRef,  DoubleRef, DecimalRef },  // long
+                    { ULongRef,   ObjectRef,  ULongRef,   ObjectRef,  ULongRef,   ObjectRef,  ULongRef,   ObjectRef,  ULongRef,   FloatRef,  DoubleRef, DecimalRef },  // ulong
+                    { FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,   FloatRef,  DoubleRef, ObjectRef  },  // float
+                    { DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef,  DoubleRef, DoubleRef, ObjectRef  },  // double
+                    { DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, DecimalRef, ObjectRef, ObjectRef, DecimalRef }   // decimal
+                };
+        }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
@@ -2364,79 +1667,754 @@ namespace Nova.CodeDOM
             AsTextArrayRanks(writer, passFlags);
         }
 
-        #endregion
-    }
-
-    #region /* ENUM CONSTANT */
-
-    /// <summary>
-    /// Represents a constant value of a specified enum type, stored in the underlying type of the enum.
-    /// </summary>
-    /// <remarks>
-    /// This class is necessary because we can't dynamically create an instance of the enum type with the appropriate
-    /// value since the type of the enum might be an <see cref="EnumDecl"/>, and we can't rely on being able to create a
-    /// <see cref="Type"/> that represents such a declaration because there could possibly be compilation errors.
-    /// </remarks>
-    public class EnumConstant
-    {
-        #region /* FIELDS */
-
         /// <summary>
-        /// The <see cref="EnumDecl"/> or <see cref="Type"/> representing the type of the enum.
+        /// Get the base type of the referenced type.
         /// </summary>
-        public TypeRef EnumTypeRef;
-
-        /// <summary>
-        /// The constant value of the enum, as an object of the underlying type
-        /// </summary>
-        public object ConstantValue;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
-
-        /// <summary>
-        /// Create an <see cref="EnumConstant"/>.
-        /// </summary>
-        public EnumConstant(TypeRef enumTypeRef, object constantValue)
+        public TypeRefBase GetBaseType()
         {
-            EnumTypeRef = enumTypeRef;
-
-            // Just in case, default a null constant value to a 0 'int' value
-            if (constantValue == null)
-                constantValue = 0;
-            // If the constant is another EnumConstant, extract it's value
-            else if (constantValue is EnumConstant)
-                constantValue = ((EnumConstant)constantValue).ConstantValue;
-
-            // Force the constant value to that of the underlying type of the enum if necessary and possible.
-            // This is required because the evaluation of constant expressions will promote smaller types to
-            // ints, and the enum's underlying type might be smaller.  It's better to do this here rather
-            // than inside all of the EvaluateConstants() methods in the various operators.
-            ConstantValue = TypeRef.ChangeTypeOfConstant(constantValue, enumTypeRef.GetUnderlyingTypeOfEnum());
+            if (HasArrayRanks) return ArrayRef;
+            TypeRefBase baseTypeRef = null;
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                baseTypeRef = ((ITypeDecl)reference).GetBaseType();
+            else if (reference is Type)
+                baseTypeRef = Create(((Type)reference).BaseType);
+            return baseTypeRef;
         }
 
         /// <summary>
-        /// Create an <see cref="EnumConstant"/>.
+        /// Get the value of any represented constant.  For enums, an <see cref="EnumConstant"/> object will be
+        /// returned, which has both the Enum type and a constant value of its underlying type.
         /// </summary>
-        public EnumConstant(Type enumType, object constantValue)
-            : this(new TypeRef(enumType), constantValue)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// True if the <see cref="EnumConstant"/> belongs to a bit-flags enum.
-        /// </summary>
-        public bool IsBitFlags
+        public override object GetConstantValue()
         {
-            get { return EnumTypeRef.IsBitFlagsEnum; }
+            if (IsConst)
+            {
+                if (_reference is ITypeDecl || _reference is Type)
+                    return null;
+                return _reference;
+            }
+            return null;
         }
 
-        #endregion
-    }
+        /// <summary>
+        /// Get the non-static constructor for the referenced type.
+        /// </summary>
+        public ConstructorRef GetConstructor(params TypeRefBase[] parameterTypes)
+        {
+            if (HasArrayRanks)
+                return ArrayRef.GetConstructor(parameterTypes);
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                return ((ITypeDecl)reference).GetConstructor(parameterTypes);
+            if (reference is Type)
+            {
+                Type[] types = GetTypeRefsAsTypes(parameterTypes);
+                if (types != null)
+                {
+                    ConstructorInfo constructorInfo = ((Type)reference).GetConstructor(types);
+                    if (constructorInfo != null)
+                        return new ConstructorRef(constructorInfo);
+                }
+            }
+            return null;
+        }
 
-    #endregion
+        /// <summary>
+        /// Get all (non-static) constructors for the referenced type.
+        /// </summary>
+        public NamedCodeObjectGroup GetConstructors(bool currentPartOnly)
+        {
+            return GetConstructors(Reference, currentPartOnly);
+        }
+
+        /// <summary>
+        /// Get all (non-static) constructors for the referenced type.
+        /// </summary>
+        public NamedCodeObjectGroup GetConstructors()
+        {
+            return GetConstructors(Reference, false);
+        }
+
+        /// <summary>
+        /// Get the declaring type.
+        /// </summary>
+        public override TypeRefBase GetDeclaringType()
+        {
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+            {
+                CodeObject parent = ((ITypeDecl)reference).Parent;
+                return (parent is TypeDecl ? ((TypeDecl)parent).CreateRef() : null);
+            }
+            if (reference is Type)
+            {
+                Type declaringType = ((Type)reference).DeclaringType;
+                return (declaringType != null ? new TypeRef(declaringType) : null);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the delegate parameters if the expression evaluates to a delegate type.
+        /// </summary>
+        public override ICollection GetDelegateParameters()
+        {
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                return ((ITypeDecl)reference).GetDelegateParameters();
+            if (reference is Type)
+                return TypeUtil.GetDelegateParameters((Type)reference);
+            // It would be nice to replace any type parameters in the types of the parameters with type
+            // arguments if possible as in GetDelegateReturnType() below, but this is not feasible since
+            // we can't modify the types of the parameter objects, and we need the parameter objects in
+            // order to check ref/out flags.  The only way to do this would be to allocate new collections
+            // of fake ParameterDecl objects with evaluated types, but that gets really messy.  Instead,
+            // callers of this method have to worry about evaluating any type parameters.
+            return null;
+        }
+
+        /// <summary>
+        /// Get the delegate return type if the expression evaluates to a delegate type.
+        /// </summary>
+        public override TypeRefBase GetDelegateReturnType()
+        {
+            TypeRefBase returnTypeRef = null;
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                returnTypeRef = ((ITypeDecl)reference).GetDelegateReturnType();
+            else if (reference is Type)
+            {
+                Type type = (Type)reference;
+                if (TypeUtil.IsDelegateType(type))
+                {
+                    MethodInfo delegateInvokeMethodInfo = TypeUtil.GetInvokeMethod(type);
+                    if (delegateInvokeMethodInfo != null)
+                    {
+                        Type returnType = delegateInvokeMethodInfo.ReturnType;
+                        returnTypeRef = Create(returnType);
+                    }
+                }
+            }
+            return returnTypeRef;
+        }
+
+        /// <summary>
+        /// Get the field with the specified name.
+        /// </summary>
+        public FieldRef GetField(string name)
+        {
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                return ((ITypeDecl)reference).GetField(name);
+            if (reference is Type)
+            {
+                FieldInfo fieldInfo = ((Type)reference).GetField(name);
+                if (fieldInfo != null)
+                    return new FieldRef(fieldInfo);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the full name of the object, including the namespace name.
+        /// </summary>
+        public override string GetFullName()
+        {
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                return ((ITypeDecl)reference).GetFullName();
+            if (reference is Type)
+                return ((Type)reference).Namespace + "." + ((Type)reference).Name;  // FullName might return null!
+            return null;
+        }
+
+        /// <summary>
+        /// Get all interfaces directly implemented by the type.
+        /// </summary>
+        public List<TypeRef> GetInterfaces(bool includeBaseInterfaces)
+        {
+            List<TypeRef> interfaces = new List<TypeRef>();
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+            {
+                // Only look at type declarations that can implement interfaces.
+                if (reference is BaseListTypeDecl && !(reference is EnumDecl))
+                {
+                    BaseListTypeDecl baseListTypeDecl = (BaseListTypeDecl)reference;
+                    List<Expression> baseTypes = baseListTypeDecl.GetAllBaseTypes();
+                    if (baseTypes != null)
+                    {
+                        // Check all interfaces implemented directly by the type declaration
+                        foreach (Expression baseTypeExpression in baseTypes)
+                        {
+                            TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
+                            if (baseTypeRef != null)
+                            {
+                                if (baseTypeRef.IsInterface)
+                                    interfaces.Add(baseTypeRef);
+                                if (includeBaseInterfaces)
+                                    interfaces.AddRange(baseTypeRef.GetInterfaces(true));
+                            }
+                        }
+                    }
+                }
+            }
+            else if (reference is Type)
+            {
+                Type[] allInterfaces = ((Type)reference).GetInterfaces();
+                if (!includeBaseInterfaces)
+                {
+                    // Stupid reflection doesn't provide a way to get just those interfaces implemented directly
+                    // by the current type, so the best we can do is get all interfaces, then subtract those
+                    // implemented by base types (even though this can produce incorrect results if the same
+                    // interface is implemented at more than one level.
+                    Type baseType = ((Type)reference).BaseType;
+                    if (baseType != null && baseType != typeof(object))
+                    {
+                        Type[] baseInterfaces = baseType.GetInterfaces();
+                        if (baseInterfaces.Length > 0)
+                            allInterfaces = Array.FindAll(allInterfaces, delegate (Type i) { return !ArrayUtil.Contains(baseInterfaces, i); });
+                    }
+                }
+                foreach (Type @interface in allInterfaces)
+                {
+                    TypeRef interfaceRef = Create(@interface);
+                    interfaces.Add(interfaceRef);
+                }
+            }
+            return interfaces;
+        }
+
+        /// <summary>
+        /// Get all interfaces directly implemented by the type.
+        /// </summary>
+        public List<TypeRef> GetInterfaces()
+        {
+            return GetInterfaces(false);
+        }
+
+        /// <summary>
+        /// Calculate a hash code for the referenced object which is the same for all references where IsSameRef() is true.
+        /// </summary>
+        /// <remarks>
+        /// We don't want to override GetHashCode(), because we want all TypeRefs to have unique hashes so they can be
+        /// used as dictionary keys.  However, we also sometimes want hashes to be the same if IsSameRef() is true - this
+        /// method allows for that.
+        /// </remarks>
+        public override int GetIsSameRefHashCode()
+        {
+            // Make the hash codes as unique as possible while still ensuring that they are identical
+            // for any objects for which IsSameRef() returns true.
+            int hashCode = Name.GetHashCode();
+            string namespaceName = NamespaceName;
+            if (namespaceName != null) hashCode ^= namespaceName.GetHashCode();
+            List<int> arrayRanks = ArrayRanks;
+            if (arrayRanks != null)
+            {
+                foreach (int rank in arrayRanks)
+                    hashCode = (hashCode << 1) ^ rank;
+            }
+            ChildList<Expression> typeArguments = TypeArguments;
+            if (typeArguments != null)
+            {
+                foreach (Expression typeArgument in typeArguments)
+                {
+                    if (typeArgument != null)
+                    {
+                        TypeRefBase typeRefBase = typeArgument.SkipPrefixes() as TypeRefBase;
+                        if (typeRefBase != null)
+                            hashCode ^= typeRefBase.GetIsSameRefHashCode();
+                    }
+                }
+            }
+            return hashCode;
+        }
+
+        /// <summary>
+        /// Get the number of specified type arguments.
+        /// </summary>
+        public int GetLocalTypeArgumentCount()
+        {
+            int count = 0;
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                count = ((ITypeDecl)reference).TypeParameterCount;
+            else if (reference is Type)
+                count = TypeUtil.GetLocalGenericArgumentCount((Type)reference);
+            return count;
+        }
+
+        /// <summary>
+        /// Get the method with the specified name, binding flags, and parameter types.
+        /// </summary>
+        public MethodRef GetMethod(string name, BindingFlags bindingFlags, params TypeRefBase[] parameterTypes)
+        {
+            if (HasArrayRanks)
+                return ArrayRef.GetMethod(name, bindingFlags, parameterTypes);
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                return ((ITypeDecl)reference).GetMethod(name, parameterTypes);
+            if (reference is Type)
+            {
+                Type[] types = GetTypeRefsAsTypes(parameterTypes);
+                if (types != null)
+                {
+                    MethodInfo methodInfo = TypeUtil.GetMethod((Type)reference, name, bindingFlags, types);
+                    if (methodInfo != null)
+                        return new MethodRef(methodInfo);
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the method with the specified name and parameter types.
+        /// </summary>
+        public MethodRef GetMethod(string name, params TypeRefBase[] parameterTypes)
+        {
+            return GetMethod(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy, parameterTypes);
+        }
+
+        /// <summary>
+        /// Get all methods with the specified name.
+        /// </summary>
+        public void GetMethods(string name, bool searchBaseClasses, NamedCodeObjectGroup results)
+        {
+            if (HasArrayRanks)
+                ArrayRef.GetMethods(name, searchBaseClasses, results);
+            else
+            {
+                object reference = GetReferencedType();
+                if (reference is ITypeDecl)
+                    ((ITypeDecl)reference).GetMethods(name, searchBaseClasses, results);
+                else if (reference is Type)
+                    GetMethods((Type)reference, name, searchBaseClasses, results);
+            }
+        }
+
+        /// <summary>
+        /// Get all methods with the specified name.
+        /// </summary>
+        /// <param name="name">The method name.</param>
+        /// <param name="searchBaseClasses">Pass <c>false</c> to NOT search base classes.</param>
+        public List<MethodRef> GetMethods(string name, bool searchBaseClasses)
+        {
+            NamedCodeObjectGroup results = new NamedCodeObjectGroup();
+            GetMethods(name, searchBaseClasses, results);
+            return MethodRef.MethodRefsFromGroup(results);
+        }
+
+        /// <summary>
+        /// Get all methods with the specified name.
+        /// </summary>
+        /// <param name="name">The method name.</param>
+        public List<MethodRef> GetMethods(string name)
+        {
+            return GetMethods(name, true);
+        }
+
+        /// <summary>
+        /// Get the nested type with the specified name.
+        /// </summary>
+        public TypeRef GetNestedType(string name)
+        {
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                return ((ITypeDecl)reference).GetNestedType(name);
+            if (reference is Type)
+            {
+                Type type = ((Type)reference).GetNestedType(name);
+                if (type != null)
+                    return new TypeRef(type);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the property with the specified name.
+        /// </summary>
+        public PropertyRef GetProperty(string name)
+        {
+            if (HasArrayRanks)
+                return ArrayRef.GetProperty(name);
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+                return ((ITypeDecl)reference).GetProperty(name);
+            if (reference is Type)
+            {
+                PropertyInfo propertyInfo = TypeUtil.GetProperty((Type)reference, name);
+                if (propertyInfo != null)
+                    return new PropertyRef(propertyInfo);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the actual type reference, retrieving from any constant value if necessary.
+        /// </summary>
+        /// <returns>The <see cref="ITypeDecl"/> (<see cref="TypeDecl"/> or <see cref="TypeParameter"/>, but NOT <see cref="Alias"/>)
+        /// or <see cref="Type"/> (or null if the type is unresolved).</returns>
+        public override object GetReferencedType()
+        {
+            object reference = Reference;
+            if (IsConst)
+            {
+                if (reference is ITypeDecl || reference is Type)
+                    return reference;
+                if (reference is EnumConstant)
+                    return ((EnumConstant)reference).EnumTypeRef.Reference;
+                return reference.GetType();
+            }
+            return reference;
+        }
+
+        /// <summary>
+        /// Get the <see cref="TypeCode"/> of the referenced type.
+        /// </summary>
+        public TypeCode GetTypeCode()
+        {
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+            {
+                TypeCode typeCode;
+                if (TypeNameToTypeCodeMap.TryGetValue(((ITypeDecl)reference).Name, out typeCode) && ((ITypeDecl)reference).GetNamespace().Name == "System")
+                    return typeCode;
+            }
+            else if (reference is Type)
+                return Type.GetTypeCode((Type)reference);
+            return TypeCode.Object;
+        }
+
+        /// <summary>
+        /// Get the declared type parameters (if any) of the referenced type as type arguments.
+        /// </summary>
+        public ChildList<Expression> GetTypeParametersAsArguments()
+        {
+            ChildList<Expression> typeArguments = null;
+            object reference = GetReferencedType();
+            if (reference is TypeDecl)
+            {
+                ChildList<TypeParameter> typeParameters = ((TypeDecl)reference).TypeParameters;
+                if (typeParameters != null)
+                {
+                    typeArguments = new ChildList<Expression>(typeParameters.Count);
+                    foreach (TypeParameter typeParameter in typeParameters)
+                        typeArguments.Add(typeParameter.CreateRef());
+                }
+            }
+            else if (reference is Type)
+            {
+                Type[] genericArguments = TypeUtil.GetLocalGenericArguments((Type)reference);
+                if (genericArguments.Length > 0)
+                {
+                    typeArguments = new ChildList<Expression>(genericArguments.Length);
+                    foreach (Type genericArgument in genericArguments)
+                        typeArguments.Add(Create(genericArgument));
+                }
+            }
+            else if (reference is Alias)
+            {
+                TypeRef aliasedTypeRef = ((Alias)reference).Type;
+                if (aliasedTypeRef != null)
+                    typeArguments = aliasedTypeRef.GetTypeParametersAsArguments();
+            }
+            return typeArguments;
+        }
+
+        /// <summary>
+        /// Get a <see cref="TypeRef"/> for the actual type, excluding any constant values.
+        /// </summary>
+        public override TypeRefBase GetTypeWithoutConstant()
+        {
+            if (IsConst)
+            {
+                // For an ITypeDecl or Type, return a new TypeRef without the Const flag set
+                if (_reference is ITypeDecl || _reference is Type)
+                {
+                    TypeRef newTypeRef = (TypeRef)Clone();
+                    newTypeRef.SetFormatFlag(FormatFlags.Const, false);
+                    return newTypeRef;
+                }
+                // For an enum or primitive-type constant, return a TypeRef to the type
+                if (_reference is EnumConstant)
+                    return ((EnumConstant)_reference).EnumTypeRef;
+                return new TypeRef(_reference.GetType(), IsFirstOnLine);
+            }
+            return this;
+        }
+
+        /// <summary>
+        /// Get the the underlying type if this is an enum type (otherwise returns null).
+        /// </summary>
+        public TypeRefBase GetUnderlyingTypeOfEnum()
+        {
+            if (IsEnum)
+            {
+                object reference = GetReferencedType();
+                if (reference is EnumDecl)
+                    return ((EnumDecl)reference).UnderlyingType.SkipPrefixes() as TypeRefBase;
+                if (reference is Type)
+                    return Create(Enum.GetUnderlyingType((Type)reference));
+                if (reference is EnumConstant)
+                    return ((EnumConstant)reference).EnumTypeRef.GetUnderlyingTypeOfEnum();
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// True if the current type is assignable from the specified type.
+        /// </summary>
+        public bool IsAssignableFrom(TypeRef typeRef)
+        {
+            return (typeRef != null && (IsSameRef(typeRef) || typeRef.IsSubclassOf(this) || typeRef.IsImplementationOf(this)));
+        }
+
+        /// <summary>
+        /// Determines if the current <see cref="TypeRef"/> implements the specified interface <see cref="TypeRef"/>.
+        /// </summary>
+        public bool IsImplementationOf(TypeRef interfaceTypeRef)
+        {
+            if (interfaceTypeRef == null)
+                return false;
+
+            object reference = GetReferencedType();
+            if (reference is ITypeDecl)
+            {
+                // We need to (recursively) resolve any open type arguments here, because the
+                // declarations won't have access to the type parameters.
+                // Only look at type declarations that can implement interfaces.
+                if (reference is BaseListTypeDecl && !(reference is EnumDecl))
+                {
+                    BaseListTypeDecl baseListTypeDecl = (BaseListTypeDecl)reference;
+                    List<Expression> baseTypes = baseListTypeDecl.GetAllBaseTypes();
+                    if (baseTypes != null)
+                    {
+                        // Check all interfaces implemented directly by the type declaration
+                        foreach (Expression baseTypeExpression in baseTypes)
+                        {
+                            TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
+                            if (baseTypeRef != null && baseTypeRef.IsInterface)
+                            {
+                                // Resolve any open type arguments, and compare the interface to the target
+                                if (baseTypeRef.IsSameRef(interfaceTypeRef))
+                                    return true;
+                            }
+                        }
+                        // If we didn't find a match yet, search any base type and/or all interfaces for implemented interfaces
+                        foreach (Expression baseTypeExpression in baseTypes)
+                        {
+                            TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
+                            if (baseTypeRef != null)
+                            {
+                                if (baseTypeRef.IsImplementationOf(interfaceTypeRef))
+                                    return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            if (reference is Type)
+            {
+                bool interfaceTypeRefIsGeneric = interfaceTypeRef.IsGenericType;
+
+                // Search all interfaces implemented by the type or any base types
+                foreach (Type @interface in ((Type)reference).GetInterfaces())
+                {
+                    // Make sure the generic status matches
+                    if (@interface.IsGenericType == interfaceTypeRefIsGeneric)
+                    {
+                        // Because we might need to resolve any open type arguments, we have to convert the
+                        // interface to a TypeRef before we can compare it to the target interface.  We also
+                        // have to do this because 'interfaceTypeRef' might refer to an InterfaceDecl even
+                        // though this reference refers to a Type.
+                        TypeRef interfaceRef = Create(@interface);
+                        if (interfaceRef.IsSameRef(interfaceTypeRef))
+                            return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Determine if the specified <see cref="TypeRefBase"/> refers to the same generic type, regardless of actual type arguments.
+        /// </summary>
+        public override bool IsSameGenericType(TypeRefBase typeRefBase)
+        {
+            TypeRef typeRef = (typeRefBase is AliasRef ? ((AliasRef)typeRefBase).Type : typeRefBase as TypeRef);
+            return (typeRef != null && Name == typeRef.Name && NamespaceName == typeRef.NamespaceName
+                && (_typeArguments != null ? _typeArguments.Count : 0) == typeRef.TypeArgumentCount && HasSameArrayRanks(typeRef));
+        }
+
+        /// <summary>
+        /// Determine if the current reference refers to the same code object as the specified reference.
+        /// </summary>
+        public override bool IsSameRef(SymbolicRef symbolicRef)
+        {
+            // Comparing the type name and namespace is the most efficient method.
+            // Just comparing the type objects wouldn't always work - such as when types are present both in an assembly
+            // reference, and also as CodeDOM objects (either in the current project, or a referenced project), which can
+            // occur if one or both types are in a project with assembly references instead of project references to a type
+            // that is defined in the current solution, which isn't uncommon (it will occur in "master" solutions that include
+            // projects that are also used in other solutions, and also if a project in the solution uses a non-supported
+            // language and so is referenced by its assembly.  It would also fail in the case that both types are partial types
+            // of the same type declaration (meaning two parts of an ITypeDecl in the same project).  Finally, it would fail if
+            // the types are the same type from assemblies with different versions, such as from different versions of the .NET
+            // framework, which can easily occur if different projects in the same solution target different framework versions.
+            TypeRef typeRef = (symbolicRef is AliasRef ? ((AliasRef)symbolicRef).Type : symbolicRef as TypeRef);
+            return (typeRef != null && Name == typeRef.Name && NamespaceName == typeRef.NamespaceName
+                && HasSameTypeArguments(typeRef) && HasSameArrayRanks(typeRef));
+        }
+
+        /// <summary>
+        /// Determines if the current <see cref="TypeRef"/> is a subclass of the specified <see cref="TypeRef"/>.
+        /// </summary>
+        public bool IsSubclassOf(TypeRef classTypeRef)
+        {
+            TypeRefBase baseTypeRef = GetBaseType();
+            return (baseTypeRef is TypeRef && (baseTypeRef.IsSameRef(classTypeRef) || ((TypeRef)baseTypeRef).IsSubclassOf(classTypeRef)));
+        }
+
+        internal static new void AddParsePoints()
+        {
+            // Parse built-in types and '?' nullable types here in TypeRef, because they will
+            // parse as resolved TypeRefs.  Generic types and arrays are parsed in UnresolvedRef,
+            // because they may or may not parse as resolved.
+
+            // Install parse-points for all built-in type names (without any scope restrictions) - this
+            // will also parse built-in nullable types.
+            foreach (KeyValuePair<string, TypeRef> keyValue in KeywordToTypeRefMap)
+                Parser.AddParsePoint(keyValue.Key, ParseType);
+
+            // Parse nullable types - use a parse-priority of 100 (Conditional uses 0)
+            Parser.AddParsePoint(ParseTokenNullable, 100, ParseNullableType);
+        }
+
+        protected internal static TypeRefBase CreateTypeRef(object obj, string name, bool isFirstOnLine)
+        {
+            if (obj is TypeDecl)
+                return new TypeRef((TypeDecl)obj, isFirstOnLine);
+            if (obj is Type)
+                return new TypeRef((Type)obj, isFirstOnLine);
+            return new UnresolvedRef(name, isFirstOnLine);
+        }
+
+        /// <summary>
+        /// Determine if this <see cref="TypeRef"/> has the same array ranks as the specified <see cref="TypeRef"/>.
+        /// </summary>
+        protected bool HasSameArrayRanks(TypeRef typeRef)
+        {
+            int arrayRanksCount = (ArrayRanks != null ? ArrayRanks.Count : 0);
+            if (arrayRanksCount != (typeRef.ArrayRanks != null ? typeRef.ArrayRanks.Count : 0))
+                return false;
+            if (arrayRanksCount > 0 && !CollectionUtil.CompareList(ArrayRanks, typeRef.ArrayRanks))
+                return false;
+            return true;
+        }
+
+        /// <summary>
+        /// Determine if this <see cref="TypeRef"/> has the same type arguments as the specified <see cref="TypeRef"/>.
+        /// </summary>
+        protected bool HasSameTypeArguments(TypeRef typeRef)
+        {
+            ChildList<Expression> typeArguments1 = TypeArguments;
+            ChildList<Expression> typeArguments2 = typeRef.TypeArguments;
+            int typeArgumentCount = (typeArguments1 != null ? typeArguments1.Count : 0);
+            if (typeArgumentCount != (typeArguments2 != null ? typeArguments2.Count : 0))
+                return false;
+            if (typeArgumentCount > 0)
+            {
+                for (int i = 0; i < typeArgumentCount; ++i)
+                {
+                    Expression typeArg1 = typeArguments1[i];
+                    Expression typeArg2 = typeArguments2[i];
+                    if (typeArg1 == null && typeArg2 == null)
+                        continue;
+                    if (typeArg1 == null || typeArg2 == null)
+                        return false;
+                    TypeRefBase typeArgRef1 = typeArg1.SkipPrefixes() as TypeRefBase;
+                    TypeRefBase typeArgRef2 = typeArg2.SkipPrefixes() as TypeRefBase;
+                    if (typeArgRef1 == null || typeArgRef2 == null)
+                        return false;
+                    if (typeArgRef1.IsSameRef(typeArgRef2))
+                        continue;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static void GetMethods(Type type, string name, bool searchBaseClasses, NamedCodeObjectGroup results)
+        {
+            try
+            {
+                // Get all methods with the specified name
+                MemberInfo[] members = type.GetMember(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance
+                    | (searchBaseClasses ? BindingFlags.FlattenHierarchy : BindingFlags.DeclaredOnly));
+                foreach (MemberInfo memberInfo in members)
+                {
+                    if (memberInfo is MethodBase)
+                        results.Add(memberInfo);
+                }
+
+                // If we're searching an interface, we have to manually search base interfaces
+                if (type.IsInterface)
+                {
+                    foreach (Type interfaceType in type.GetInterfaces())
+                    {
+                        members = interfaceType.GetMember(name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+                        foreach (MemberInfo memberInfo in members)
+                        {
+                            if (memberInfo is MethodBase)
+                                results.Add(memberInfo);
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore any exceptions - can be caused by missing dependent assemblies
+            }
+        }
+
+        /// <summary>
+        /// Convert a TypeRefBase[] to a Type[].  Returns null if any conversion fails.
+        /// </summary>
+        private static Type[] GetTypeRefsAsTypes(TypeRefBase[] typeRefs)
+        {
+            int count = (typeRefs != null ? typeRefs.Length : 0);
+            Type[] types = new Type[count];
+            for (int i = 0; i < count; ++i)
+            {
+                object reference = typeRefs[i].GetReferencedType();
+                if (reference is Type)
+                    types[i] = (Type)reference;
+                else
+                    return null;
+            }
+            return types;
+        }
+
+        /// <summary>
+        /// Parse a '?' nullable type.
+        /// </summary>
+        private static SymbolicRef ParseNullableType(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // If we get here, Conditional has already failed to parse the '?' (because it failed to find a ':'),
+            // so this *should* truly be a nullable type, but still make sure it has an unused expression.
+            if (parser.HasUnusedExpression)
+                return new TypeRef(parser, parent, false, flags);
+            return null;
+        }
+
+        /// <summary>
+        /// Parse a built-in type, or a nullable built-in type.
+        /// </summary>
+        private static TypeRef ParseType(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new TypeRef(parser, parent, true, flags);
+        }
+    }
 }

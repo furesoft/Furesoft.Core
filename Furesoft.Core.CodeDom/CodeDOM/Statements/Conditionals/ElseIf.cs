@@ -12,7 +12,15 @@ namespace Nova.CodeDOM
     /// </summary>
     public class ElseIf : IfBase
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The first token used to parse the code object.
+        /// </summary>
+        public const string ParseToken1 = "else";
+
+        /// <summary>
+        /// The second token used to parse the code object.
+        /// </summary>
+        public const string ParseToken2 = "if";
 
         /// <summary>
         /// Create an <see cref="ElseIf"/>.
@@ -56,9 +64,19 @@ namespace Nova.CodeDOM
             : base(conditional, elseIf)
         { }
 
-        #endregion
+        protected ElseIf(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        {
+            MoveComments(parser.LastToken);                  // Get any comments before 'else'
+            parser.NextToken();                              // Move past 'else'
+            MoveAllComments(parser.LastToken, false, true);  // Get any comments after 'else' as regular comments
+            ParseUnusedAnnotations(parser, this, true);      // Parse any annotations from the Unused list
+            ParseIf(parser, parent);                         // Delegate to base class to parse 'if'
 
-        #region /* PROPERTIES */
+            // Remove any preceeding blank lines if auto-cleanup is on
+            if (AutomaticFormattingCleanup && NewLines > 1)
+                NewLines = 1;
+        }
 
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
@@ -68,26 +86,14 @@ namespace Nova.CodeDOM
             get { return ParseToken1 + " " + ParseToken2; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
-        /// The first token used to parse the code object.
+        /// Parse an <see cref="ElseIf"/>.
         /// </summary>
-        public const string ParseToken1 = "else";
-
-        /// <summary>
-        /// The second token used to parse the code object.
-        /// </summary>
-        public const string ParseToken2 = "if";
-
-        internal static void AddParsePoints()
+        public static ElseIf Parse(Parser parser, CodeObject parent)
         {
-            // Normally, an 'else if' is parsed by the 'if' parse logic (see IfBase).
-            // This parse-point exists only to catch an orphaned 'else if' statement.
-            // Use a parse-priority of 100 (Else uses 200)
-            Parser.AddParsePoint(ParseToken1, 100, ParseOrphan, typeof(IBlock));
+            if (parser.PeekNextTokenText() == ParseToken2)
+                return new ElseIf(parser, parent);
+            return null;
         }
 
         /// <summary>
@@ -102,39 +108,17 @@ namespace Nova.CodeDOM
             return elseIf;
         }
 
-        /// <summary>
-        /// Parse an <see cref="ElseIf"/>.
-        /// </summary>
-        public static ElseIf Parse(Parser parser, CodeObject parent)
-        {
-            if (parser.PeekNextTokenText() == ParseToken2)
-                return new ElseIf(parser, parent);
-            return null;
-        }
-
-        protected ElseIf(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            MoveComments(parser.LastToken);                  // Get any comments before 'else'
-            parser.NextToken();                              // Move past 'else'
-            MoveAllComments(parser.LastToken, false, true);  // Get any comments after 'else' as regular comments
-            ParseUnusedAnnotations(parser, this, true);      // Parse any annotations from the Unused list
-            ParseIf(parser, parent);                         // Delegate to base class to parse 'if'
-
-            // Remove any preceeding blank lines if auto-cleanup is on
-            if (AutomaticFormattingCleanup && NewLines > 1)
-                NewLines = 1;
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             base.AsText(writer, flags | RenderFlags.IncreaseIndent);
         }
 
-        #endregion
+        internal static void AddParsePoints()
+        {
+            // Normally, an 'else if' is parsed by the 'if' parse logic (see IfBase).
+            // This parse-point exists only to catch an orphaned 'else if' statement.
+            // Use a parse-priority of 100 (Else uses 200)
+            Parser.AddParsePoint(ParseToken1, 100, ParseOrphan, typeof(IBlock));
+        }
     }
 }

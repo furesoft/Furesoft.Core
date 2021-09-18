@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Text;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System.Text;
 
 namespace Nova.CodeDOM
 {
@@ -19,6 +18,21 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class Literal : Expression
     {
+        /// <summary>
+        /// The token used to parse a 'false' literal.
+        /// </summary>
+        public const string ParseTokenFalse = "false";
+
+        /// <summary>
+        /// The token used to parse a 'null' literal.
+        /// </summary>
+        public const string ParseTokenNull = "null";
+
+        /// <summary>
+        /// The token used to parse a 'true' literal.
+        /// </summary>
+        public const string ParseTokenTrue = "true";
+
         protected string _text;
 
         /// <summary>
@@ -177,39 +191,17 @@ namespace Nova.CodeDOM
             : this(obj, false)
         { }
 
-        protected static void CharToEscapedString(StringBuilder builder, char ch, bool isChar)
+        /// <summary>
+        /// Parse a <see cref="Literal"/>.
+        /// </summary>
+        public Literal(Parser parser, CodeObject parent)
+            : base(parser, parent)
         {
-            // Escape char if necessary
-            if (ch < 0x20)
-            {
-                string str;
-                switch (ch)
-                {
-                    case '\0': str = @"\0"; break;
-                    case '\a': str = @"\a"; break;
-                    case '\b': str = @"\b"; break;
-                    case '\f': str = @"\f"; break;
-                    case '\n': str = @"\n"; break;
-                    case '\r': str = @"\r"; break;
-                    case '\t': str = @"\t"; break;
-                    case '\v': str = @"\v"; break;
-                    default: str = string.Format("\\x{0:X2}", (int)ch); break;
-                }
-                builder.Append(str);
-            }
-            else if (ch >= 0x7f)
-                builder.Append(string.Format(ch >= 0x100 ? "\\u{0:X4}" : "\\x{0:X2}", (int)ch));
-            else
-            {
-                if (ch == '\\')
-                    builder.Append(@"\\");
-                else if (isChar && ch == '\'')
-                    builder.Append("\'");
-                else if (!isChar && ch == '"')
-                    builder.Append("\\\"");
-                else
-                    builder.Append(ch);
-            }
+            Text = parser.TokenText;
+            parser.NextToken();  // Move past token
+
+            // Move any trailing EOL or inline comment to the expression as an EOL comment
+            MoveEOLComment(parser.LastToken);
         }
 
         /// <summary>
@@ -245,39 +237,19 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The token used to parse a 'false' literal.
-        /// </summary>
-        public const string ParseTokenFalse = "false";
-
-        /// <summary>
-        /// The token used to parse a 'null' literal.
-        /// </summary>
-        public const string ParseTokenNull = "null";
-
-        /// <summary>
-        /// The token used to parse a 'true' literal.
-        /// </summary>
-        public const string ParseTokenTrue = "true";
-
-        /// <summary>
-        /// Parse a <see cref="Literal"/>.
-        /// </summary>
-        public Literal(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            Text = parser.TokenText;
-            parser.NextToken();  // Move past token
-
-            // Move any trailing EOL or inline comment to the expression as an EOL comment
-            MoveEOLComment(parser.LastToken);
-        }
-
-        /// <summary>
         /// Parse a <see cref="Literal"/>.
         /// </summary>
         public static Literal Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new Literal(parser, parent);
+        }
+
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+            writer.EscapeUnicode = false;
+            writer.Write(_text);
+            writer.EscapeUnicode = true;
         }
 
         internal static new void AddParsePoints()
@@ -292,12 +264,39 @@ namespace Nova.CodeDOM
             Parser.AddParsePoint(ParseTokenFalse, Parse);
         }
 
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        protected static void CharToEscapedString(StringBuilder builder, char ch, bool isChar)
         {
-            UpdateLineCol(writer, flags);
-            writer.EscapeUnicode = false;
-            writer.Write(_text);
-            writer.EscapeUnicode = true;
+            // Escape char if necessary
+            if (ch < 0x20)
+            {
+                string str;
+                switch (ch)
+                {
+                    case '\0': str = @"\0"; break;
+                    case '\a': str = @"\a"; break;
+                    case '\b': str = @"\b"; break;
+                    case '\f': str = @"\f"; break;
+                    case '\n': str = @"\n"; break;
+                    case '\r': str = @"\r"; break;
+                    case '\t': str = @"\t"; break;
+                    case '\v': str = @"\v"; break;
+                    default: str = string.Format("\\x{0:X2}", (int)ch); break;
+                }
+                builder.Append(str);
+            }
+            else if (ch >= 0x7f)
+                builder.Append(string.Format(ch >= 0x100 ? "\\u{0:X4}" : "\\x{0:X2}", (int)ch));
+            else
+            {
+                if (ch == '\\')
+                    builder.Append(@"\\");
+                else if (isChar && ch == '\'')
+                    builder.Append("\'");
+                else if (!isChar && ch == '"')
+                    builder.Append("\\\"");
+                else
+                    builder.Append(ch);
+            }
         }
     }
 }

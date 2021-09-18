@@ -11,7 +11,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class EndIfDirective : ConditionalDirectiveBase
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "endif";
 
         /// <summary>
         /// Create an <see cref="EndIfDirective"/>.
@@ -19,28 +22,6 @@ namespace Nova.CodeDOM
         public EndIfDirective()
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "endif";
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse an <see cref="EndIfDirective"/>.
-        /// </summary>
-        public static EndIfDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new EndIfDirective(parser, parent);
-        }
-        
         /// <summary>
         /// Parse an <see cref="EndIfDirective"/>.
         /// </summary>
@@ -53,16 +34,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// The keyword associated with the compiler directive (if any).
         /// </summary>
-        public override bool AssociateCommentWhenParsing(CommentBase comment)
+        public override string DirectiveKeyword
         {
-            return false;
+            get { return ParseToken; }
         }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the compiler directive has an argument.
@@ -72,18 +49,25 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         /// <summary>
-        /// The keyword associated with the compiler directive (if any).
+        /// Parse an <see cref="EndIfDirective"/>.
         /// </summary>
-        public override string DirectiveKeyword
+        public static EndIfDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            get { return ParseToken; }
+            return new EndIfDirective(parser, parent);
         }
 
-        #endregion
+        /// <summary>
+        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// </summary>
+        public override bool AssociateCommentWhenParsing(CommentBase comment)
+        {
+            return false;
+        }
+
+        internal static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
     }
 }

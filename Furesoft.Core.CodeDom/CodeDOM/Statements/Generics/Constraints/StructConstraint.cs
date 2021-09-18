@@ -2,9 +2,8 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Reflection;
-
 using Nova.Parsing;
+using System.Reflection;
 
 namespace Nova.CodeDOM
 {
@@ -13,34 +12,16 @@ namespace Nova.CodeDOM
     /// </summary>
     public class StructConstraint : TypeParameterConstraint
     {
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "struct";
 
         /// <summary>
         /// Create a <see cref="StructConstraint"/>.
         /// </summary>
         public StructConstraint()
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The attribute of the constraint.
-        /// </summary>
-        public override GenericParameterAttributes ConstraintAttribute
-        {
-            get { return GenericParameterAttributes.NotNullableValueTypeConstraint; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "struct";
 
         /// <summary>
         /// Parse a <see cref="StructConstraint"/>.
@@ -51,15 +32,17 @@ namespace Nova.CodeDOM
             parser.NextToken();  // Move past 'struct'
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// The attribute of the constraint.
+        /// </summary>
+        public override GenericParameterAttributes ConstraintAttribute
+        {
+            get { return GenericParameterAttributes.NotNullableValueTypeConstraint; }
+        }
 
         public override string ConstraintText
         {
             get { return ParseToken; }
         }
-
-        #endregion
     }
 }

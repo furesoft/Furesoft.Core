@@ -12,38 +12,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class IfNullThen : BinaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create an <see cref="IfNullThen"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public IfNullThen(Expression left, Expression right)
-            : base(left, right)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        /// <summary>
-        /// True if the expression is const.
-        /// </summary>
-        public override bool IsConst
-        {
-            get { return false; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = false;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -56,13 +28,30 @@ namespace Nova.CodeDOM
         public const int Precedence = 390;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create an <see cref="IfNullThen"/> operator.
         /// </summary>
-        public const bool LeftAssociative = false;
+        public IfNullThen(Expression left, Expression right)
+            : base(left, right)
+        { }
 
-        internal static new void AddParsePoints()
+        protected IfNullThen(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// True if the expression is const.
+        /// </summary>
+        public override bool IsConst
         {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+            get { return false; }
+        }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
+        {
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -73,10 +62,6 @@ namespace Nova.CodeDOM
             return new IfNullThen(parser, parent);
         }
 
-        protected IfNullThen(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -85,6 +70,9 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

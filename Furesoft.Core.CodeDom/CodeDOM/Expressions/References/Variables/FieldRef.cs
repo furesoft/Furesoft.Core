@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
+using Nova.Rendering;
 using System;
 using System.Reflection;
-
-using Nova.Rendering;
 
 namespace Nova.CodeDOM
 {
@@ -14,8 +13,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class FieldRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="FieldRef"/>.
         /// </summary>
@@ -44,10 +41,6 @@ namespace Nova.CodeDOM
             : base(fieldInfo, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// True if the referenced field is const.
         /// </summary>
@@ -62,28 +55,15 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced field is static.
+        /// True if the referenced field has internal access.
         /// </summary>
-        public override bool IsStatic
+        public bool IsInternal
         {
             get
             {
                 if (_reference is FieldDecl)
-                    return ((FieldDecl)_reference).IsStatic;
-                return ((FieldInfo)_reference).IsStatic;
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced field has public access.
-        /// </summary>
-        public bool IsPublic
-        {
-            get
-            {
-                if (_reference is FieldDecl)
-                    return ((FieldDecl)_reference).IsPublic;
-                return ((FieldInfo)_reference).IsPublic;
+                    return ((FieldDecl)_reference).IsInternal;
+                return ((FieldInfo)_reference).IsAssembly;
             }
         }
 
@@ -114,21 +94,49 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the referenced field has internal access.
+        /// True if the referenced field has public access.
         /// </summary>
-        public bool IsInternal
+        public bool IsPublic
         {
             get
             {
                 if (_reference is FieldDecl)
-                    return ((FieldDecl)_reference).IsInternal;
-                return ((FieldInfo)_reference).IsAssembly;
+                    return ((FieldDecl)_reference).IsPublic;
+                return ((FieldInfo)_reference).IsPublic;
             }
         }
 
-        #endregion
+        /// <summary>
+        /// True if the referenced field is static.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get
+            {
+                if (_reference is FieldDecl)
+                    return ((FieldDecl)_reference).IsStatic;
+                return ((FieldInfo)_reference).IsStatic;
+            }
+        }
 
-        #region /* STATIC METHODS */
+        public static void AsTextFieldInfo(CodeWriter writer, FieldInfo fieldInfo, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
+
+            // Skip all details for enum members, including the declaring type since it will always be on the left of the dot
+            if (!(fieldInfo.IsLiteral && fieldInfo.FieldType.IsEnum))
+            {
+                if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
+                    Attribute.AsTextAttributes(writer, fieldInfo);
+                writer.Write(ModifiersHelpers.AsString(GetFieldModifiers(fieldInfo)));
+                Type fieldType = fieldInfo.FieldType;
+                TypeRefBase.AsTextType(writer, fieldType, passFlags);
+                writer.Write(" ");
+                TypeRefBase.AsTextType(writer, fieldInfo.DeclaringType, passFlags);
+                Dot.AsTextDot(writer);
+            }
+            writer.Write(fieldInfo.Name);
+        }
 
         /// <summary>
         /// Find a field on the specified <see cref="TypeDecl"/> with the specified name.
@@ -236,6 +244,24 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Get the declaring type of the specified field object.
+        /// </summary>
+        /// <param name="fieldObj">The field object (a <see cref="FieldDecl"/> or <see cref="FieldInfo"/>).</param>
+        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
+        public static TypeRefBase GetDeclaringType(object fieldObj)
+        {
+            TypeRefBase declaringTypeRef;
+            if (fieldObj is FieldDecl)
+            {
+                TypeDecl declaringTypeDecl = ((FieldDecl)fieldObj).DeclaringType;
+                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
+            }
+            else //if (fieldObj is FieldInfo)
+                declaringTypeRef = TypeRef.Create(((FieldInfo)fieldObj).DeclaringType);
+            return declaringTypeRef;
+        }
+
+        /// <summary>
         /// Get any modifiers from the specified <see cref="FieldInfo"/>.
         /// </summary>
         public static Modifiers GetFieldModifiers(FieldInfo fieldInfo)
@@ -261,10 +287,6 @@ namespace Nova.CodeDOM
             return modifiers;
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Get the declaring type of the referenced field.
         /// </summary>
@@ -281,48 +303,5 @@ namespace Nova.CodeDOM
 
             return declaringTypeRef;
         }
-
-        /// <summary>
-        /// Get the declaring type of the specified field object.
-        /// </summary>
-        /// <param name="fieldObj">The field object (a <see cref="FieldDecl"/> or <see cref="FieldInfo"/>).</param>
-        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
-        public static TypeRefBase GetDeclaringType(object fieldObj)
-        {
-            TypeRefBase declaringTypeRef;
-            if (fieldObj is FieldDecl)
-            {
-                TypeDecl declaringTypeDecl = ((FieldDecl)fieldObj).DeclaringType;
-                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
-            }
-            else //if (fieldObj is FieldInfo)
-                declaringTypeRef = TypeRef.Create(((FieldInfo)fieldObj).DeclaringType);
-            return declaringTypeRef;
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public static void AsTextFieldInfo(CodeWriter writer, FieldInfo fieldInfo, RenderFlags flags)
-        {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-
-            // Skip all details for enum members, including the declaring type since it will always be on the left of the dot
-            if (!(fieldInfo.IsLiteral && fieldInfo.FieldType.IsEnum))
-            {
-                if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
-                    Attribute.AsTextAttributes(writer, fieldInfo);
-                writer.Write(ModifiersHelpers.AsString(GetFieldModifiers(fieldInfo)));
-                Type fieldType = fieldInfo.FieldType;
-                TypeRefBase.AsTextType(writer, fieldType, passFlags);
-                writer.Write(" ");
-                TypeRefBase.AsTextType(writer, fieldInfo.DeclaringType, passFlags);
-                Dot.AsTextDot(writer);
-            }
-            writer.Write(fieldInfo.Name);
-        }
-
-        #endregion
     }
 }

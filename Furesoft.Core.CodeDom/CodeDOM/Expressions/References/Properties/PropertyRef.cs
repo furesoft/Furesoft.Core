@@ -2,11 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using System.Reflection;
-
 using Nova.Rendering;
 using Nova.Utilities;
+using System;
+using System.Reflection;
 
 namespace Nova.CodeDOM
 {
@@ -15,8 +14,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class PropertyRef : VariableRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="PropertyRef"/>.
         /// </summary>
@@ -34,13 +31,6 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Create a <see cref="PropertyRef"/>.
         /// </summary>
-        protected PropertyRef(PropertyDeclBase declaration, bool isFirstOnLine)
-            : base(declaration, isFirstOnLine)
-        { }
-
-        /// <summary>
-        /// Create a <see cref="PropertyRef"/>.
-        /// </summary>
         public PropertyRef(PropertyInfo propertyInfo, bool isFirstOnLine)
             : base(propertyInfo, isFirstOnLine)
         { }
@@ -52,9 +42,128 @@ namespace Nova.CodeDOM
             : base(propertyInfo, false)
         { }
 
-        #endregion
+        /// <summary>
+        /// Create a <see cref="PropertyRef"/>.
+        /// </summary>
+        protected PropertyRef(PropertyDeclBase declaration, bool isFirstOnLine)
+            : base(declaration, isFirstOnLine)
+        { }
 
-        #region /* STATIC METHODS */
+        /// <summary>
+        /// True if the referenced property has internal access.
+        /// </summary>
+        public bool IsInternal
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsInternal;
+                return PropertyInfoUtil.IsInternal((PropertyInfo)_reference);
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced property has private access.
+        /// </summary>
+        public bool IsPrivate
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsPrivate;
+                return PropertyInfoUtil.IsPrivate((PropertyInfo)_reference);
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced property has protected access.
+        /// </summary>
+        public bool IsProtected
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsProtected;
+                return PropertyInfoUtil.IsProtected((PropertyInfo)_reference);
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced property has public access.
+        /// </summary>
+        public bool IsPublic
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsPublic;
+                return PropertyInfoUtil.IsPublic((PropertyInfo)_reference);
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced property is readable.
+        /// </summary>
+        public bool IsReadable
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsReadable;
+                return ((PropertyInfo)_reference).CanRead;
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced property is static.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsStatic;
+                return PropertyInfoUtil.IsStatic((PropertyInfo)_reference);
+            }
+        }
+
+        /// <summary>
+        /// True if the referenced property is writable.
+        /// </summary>
+        public bool IsWritable
+        {
+            get
+            {
+                if (_reference is PropertyDeclBase)
+                    return ((PropertyDeclBase)_reference).IsWritable;
+                return ((PropertyInfo)_reference).CanRead;
+            }
+        }
+
+        public static void AsTextPropertyInfo(CodeWriter writer, PropertyInfo propertyInfo, RenderFlags flags)
+        {
+            RenderFlags passFlags = flags & ~RenderFlags.Description;
+
+            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
+                Attribute.AsTextAttributes(writer, propertyInfo);
+            writer.Write(ModifiersHelpers.AsString(GetPropertyModifiers(propertyInfo)));
+            Type propertyType = propertyInfo.PropertyType;
+            TypeRefBase.AsTextType(writer, propertyType, passFlags);
+            writer.Write(" ");
+            TypeRefBase.AsTextType(writer, propertyInfo.DeclaringType, passFlags);
+            Dot.AsTextDot(writer);
+
+            if (PropertyInfoUtil.IsIndexed(propertyInfo))
+            {
+                // Display the actual name instead of 'this' - it will usually be 'Item', but not always,
+                // plus it might have a prefix (if it's an explicit interface implementation).
+                writer.Write(propertyInfo.Name + IndexerDecl.ParseTokenStart);
+                MethodRef.AsTextParameters(writer, propertyInfo.GetIndexParameters(), flags);
+                writer.Write(IndexerDecl.ParseTokenEnd);
+            }
+            else
+                writer.Write(propertyInfo.Name);
+        }
 
         /// <summary>
         /// Construct a <see cref="PropertyRef"/> (or <see cref="IndexerRef"/>) from a <see cref="PropertyInfo"/>.
@@ -184,6 +293,24 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Get the declaring type of the specified property object.
+        /// </summary>
+        /// <param name="propertyObj">The property object (a <see cref="PropertyDeclBase"/> or <see cref="PropertyInfo"/>).</param>
+        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
+        public static TypeRefBase GetDeclaringType(object propertyObj)
+        {
+            TypeRefBase declaringTypeRef = null;
+            if (propertyObj is PropertyDeclBase)
+            {
+                TypeDecl declaringTypeDecl = ((PropertyDeclBase)propertyObj).DeclaringType;
+                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
+            }
+            else if (propertyObj is PropertyInfo)
+                declaringTypeRef = TypeRef.Create(((PropertyInfo)propertyObj).DeclaringType);
+            return declaringTypeRef;
+        }
+
+        /// <summary>
         /// Get any modifiers from the specified <see cref="PropertyInfo"/>.
         /// </summary>
         public static Modifiers GetPropertyModifiers(PropertyInfo propertyInfo)
@@ -223,101 +350,6 @@ namespace Nova.CodeDOM
             return TypeRef.Create(((PropertyInfo)reference).PropertyType);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// True if the referenced property is static.
-        /// </summary>
-        public override bool IsStatic
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsStatic;
-                return PropertyInfoUtil.IsStatic((PropertyInfo)_reference);
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced property has public access.
-        /// </summary>
-        public bool IsPublic
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsPublic;
-                return PropertyInfoUtil.IsPublic((PropertyInfo)_reference);
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced property has private access.
-        /// </summary>
-        public bool IsPrivate
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsPrivate;
-                return PropertyInfoUtil.IsPrivate((PropertyInfo)_reference);
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced property has protected access.
-        /// </summary>
-        public bool IsProtected
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsProtected;
-                return PropertyInfoUtil.IsProtected((PropertyInfo)_reference);
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced property has internal access.
-        /// </summary>
-        public bool IsInternal
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsInternal;
-                return PropertyInfoUtil.IsInternal((PropertyInfo)_reference);
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced property is readable.
-        /// </summary>
-        public bool IsReadable
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsReadable;
-                return ((PropertyInfo)_reference).CanRead;
-            }
-        }
-
-        /// <summary>
-        /// True if the referenced property is writable.
-        /// </summary>
-        public bool IsWritable
-        {
-            get
-            {
-                if (_reference is PropertyDeclBase)
-                    return ((PropertyDeclBase)_reference).IsWritable;
-                return ((PropertyInfo)_reference).CanRead;
-            }
-        }
-
         /// <summary>
         /// Get the declaring type of the referenced property.
         /// </summary>
@@ -336,64 +368,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the declaring type of the specified property object.
-        /// </summary>
-        /// <param name="propertyObj">The property object (a <see cref="PropertyDeclBase"/> or <see cref="PropertyInfo"/>).</param>
-        /// <returns>The <see cref="TypeRef"/> of the declaring type, or null if it can't be determined.</returns>
-        public static TypeRefBase GetDeclaringType(object propertyObj)
-        {
-            TypeRefBase declaringTypeRef = null;
-            if (propertyObj is PropertyDeclBase)
-            {
-                TypeDecl declaringTypeDecl = ((PropertyDeclBase)propertyObj).DeclaringType;
-                declaringTypeRef = (declaringTypeDecl != null ? declaringTypeDecl.CreateRef() : null);
-            }
-            else if (propertyObj is PropertyInfo)
-                declaringTypeRef = TypeRef.Create(((PropertyInfo)propertyObj).DeclaringType);
-            return declaringTypeRef;
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
         /// Get the type of the referenced property.
         /// </summary>
         public TypeRefBase GetPropertyType()
         {
             return GetPropertyType(_reference);
         }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        public static void AsTextPropertyInfo(CodeWriter writer, PropertyInfo propertyInfo, RenderFlags flags)
-        {
-            RenderFlags passFlags = flags & ~RenderFlags.Description;
-
-            if (!flags.HasFlag(RenderFlags.NoPreAnnotations))
-                Attribute.AsTextAttributes(writer, propertyInfo);
-            writer.Write(ModifiersHelpers.AsString(GetPropertyModifiers(propertyInfo)));
-            Type propertyType = propertyInfo.PropertyType;
-            TypeRefBase.AsTextType(writer, propertyType, passFlags);
-            writer.Write(" ");
-            TypeRefBase.AsTextType(writer, propertyInfo.DeclaringType, passFlags);
-            Dot.AsTextDot(writer);
-
-            if (PropertyInfoUtil.IsIndexed(propertyInfo))
-            {
-                // Display the actual name instead of 'this' - it will usually be 'Item', but not always,
-                // plus it might have a prefix (if it's an explicit interface implementation).
-                writer.Write(propertyInfo.Name + IndexerDecl.ParseTokenStart);
-                MethodRef.AsTextParameters(writer, propertyInfo.GetIndexParameters(), flags);
-                writer.Write(IndexerDecl.ParseTokenEnd);
-            }
-            else
-                writer.Write(propertyInfo.Name);
-        }
-
-        #endregion
     }
 }

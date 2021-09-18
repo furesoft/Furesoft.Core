@@ -2,12 +2,11 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
+using Nova.Parsing;
+using Nova.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Nova.Parsing;
-using Nova.Rendering;
 
 namespace Nova.CodeDOM
 {
@@ -34,17 +33,51 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DocComment : CommentBase
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "///";
+
+        /// <summary>
+        /// The token used to assign values to attributes in document comments.
+        /// </summary>
+        public const string ParseTokenAssignAttrValue = "=";
+
+        /// <summary>
+        /// The start token for block-style document comments.
+        /// </summary>
+        public const string ParseTokenBlock = "/**";
+
+        /// <summary>
+        /// The token that indicates the end of a documentation comment XML tag.
+        /// </summary>
+        public const string ParseTokenEndTag = "/";
+
+        /// <summary>
+        /// The end token for documentation comment XML tags.
+        /// </summary>
+        public const string ParseTokenTagClose = ">";
+
+        /// <summary>
+        /// The start token for documentation comment XML tags.
+        /// </summary>
+        public const string ParseTokenTagOpen = "<";
+
+        /// <summary>
+        /// A token used to quote data in document comments.
+        /// </summary>
+        public const string ParseTokenValueQuote1 = "\"";
+
+        /// <summary>
+        /// A token used to quote data in document comments.
+        /// </summary>
+        public const string ParseTokenValueQuote2 = "'";
 
         /// <summary>
         /// The content can be a simple string or a ChildList of DocComment objects, or in some cases it can
         /// also be a sub-tree of embedded code objects.
         /// </summary>
         protected object _content;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="DocComment"/>.
@@ -77,16 +110,22 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Parse a <see cref="DocComment"/>.
+        /// </summary>
+        public DocComment(Parser parser, CodeObject parent)
+        {
+            Parent = parent;
+            SetLineCol(parser.Token);
+            ParseContent(parser);
+        }
+
+        /// <summary>
         /// Create a <see cref="DocComment"/> with the specified child <see cref="CodeObject"/> content.
         /// </summary>
         protected DocComment(CodeObject codeObject)
         {
             Content = codeObject;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The content of the documentation comment - can be a simple string, a ChildList of DocComment objects, or
@@ -99,11 +138,55 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The XML tag name for the documentation comment.
+        /// Determines if the code object only requires a single line for display.
         /// </summary>
-        public virtual string TagName
+        public override bool IsSingleLine
         {
-            get { return null; }
+            get
+            {
+                if (base.IsSingleLine)
+                {
+                    if (_content == null)
+                        return true;
+                    if (_content is string)
+                        return (((string)_content).IndexOf('\n') < 0);
+                    if (_content is ChildList<DocComment>)
+                        return !((ChildList<DocComment>)_content)[0].IsFirstOnLine && ((ChildList<DocComment>)_content).IsSingleLine;
+                    if (_content is CodeObject)
+                        return !((CodeObject)_content).IsFirstOnLine && ((CodeObject)_content).IsSingleLine;
+                }
+                return false;
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_content is string)
+                {
+                    if (value)
+                        _content = ((string)_content).Trim().Replace("\n", "; ");
+                }
+                else if (_content is ChildList<DocComment>)
+                {
+                    ChildList<DocComment> childList = (ChildList<DocComment>)_content;
+                    if (value && childList.Count > 0)
+                        childList[0].IsFirstOnLine = false;
+                    childList.IsSingleLine = value;
+                }
+                else if (_content is CodeObject)
+                {
+                    if (value)
+                        ((CodeObject)_content).IsFirstOnLine = false;
+                    ((CodeObject)_content).IsSingleLine = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if the documentation comment is missing an end tag.
+        /// </summary>
+        public bool MissingEndTag
+        {
+            get { return _annotationFlags.HasFlag(AnnotationFlags.NoEndTag); }
         }
 
         /// <summary>
@@ -115,16 +198,12 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the documentation comment is missing an end tag.
+        /// The XML tag name for the documentation comment.
         /// </summary>
-        public bool MissingEndTag
+        public virtual string TagName
         {
-            get { return _annotationFlags.HasFlag(AnnotationFlags.NoEndTag); }
+            get { return null; }
         }
-
-        #endregion
-
-        #region /* STATIC METHODS */
 
         /// <summary>
         /// Implicit conversion of a <c>string</c> to a <see cref="DocComment"/> (actually, a <see cref="DocText"/>).
@@ -138,9 +217,63 @@ namespace Nova.CodeDOM
             return new DocText(text);
         }
 
-        #endregion
+        // NOTE: No parse-point is installed for general documentation comments - instead, the parser calls
+        //       the parsing method below directly based upon the token type.  Documentation comments with
+        //       specific tags do have parse-points installed.
+        // NOTE: Manual parsing of the XML is done instead of using an XML parser - this is for
+        //       performance, and to handle malformed XML properly, and also so embedded code references
+        //       and fragments can be parsed properly with the main parser.
+        /// <summary>
+        /// Parse a <see cref="DocComment"/>.
+        /// </summary>
+        public static DocComment Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            Token token = parser.Token;
+            byte prefixSpaceCount = (token.LeadingWhitespace.Length < byte.MaxValue ? (byte)token.LeadingWhitespace.Length : byte.MaxValue);
 
-        #region /* METHODS */
+            // Get any newlines preceeding the documentation comment
+            int newLines = token.NewLines;
+            parser.NextToken(true);  // Move past '///' or '/**'
+
+            // Start a new Unused list in the parser to catch unrecognized tokens in otherwise valid tags, etc.
+            // This must be done in order to prevent anything already in the unused list from being emitted
+            // within the doc comment.
+            parser.PushUnusedList();
+
+            // Remove any leading blank lines from inside the doc comment
+            parser.Token.NewLines = 0;
+
+            // Parse a DocComment object
+            DocComment docComment = new DocComment(parser, parent) { NewLines = newLines };
+
+            // Restore the previous Unused list in the parser - it's the responsibility of the DocComment parsing
+            // logic to flush any unused tokens, such as into the content area of the comment.
+            parser.PopUnusedList();
+
+            // Remove the parent DocComment if it only has a single child
+            if (docComment.Content is string)
+            {
+                DocText docText = new DocText((string)docComment.Content) { NewLines = newLines };
+                docText.SetLineCol(docComment);
+                docComment = docText;
+            }
+            else
+            {
+                ChildList<DocComment> content = (ChildList<DocComment>)docComment.Content;
+                if (content.Count == 1)
+                {
+                    DocComment first = content[0];
+                    first.NewLines = newLines;
+                    first.SetLineCol(docComment);
+                    docComment = first;
+                }
+            }
+
+            // Store the number of prefixed spaces
+            docComment._prefixSpaceCount = prefixSpaceCount;
+
+            return docComment;
+        }
 
         /// <summary>
         /// Add the specified text to the documentation comment.
@@ -215,6 +348,69 @@ namespace Nova.CodeDOM
                 Add(docComment);
         }
 
+        public override void AsText(CodeWriter writer, RenderFlags flags)
+        {
+            bool isPrefix = flags.HasFlag(RenderFlags.IsPrefix);
+            int newLines = NewLines;
+            bool isTopLevelDocComment = !flags.HasFlag(RenderFlags.InDocComment);
+            if (isTopLevelDocComment)
+            {
+                if (!isPrefix && newLines > 0 && !flags.HasFlag(RenderFlags.SuppressNewLine))
+                    writer.WriteLines(newLines);
+                AsTextDocNewLines(writer, 0);
+            }
+            else if (!isPrefix && newLines > 0)
+                AsTextDocNewLines(writer, newLines);
+
+            RenderFlags passFlags = (flags & RenderFlags.PassMask) | RenderFlags.InDocComment;
+            UpdateLineCol(writer, flags);
+            AsTextStart(writer, passFlags);
+            AsTextContent(writer, passFlags);
+            AsTextEnd(writer, passFlags);
+
+            if (isTopLevelDocComment && isPrefix)
+            {
+                // If this object is rendered as a child prefix object of another, then any whitespace is
+                // rendered here *after* the object instead of before it.
+                // A documentation comment must always be followed by a newline if it's a prefix.
+                writer.WriteLines(newLines < 1 ? 1 : newLines);
+            }
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            DocComment clone = (DocComment)base.Clone();
+            if (_content is ChildList<DocComment>)
+                clone._content = ChildListHelpers.Clone((ChildList<DocComment>)_content, clone);
+            else
+                clone.CloneField(ref clone._content, _content);
+            return clone;
+        }
+
+        /// <summary>
+        /// Returns the <see cref="DocSummary"/> documentation comment, or null if none exists.
+        /// </summary>
+        public override DocSummary GetDocSummary()
+        {
+            if (_content is ChildList<DocComment>)
+                return Enumerable.FirstOrDefault(Enumerable.OfType<DocSummary>(((ChildList<DocComment>)_content)));
+            return null;
+        }
+
+        /// <summary>
+        /// Get the root documentation comment object.
+        /// </summary>
+        public DocComment GetRootDocComment()
+        {
+            DocComment parent = this;
+            while (parent.Parent is DocComment)
+                parent = (DocComment)parent.Parent;
+            return parent;
+        }
+
         /// <summary>
         /// Normalize content.
         /// </summary>
@@ -261,212 +457,90 @@ namespace Nova.CodeDOM
             }
         }
 
-        /// <summary>
-        /// Returns the <see cref="DocSummary"/> documentation comment, or null if none exists.
-        /// </summary>
-        public override DocSummary GetDocSummary()
+        protected internal string GetContentForDisplay(RenderFlags flags)
         {
-            if (_content is ChildList<DocComment>)
-                return Enumerable.FirstOrDefault(Enumerable.OfType<DocSummary>(((ChildList<DocComment>)_content)));
-            return null;
+            // If NoTagNewLines is set, trim any leading AND/OR trailing whitespace from the content (any newlines
+            // determine if the content starts and/or ends on the same line as the start/end tag, and NoTagNewLines
+            // means we don't want to render them because we're not rendering the tags).
+            string content = (string)_content;
+            if (flags.HasFlag(RenderFlags.NoTagNewLines))
+                content = content.Trim();
+            return content;
         }
 
-        /// <summary>
-        /// Get the root documentation comment object.
-        /// </summary>
-        public DocComment GetRootDocComment()
+        protected internal string GetContentForDisplay(DocText docText, bool isFirst, bool isLast, RenderFlags flags)
         {
-            DocComment parent = this;
-            while (parent.Parent is DocComment)
-                parent = (DocComment)parent.Parent;
-            return parent;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            DocComment clone = (DocComment)base.Clone();
-            if (_content is ChildList<DocComment>)
-                clone._content = ChildListHelpers.Clone((ChildList<DocComment>)_content, clone);
-            else
-                clone.CloneField(ref clone._content, _content);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "///";
-
-        /// <summary>
-        /// The start token for block-style document comments.
-        /// </summary>
-        public const string ParseTokenBlock = "/**";
-
-        /// <summary>
-        /// The start token for documentation comment XML tags.
-        /// </summary>
-        public const string ParseTokenTagOpen = "<";
-
-        /// <summary>
-        /// The end token for documentation comment XML tags.
-        /// </summary>
-        public const string ParseTokenTagClose = ">";
-
-        /// <summary>
-        /// The token that indicates the end of a documentation comment XML tag.
-        /// </summary>
-        public const string ParseTokenEndTag = "/";
-
-        /// <summary>
-        /// The token used to assign values to attributes in document comments.
-        /// </summary>
-        public const string ParseTokenAssignAttrValue = "=";
-
-        /// <summary>
-        /// A token used to quote data in document comments.
-        /// </summary>
-        public const string ParseTokenValueQuote1 = "\"";
-
-        /// <summary>
-        /// A token used to quote data in document comments.
-        /// </summary>
-        public const string ParseTokenValueQuote2 = "'";
-
-        // NOTE: No parse-point is installed for general documentation comments - instead, the parser calls
-        //       the parsing method below directly based upon the token type.  Documentation comments with
-        //       specific tags do have parse-points installed.
-        // NOTE: Manual parsing of the XML is done instead of using an XML parser - this is for
-        //       performance, and to handle malformed XML properly, and also so embedded code references
-        //       and fragments can be parsed properly with the main parser.
-
-        /// <summary>
-        /// Parse a <see cref="DocComment"/>.
-        /// </summary>
-        public static DocComment Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            Token token = parser.Token;
-            byte prefixSpaceCount = (token.LeadingWhitespace.Length < byte.MaxValue ? (byte)token.LeadingWhitespace.Length : byte.MaxValue);
-
-            // Get any newlines preceeding the documentation comment
-            int newLines = token.NewLines;
-            parser.NextToken(true);  // Move past '///' or '/**'
-
-            // Start a new Unused list in the parser to catch unrecognized tokens in otherwise valid tags, etc.
-            // This must be done in order to prevent anything already in the unused list from being emitted
-            // within the doc comment.
-            parser.PushUnusedList();
-
-            // Remove any leading blank lines from inside the doc comment
-            parser.Token.NewLines = 0;
-
-            // Parse a DocComment object
-            DocComment docComment = new DocComment(parser, parent) { NewLines = newLines };
-
-            // Restore the previous Unused list in the parser - it's the responsibility of the DocComment parsing
-            // logic to flush any unused tokens, such as into the content area of the comment.
-            parser.PopUnusedList();
-
-            // Remove the parent DocComment if it only has a single child
-            if (docComment.Content is string)
+            // If NoTagNewLines is set, trim any leading whitespace from the first child if it's a DocText, and trim
+            // any trailing whitespace from the last child if it's a DocText.
+            string text = docText.Text;
+            if (flags.HasFlag(RenderFlags.NoTagNewLines))
             {
-                DocText docText = new DocText((string)docComment.Content) { NewLines = newLines };
-                docText.SetLineCol(docComment);
-                docComment = docText;
+                if (isFirst)
+                    text = text.TrimStart();
+                else if (isLast)
+                    text = text.TrimEnd();
             }
-            else
+            return text;
+        }
+
+        protected static void AsTextDocNewLines(CodeWriter writer, int count)
+        {
+            // Render one or more newlines (0 means a prefix w/o a newline)
+            do
             {
-                ChildList<DocComment> content = (ChildList<DocComment>)docComment.Content;
-                if (content.Count == 1)
+                if (count > 0)
+                    writer.WriteLine();
+                writer.Write(ParseToken + " ");
+                --count;
+            }
+            while (count > 0);
+        }
+
+        protected virtual void AsTextContent(CodeWriter writer, RenderFlags flags)
+        {
+            writer.EscapeUnicode = false;
+            if (_content is string)
+                DocText.AsTextText(writer, GetContentForDisplay(flags), flags);
+            else if (_content is ChildList<DocComment>)
+            {
+                ChildList<DocComment> content = (ChildList<DocComment>)_content;
+                for (int i = 0; i < content.Count; ++i)
                 {
-                    DocComment first = content[0];
-                    first.NewLines = newLines;
-                    first.SetLineCol(docComment);
-                    docComment = first;
+                    DocComment docComment = content[i];
+                    if (docComment is DocText)
+                        DocText.AsTextText(writer, GetContentForDisplay((DocText)docComment, i == 0, i == content.Count - 1, flags), flags);
+                    else
+                        docComment.AsText(writer, flags);
                 }
             }
-
-            // Store the number of prefixed spaces
-            docComment._prefixSpaceCount = prefixSpaceCount;
-
-            return docComment;
-        }
-
-        /// <summary>
-        /// Parse a <see cref="DocComment"/>.
-        /// </summary>
-        public DocComment(Parser parser, CodeObject parent)
-        {
-            Parent = parent;
-            SetLineCol(parser.Token);
-            ParseContent(parser);
-        }
-
-        protected Dictionary<string, object> ParseTag(Parser parser, CodeObject parent)
-        {
-            Parent = parent;
-            Token lastToken = parser.LastToken;
-            NewLines = lastToken.NewLines;  // Get any newlines from the '<'
-            SetLineCol(lastToken);
-            Token tagToken = parser.Token;
-            parser.NextToken(true);  // Move past tag
-
-            Dictionary<string, object> attributes = ParseAttributes(parser);
-            bool endTag = (parser.TokenText == ParseTokenEndTag);
-            if (endTag)
-                parser.NextToken(true);  // Move past '/'
-            if (parser.TokenText == ParseTokenTagClose)
+            else if (_content is CodeObject)
             {
-                if (endTag)
-                    parser.NextToken(true);  // Move past '>'
-                else
-                {
-                    if (!ParseContent(parser))
-                    {
-                        _annotationFlags |= AnnotationFlags.NoEndTag;
-                        parser.AttachMessage(this, "Start tag '<" + TagName + (attributes == null ? '>' : ' ') + "' without matching end tag!", tagToken);
-                    }
-                }
+                // Turn on translation of '<', '&', and '>' for content
+                writer.InDocCommentContent = true;
+                ((CodeObject)_content).AsText(writer, flags);
+                writer.InDocCommentContent = false;
             }
-            else
-                parser.AttachMessage(this, endTag ? "'>' expected" : "'>' or '/>' expected", tagToken);
-            return attributes;
+            writer.EscapeUnicode = true;
         }
 
-        private Dictionary<string, object> ParseAttributes(Parser parser)
+        protected virtual void AsTextEnd(CodeWriter writer, RenderFlags flags)
         {
-            Dictionary<string, object> attributes = null;
-
-            // Stop looping if we hit the end of the file or the end of the open tag, or an unexpected new open tag
-            while (parser.Token != null && parser.InDocComment && !((parser.TokenText == ParseTokenEndTag
-                || parser.TokenText == ParseTokenTagClose || parser.TokenText == ParseTokenTagOpen) && !parser.Token.WasEscaped))
+            if (!MissingEndTag && (_content != null || MissingStartTag) && !flags.HasFlag(RenderFlags.Description))
             {
-                if (parser.Token.IsDocCommentTag)
-                {
-                    string name = parser.TokenText;
-                    parser.NextToken(true);  // Move past name
-                    if (parser.TokenText == ParseTokenAssignAttrValue)
-                    {
-                        parser.NextToken(true);  // Move past '='
-                        object value = ParseAttributeValue(parser, name);
-                        if (attributes == null)
-                            attributes = new Dictionary<string, object>();
-                        attributes.Add(name, value);
-                    }
-                }
-                else
-                {
-                    parser.AttachMessage(this, "'" + parser.Token + "' unrecognized - ignored", parser.Token);
-                    parser.NextToken(true);  // Move past unexpected token
-                }
+                string tagName = TagName;
+                if (tagName != null)
+                    writer.Write("</" + tagName + ">");
             }
-            return attributes;
+        }
+
+        protected virtual void AsTextStart(CodeWriter writer, RenderFlags flags)
+        {
+            if (!flags.HasFlag(RenderFlags.Description) || MissingEndTag)
+            {
+                string tagName = TagName;
+                if (tagName != null)
+                    writer.Write("<" + tagName + (_content == null && !MissingEndTag ? "/>" : ">"));
+            }
         }
 
         protected virtual object ParseAttributeValue(Parser parser, string name)
@@ -659,173 +733,65 @@ namespace Nova.CodeDOM
             return false;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
+        protected Dictionary<string, object> ParseTag(Parser parser, CodeObject parent)
         {
-            get
+            Parent = parent;
+            Token lastToken = parser.LastToken;
+            NewLines = lastToken.NewLines;  // Get any newlines from the '<'
+            SetLineCol(lastToken);
+            Token tagToken = parser.Token;
+            parser.NextToken(true);  // Move past tag
+
+            Dictionary<string, object> attributes = ParseAttributes(parser);
+            bool endTag = (parser.TokenText == ParseTokenEndTag);
+            if (endTag)
+                parser.NextToken(true);  // Move past '/'
+            if (parser.TokenText == ParseTokenTagClose)
             {
-                if (base.IsSingleLine)
+                if (endTag)
+                    parser.NextToken(true);  // Move past '>'
+                else
                 {
-                    if (_content == null)
-                        return true;
-                    if (_content is string)
-                        return (((string)_content).IndexOf('\n') < 0);
-                    if (_content is ChildList<DocComment>)
-                        return !((ChildList<DocComment>)_content)[0].IsFirstOnLine && ((ChildList<DocComment>)_content).IsSingleLine;
-                    if (_content is CodeObject)
-                        return !((CodeObject)_content).IsFirstOnLine && ((CodeObject)_content).IsSingleLine;
-                }
-                return false;
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_content is string)
-                {
-                    if (value)
-                        _content = ((string)_content).Trim().Replace("\n", "; ");
-                }
-                else if (_content is ChildList<DocComment>)
-                {
-                    ChildList<DocComment> childList = (ChildList<DocComment>)_content;
-                    if (value && childList.Count > 0)
-                        childList[0].IsFirstOnLine = false;
-                    childList.IsSingleLine = value;
-                }
-                else if (_content is CodeObject)
-                {
-                    if (value)
-                        ((CodeObject)_content).IsFirstOnLine = false;
-                    ((CodeObject)_content).IsSingleLine = value;
+                    if (!ParseContent(parser))
+                    {
+                        _annotationFlags |= AnnotationFlags.NoEndTag;
+                        parser.AttachMessage(this, "Start tag '<" + TagName + (attributes == null ? '>' : ' ') + "' without matching end tag!", tagToken);
+                    }
                 }
             }
+            else
+                parser.AttachMessage(this, endTag ? "'>' expected" : "'>' or '/>' expected", tagToken);
+            return attributes;
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected virtual void AsTextStart(CodeWriter writer, RenderFlags flags)
+        private Dictionary<string, object> ParseAttributes(Parser parser)
         {
-            if (!flags.HasFlag(RenderFlags.Description) || MissingEndTag)
+            Dictionary<string, object> attributes = null;
+
+            // Stop looping if we hit the end of the file or the end of the open tag, or an unexpected new open tag
+            while (parser.Token != null && parser.InDocComment && !((parser.TokenText == ParseTokenEndTag
+                || parser.TokenText == ParseTokenTagClose || parser.TokenText == ParseTokenTagOpen) && !parser.Token.WasEscaped))
             {
-                string tagName = TagName;
-                if (tagName != null)
-                    writer.Write("<" + tagName + (_content == null && !MissingEndTag ? "/>" : ">"));
-            }
-        }
-
-        protected internal string GetContentForDisplay(RenderFlags flags)
-        {
-            // If NoTagNewLines is set, trim any leading AND/OR trailing whitespace from the content (any newlines
-            // determine if the content starts and/or ends on the same line as the start/end tag, and NoTagNewLines
-            // means we don't want to render them because we're not rendering the tags).
-            string content = (string)_content;
-            if (flags.HasFlag(RenderFlags.NoTagNewLines))
-                content = content.Trim();
-            return content;
-        }
-
-        protected internal string GetContentForDisplay(DocText docText, bool isFirst, bool isLast, RenderFlags flags)
-        {
-            // If NoTagNewLines is set, trim any leading whitespace from the first child if it's a DocText, and trim
-            // any trailing whitespace from the last child if it's a DocText.
-            string text = docText.Text;
-            if (flags.HasFlag(RenderFlags.NoTagNewLines))
-            {
-                if (isFirst)
-                    text = text.TrimStart();
-                else if (isLast)
-                    text = text.TrimEnd();
-            }
-            return text;
-        }
-
-        protected virtual void AsTextContent(CodeWriter writer, RenderFlags flags)
-        {
-            writer.EscapeUnicode = false;
-            if (_content is string)
-                DocText.AsTextText(writer, GetContentForDisplay(flags), flags);
-            else if (_content is ChildList<DocComment>)
-            {
-                ChildList<DocComment> content = (ChildList<DocComment>)_content;
-                for (int i = 0; i < content.Count; ++i)
+                if (parser.Token.IsDocCommentTag)
                 {
-                    DocComment docComment = content[i];
-                    if (docComment is DocText)
-                        DocText.AsTextText(writer, GetContentForDisplay((DocText)docComment, i == 0, i == content.Count - 1, flags), flags);
-                    else
-                        docComment.AsText(writer, flags);
+                    string name = parser.TokenText;
+                    parser.NextToken(true);  // Move past name
+                    if (parser.TokenText == ParseTokenAssignAttrValue)
+                    {
+                        parser.NextToken(true);  // Move past '='
+                        object value = ParseAttributeValue(parser, name);
+                        if (attributes == null)
+                            attributes = new Dictionary<string, object>();
+                        attributes.Add(name, value);
+                    }
+                }
+                else
+                {
+                    parser.AttachMessage(this, "'" + parser.Token + "' unrecognized - ignored", parser.Token);
+                    parser.NextToken(true);  // Move past unexpected token
                 }
             }
-            else if (_content is CodeObject)
-            {
-                // Turn on translation of '<', '&', and '>' for content
-                writer.InDocCommentContent = true;
-                ((CodeObject)_content).AsText(writer, flags);
-                writer.InDocCommentContent = false;
-            }
-            writer.EscapeUnicode = true;
+            return attributes;
         }
-
-        protected virtual void AsTextEnd(CodeWriter writer, RenderFlags flags)
-        {
-            if (!MissingEndTag && (_content != null || MissingStartTag) && !flags.HasFlag(RenderFlags.Description))
-            {
-                string tagName = TagName;
-                if (tagName != null)
-                    writer.Write("</" + tagName + ">");
-            }
-        }
-
-        public override void AsText(CodeWriter writer, RenderFlags flags)
-        {
-            bool isPrefix = flags.HasFlag(RenderFlags.IsPrefix);
-            int newLines = NewLines;
-            bool isTopLevelDocComment = !flags.HasFlag(RenderFlags.InDocComment);
-            if (isTopLevelDocComment)
-            {
-                if (!isPrefix && newLines > 0 && !flags.HasFlag(RenderFlags.SuppressNewLine))
-                    writer.WriteLines(newLines);
-                AsTextDocNewLines(writer, 0);
-            }
-            else if (!isPrefix && newLines > 0)
-                AsTextDocNewLines(writer, newLines);
-
-            RenderFlags passFlags = (flags & RenderFlags.PassMask) | RenderFlags.InDocComment;
-            UpdateLineCol(writer, flags);
-            AsTextStart(writer, passFlags);
-            AsTextContent(writer, passFlags);
-            AsTextEnd(writer, passFlags);
-
-            if (isTopLevelDocComment && isPrefix)
-            {
-                // If this object is rendered as a child prefix object of another, then any whitespace is
-                // rendered here *after* the object instead of before it.
-                // A documentation comment must always be followed by a newline if it's a prefix.
-                writer.WriteLines(newLines < 1 ? 1 : newLines);
-            }
-        }
-
-        protected static void AsTextDocNewLines(CodeWriter writer, int count)
-        {
-            // Render one or more newlines (0 means a prefix w/o a newline)
-            do
-            {
-                if (count > 0)
-                    writer.WriteLine();
-                writer.Write(ParseToken + " ");
-                --count;
-            }
-            while (count > 0);
-        }
-
-        #endregion
     }
 }

@@ -12,16 +12,21 @@ namespace Nova.CodeDOM
     /// </summary>
     public class DocCode : DocComment, IBlock
     {
-        #region /* STATIC FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public new const string ParseToken = "code";
 
         /// <summary>
         /// Determines if <see cref="DocCode"/> content is parsed as code or plain text.
         /// </summary>
         public static bool ParseContentAsCode = true;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        static DocCode()
+        {
+            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
+            ForceReference();
+        }
 
         /// <summary>
         /// Create a <see cref="DocCode"/>.
@@ -30,26 +35,12 @@ namespace Nova.CodeDOM
             : base(content)
         { }
 
-        #endregion
-
-        #region /* STATIC CONSTRUCTOR */
-
-        static DocCode()
-        {
-            // Force a reference to CodeObject to trigger the loading of any config file if it hasn't been done yet
-            ForceReference();
-        }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The XML tag name for the documentation comment.
+        /// Parse a <see cref="DocCode"/>.
         /// </summary>
-        public override string TagName
+        public DocCode(Parser parser, CodeObject parent)
         {
-            get { return ParseToken; }
+            ParseTag(parser, parent);  // Ignore any attributes
         }
 
         /// <summary>
@@ -85,18 +76,23 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// The XML tag name for the documentation comment.
+        /// </summary>
+        public override string TagName
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
-        /// Create a body if one doesn't exist yet.
+        /// Parse a <see cref="DocCode"/>.
         /// </summary>
-        public Block CreateBody()
+        public static new DocComment Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            if (!(_content is Block))
-                Body = new Block();
-            return Body;
+            DocCode docCode = new DocCode(parser, parent);
+            if (AutomaticCodeCleanup && docCode.Content is Expression)
+                return new DocC((Expression)docCode.Content);
+            return docCode;
         }
 
         /// <summary>
@@ -118,6 +114,26 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            DocCode clone = (DocCode)base.Clone();
+            clone.CloneField(ref clone._content, _content);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create a body if one doesn't exist yet.
+        /// </summary>
+        public Block CreateBody()
+        {
+            if (!(_content is Block))
+                Body = new Block();
+            return Body;
+        }
+
+        /// <summary>
         /// Insert a <see cref="CodeObject"/> at the specified index.
         /// </summary>
         /// <param name="index">The index at which to insert.</param>
@@ -126,6 +142,12 @@ namespace Nova.CodeDOM
         {
             CreateBody().Insert(index, obj);
         }
+
+        /// <summary>
+        /// Reformat the <see cref="Block"/> body.
+        /// </summary>
+        public void ReformatBlock()
+        { }
 
         /// <summary>
         /// Remove the specified <see cref="CodeObject"/> from the emedded code <see cref="Block"/>.
@@ -145,47 +167,45 @@ namespace Nova.CodeDOM
                 Body.RemoveAll();
         }
 
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            DocCode clone = (DocCode)base.Clone();
-            clone.CloneField(ref clone._content, _content);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "code";
-
         internal static void AddParsePoints()
         {
             Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
-        /// <summary>
-        /// Parse a <see cref="DocCode"/>.
-        /// </summary>
-        public static new DocComment Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        protected void AfterTextNewLine(CodeWriter writer)
         {
-            DocCode docCode = new DocCode(parser, parent);
-            if (AutomaticCodeCleanup && docCode.Content is Expression)
-                return new DocC((Expression)docCode.Content);
-            return docCode;
+            // Render the '///' prefix at the starting indent level, followed by any additional indentation
+            int previousIndentPosition = writer.IndentOffset;
+            int startingIndentPosition = writer.GetIndentOffset(this);
+            writer.IndentOffset = startingIndentPosition - 4;  // Adjust for '/// ' prefix
+            writer.Write(DocComment.ParseToken + " " + new string(' ', previousIndentPosition - startingIndentPosition));
+            writer.IndentOffset = previousIndentPosition;
+        }
+
+        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
+        {
+            if (_content is CodeObject)
+            {
+                // Adjust the starting indentation for the code to allow for the '/// ' prefix
+                writer.BeginOutdentOnNewLine(this, writer.IndentOffset + 4);
+                writer.AfterNewLine += AfterTextNewLine;
+                base.AsTextContent(writer, flags);
+                if (_content is Block || _content is BlockStatement)
+                    writer.WriteLine();
+                writer.AfterNewLine -= AfterTextNewLine;
+                writer.EndIndentation(this);
+            }
+            else
+                base.AsTextContent(writer, flags);
         }
 
         /// <summary>
-        /// Parse a <see cref="DocCode"/>.
+        /// Default format the specified child field code object.
         /// </summary>
-        public DocCode(Parser parser, CodeObject parent)
+        protected override void DefaultFormatField(CodeObject field)
         {
-            ParseTag(parser, parent);  // Ignore any attributes
+            // Just default format the field by default - don't remove any newlines
+            field.DefaultFormat();
         }
 
         protected override bool ParseContent(Parser parser)
@@ -213,57 +233,5 @@ namespace Nova.CodeDOM
             }
             return base.ParseContent(parser);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Reformat the <see cref="Block"/> body.
-        /// </summary>
-        public void ReformatBlock()
-        { }
-
-        /// <summary>
-        /// Default format the specified child field code object.
-        /// </summary>
-        protected override void DefaultFormatField(CodeObject field)
-        {
-            // Just default format the field by default - don't remove any newlines
-            field.DefaultFormat();
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextContent(CodeWriter writer, RenderFlags flags)
-        {
-            if (_content is CodeObject)
-            {
-                // Adjust the starting indentation for the code to allow for the '/// ' prefix
-                writer.BeginOutdentOnNewLine(this, writer.IndentOffset + 4);
-                writer.AfterNewLine += AfterTextNewLine;
-                base.AsTextContent(writer, flags);
-                if (_content is Block || _content is BlockStatement)
-                    writer.WriteLine();
-                writer.AfterNewLine -= AfterTextNewLine;
-                writer.EndIndentation(this);
-            }
-            else
-                base.AsTextContent(writer, flags);
-        }
-
-        protected void AfterTextNewLine(CodeWriter writer)
-        {
-            // Render the '///' prefix at the starting indent level, followed by any additional indentation
-            int previousIndentPosition = writer.IndentOffset;
-            int startingIndentPosition = writer.GetIndentOffset(this);
-            writer.IndentOffset = startingIndentPosition - 4;  // Adjust for '/// ' prefix
-            writer.Write(DocComment.ParseToken + " " + new string(' ', previousIndentPosition - startingIndentPosition));
-            writer.IndentOffset = previousIndentPosition;
-        }
-
-        #endregion
     }
 }

@@ -12,30 +12,10 @@ namespace Nova.CodeDOM
     /// </summary>
     public class PostIncrement : PostUnaryOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
-        /// Create a <see cref="PostIncrement"/> operator.
+        /// True if the operator is left-associative, or false if it's right-associative.
         /// </summary>
-        public PostIncrement(Expression expression)
-            : base(expression)
-        { }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
+        public const bool LeftAssociative = true;
 
         /// <summary>
         /// The token used to parse the code object.
@@ -48,14 +28,22 @@ namespace Nova.CodeDOM
         public const int Precedence = 100;
 
         /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
+        /// Create a <see cref="PostIncrement"/> operator.
         /// </summary>
-        public const bool LeftAssociative = true;
+        public PostIncrement(Expression expression)
+            : base(expression)
+        { }
 
-        internal static new void AddParsePoints()
+        protected PostIncrement(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
+
+        /// <summary>
+        /// The symbol associated with the operator.
+        /// </summary>
+        public override string Symbol
         {
-            // Use a parse-priority of 100 (Increment uses 0)
-            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
+            get { return ParseToken; }
         }
 
         /// <summary>
@@ -66,10 +54,6 @@ namespace Nova.CodeDOM
             return new PostIncrement(parser, parent);
         }
 
-        protected PostIncrement(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
         /// <summary>
         /// Get the precedence of the operator.
         /// </summary>
@@ -78,6 +62,10 @@ namespace Nova.CodeDOM
             return Precedence;
         }
 
-        #endregion
+        internal static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (Increment uses 0)
+            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
+        }
     }
 }

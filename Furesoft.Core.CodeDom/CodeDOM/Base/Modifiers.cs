@@ -2,11 +2,10 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using System.Collections.Generic;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace Nova.CodeDOM
 {
@@ -20,28 +19,33 @@ namespace Nova.CodeDOM
     public enum Modifiers
     {
         //                          * = only if nested                                 Event,
-        None      = 0x00000000,  // Class  Struct  Interface  Delegate  Enum  Method  Property  Indexer  Field  Constant  Ctor  Operator  Accessor  Destructor
-        Public    = 0x00000001,  //   Y       Y        Y         Y       Y       Y        Y        Y       Y       Y       Y       Y
+        None = 0x00000000,  // Class  Struct  Interface  Delegate  Enum  Method  Property  Indexer  Field  Constant  Ctor  Operator  Accessor  Destructor
+
+        Public = 0x00000001,  //   Y       Y        Y         Y       Y       Y        Y        Y       Y       Y       Y       Y
         Protected = 0x00000002,  //   *       *        *         *       *       Y        Y        Y       Y       Y       Y                 Y
-        Internal  = 0x00000004,  //   Y       Y        Y         Y       Y       Y        Y        Y       Y       Y       Y                 Y
+        Internal = 0x00000004,  //   Y       Y        Y         Y       Y       Y        Y        Y       Y       Y       Y                 Y
+
         // Protected + Internal  //   *       *        *         *       *       Y        Y        Y       Y       Y       Y                 Y
-        Private   = 0x00000008,  //   *       *        *         *       *       Y        Y        Y       Y       Y       Y                 Y
-        Static    = 0x00000010,  //   Y                                          Y        Y                Y               Y       Y
-        New       = 0x00000020,  //   *                          *       *       Y        Y        Y       Y       Y
-        Abstract  = 0x00000040,  //   Y                                          Y        Y        Y
-        Sealed    = 0x00000080,  //   Y                                          Y        Y        Y
-        Virtual   = 0x00000100,  //                                              Y        Y        Y
-        Override  = 0x00000200,  //                                              Y        Y        Y
-        Extern    = 0x00000400,  //                                              Y        Y        Y                       Y       Y                    Y
-        Unsafe    = 0x00000800,  //   Y       Y        Y         Y               Y        Y        Y       Y       Y       Y       Y         Y
+        Private = 0x00000008,  //   *       *        *         *       *       Y        Y        Y       Y       Y       Y                 Y
+
+        Static = 0x00000010,  //   Y                                          Y        Y                Y               Y       Y
+        New = 0x00000020,  //   *                          *       *       Y        Y        Y       Y       Y
+        Abstract = 0x00000040,  //   Y                                          Y        Y        Y
+        Sealed = 0x00000080,  //   Y                                          Y        Y        Y
+        Virtual = 0x00000100,  //                                              Y        Y        Y
+        Override = 0x00000200,  //                                              Y        Y        Y
+        Extern = 0x00000400,  //                                              Y        Y        Y                       Y       Y                    Y
+        Unsafe = 0x00000800,  //   Y       Y        Y         Y               Y        Y        Y       Y       Y       Y       Y         Y
+
         // NOTE: Partial must appear as the last modifier for both types and methods.
-        Partial   = 0x00001000,  //   Y       Y        Y                         Y
-        Implicit  = 0x00004000,  //                                                                                                Y (conv ops only)
-        Explicit  = 0x00008000,  //                                                                                                Y (conv ops only)
-        Const     = 0x00010000,  //                                                                                Y (also local vars)
-        ReadOnly  = 0x00020000,  //                                                                        Y
-        Volatile  = 0x00040000,  //                                                                        Y
-        Event     = 0x00100000   //                                                                        Y
+        Partial = 0x00001000,  //   Y       Y        Y                         Y
+
+        Implicit = 0x00004000,  //                                                                                                Y (conv ops only)
+        Explicit = 0x00008000,  //                                                                                                Y (conv ops only)
+        Const = 0x00010000,  //                                                                                Y (also local vars)
+        ReadOnly = 0x00020000,  //                                                                        Y
+        Volatile = 0x00040000,  //                                                                        Y
+        Event = 0x00100000   //                                                                        Y
 
         // RULES:
         // - Namespaces have no access modifiers (they are implicitly public).
@@ -66,22 +70,14 @@ namespace Nova.CodeDOM
         // - 'volatile' fields must be a reference type, or an integral type (excluding long/ulong), or a float.
     }
 
-    #region /* STATIC HELPER CLASS */
-
     /// <summary>
     /// Static helper methods for Modifiers.
     /// </summary>
     public static class ModifiersHelpers
     {
-        #region /* STATIC FIELDS */
-
         private static readonly string[] _names;
-        private static readonly Array _values;
         private static readonly Dictionary<string, Modifiers> _nameToModifierMap = new Dictionary<string, Modifiers>();
-
-        #endregion
-
-        #region /* STATIC CONSTRUCTOR */
+        private static readonly Array _values;
 
         // Setup arrays of names, values, and a map of names to values.
         static ModifiersHelpers()
@@ -94,10 +90,6 @@ namespace Nova.CodeDOM
                 _nameToModifierMap.Add(_names[i], (Modifiers)_values.GetValue(i));
             }
         }
-
-        #endregion
-
-        #region /* STATIC HELPER METHODS */
 
         /// <summary>
         /// Format Modifiers as a string.
@@ -135,10 +127,6 @@ namespace Nova.CodeDOM
         {
             return (modifier != null && _nameToModifierMap.ContainsKey(modifier));
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// Parse tokens into Modifiers bit flags.
@@ -328,9 +316,5 @@ namespace Nova.CodeDOM
             }
             return modifiers;
         }
-
-        #endregion
     }
-
-    #endregion
 }

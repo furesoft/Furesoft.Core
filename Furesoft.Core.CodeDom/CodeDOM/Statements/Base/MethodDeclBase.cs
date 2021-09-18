@@ -2,10 +2,9 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Linq;
-
 using Nova.Parsing;
 using Nova.Rendering;
+using System.Linq;
 
 namespace Nova.CodeDOM
 {
@@ -15,14 +14,17 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class MethodDeclBase : BlockStatement, INamedCodeObject, IParameters, IModifiers
     {
-        #region /* FIELDS */
-
-        protected Modifiers _modifiers;
+        /// <summary>
+        /// The token used to parse the end of a list of parameters.
+        /// </summary>
+        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
 
         /// <summary>
-        /// The return type is an <see cref="Expression"/> that must evaluate to a <see cref="TypeRef"/> in valid code.
+        /// The token used to parse the start of a list of parameters.
         /// </summary>
-        protected Expression _returnType;
+        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
+
+        protected Modifiers _modifiers;
 
         /// <summary>
         /// The name can be a string or an Expression (in which case it should be a Dot operator
@@ -34,9 +36,10 @@ namespace Nova.CodeDOM
 
         protected ChildList<ParameterDecl> _parameters;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The return type is an <see cref="Expression"/> that must evaluate to a <see cref="TypeRef"/> in valid code.
+        /// </summary>
+        protected Expression _returnType;
 
         protected MethodDeclBase(string name, Expression returnType, Modifiers modifiers, CodeObject body, params ParameterDecl[] parameters)
             : base(body, true)
@@ -70,25 +73,10 @@ namespace Nova.CodeDOM
             _name = name;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the method.
-        /// </summary>
-        public virtual string Name
+        protected MethodDeclBase(Parser parser, CodeObject parent)
+                    : base(parser, parent)
         {
-            get
-            {
-                if (_name is string)
-                    return (string)_name;
-                // If it's an explicit interface implementation, use the full name
-                if (_name is Expression)
-                    return ((Expression)_name).AsString();
-                return null;
-            }
-            set { _name = value; }
+            IsFirstOnLine = true;  // Force all methods to start on a new line by default
         }
 
         /// <summary>
@@ -100,21 +88,35 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The return type of the method (never null - will be type 'void' instead).
+        /// Get the declaring <see cref="TypeDecl"/>.
         /// </summary>
-        public virtual Expression ReturnType
+        public TypeDecl DeclaringType
         {
-            get { return (_returnType ?? TypeRef.VoidRef); }
-            set { SetField(ref _returnType, value, true); }
+            get { return (_parent as TypeDecl); }
         }
 
         /// <summary>
-        /// Optional <see cref="Modifiers"/> for the method.
+        /// Get the explicit interface expression (if any).
         /// </summary>
-        public Modifiers Modifiers
+        public Expression ExplicitInterfaceExpression
         {
-            get { return _modifiers; }
-            set { _modifiers = value; }
+            get { return _name as Expression; }
+        }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has an argument.
+        /// </summary>
+        public override bool HasArgument
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// True if the method has parameters.
+        /// </summary>
+        public bool HasParameters
+        {
+            get { return (_parameters != null && _parameters.Count > 0); }
         }
 
         /// <summary>
@@ -127,22 +129,46 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the method is static.
+        /// True if the <see cref="BlockStatement"/> has compact empty braces by default.
         /// </summary>
-        public bool IsStatic
+        public override bool IsCompactIfEmptyDefault
         {
-            get { return _modifiers.HasFlag(Modifiers.Static); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
+            get { return true; }
         }
 
         /// <summary>
-        /// True if the method has public access.
+        /// True if this is an explicit interface implementation.
         /// </summary>
-        public bool IsPublic
+        public bool IsExplicitInterfaceImplementation
         {
-            get { return _modifiers.HasFlag(Modifiers.Public); }
-            // Force other flags off if setting to Public
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
+            get { return _name is Dot; }
+        }
+
+        /// <summary>
+        /// True if the method is generic.
+        /// </summary>
+        public virtual bool IsGenericMethod
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True if the method has internal access.
+        /// </summary>
+        public bool IsInternal
+        {
+            get { return _modifiers.HasFlag(Modifiers.Internal); }
+            // Force certain other flags off if setting to Protected
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
+        }
+
+        /// <summary>
+        /// True if the method is an override.
+        /// </summary>
+        public bool IsOverride
+        {
+            get { return _modifiers.HasFlag(Modifiers.Override); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Override : _modifiers & ~Modifiers.Override); }
         }
 
         /// <summary>
@@ -166,22 +192,57 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the method has internal access.
+        /// True if the method has public access.
         /// </summary>
-        public bool IsInternal
+        public bool IsPublic
         {
-            get { return _modifiers.HasFlag(Modifiers.Internal); }
-            // Force certain other flags off if setting to Protected
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
+            get { return _modifiers.HasFlag(Modifiers.Public); }
+            // Force other flags off if setting to Public
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
         }
 
         /// <summary>
-        /// True if the method is an override.
+        /// Determines if the code object only requires a single line for display.
         /// </summary>
-        public bool IsOverride
+        public override bool IsSingleLine
         {
-            get { return _modifiers.HasFlag(Modifiers.Override); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Override : _modifiers & ~Modifiers.Override); }
+            get
+            {
+                return (base.IsSingleLine && (_returnType == null || (!_returnType.IsFirstOnLine && _returnType.IsSingleLine))
+                    && (!(_name is Expression) || (!((Expression)_name).IsFirstOnLine && ((Expression)_name).IsSingleLine))
+                    && (_parameters == null || _parameters.Count == 0 || (!_parameters[0].IsFirstOnLine && _parameters.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value)
+                {
+                    if (_returnType != null)
+                    {
+                        _returnType.IsFirstOnLine = false;
+                        _returnType.IsSingleLine = true;
+                    }
+                    if (_name is Expression)
+                    {
+                        ((Expression)_name).IsFirstOnLine = false;
+                        ((Expression)_name).IsSingleLine = true;
+                    }
+                    if (_parameters != null && _parameters.Count > 0)
+                    {
+                        _parameters[0].IsFirstOnLine = false;
+                        _parameters.IsSingleLine = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if the method is static.
+        /// </summary>
+        public bool IsStatic
+        {
+            get { return _modifiers.HasFlag(Modifiers.Static); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
         }
 
         /// <summary>
@@ -194,20 +255,52 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// A collection of <see cref="ParameterDecl"/>s for the parameters of the method.
+        /// Optional <see cref="Modifiers"/> for the method.
         /// </summary>
-        public ChildList<ParameterDecl> Parameters
+        public Modifiers Modifiers
         {
-            get { return _parameters; }
-            set { SetField(ref _parameters, value); }
+            get { return _modifiers; }
+            set { _modifiers = value; }
         }
 
         /// <summary>
-        /// True if the method has parameters.
+        /// The name of the method.
         /// </summary>
-        public bool HasParameters
+        public virtual string Name
         {
-            get { return (_parameters != null && _parameters.Count > 0); }
+            get
+            {
+                if (_name is string)
+                    return (string)_name;
+                // If it's an explicit interface implementation, use the full name
+                if (_name is Expression)
+                    return ((Expression)_name).AsString();
+                return null;
+            }
+            set { _name = value; }
+        }
+
+        /// <summary>
+        /// The number of newlines preceeding the object (0 to N).
+        /// </summary>
+        public override int NewLines
+        {
+            get { return base.NewLines; }
+            set
+            {
+                // If we're changing to or from zero, also change any prefix attributes
+                bool isFirstOnLine = (value != 0);
+                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
+                {
+                    foreach (Annotation annotation in _annotations)
+                    {
+                        if (annotation is Attribute)
+                            annotation.IsFirstOnLine = isFirstOnLine;
+                    }
+                }
+
+                base.NewLines = value;
+            }
         }
 
         /// <summary>
@@ -219,40 +312,58 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the method is generic.
+        /// A collection of <see cref="ParameterDecl"/>s for the parameters of the method.
         /// </summary>
-        public virtual bool IsGenericMethod
+        public ChildList<ParameterDecl> Parameters
         {
-            get { return false; }
+            get { return _parameters; }
+            set { SetField(ref _parameters, value); }
         }
 
         /// <summary>
-        /// True if this is an explicit interface implementation.
+        /// The return type of the method (never null - will be type 'void' instead).
         /// </summary>
-        public bool IsExplicitInterfaceImplementation
+        public virtual Expression ReturnType
         {
-            get { return _name is Dot; }
+            get { return (_returnType ?? TypeRef.VoidRef); }
+            set { SetField(ref _returnType, value, true); }
         }
 
         /// <summary>
-        /// Get the explicit interface expression (if any).
+        /// Add one or more <see cref="ParameterDecl"/>s.
         /// </summary>
-        public Expression ExplicitInterfaceExpression
+        public void AddParameters(params ParameterDecl[] parameterDecls)
         {
-            get { return _name as Expression; }
+            CreateParameters().AddRange(parameterDecls);
         }
 
         /// <summary>
-        /// Get the declaring <see cref="TypeDecl"/>.
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
         /// </summary>
-        public TypeDecl DeclaringType
+        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
         {
-            get { return (_parent as TypeDecl); }
+            dictionary.Add(Name, this);
         }
 
-        #endregion
+        /// <summary>
+        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// </summary>
+        public override bool AssociateCommentWhenParsing(CommentBase comment)
+        {
+            return true;
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            MethodDeclBase clone = (MethodDeclBase)base.Clone();
+            clone.CloneField(ref clone._returnType, _returnType);
+            clone.CloneField(ref clone._name, _name);
+            clone._parameters = ChildListHelpers.Clone(_parameters, clone);
+            return clone;
+        }
 
         /// <summary>
         /// Create the list of <see cref="ParameterDecl"/>s, or return the existing one.
@@ -265,11 +376,114 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Add one or more <see cref="ParameterDecl"/>s.
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
         /// </summary>
-        public void AddParameters(params ParameterDecl[] parameterDecls)
+        public override int DefaultNewLines(CodeObject previous)
         {
-            CreateParameters().AddRange(parameterDecls);
+            // Always default to a blank line before a method declaration, unless it's on a
+            // single line and preceeded by another single-line method declaration or a comment.
+            if (IsSingleLine && ((previous is MethodDeclBase && previous.IsSingleLine) || previous is Comment))
+                return 1;
+            return 2;
+        }
+
+        /// <summary>
+        /// Find the base virtual method for this method if it's an override.
+        /// </summary>
+        public MethodRef FindBaseMethod()
+        {
+            if (IsOverride)
+            {
+                TypeDecl declaringType = DeclaringType;
+                if (declaringType != null)
+                {
+                    TypeRef baseTypeRef = declaringType.GetBaseType();
+                    if (baseTypeRef != null)
+                    {
+                        TypeRefBase[] parameterTypes = null;
+                        if (_parameters != null)
+                            parameterTypes = Enumerable.ToArray(Enumerable.Select<ParameterDecl, TypeRefBase>(_parameters, delegate (ParameterDecl parameterDecl) { return parameterDecl.Type.SkipPrefixes() as TypeRefBase; }));
+                        return baseTypeRef.GetMethod(Name, parameterTypes);
+                    }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the IsPrivate access right for the specified usage, and if not private then also get the IsProtected and IsInternal rights.
+        /// </summary>
+        /// <param name="isTargetOfAssignment">Usage - true if the target of an assignment ('lvalue'), otherwise false.</param>
+        /// <param name="isPrivate">True if the access is private.</param>
+        /// <param name="isProtected">True if the access is protected.</param>
+        /// <param name="isInternal">True if the access is internal.</param>
+        public void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal)
+        {
+            // The isTargetOfAssignment flag is needed only for properties/indexers/events, not methods
+            isPrivate = IsPrivate;
+            if (!isPrivate)
+            {
+                isProtected = IsProtected;
+                isInternal = IsInternal;
+            }
+            else
+                isProtected = isInternal = false;
+        }
+
+        /// <summary>
+        /// Get the type of the explicit interface (null if none).
+        /// </summary>
+        public TypeRef GetExplicitInterface()
+        {
+            if (_name is Dot)
+            {
+                Expression left = ((Dot)_name).Left;
+                if (left != null)
+                {
+                    TypeRef typeRef = left.SkipPrefixes() as TypeRef;
+                    if (typeRef != null && typeRef.IsInterface)
+                        return typeRef;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
+        public virtual string GetFullName(bool descriptive)
+        {
+            string name = Name;
+            if (descriptive)
+                name += GetParametersAsString();
+            if (_parent is TypeDecl)
+                name = ((TypeDecl)_parent).GetFullName(descriptive) + "." + name;
+            return name;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName()
+        {
+            return GetFullName(false);
+        }
+
+        /// <summary>
+        /// Find the parameter of this method with the specified name.
+        /// </summary>
+        public ParameterRef GetParameter(string name)
+        {
+            if (_parameters != null)
+            {
+                foreach (ParameterDecl parameter in _parameters)
+                {
+                    if (parameter.Name == name)
+                        return (ParameterRef)parameter.CreateRef();
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -300,138 +514,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Find the parameter of this method with the specified name.
-        /// </summary>
-        public ParameterRef GetParameter(string name)
-        {
-            if (_parameters != null)
-            {
-                foreach (ParameterDecl parameter in _parameters)
-                {
-                    if (parameter.Name == name)
-                        return (ParameterRef)parameter.CreateRef();
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Find the base virtual method for this method if it's an override.
-        /// </summary>
-        public MethodRef FindBaseMethod()
-        {
-            if (IsOverride)
-            {
-                TypeDecl declaringType = DeclaringType;
-                if (declaringType != null)
-                {
-                    TypeRef baseTypeRef = declaringType.GetBaseType();
-                    if (baseTypeRef != null)
-                    {
-                        TypeRefBase[] parameterTypes = null;
-                        if (_parameters != null)
-                            parameterTypes = Enumerable.ToArray(Enumerable.Select<ParameterDecl, TypeRefBase>(_parameters, delegate(ParameterDecl parameterDecl) { return parameterDecl.Type.SkipPrefixes() as TypeRefBase; }));
-                        return baseTypeRef.GetMethod(Name, parameterTypes);
-                    }
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the type of the explicit interface (null if none).
-        /// </summary>
-        public TypeRef GetExplicitInterface()
-        {
-            if (_name is Dot)
-            {
-                Expression left = ((Dot)_name).Left;
-                if (left != null)
-                {
-                    TypeRef typeRef = left.SkipPrefixes() as TypeRef;
-                    if (typeRef != null && typeRef.IsInterface)
-                        return typeRef;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
-        /// </summary>
-        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Add(Name, this);
-        }
-
-        /// <summary>
         /// Remove the <see cref="CodeObject"/> from the specified dictionary.
         /// </summary>
         public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
         {
             dictionary.Remove(Name, this);
-        }
-
-        /// <summary>
-        /// Get the IsPrivate access right for the specified usage, and if not private then also get the IsProtected and IsInternal rights.
-        /// </summary>
-        /// <param name="isTargetOfAssignment">Usage - true if the target of an assignment ('lvalue'), otherwise false.</param>
-        /// <param name="isPrivate">True if the access is private.</param>
-        /// <param name="isProtected">True if the access is protected.</param>
-        /// <param name="isInternal">True if the access is internal.</param>
-        public void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal)
-        {
-            // The isTargetOfAssignment flag is needed only for properties/indexers/events, not methods
-            isPrivate = IsPrivate;
-            if (!isPrivate)
-            {
-                isProtected = IsProtected;
-                isInternal = IsInternal;
-            }
-            else
-                isProtected = isInternal = false;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            MethodDeclBase clone = (MethodDeclBase)base.Clone();
-            clone.CloneField(ref clone._returnType, _returnType);
-            clone.CloneField(ref clone._name, _name);
-            clone._parameters = ChildListHelpers.Clone(_parameters, clone);
-            return clone;
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
-        public virtual string GetFullName(bool descriptive)
-        {
-            string name = Name;
-            if (descriptive)
-                name += GetParametersAsString();
-            if (_parent is TypeDecl)
-                name = ((TypeDecl)_parent).GetFullName(descriptive) + "." + name;
-            return name;
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        public string GetFullName()
-        {
-            return GetFullName(false);
-        }
-
-        /// <summary>
-        /// Get the parameters as a descriptive string.
-        /// </summary>
-        protected string GetParametersAsString()
-        {
-            return GetParametersAsString(ParameterDecl.ParseTokenStart, ParameterDecl.ParseTokenEnd, _parameters);
         }
 
         /// <summary>
@@ -458,24 +545,52 @@ namespace Nova.CodeDOM
             return result;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of a list of parameters.
-        /// </summary>
-        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
-
-        /// <summary>
-        /// The token used to parse the end of a list of parameters.
-        /// </summary>
-        public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
-
-        protected MethodDeclBase(Parser parser, CodeObject parent)
-            : base(parser, parent)
+        internal virtual void AsTextName(CodeWriter writer, RenderFlags flags)
         {
-            IsFirstOnLine = true;  // Force all methods to start on a new line by default
+            if (_name is string)
+                writer.WriteIdentifier((string)_name, flags);
+            else if (_name is Expression)
+                ((Expression)_name).AsText(writer, flags & ~(RenderFlags.Description | RenderFlags.ShowParentTypes));
+        }
+
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        {
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            AsTextInfixComments(writer, AnnotationFlags.IsInfix1, flags);
+            writer.WriteList(_parameters, passFlags, this);
+        }
+
+        protected override void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
+        { }
+
+        protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
+        {
+            ModifiersHelpers.AsText(_modifiers, writer);
+        }
+
+        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        {
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            if (_returnType != null)
+                _returnType.AsText(writer, passFlags | RenderFlags.IsPrefix);
+            UpdateLineCol(writer, flags);
+            if (flags.HasFlag(RenderFlags.Description))
+            {
+                if (_parent is TypeDecl)
+                {
+                    ((TypeDecl)_parent).AsTextName(writer, flags);
+                    writer.Write(Dot.ParseToken);
+                }
+            }
+            AsTextName(writer, passFlags);
+        }
+
+        /// <summary>
+        /// Get the parameters as a descriptive string.
+        /// </summary>
+        protected string GetParametersAsString()
+        {
+            return GetParametersAsString(ParameterDecl.ParseTokenStart, ParameterDecl.ParseTokenEnd, _parameters);
         }
 
         protected void ParseMethodNameAndType(Parser parser, CodeObject parent, bool unusedName, bool useTokenNewLines)
@@ -520,149 +635,5 @@ namespace Nova.CodeDOM
             _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out isEndFirstOnLine);
             IsEndFirstOnLine = isEndFirstOnLine;
         }
-
-        /// <summary>
-        /// Determine if the specified comment should be associated with the current code object during parsing.
-        /// </summary>
-        public override bool AssociateCommentWhenParsing(CommentBase comment)
-        {
-            return true;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has an argument.
-        /// </summary>
-        public override bool HasArgument
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="BlockStatement"/> has compact empty braces by default.
-        /// </summary>
-        public override bool IsCompactIfEmptyDefault
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
-        /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
-        {
-            // Always default to a blank line before a method declaration, unless it's on a
-            // single line and preceeded by another single-line method declaration or a comment.
-            if (IsSingleLine && ((previous is MethodDeclBase && previous.IsSingleLine) || previous is Comment))
-                return 1;
-            return 2;
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the object (0 to N).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return base.NewLines; }
-            set
-            {
-                // If we're changing to or from zero, also change any prefix attributes
-                bool isFirstOnLine = (value != 0);
-                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
-                {
-                    foreach (Annotation annotation in _annotations)
-                    {
-                        if (annotation is Attribute)
-                            annotation.IsFirstOnLine = isFirstOnLine;
-                    }
-                }
-
-                base.NewLines = value;
-            }
-        }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_returnType == null || (!_returnType.IsFirstOnLine && _returnType.IsSingleLine))
-                    && (!(_name is Expression) || (!((Expression)_name).IsFirstOnLine && ((Expression)_name).IsSingleLine))
-                    && (_parameters == null || _parameters.Count == 0 || (!_parameters[0].IsFirstOnLine && _parameters.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value)
-                {
-                    if (_returnType != null)
-                    {
-                        _returnType.IsFirstOnLine = false;
-                        _returnType.IsSingleLine = true;
-                    }
-                    if (_name is Expression)
-                    {
-                        ((Expression)_name).IsFirstOnLine = false;
-                        ((Expression)_name).IsSingleLine = true;
-                    }
-                    if (_parameters != null && _parameters.Count > 0)
-                    {
-                        _parameters[0].IsFirstOnLine = false;
-                        _parameters.IsSingleLine = true;
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
-        {
-            ModifiersHelpers.AsText(_modifiers, writer);
-        }
-
-        internal virtual void AsTextName(CodeWriter writer, RenderFlags flags)
-        {
-            if (_name is string)
-                writer.WriteIdentifier((string)_name, flags);
-            else if (_name is Expression)
-                ((Expression)_name).AsText(writer, flags & ~(RenderFlags.Description | RenderFlags.ShowParentTypes));
-        }
-
-        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
-        {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            if (_returnType != null)
-                _returnType.AsText(writer, passFlags | RenderFlags.IsPrefix);
-            UpdateLineCol(writer, flags);
-            if (flags.HasFlag(RenderFlags.Description))
-            {
-                if (_parent is TypeDecl)
-                {
-                    ((TypeDecl)_parent).AsTextName(writer, flags);
-                    writer.Write(Dot.ParseToken);
-                }
-            }
-            AsTextName(writer, passFlags);
-        }
-
-        protected override void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
-        { }
-
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            AsTextInfixComments(writer, AnnotationFlags.IsInfix1, flags);
-            writer.WriteList(_parameters, passFlags, this);
-        }
-
-        #endregion
     }
 }

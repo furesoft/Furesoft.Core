@@ -12,8 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class VariableRef : SymbolicRef
     {
-        #region /* CONSTRUCTORS */
-
         protected VariableRef(IVariableDecl declaration, bool isFirstOnLine)
             : base(declaration, isFirstOnLine)
         { }
@@ -26,10 +24,6 @@ namespace Nova.CodeDOM
             : base(parameterInfo, isFirstOnLine)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// True if the referenced variable is static.
         /// </summary>
@@ -37,11 +31,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
-
-        #region /* METHODS */
-
-        #endregion
     }
 }

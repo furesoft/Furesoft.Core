@@ -17,8 +17,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class UnresolvedThisRef : UnresolvedRef
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="UnresolvedThisRef"/>.
         /// </summary>
@@ -51,10 +49,6 @@ namespace Nova.CodeDOM
             SetLineCol(token);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
             UpdateLineCol(writer, flags);
@@ -62,7 +56,5 @@ namespace Nova.CodeDOM
             AsTextTypeArguments(writer, _typeArguments, flags);
             AsTextArrayRanks(writer, flags);
         }
-
-        #endregion
     }
 }

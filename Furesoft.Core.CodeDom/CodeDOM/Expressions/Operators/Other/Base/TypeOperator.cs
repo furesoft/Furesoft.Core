@@ -11,8 +11,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class TypeOperator : SingleArgumentOperator
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a type operator - the expression must evaluate to a <see cref="TypeRef"/> in valid code.
         /// </summary>
@@ -20,14 +18,8 @@ namespace Nova.CodeDOM
             : base(type)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected TypeOperator(Parser parser, CodeObject parent)
             : base(parser, parent)
         { }
-
-        #endregion
     }
 }

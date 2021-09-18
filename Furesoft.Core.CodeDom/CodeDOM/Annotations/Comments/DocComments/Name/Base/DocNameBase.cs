@@ -14,15 +14,14 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class DocNameBase : DocComment
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The name of the name attribute.
+        /// </summary>
+        public const string AttributeName = "name";
 
         // Should evaluate to a ParameterRef (if DocParam/DocParamRef)
         // or TypeParameterRef (if DocTypeParam/DocTypeParamRef) or an UnresolvedRef.
         protected SymbolicRef _nameRef;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected DocNameBase(SymbolicRef nameRef, string text)
             : base(text)
@@ -36,9 +35,28 @@ namespace Nova.CodeDOM
             NameRef = nameRef;
         }
 
-        #endregion
+        protected DocNameBase(Parser parser, CodeObject parent)
+        {
+            ParseTag(parser, parent);
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_nameRef == null || (!_nameRef.IsFirstOnLine && _nameRef.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (_nameRef != null)
+                {
+                    if (value)
+                        _nameRef.IsFirstOnLine = false;
+                    _nameRef.IsSingleLine = value;
+                }
+            }
+        }
 
         /// <summary>
         /// The <see cref="SymbolicRef"/> of the associated code object.
@@ -48,10 +66,6 @@ namespace Nova.CodeDOM
             get { return _nameRef; }
             set { SetField(ref _nameRef, value, true); }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Deep-clone the code object.
@@ -63,18 +77,19 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The name of the name attribute.
-        /// </summary>
-        public const string AttributeName = "name";
-
-        protected DocNameBase(Parser parser, CodeObject parent)
+        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
         {
-            ParseTag(parser, parent);
+            if (!flags.HasFlag(RenderFlags.Description))
+                writer.Write("<" + TagName + " " + AttributeName + "=\"");
+            if (_nameRef != null)
+            {
+                // Turn on translation of '<', '&', and '>' for content
+                writer.InDocCommentContent = true;
+                _nameRef.AsText(writer, flags);
+                writer.InDocCommentContent = false;
+            }
+            if (!flags.HasFlag(RenderFlags.Description))
+                writer.Write("\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
         }
 
         protected override object ParseAttributeValue(Parser parser, string name)
@@ -101,48 +116,5 @@ namespace Nova.CodeDOM
             }
             return base.ParseAttributeValue(parser, name);
         }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_nameRef == null || (!_nameRef.IsFirstOnLine && _nameRef.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (_nameRef != null)
-                {
-                    if (value)
-                        _nameRef.IsFirstOnLine = false;
-                    _nameRef.IsSingleLine = value;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextStart(CodeWriter writer, RenderFlags flags)
-        {
-            if (!flags.HasFlag(RenderFlags.Description))
-                writer.Write("<" + TagName + " " + AttributeName + "=\"");
-            if (_nameRef != null)
-            {
-                // Turn on translation of '<', '&', and '>' for content
-                writer.InDocCommentContent = true;
-                _nameRef.AsText(writer, flags);
-                writer.InDocCommentContent = false;
-            }
-            if (!flags.HasFlag(RenderFlags.Description))
-                writer.Write("\"" + (_content == null && !MissingEndTag ? "/>" : ">"));
-        }
-
-        #endregion
     }
 }

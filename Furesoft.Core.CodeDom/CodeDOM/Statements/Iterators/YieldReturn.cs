@@ -19,13 +19,12 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class YieldReturn : YieldStatement
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The second token used to parse the code object.
+        /// </summary>
+        public const string ParseToken2 = "return";
 
         protected Expression _expression;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="YieldReturn"/>.
@@ -34,50 +33,6 @@ namespace Nova.CodeDOM
         {
             Expression = expression;
         }
-
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The return <see cref="Expression"/>.
-        /// </summary>
-        public Expression Expression
-        {
-            get { return _expression; }
-            set { SetField(ref _expression, value, true); }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken1 + " " + ParseToken2; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            YieldReturn clone = (YieldReturn)base.Clone();
-            clone.CloneField(ref clone._expression, _expression);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The second token used to parse the code object.
-        /// </summary>
-        public const string ParseToken2 = "return";
 
         /// <summary>
         /// Parse a <see cref="YieldReturn"/>.
@@ -91,9 +46,14 @@ namespace Nova.CodeDOM
             ParseTerminator(parser);
         }
 
-        #endregion
-
-        #region /* FORMATTING */
+        /// <summary>
+        /// The return <see cref="Expression"/>.
+        /// </summary>
+        public Expression Expression
+        {
+            get { return _expression; }
+            set { SetField(ref _expression, value, true); }
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -136,16 +96,28 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken1 + " " + ParseToken2; }
+        }
 
-        #region /* RENDERING */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            YieldReturn clone = (YieldReturn)base.Clone();
+            clone.CloneField(ref clone._expression, _expression);
+            return clone;
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             if (_expression != null)
                 _expression.AsText(writer, flags);
         }
-
-        #endregion
     }
 }
