@@ -1093,6 +1093,25 @@ namespace Nova.CodeDOM
             return -1;
         }
 
+        public IEnumerable<T> GetChildren<T>()
+            where T : CodeObject
+        {
+            var res = new List<T>();
+            foreach (var c in this)
+            {
+                if (c is T cc)
+                {
+                    res.Add(cc);
+                }
+                else if (c is Block blk)
+                {
+                    res.AddRange(blk.GetChildren<T>());
+                }
+            }
+
+            return res;
+        }
+
         /// <summary>
         /// Get an enumerator for the code objects in the <see cref="Block"/>.
         /// </summary>

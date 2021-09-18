@@ -2,26 +2,111 @@
 using Nova.CodeDOM;
 using Nova.Parsing;
 using Nova.Rendering;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace TestApp
 {
+    public class Instruction : CodeObject
+    {
+        public Instruction(Parser parser, CodeObject parent) : base(parser, parent)
+        {
+            Mnemnonic = parser.GetIdentifierText();
+
+            Arguments = Expression.ParseList(parser, parent, ",");
+        }
+
+        public ChildList<Expression> Arguments { get; set; }
+        public string Mnemnonic { get; set; }
+    }
+
+    public class RegisterRef : SymbolicRef
+    {
+        public RegisterRef(int addr) : base(addr)
+        {
+        }
+
+        public override bool IsConst => true;
+    }
+
     internal static class Program
     {
+        private static Dictionary<string, Label> _labels = new();
+
+        private static Dictionary<string, int> _registers = new()
+        {
+            ["A"] = 0,
+            ["B"] = 4,
+            ["C"] = 8,
+            ["D"] = 12,
+            ["E"] = 16,
+            ["F"] = 20,
+        };
+
         public static int Main(string[] args)
         {
-            var src = "[hello + 4]";
+            var src = "loop: \n\t     mov 0x12, [hello + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
 
             Parser.AddOperatorParsePoint("+", 2, true, false, parse);
             Parser.AddOperatorParsePoint("*", 1, true, false, parse2);
             Parser.AddParsePoint("[", ParseSquared);
+
+            foreach (var item in new[] { "mov", "load", "add", "sub", "inc" })
+            {
+                Parser.AddParsePoint(item, ParseMov);
+            }
+
+            Label.AddParsePoints();
+            Goto.AddParsePoints();
+
             //CodeUnit.LoadDefaultParsePoints();
 
             var expr = Expression.Parse(src, out var root);
 
             var result = Evaluate(expr);
 
+            Block body = CodeUnit.LoadFragment(src, "d").Body;
+
+            Bind(body);
+
+            var instr = body.First();
+
+            var children = body.GetChildren<Instruction>();
+
             return App.Current.Run();
+        }
+
+        private static void Bind(CodeObject obj)
+        {
+            if (obj is Block blk)
+            {
+                foreach (var child in blk)
+                {
+                    Bind(child);
+                }
+            }
+            else if (obj is Label lbl)
+            {
+                _labels.Add(lbl.Name, lbl);
+            }
+            else if (obj is Instruction instr)
+            {
+                for (int i = 0; i < instr.Arguments.Count; i++)
+                {
+                    Expression arg = instr.Arguments[i];
+                    if (arg is UnresolvedRef uref)
+                    {
+                        if (_registers.ContainsKey(uref.Reference.ToString()))
+                        {
+                            instr.Arguments[i] = new RegisterRef(_registers[uref.Reference.ToString()]);
+                        }
+                    }
+                }
+            }
+            else if (obj is Goto gt)
+            {
+                gt.Target = new LabelRef(_labels[gt.Target.Name]);
+            }
         }
 
         private static int Evaluate(Expression expr)
@@ -52,6 +137,11 @@ namespace TestApp
         private static CodeObject parse2(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new MulOp(parser, parent);
+        }
+
+        private static CodeObject ParseMov(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new Instruction(parser, parent);
         }
 
         private static CodeObject ParseSquared(Parser parser, CodeObject parent, ParseFlags flags)

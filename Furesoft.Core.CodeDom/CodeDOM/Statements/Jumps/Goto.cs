@@ -56,7 +56,7 @@ namespace Nova.CodeDOM
             Target = new UnresolvedRef(Case.ParseToken + " " + _constantExpression.AsString());
         }
 
-        protected Goto(Parser parser, CodeObject parent)
+        public Goto(Parser parser, CodeObject parent)
                     : base(parser, parent)
         {
             parser.NextToken();  // Move past 'goto'
@@ -169,6 +169,11 @@ namespace Nova.CodeDOM
             set { SetField(ref _target, value, true); }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="Goto"/>.
         /// </summary>
@@ -186,11 +191,6 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._target, _target);
             clone.CloneField(ref clone._constantExpression, _constantExpression);
             return clone;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)

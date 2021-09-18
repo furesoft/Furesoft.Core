@@ -27,7 +27,7 @@ namespace Nova.CodeDOM
             _name = name;
         }
 
-        protected Label(Parser parser, CodeObject parent)
+        public Label(Parser parser, CodeObject parent)
                     : base(parser, parent)
         {
             // Get the name from the Unused list
@@ -37,6 +37,7 @@ namespace Nova.CodeDOM
             SetLineCol(lastToken);
             parser.NextToken();  // Move past ':'
             HasTerminator = true;
+            
         }
 
         /// <summary>
@@ -77,6 +78,12 @@ namespace Nova.CodeDOM
         public override string Terminator
         {
             get { return ParseToken; }
+        }
+
+        public static void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (NamedArgument uses 0)
+            Parser.AddParsePoint(ParseToken, 100, Parse, typeof(IBlock));
         }
 
         /// <summary>
@@ -138,12 +145,6 @@ namespace Nova.CodeDOM
         public void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
         {
             dictionary.Remove(ParseToken + Name, this);
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 100 (NamedArgument uses 0)
-            Parser.AddParsePoint(ParseToken, 100, Parse, typeof(IBlock));
         }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
