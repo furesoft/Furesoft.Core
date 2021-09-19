@@ -1,6 +1,8 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base
 {
     /// <summary>
     /// The common base class of all comment classes (<see cref="Comment"/> and <see cref="DocComment"/>).

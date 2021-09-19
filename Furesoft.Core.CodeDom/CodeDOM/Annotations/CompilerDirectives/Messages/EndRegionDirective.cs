@@ -1,6 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages
 {
     /// <summary>
     /// Represents the end of a section of code that can be collapsed, and has optional descriptive text.

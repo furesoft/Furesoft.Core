@@ -6,6 +6,10 @@ using System.Linq;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing.Base;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Nova.CodeDOM
 {

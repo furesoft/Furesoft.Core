@@ -12,8 +12,14 @@ using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.Utilities;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM
 {
     /// <summary>
     /// Declares a unit of independent code that belongs to the root-level namespace (also known as a "compilation unit").

@@ -1,7 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives
 {
     /// <summary>
     /// The type of a <see cref="LineDirective"/>.

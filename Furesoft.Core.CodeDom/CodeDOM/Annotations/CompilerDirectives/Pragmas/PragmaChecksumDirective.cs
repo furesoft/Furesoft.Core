@@ -1,7 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas
 {
     /// <summary>
     /// Used to manage checksum information for files.

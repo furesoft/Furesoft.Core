@@ -2,8 +2,11 @@
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using static Furesoft.Core.CodeDom.Parsing.Parser;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base
 {
     /// <summary>
     /// The common base class of all pragma directives (<see cref="PragmaChecksumDirective"/>, <see cref="PragmaWarningDirective"/>).

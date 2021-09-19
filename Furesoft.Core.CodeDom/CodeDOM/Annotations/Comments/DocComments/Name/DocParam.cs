@@ -1,6 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name
 {
     /// <summary>
     /// Documents a method or indexer parameter.

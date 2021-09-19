@@ -5,6 +5,9 @@
 using System;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
 namespace Nova.CodeDOM
 {
@@ -36,87 +39,6 @@ namespace Nova.CodeDOM
         { }
 
         /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public override string Category
-        {
-            get { return "enum"; }
-        }
-
-        /// <summary>
-        /// True if this is a member of a bit-flag enum.
-        /// </summary>
-        public bool IsBitFlag
-        {
-            get
-            {
-                EnumDecl enumDecl = ParentEnumDecl;
-                return (enumDecl != null && enumDecl.IsBitFlags);
-            }
-        }
-
-        /// <summary>
-        /// Always <c>true</c> for an enum member.
-        /// </summary>
-        public override bool IsConst
-        {
-            get { return true; }
-            set { }
-        }
-
-        /// <summary>
-        /// Always <c>true</c> for an enum member.
-        /// </summary>
-        public override bool IsStatic
-        {
-            get { return true; }
-            set { }
-        }
-
-        /// <summary>
-        /// The parent <see cref="EnumDecl"/>.
-        /// </summary>
-        public virtual EnumDecl ParentEnumDecl
-        {
-            get
-            {
-                // Our parent should be a MultiEnumMemberDecl, and our grandparent is the EnumDecl
-                return (_parent is MultiEnumMemberDecl ? _parent.Parent as EnumDecl : null);
-            }
-        }
-
-        /// <summary>
-        /// The type of the parent <see cref="EnumDecl"/>.
-        /// </summary>
-        public override Expression Type
-        {
-            get { return (_parent is MultiEnumMemberDecl ? ((MultiEnumMemberDecl)_parent).Type : null); }
-            set { throw new Exception("Can't change the Type of an EnumMemberDecl - it's always the parent EnumDecl."); }
-        }
-
-        /// <summary>
-        /// Create a reference to the <see cref="EnumMemberDecl"/>.
-        /// </summary>
-        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
-        /// <returns>A <see cref="EnumMemberRef"/>.</returns>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
-        {
-            return new EnumMemberRef(this, isFirstOnLine);
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="EnumMemberDecl"/>, including the namespace name.
-        /// </summary>
-        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
-        public override string GetFullName(bool descriptive)
-        {
-            EnumDecl enumDecl = ParentEnumDecl;
-            if (enumDecl != null)
-                return enumDecl.GetFullName(descriptive) + "." + _name;
-            return _name;
-        }
-
-        /// <summary>
         /// Parse an <see cref="EnumMemberDecl"/>.
         /// </summary>
         public EnumMemberDecl(Parser parser, CodeObject parent, bool unusedName)
@@ -143,6 +65,122 @@ namespace Nova.CodeDOM
             // Move any EOL or Postfix annotations on the init expression to the parent
             if (_initialization != null)
                 MoveEOLAndPostAnnotations(_initialization);
+        }
+
+        /// <summary>
+        /// The descriptive category of the code object.
+        /// </summary>
+        public override string Category
+        {
+            get { return "enum"; }
+        }
+
+        /// <summary>
+        /// Determines if the code object has a terminator character.
+        /// </summary>
+        public override bool HasTerminator
+        {
+            // EnumMemberDecls don't have terminators, so disable use of this flag
+            get { return false; }
+            set { }
+        }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has a terminator character by default.
+        /// </summary>
+        public override bool HasTerminatorDefault
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True if this is a member of a bit-flag enum.
+        /// </summary>
+        public bool IsBitFlag
+        {
+            get
+            {
+                EnumDecl enumDecl = ParentEnumDecl;
+                return (enumDecl != null && enumDecl.IsBitFlags);
+            }
+        }
+
+        /// <summary>
+        /// Always <c>true</c> for an enum member.
+        /// </summary>
+        public override bool IsConst
+        {
+            get { return true; }
+            set { }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return HasFirstOnLineAnnotations; }
+        }
+
+        /// <summary>
+        /// True if the code object only requires a single line for display by default.
+        /// </summary>
+        public override bool IsSingleLineDefault
+        {
+            get { return !HasFirstOnLineAnnotations; }
+        }
+
+        /// <summary>
+        /// Always <c>true</c> for an enum member.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get { return true; }
+            set { }
+        }
+
+        /// <summary>
+        /// The number of newlines preceeding the object (0 to N).
+        /// </summary>
+        public override int NewLines
+        {
+            get { return base.NewLines; }
+            set
+            {
+                // If we're changing to or from zero, also change any prefix attributes
+                bool isFirstOnLine = (value != 0);
+                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
+                {
+                    foreach (Annotation annotation in _annotations)
+                    {
+                        if (annotation is Attribute)
+                            annotation.IsFirstOnLine = isFirstOnLine;
+                    }
+                }
+
+                base.NewLines = value;
+            }
+        }
+
+        /// <summary>
+        /// The parent <see cref="EnumDecl"/>.
+        /// </summary>
+        public virtual EnumDecl ParentEnumDecl
+        {
+            get
+            {
+                // Our parent should be a MultiEnumMemberDecl, and our grandparent is the EnumDecl
+                return (_parent is MultiEnumMemberDecl ? _parent.Parent as EnumDecl : null);
+            }
+        }
+
+        /// <summary>
+        /// The type of the parent <see cref="EnumDecl"/>.
+        /// </summary>
+        public override Expression Type
+        {
+            get { return (_parent is MultiEnumMemberDecl ? ((MultiEnumMemberDecl)_parent).Type : null); }
+            set { throw new Exception("Can't change the Type of an EnumMemberDecl - it's always the parent EnumDecl."); }
         }
 
         public static void AddParsePoints()
@@ -229,60 +267,13 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the code object has a terminator character.
+        /// Create a reference to the <see cref="EnumMemberDecl"/>.
         /// </summary>
-        public override bool HasTerminator
+        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
+        /// <returns>A <see cref="EnumMemberRef"/>.</returns>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
         {
-            // EnumMemberDecls don't have terminators, so disable use of this flag
-            get { return false; }
-            set { }
-        }
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has a terminator character by default.
-        /// </summary>
-        public override bool HasTerminatorDefault
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return HasFirstOnLineAnnotations; }
-        }
-
-        /// <summary>
-        /// True if the code object only requires a single line for display by default.
-        /// </summary>
-        public override bool IsSingleLineDefault
-        {
-            get { return !HasFirstOnLineAnnotations; }
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the object (0 to N).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return base.NewLines; }
-            set
-            {
-                // If we're changing to or from zero, also change any prefix attributes
-                bool isFirstOnLine = (value != 0);
-                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
-                {
-                    foreach (Annotation annotation in _annotations)
-                    {
-                        if (annotation is Attribute)
-                            annotation.IsFirstOnLine = isFirstOnLine;
-                    }
-                }
-
-                base.NewLines = value;
-            }
+            return new EnumMemberRef(this, isFirstOnLine);
         }
 
         /// <summary>
@@ -295,6 +286,18 @@ namespace Nova.CodeDOM
             if (HasFirstOnLineAnnotations || !(previous is EnumMemberDecl))
                 return 2;
             return 1;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="EnumMemberDecl"/>, including the namespace name.
+        /// </summary>
+        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
+        public override string GetFullName(bool descriptive)
+        {
+            EnumDecl enumDecl = ParentEnumDecl;
+            if (enumDecl != null)
+                return enumDecl.GetFullName(descriptive) + "." + _name;
+            return _name;
         }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)

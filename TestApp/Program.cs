@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Linq;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace TestApp
 {

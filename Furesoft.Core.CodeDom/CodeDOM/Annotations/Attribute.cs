@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
 {
     /// <summary>
     /// Valid attribute target types.

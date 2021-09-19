@@ -1,6 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals
 {
     /// <summary>
     /// Marks the end of an <see cref="IfDirective"/>.

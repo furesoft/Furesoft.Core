@@ -1,7 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Symbols.Base
 {
     /// <summary>
     /// The common base class of <see cref="DefineSymbol"/> and <see cref="UnDefSymbol"/>.

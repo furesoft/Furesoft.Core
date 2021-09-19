@@ -7,6 +7,9 @@ using System.Collections.Generic;
 using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.Parsing.Base;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Furesoft.Core.CodeDom.Parsing
 {

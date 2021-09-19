@@ -1,7 +1,9 @@
 ﻿using System;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Base
 {
     /// <summary>
     /// Annotation formatting flags.

@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.List;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.List
 {
     /// <summary>
     /// Represents the description of a <see cref="DocListItem"/> in a <see cref="DocList"/> in a documentation comment.

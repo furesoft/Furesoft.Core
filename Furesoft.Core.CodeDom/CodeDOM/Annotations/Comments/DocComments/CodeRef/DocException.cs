@@ -1,6 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef
 {
     /// <summary>
     /// Documents that an exception can be thrown by a method, property, event, or indexer.

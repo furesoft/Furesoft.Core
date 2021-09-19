@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name
 {
     /// <summary>
     /// Embeds a reference to a method or indexer parameter in a documentation comment.

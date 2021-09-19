@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 
 namespace Nova.CodeDOM
 {

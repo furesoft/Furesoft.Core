@@ -6,6 +6,16 @@ using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.Rendering;
 using static Furesoft.Core.CodeDom.Rendering.CodeWriter;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
 namespace Nova.CodeDOM
 {
@@ -1406,7 +1416,7 @@ namespace Nova.CodeDOM
             if (commentBase is Comment)
             {
                 Comment comment = (Comment)commentBase;
-                int removeSpaceCount = comment.GetIndentSpaceCount() - comment.PrefixSpaceCount - (comment.IsBlock ? 0 : CodeDOM.Comment.ParseToken.Length);
+                int removeSpaceCount = comment.GetIndentSpaceCount() - comment.PrefixSpaceCount - (comment.IsBlock ? 0 : Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Comment.ParseToken.Length);
                 if (removeSpaceCount > 0)
                 {
                     // If we fail to remove the desired count of spaces, and 1 space is implied, then

@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef
 {
     /// <summary>
     /// Embeds a reference to a type or member in a documentation comment.

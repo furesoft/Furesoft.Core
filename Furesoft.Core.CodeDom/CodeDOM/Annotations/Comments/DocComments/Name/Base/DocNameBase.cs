@@ -1,8 +1,11 @@
 ﻿using Furesoft.Core.CodeDom.Utilities;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base
 {
     /// <summary>
     /// The common base class of all documentation comment tags that have a 'name' attribute (<see cref="DocParam"/>,

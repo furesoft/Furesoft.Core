@@ -1,4 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Nova.CodeDOM
 {

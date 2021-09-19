@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef
 {
     /// <summary>
     /// Documents a reference to a type or member that should be presented in a "See Also" section.

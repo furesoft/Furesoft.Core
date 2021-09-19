@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Symbols.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Symbols;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Symbols
 {
     /// <summary>
     /// Allows for removing an existing definition of a "pre-processor" symbol - may only appear at the top of a <see cref="CodeUnit"/> (file)!

@@ -8,10 +8,13 @@ using System.IO;
 using System.Text;
 
 using Nova.CodeDOM;
-using Attribute = Nova.CodeDOM.Attribute;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.Utilities;
 using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Furesoft.Core.CodeDom.Rendering
 {

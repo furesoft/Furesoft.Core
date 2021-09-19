@@ -1,6 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.CodeRef.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple
 {
     /// <summary>
     /// Represents a fragment of code in a documentation comment.

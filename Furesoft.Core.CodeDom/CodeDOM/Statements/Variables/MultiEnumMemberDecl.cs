@@ -7,6 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 
 namespace Nova.CodeDOM
 {

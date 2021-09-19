@@ -6,6 +6,15 @@ using Furesoft.Core.CodeDom.Utilities;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing.Base;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
 namespace Nova.CodeDOM
 {

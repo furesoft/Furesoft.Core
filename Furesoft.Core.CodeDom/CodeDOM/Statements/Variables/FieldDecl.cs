@@ -5,6 +5,10 @@
 using System;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
 namespace Nova.CodeDOM
 {
@@ -65,6 +69,43 @@ namespace Nova.CodeDOM
             _modifiers = modifiers;
         }
 
+        protected FieldDecl(Parser parser, CodeObject parent, bool isMulti)
+                    : base(parser, parent)
+        {
+            // Ignore for derived types (FixedSizeBufferDecl)
+            if (GetType() != typeof(FieldDecl)) return;
+
+            if (isMulti)
+            {
+                // Parse the name
+                _name = parser.GetIdentifierText();
+                MoveLocationAndComment(parser.LastToken);
+
+                ParseInitialization(parser, parent);  // Parse the initialization (if any)
+            }
+            else
+            {
+                // Parse the name from the Unused list
+                Token token = parser.RemoveLastUnusedToken();
+                _name = token.NonVerbatimText;
+                MoveLocationAndComment(token);
+
+                ParseUnusedType(parser, ref _type);                 // Parse the type from the Unused list
+                _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
+                ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
+
+                ParseInitialization(parser, parent);  // Parse the initialization (if any)
+                if (parser.TokenText != Expression.ParseTokenSeparator)
+                    ParseTerminator(parser);
+
+                // Check for compiler directives, storing them as postfix annotations on the parent
+                Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsPostfix, false);
+
+                // Force field decls to always start on a new line
+                IsFirstOnLine = true;
+            }
+        }
+
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
@@ -79,6 +120,15 @@ namespace Nova.CodeDOM
         public TypeDecl DeclaringType
         {
             get { return (_parent is MultiFieldDecl ? _parent.Parent as TypeDecl : _parent as TypeDecl); }
+        }
+
+        /// <summary>
+        /// Determines if the code object has a terminator character.
+        /// </summary>
+        public override bool HasTerminator
+        {
+            // Ignore any terminator if we're part of a multi
+            get { return (!(_parent is MultiFieldDecl) && base.HasTerminator); }
         }
 
         /// <summary>
@@ -163,6 +213,29 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// The number of newlines preceeding the object (0 to N).
+        /// </summary>
+        public override int NewLines
+        {
+            get { return base.NewLines; }
+            set
+            {
+                // If we're changing to or from zero, also change any prefix attributes
+                bool isFirstOnLine = (value != 0);
+                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
+                {
+                    foreach (Annotation annotation in _annotations)
+                    {
+                        if (annotation is Attribute)
+                            annotation.IsFirstOnLine = isFirstOnLine;
+                    }
+                }
+
+                base.NewLines = value;
+            }
+        }
+
+        /// <summary>
         /// The type of the <see cref="FieldDecl"/>.
         /// </summary>
         public override Expression Type
@@ -172,90 +245,6 @@ namespace Nova.CodeDOM
                 if (_parent is MultiFieldDecl)
                     throw new Exception("Can't directly change the Type of a FieldDecl which is a member of a MultiFieldDecl.");
                 SetField(ref _type, value, true);
-            }
-        }
-
-        /// <summary>
-        /// Create a reference to the <see cref="FieldDecl"/>.
-        /// </summary>
-        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
-        /// <returns>A <see cref="FieldRef"/>.</returns>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
-        {
-            return new FieldRef(this, isFirstOnLine);
-        }
-
-        /// <summary>
-        /// Get the IsPrivate access right for the specified usage, and if not private then also get the IsProtected and IsInternal rights.
-        /// </summary>
-        /// <param name="isTargetOfAssignment">Usage - true if the target of an assignment ('lvalue'), otherwise false.</param>
-        /// <param name="isPrivate">True if the access is private.</param>
-        /// <param name="isProtected">True if the access is protected.</param>
-        /// <param name="isInternal">True if the access is internal.</param>
-        public void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal)
-        {
-            // The isTargetOfAssignment flag is needed only for properties/indexers/events, not fields
-            isPrivate = IsPrivate;
-            if (!isPrivate)
-            {
-                isProtected = IsProtected;
-                isInternal = IsInternal;
-            }
-            else
-                isProtected = isInternal = false;
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="FieldDecl"/>, including the namespace name.
-        /// </summary>
-        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
-        public override string GetFullName(bool descriptive)
-        {
-            TypeDecl declaringType = DeclaringType;
-            if (declaringType != null)
-                return declaringType.GetFullName(descriptive) + "." + _name;
-            return _name;
-        }
-
-        protected internal void SetTypeFromParentMulti(Expression type)
-        {
-            SetField(ref _type, type, true);
-        }
-
-        protected FieldDecl(Parser parser, CodeObject parent, bool isMulti)
-            : base(parser, parent)
-        {
-            // Ignore for derived types (FixedSizeBufferDecl)
-            if (GetType() != typeof(FieldDecl)) return;
-
-            if (isMulti)
-            {
-                // Parse the name
-                _name = parser.GetIdentifierText();
-                MoveLocationAndComment(parser.LastToken);
-
-                ParseInitialization(parser, parent);  // Parse the initialization (if any)
-            }
-            else
-            {
-                // Parse the name from the Unused list
-                Token token = parser.RemoveLastUnusedToken();
-                _name = token.NonVerbatimText;
-                MoveLocationAndComment(token);
-
-                ParseUnusedType(parser, ref _type);                 // Parse the type from the Unused list
-                _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
-                ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
-
-                ParseInitialization(parser, parent);  // Parse the initialization (if any)
-                if (parser.TokenText != Expression.ParseTokenSeparator)
-                    ParseTerminator(parser);
-
-                // Check for compiler directives, storing them as postfix annotations on the parent
-                Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsPostfix, false);
-
-                // Force field decls to always start on a new line
-                IsFirstOnLine = true;
             }
         }
 
@@ -332,35 +321,13 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the code object has a terminator character.
+        /// Create a reference to the <see cref="FieldDecl"/>.
         /// </summary>
-        public override bool HasTerminator
+        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
+        /// <returns>A <see cref="FieldRef"/>.</returns>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
         {
-            // Ignore any terminator if we're part of a multi
-            get { return (!(_parent is MultiFieldDecl) && base.HasTerminator); }
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the object (0 to N).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return base.NewLines; }
-            set
-            {
-                // If we're changing to or from zero, also change any prefix attributes
-                bool isFirstOnLine = (value != 0);
-                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
-                {
-                    foreach (Annotation annotation in _annotations)
-                    {
-                        if (annotation is Attribute)
-                            annotation.IsFirstOnLine = isFirstOnLine;
-                    }
-                }
-
-                base.NewLines = value;
-            }
+            return new FieldRef(this, isFirstOnLine);
         }
 
         /// <summary>
@@ -373,6 +340,43 @@ namespace Nova.CodeDOM
             if (HasFirstOnLineAnnotations || !(previous is FieldDecl))
                 return 2;
             return 1;
+        }
+
+        /// <summary>
+        /// Get the IsPrivate access right for the specified usage, and if not private then also get the IsProtected and IsInternal rights.
+        /// </summary>
+        /// <param name="isTargetOfAssignment">Usage - true if the target of an assignment ('lvalue'), otherwise false.</param>
+        /// <param name="isPrivate">True if the access is private.</param>
+        /// <param name="isProtected">True if the access is protected.</param>
+        /// <param name="isInternal">True if the access is internal.</param>
+        public void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal)
+        {
+            // The isTargetOfAssignment flag is needed only for properties/indexers/events, not fields
+            isPrivate = IsPrivate;
+            if (!isPrivate)
+            {
+                isProtected = IsProtected;
+                isInternal = IsInternal;
+            }
+            else
+                isProtected = isInternal = false;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="FieldDecl"/>, including the namespace name.
+        /// </summary>
+        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
+        public override string GetFullName(bool descriptive)
+        {
+            TypeDecl declaringType = DeclaringType;
+            if (declaringType != null)
+                return declaringType.GetFullName(descriptive) + "." + _name;
+            return _name;
+        }
+
+        protected internal void SetTypeFromParentMulti(Expression type)
+        {
+            SetField(ref _type, type, true);
         }
 
         protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)

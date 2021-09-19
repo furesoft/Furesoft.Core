@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Messages
 {
     /// <summary>
     /// Forces the compiler to emit an error message.
