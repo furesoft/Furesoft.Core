@@ -1,12 +1,9 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
-
-using Nova.Parsing;
-using Nova.Rendering;
-using System;
+﻿using System;
 using System.Collections;
 using System.Reflection;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using static Furesoft.Core.CodeDom.Parsing.Parser;
 
 namespace Nova.CodeDOM
 {
@@ -470,7 +467,7 @@ namespace Nova.CodeDOM
                         continue;
 
                     // Check if the current token represents a valid operator
-                    Parser.OperatorInfo operatorInfo = parser.GetOperatorInfoForToken();
+                    OperatorInfo operatorInfo = parser.GetOperatorInfoForToken();
 
                     // If the current token doesn't look like a valid operator, we're done with the expression
                     if (operatorInfo == null)

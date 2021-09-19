@@ -1,10 +1,7 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
-
-using Nova.Parsing;
-using Nova.Rendering;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
+using static Furesoft.Core.CodeDom.Parsing.Parser;
 
 namespace Nova.CodeDOM
 {
@@ -19,7 +16,7 @@ namespace Nova.CodeDOM
         public new const string ParseToken = "pragma";
 
         // Map of parse-point tokens to callbacks
-        private static readonly Dictionary<string, Parser.ParseDelegate> _parsePoints = new Dictionary<string, Parser.ParseDelegate>();
+        private static readonly Dictionary<string, ParseDelegate> _parsePoints = new Dictionary<string, ParseDelegate>();
 
         protected PragmaDirective()
         { }
@@ -46,7 +43,7 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Add a parse-point for a pragma directive - triggers the callback when the specified token appears
         /// </summary>
-        public static void AddPragmaParsePoint(string token, Parser.ParseDelegate callback)
+        public static void AddPragmaParsePoint(string token, ParseDelegate callback)
         {
             _parsePoints.Add(token, callback);
         }
@@ -62,7 +59,7 @@ namespace Nova.CodeDOM
                 return null;
 
             // Execute the callback if we have a parse-point for the token
-            Parser.ParseDelegate callback;
+            ParseDelegate callback;
             if (_parsePoints.TryGetValue(next.Text, out callback))
                 return (PragmaDirective)callback(parser, parent, flags);
 

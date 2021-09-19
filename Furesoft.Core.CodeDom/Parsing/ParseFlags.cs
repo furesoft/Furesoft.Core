@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Nova.Parsing
+namespace Furesoft.Core.CodeDom.Parsing
 {
     /// <summary>
     /// Parsing state flags (passed through parsing methods).

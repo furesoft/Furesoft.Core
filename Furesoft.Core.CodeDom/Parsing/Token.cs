@@ -5,8 +5,10 @@
 using System.Collections.Generic;
 
 using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.Parsing.Base;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.Parsing
+namespace Furesoft.Core.CodeDom.Parsing
 {
     /// <summary>
     /// The general type of a <see cref="Token"/>.

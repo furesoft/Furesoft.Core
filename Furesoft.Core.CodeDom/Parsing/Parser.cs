@@ -9,8 +9,10 @@ using System.Text;
 
 using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.Utilities;
+using Furesoft.Core.CodeDom.Parsing.Base;
+using Furesoft.Core.CodeDom.Parsing;
 
-namespace Nova.Parsing
+namespace Furesoft.Core.CodeDom.Parsing
 {
     /// <summary>
     /// Supports the parsing of text into code objects.

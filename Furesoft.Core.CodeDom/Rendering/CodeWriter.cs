@@ -11,8 +11,9 @@ using Nova.CodeDOM;
 using Attribute = Nova.CodeDOM.Attribute;
 using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.Utilities;
+using Furesoft.Core.CodeDom.Rendering;
 
-namespace Nova.Rendering
+namespace Furesoft.Core.CodeDom.Rendering
 {
     /// <summary>
     /// Used to format code objects as text and write them into a string or a file.

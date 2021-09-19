@@ -8,11 +8,10 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-
-using Nova.Parsing;
-using Nova.Rendering;
 using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.Utilities;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Nova.CodeDOM
 {

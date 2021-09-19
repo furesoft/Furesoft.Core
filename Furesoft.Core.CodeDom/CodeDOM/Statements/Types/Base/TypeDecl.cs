@@ -4,9 +4,8 @@
 
 using System.Collections;
 using System.Collections.Generic;
-
-using Nova.Parsing;
-using Nova.Rendering;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Nova.CodeDOM
 {

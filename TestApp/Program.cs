@@ -1,10 +1,10 @@
 ﻿using Furesoft.Core.CLI;
 using Nova.CodeDOM;
-using Nova.Parsing;
-using Nova.Rendering;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace TestApp
 {

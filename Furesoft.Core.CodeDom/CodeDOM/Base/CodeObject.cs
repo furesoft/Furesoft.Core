@@ -1,14 +1,11 @@
-﻿// The Nova Project by Ken Beckett.
-// Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
-// Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
-
-using Nova.Parsing;
-using Nova.Rendering;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Furesoft.Core.CodeDom;
+using Furesoft.Core.CodeDom.Rendering;
+using static Furesoft.Core.CodeDom.Rendering.CodeWriter;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Nova.CodeDOM
 {
@@ -2028,12 +2025,12 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Convert the code object to text using the specified flags and format (file or string).
         /// </summary>
-        public string AsText(RenderFlags flags, bool isFileFormat, Stack<CodeWriter.AlignmentState> alignmentStateStack)
+        public string AsText(RenderFlags flags, bool isFileFormat, Stack<AlignmentState> alignmentStateStack)
         {
             using (CodeWriter writer = new CodeWriter(false, IsGenerated))
             {
                 if (alignmentStateStack != null)
-                    writer.AlignmentStateStack = new Stack<CodeWriter.AlignmentState>(alignmentStateStack);
+                    writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);
                 try
                 {
                     // Render the text into a string, suppressing any leading newline.
@@ -2080,12 +2077,12 @@ namespace Nova.CodeDOM
         /// <summary>
         /// Determine the length of the code object if converted to a string using the specified flags.
         /// </summary>
-        public int AsTextLength(RenderFlags flags, Stack<CodeWriter.AlignmentState> alignmentStateStack)
+        public int AsTextLength(RenderFlags flags, Stack<AlignmentState> alignmentStateStack)
         {
             using (CodeWriter writer = new CodeWriter(true))
             {
                 if (alignmentStateStack != null)
-                    writer.AlignmentStateStack = new Stack<CodeWriter.AlignmentState>(alignmentStateStack);
+                    writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);
                 try
                 {
                     // Render the text into a string, suppressing any leading newline.
