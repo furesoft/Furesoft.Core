@@ -4,8 +4,10 @@
 
 using System.Reflection;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base
 {
     /// <summary>
     /// The common base class of all variable references (<see cref="FieldRef"/>, <see cref="LocalRef"/>, <see cref="ParameterRef"/>,

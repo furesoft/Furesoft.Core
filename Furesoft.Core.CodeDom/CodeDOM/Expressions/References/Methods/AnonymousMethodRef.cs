@@ -1,6 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
 {
     /// <summary>
     /// Represents a reference to an <see cref="AnonymousMethod"/>.

@@ -5,8 +5,15 @@ using Furesoft.Core.CodeDom.Rendering;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
 {
     /// <summary>
     /// Represents a reference to a <see cref="ConstructorDecl"/> or <see cref="ConstructorInfo"/>.

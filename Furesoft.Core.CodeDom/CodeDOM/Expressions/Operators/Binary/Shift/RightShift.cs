@@ -1,7 +1,11 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Shift.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Shift;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Shift
 {
     /// <summary>
     /// Shifts the bits of the left <see cref="Expression"/> to the RIGHT by the number of bits indicated by the right <see cref="Expression"/>.

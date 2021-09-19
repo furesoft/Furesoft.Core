@@ -1,6 +1,8 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 {
     /// <summary>
     /// Used temporarily during the parsing process for special situations - specifically,

@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 
 namespace Nova.CodeDOM
 {

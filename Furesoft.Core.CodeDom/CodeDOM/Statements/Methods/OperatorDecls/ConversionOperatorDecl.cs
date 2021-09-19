@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 
 namespace Nova.CodeDOM
 {

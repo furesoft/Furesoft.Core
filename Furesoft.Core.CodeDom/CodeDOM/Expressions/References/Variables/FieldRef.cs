@@ -3,8 +3,15 @@ using System.Reflection;
 using Furesoft.Core.CodeDom.Rendering;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
 {
     /// <summary>
     /// Represents a reference to a <see cref="FieldDecl"/> or a <see cref="FieldInfo"/>.

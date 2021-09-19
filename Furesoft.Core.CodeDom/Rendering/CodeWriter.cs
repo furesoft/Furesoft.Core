@@ -14,6 +14,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using static Furesoft.Core.CodeDom.CodeDOM.Base.CodeObject;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 
 namespace Furesoft.Core.CodeDom.Rendering
 {

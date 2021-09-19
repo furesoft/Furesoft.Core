@@ -10,6 +10,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
 namespace Nova.CodeDOM
 {

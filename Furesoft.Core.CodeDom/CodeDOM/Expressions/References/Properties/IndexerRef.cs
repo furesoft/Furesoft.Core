@@ -1,7 +1,9 @@
 ﻿using System.Reflection;
 using Furesoft.Core.CodeDom.Rendering;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties
 {
     /// <summary>
     /// Represents a reference to an <see cref="IndexerDecl"/> or a <see cref="PropertyInfo"/> for an indexer.

@@ -7,6 +7,10 @@ using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
 namespace Nova.CodeDOM
 {
@@ -50,11 +54,65 @@ namespace Nova.CodeDOM
         { }
 
         /// <summary>
+        /// Parse a <see cref="LocalDecl"/>.
+        /// </summary>
+        public LocalDecl(Parser parser, CodeObject parent, bool standAlone, bool allowInit, bool hasType, bool isMulti)
+            : base(parser, parent)
+        {
+            if (isMulti)
+            {
+                ParseName(parser, parent);  // Parse the name
+                if (allowInit)
+                    ParseInitialization(parser, parent);  // Parse the initialization (if any)
+            }
+            else
+            {
+                if (standAlone)
+                {
+                    // Parse the name from the Unused list
+                    Token token = parser.RemoveLastUnusedToken();
+                    _name = token.NonVerbatimText;
+                    MoveLocationAndComment(token);
+
+                    ParseUnusedType(parser, ref _type);  // Parse the type from the Unused list
+
+                    // Parse any modifiers in reverse from the Unused list.
+                    // NOTE: Only 'const' is valid for LocalDecls.
+                    _modifiers = ModifiersHelpers.Parse(parser, this);
+
+                    if (allowInit)
+                        ParseInitialization(parser, parent);  // Parse the initialization (if any)
+                }
+                else
+                {
+                    if (hasType)
+                        ParseType(parser);  // Parse the type
+
+                    ParseName(parser, parent);  // Parse the name
+                    if (allowInit)
+                        ParseInitialization(parser, parent);  // Parse the initialization (if any)
+                }
+
+                if (standAlone && parser.TokenText != Expression.ParseTokenSeparator)
+                    ParseTerminator(parser);
+            }
+        }
+
+        /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public override string Category
         {
             get { return (IsConst ? "local constant" : "local variable"); }
+        }
+
+        /// <summary>
+        /// Determines if the code object has a terminator character.
+        /// </summary>
+        public override bool HasTerminator
+        {
+            // Ignore any terminator if we're part of a multi
+            get { return (!(_parent is MultiLocalDecl) && base.HasTerminator); }
         }
 
         /// <summary>
@@ -99,66 +157,6 @@ namespace Nova.CodeDOM
                 if (_parent is MultiLocalDecl)
                     throw new Exception("Can't directly change the Type of a LocalDecl which is a member of a MultiLocalDecl.");
                 SetField(ref _type, value, true);
-            }
-        }
-
-        /// <summary>
-        /// Create a reference to the <see cref="LocalDecl"/>.
-        /// </summary>
-        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
-        /// <returns>A <see cref="LocalRef"/>.</returns>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
-        {
-            return new LocalRef(this, isFirstOnLine);
-        }
-
-        protected internal void SetTypeFromParentMulti(Expression type)
-        {
-            SetField(ref _type, type, true);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="LocalDecl"/>.
-        /// </summary>
-        public LocalDecl(Parser parser, CodeObject parent, bool standAlone, bool allowInit, bool hasType, bool isMulti)
-            : base(parser, parent)
-        {
-            if (isMulti)
-            {
-                ParseName(parser, parent);  // Parse the name
-                if (allowInit)
-                    ParseInitialization(parser, parent);  // Parse the initialization (if any)
-            }
-            else
-            {
-                if (standAlone)
-                {
-                    // Parse the name from the Unused list
-                    Token token = parser.RemoveLastUnusedToken();
-                    _name = token.NonVerbatimText;
-                    MoveLocationAndComment(token);
-
-                    ParseUnusedType(parser, ref _type);  // Parse the type from the Unused list
-
-                    // Parse any modifiers in reverse from the Unused list.
-                    // NOTE: Only 'const' is valid for LocalDecls.
-                    _modifiers = ModifiersHelpers.Parse(parser, this);
-
-                    if (allowInit)
-                        ParseInitialization(parser, parent);  // Parse the initialization (if any)
-                }
-                else
-                {
-                    if (hasType)
-                        ParseType(parser);  // Parse the type
-
-                    ParseName(parser, parent);  // Parse the name
-                    if (allowInit)
-                        ParseInitialization(parser, parent);  // Parse the initialization (if any)
-                }
-
-                if (standAlone && parser.TokenText != Expression.ParseTokenSeparator)
-                    ParseTerminator(parser);
             }
         }
 
@@ -255,21 +253,19 @@ namespace Nova.CodeDOM
             return valid;
         }
 
-        protected void ParseName(Parser parser, CodeObject parent)
+        /// <summary>
+        /// Create a reference to the <see cref="LocalDecl"/>.
+        /// </summary>
+        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
+        /// <returns>A <see cref="LocalRef"/>.</returns>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
         {
-            // Parse the name
-            _name = parser.GetIdentifierText();
-            if (_name != null)
-                MoveLocationAndComment(parser.LastToken);
+            return new LocalRef(this, isFirstOnLine);
         }
 
-        /// <summary>
-        /// Determines if the code object has a terminator character.
-        /// </summary>
-        public override bool HasTerminator
+        protected internal void SetTypeFromParentMulti(Expression type)
         {
-            // Ignore any terminator if we're part of a multi
-            get { return (!(_parent is MultiLocalDecl) && base.HasTerminator); }
+            SetField(ref _type, type, true);
         }
 
         protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
@@ -293,6 +289,14 @@ namespace Nova.CodeDOM
 
             if (_initialization != null)
                 AsTextInitialization(writer, passFlags);
+        }
+
+        protected void ParseName(Parser parser, CodeObject parent)
+        {
+            // Parse the name
+            _name = parser.GetIdentifierText();
+            if (_name != null)
+                MoveLocationAndComment(parser.LastToken);
         }
     }
 }

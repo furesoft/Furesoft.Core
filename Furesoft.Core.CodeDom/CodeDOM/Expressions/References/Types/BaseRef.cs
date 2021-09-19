@@ -1,7 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {
     /// <summary>
     /// Represents a reference to the base class of the current object instance.

@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {
     /// <summary>
     /// Represents a reference to a <see cref="TypeParameter"/> (or <see cref="Type"/>) from <b>outside</b>

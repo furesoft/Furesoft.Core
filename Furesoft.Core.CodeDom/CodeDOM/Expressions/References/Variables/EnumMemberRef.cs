@@ -4,8 +4,14 @@
 
 using System;
 using System.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
 {
     /// <summary>
     /// Represents a reference to an <see cref="EnumMemberDecl"/> (a member of an <see cref="EnumDecl"/> type declaration).

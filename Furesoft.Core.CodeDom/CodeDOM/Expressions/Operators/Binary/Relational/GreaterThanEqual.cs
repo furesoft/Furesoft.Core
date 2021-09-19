@@ -1,7 +1,11 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational
 {
     /// <summary>
     /// The GreaterThanEqual operator checks if the left Expression is greater than or equal to the right Expression.

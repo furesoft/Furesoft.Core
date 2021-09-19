@@ -4,6 +4,7 @@
 
 using System;
 using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 
 namespace Nova.CodeDOM
 {

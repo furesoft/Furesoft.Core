@@ -1,27 +1,31 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
 {
     /// <summary>
-    /// Gets the remainder of the division of one <see cref="Expression"/> by another, and assigns it to the left <see cref="Expression"/>.
+    /// Multiplies one <see cref="Expression"/> by another, and assigns the result to the left <see cref="Expression"/>.
     /// The left <see cref="Expression"/> must be an assignable object ("lvalue").
     /// </summary>
-    public class ModAssign : Assignment
+    public class MultiplyAssign : Assignment
     {
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
-        public new const string ParseToken = "%=";
+        public new const string ParseToken = "*=";
 
         /// <summary>
-        /// Create a <see cref="ModAssign"/> operator.
+        /// Create a <see cref="MultiplyAssign"/> operator.
         /// </summary>
-        public ModAssign(Expression left, Expression right)
+        public MultiplyAssign(Expression left, Expression right)
             : base(left, right)
         { }
 
-        protected ModAssign(Parser parser, CodeObject parent)
+        protected MultiplyAssign(Parser parser, CodeObject parent)
                     : base(parser, parent)
         { }
 
@@ -34,11 +38,11 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse a <see cref="ModAssign"/> operator.
+        /// Parse a <see cref="MultiplyAssign"/> operator.
         /// </summary>
-        public static new ModAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public static new MultiplyAssign Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            return new ModAssign(parser, parent);
+            return new MultiplyAssign(parser, parent);
         }
 
         /// <summary>
@@ -46,7 +50,7 @@ namespace Nova.CodeDOM
         /// </summary>
         public override string GetInternalName()
         {
-            return Mod.InternalName;
+            return Multiply.InternalName;
         }
 
         internal static new void AddParsePoints()

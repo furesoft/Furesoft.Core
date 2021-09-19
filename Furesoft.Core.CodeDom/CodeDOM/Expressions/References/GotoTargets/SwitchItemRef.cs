@@ -1,6 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets.Base;
+using Nova.CodeDOM;
+using static Furesoft.Core.CodeDom.CodeDOM.Base.CodeObject;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets
 {
     /// <summary>
     /// Represents a reference to a <see cref="SwitchItem"/> (<see cref="Case"/> or <see cref="Default"/>).

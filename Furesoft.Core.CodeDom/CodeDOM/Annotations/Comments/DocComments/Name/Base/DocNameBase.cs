@@ -3,6 +3,8 @@ using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base
 {

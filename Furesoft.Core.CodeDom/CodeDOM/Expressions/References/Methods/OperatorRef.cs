@@ -3,8 +3,10 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
 {
     /// <summary>
     /// Represents a reference to an <see cref="OperatorDecl"/> or a <see cref="MethodInfo"/> for an overloaded operator.

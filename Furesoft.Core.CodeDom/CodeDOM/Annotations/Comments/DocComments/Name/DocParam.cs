@@ -2,6 +2,7 @@
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base;
 using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name
 {

@@ -1,8 +1,13 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base
 {
     /// <summary>
     /// The common base class of all binary operators (<see cref="BinaryArithmeticOperator"/>, <see cref="BinaryBitwiseOperator"/>,
@@ -72,7 +77,7 @@ namespace Nova.CodeDOM
 
                 // Move newlines immediately after an operator to before it if auto-cleanup is on
                 // (exception: don't do this for any Assignment operators).
-                if (AutomaticFormattingCleanup && !parser.IsGenerated && _right.NewLines > 0 && left != null && left.NewLines == 0 && !(this is Assignment))
+                if (AutomaticFormattingCleanup && !parser.IsGenerated && _right.NewLines > 0 && left != null && left.NewLines == 0 && !(this is Assignments.Assignment))
                 {
                     left.NewLines = _right.NewLines;
                     _right.NewLines = 0;

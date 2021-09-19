@@ -5,8 +5,17 @@ using System.Reflection;
 using Furesoft.Core.CodeDom.Utilities.Reflection;
 using Furesoft.Core.CodeDom.Rendering;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Nova.CodeDOM;
+using ParameterModifier = Nova.CodeDOM.ParameterModifier;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
 {
     /// <summary>
     /// Represents a reference to a <see cref="ParameterDecl"/> or a <see cref="ParameterInfo"/>.

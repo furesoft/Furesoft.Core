@@ -7,6 +7,7 @@ using System.Collections;
 using System.Reflection;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
