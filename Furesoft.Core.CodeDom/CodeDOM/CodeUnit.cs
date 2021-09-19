@@ -12,6 +12,7 @@ using System.Text;
 using Nova.Parsing;
 using Nova.Rendering;
 using Nova.Utilities;
+using Furesoft.Core.CodeDom;
 
 namespace Nova.CodeDOM
 {
@@ -454,9 +455,9 @@ namespace Nova.CodeDOM
                 {
                     // Log all messages if the LogLevel is Detailed, log Warnings if Normal, and Errors if Minimal
                     Message message = annotation as Message;
-                    if (Log.LogLevel >= Log.Level.Detailed || (message != null
-                        && ((Log.LogLevel >= Log.Level.Normal && message.Severity == MessageSeverity.Warning)
-                        || (Log.LogLevel >= Log.Level.Minimal && message.Severity == MessageSeverity.Error))))
+                    if (Log.LogLevel >= Log.Level.Detailed|| (message != null
+                        && ((Log.LogLevel >= Log.Level.Normal&& message.Severity == MessageSeverity.Warning)
+                        || (Log.LogLevel >= Log.Level.Minimal&& message.Severity == MessageSeverity.Error))))
                         Log.WriteLine(annotation is Message ? annotation.GetDescription() : annotation.ToString());
                 }
             }

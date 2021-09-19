@@ -47,6 +47,7 @@ namespace TestApp
         public static int Main(string[] args)
         {
             var src = "loop: \n\tmov 0x12, [hello + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
+            CodeObject.AutoDetectTabs = true;
 
             Parser.AddOperatorParsePoint("+", 2, true, false, parse);
             Parser.AddOperatorParsePoint("*", 1, true, false, parse2);
@@ -70,11 +71,6 @@ namespace TestApp
             var instr = body.First();
 
             var children = body.GetChildren<Instruction>();
-
-            foreach (var item in body)
-            {
-                Debug.WriteLine(item.GetIndentLevel());
-            }
 
             return App.Current.Run();
         }
@@ -103,12 +99,32 @@ namespace TestApp
                         {
                             instr.Arguments[i] = new RegisterRef(_registers[uref.Reference.ToString()]);
                         }
+                        else
+                        {
+                            instr.AttachMessage($"Reference '{uref.Reference}' cannot be bind", MessageSeverity.Error, MessageSource.Resolve);
+                        }
+                    }
+                    else if (arg is SquaredExpression squared)
+                    {
+                        Bind(squared.Body);
                     }
                 }
             }
+            else if (obj is BinaryOperator binary)
+            {
+                Bind(binary.Left);
+                Bind(binary.Right);
+            }
             else if (obj is Goto gt)
             {
-                gt.Target = new LabelRef(_labels[gt.Target.Name]);
+                if (_labels.ContainsKey(gt.Target.Name))
+                {
+                    gt.Target = new LabelRef(_labels[gt.Target.Name]);
+                }
+            }
+            else if (obj is UnresolvedRef uref)
+            {
+                uref.Parent.AttachMessage($"Reference '{uref.Reference}' cannot be bind", MessageSeverity.Error, MessageSource.Resolve);
             }
         }
 

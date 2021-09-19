@@ -7,8 +7,9 @@ using System.Configuration;
 using System.Reflection;
 
 using Nova.CodeDOM;
+using Furesoft.Core.CodeDom;
 
-namespace Nova
+namespace Furesoft.Core.CodeDom
 {
     /// <summary>
     /// Configuration class for Nova classes.
@@ -97,6 +98,14 @@ namespace Nova
         }
 
         /// <summary>
+        /// Log the specified exception and message.
+        /// </summary>
+        public static string LogException(Exception ex, string message)
+        {
+            return Log.Exception(ex, message + " configuration file");
+        }
+
+        /// <summary>
         /// Log the specified text message with the specified severity level.
         /// </summary>
         public static void LogMessage(string message, MessageSeverity severity, string toolTip)
@@ -112,14 +121,6 @@ namespace Nova
         public static void LogMessage(string message, MessageSeverity severity)
         {
             LogMessage(message, severity, null);
-        }
-
-        /// <summary>
-        /// Log the specified exception and message.
-        /// </summary>
-        public static string LogException(Exception ex, string message)
-        {
-            return Log.Exception(ex, message + " configuration file");
         }
     }
 }

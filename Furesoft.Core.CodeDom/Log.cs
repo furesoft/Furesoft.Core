@@ -5,8 +5,9 @@
 using System;
 
 using Nova.CodeDOM;
+using Furesoft.Core.CodeDom;
 
-namespace Nova
+namespace Furesoft.Core.CodeDom
 {
     /// <summary>
     /// Supports logging of messages.

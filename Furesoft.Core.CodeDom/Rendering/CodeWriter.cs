@@ -10,6 +10,7 @@ using System.Text;
 using Nova.CodeDOM;
 using Nova.Utilities;
 using Attribute = Nova.CodeDOM.Attribute;
+using Furesoft.Core.CodeDom;
 
 namespace Nova.Rendering
 {
