@@ -38,21 +38,6 @@
           }
         }
       },
-      "Mono.Cecil/0.11.4": {
-        "type": "package",
-        "compile": {
-          "lib/netstandard2.0/Mono.Cecil.Mdb.dll": {},
-          "lib/netstandard2.0/Mono.Cecil.Pdb.dll": {},
-          "lib/netstandard2.0/Mono.Cecil.Rocks.dll": {},
-          "lib/netstandard2.0/Mono.Cecil.dll": {}
-        },
-        "runtime": {
-          "lib/netstandard2.0/Mono.Cecil.Mdb.dll": {},
-          "lib/netstandard2.0/Mono.Cecil.Pdb.dll": {},
-          "lib/netstandard2.0/Mono.Cecil.Rocks.dll": {},
-          "lib/netstandard2.0/Mono.Cecil.dll": {}
-        }
-      },
       "Newtonsoft.Json/12.0.3": {
         "type": "package",
         "compile": {
@@ -199,7 +184,6 @@
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
-          "Mono.Cecil": "0.11.4",
           "System.Configuration.ConfigurationManager": "5.0.0"
         },
         "compile": {
@@ -325,33 +309,6 @@
         "runtimes/win/lib/netcoreapp3.0/Microsoft.Win32.SystemEvents.xml",
         "useSharedDesignerContext.txt",
         "version.txt"
-      ]
-    },
-    "Mono.Cecil/0.11.4": {
-      "sha512": "IC1h5g0NeJGHIUgzM1P82ld57knhP0IcQfrYITDPXlNpMYGUrsG5TxuaWTjaeqDNQMBDNZkB8L0rBnwsY6JHuQ==",
-      "type": "package",
-      "path": "mono.cecil/0.11.4",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "lib/net40/Mono.Cecil.Mdb.dll",
-        "lib/net40/Mono.Cecil.Mdb.pdb",
-        "lib/net40/Mono.Cecil.Pdb.dll",
-        "lib/net40/Mono.Cecil.Pdb.pdb",
-        "lib/net40/Mono.Cecil.Rocks.dll",
-        "lib/net40/Mono.Cecil.Rocks.pdb",
-        "lib/net40/Mono.Cecil.dll",
-        "lib/net40/Mono.Cecil.pdb",
-        "lib/netstandard2.0/Mono.Cecil.Mdb.dll",
-        "lib/netstandard2.0/Mono.Cecil.Mdb.pdb",
-        "lib/netstandard2.0/Mono.Cecil.Pdb.dll",
-        "lib/netstandard2.0/Mono.Cecil.Pdb.pdb",
-        "lib/netstandard2.0/Mono.Cecil.Rocks.dll",
-        "lib/netstandard2.0/Mono.Cecil.Rocks.pdb",
-        "lib/netstandard2.0/Mono.Cecil.dll",
-        "lib/netstandard2.0/Mono.Cecil.pdb",
-        "mono.cecil.0.11.4.nupkg.sha512",
-        "mono.cecil.nuspec"
       ]
     },
     "Newtonsoft.Json/12.0.3": {
