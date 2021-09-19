@@ -6,6 +6,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Nova.CodeDOM
 {

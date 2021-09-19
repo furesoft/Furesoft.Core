@@ -4,8 +4,9 @@
 
 using System.Collections;
 using System.Collections.Generic;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
 {
     /// <summary>
     /// This interface is implemented by all code objects that represent type declarations,

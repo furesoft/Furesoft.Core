@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.Rendering;
 using static Furesoft.Core.CodeDom.Rendering.CodeWriter;
 using Furesoft.Core.CodeDom.Parsing;
@@ -16,8 +15,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
     /// <summary>
     /// The common base class of all code objects.

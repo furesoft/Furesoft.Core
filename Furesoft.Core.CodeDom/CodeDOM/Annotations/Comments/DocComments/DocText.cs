@@ -1,7 +1,5 @@
 ﻿using System;
 using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Nova.CodeDOM;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
 {

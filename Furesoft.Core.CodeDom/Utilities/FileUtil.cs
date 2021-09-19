@@ -3,7 +3,6 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System;
-using System.Collections.Specialized;
 using System.IO;
 
 namespace Furesoft.Core.CodeDom.Utilities

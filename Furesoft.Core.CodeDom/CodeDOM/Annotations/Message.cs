@@ -1,8 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
 {

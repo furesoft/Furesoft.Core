@@ -3,8 +3,7 @@ using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using static Furesoft.Core.CodeDom.Parsing.Parser;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base
 {

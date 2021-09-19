@@ -3,8 +3,9 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
 {
     /// <summary>
     /// This interface is implemented by <see cref="MultiFieldDecl"/>, <see cref="MultiLocalDecl"/>, <see cref="MultiEnumMemberDecl"/>.

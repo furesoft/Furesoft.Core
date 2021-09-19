@@ -7,8 +7,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
 {

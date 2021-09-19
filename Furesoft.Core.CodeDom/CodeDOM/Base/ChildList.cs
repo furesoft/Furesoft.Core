@@ -4,7 +4,7 @@
 
 using System.Collections.Generic;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
     /// <summary>
     /// Static helper methods for ChildList - used in these cases so that the

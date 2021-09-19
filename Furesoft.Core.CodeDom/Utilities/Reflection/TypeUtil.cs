@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
 
 namespace Furesoft.Core.CodeDom.Utilities.Reflection
 {

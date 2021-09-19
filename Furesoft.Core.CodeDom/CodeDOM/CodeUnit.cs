@@ -8,16 +8,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.Utilities;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM;
 using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM
 {

@@ -10,7 +10,6 @@ using System.Text;
 using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.Utilities;
 using Furesoft.Core.CodeDom.Parsing.Base;
-using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
@@ -19,6 +18,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Furesoft.Core.CodeDom.Parsing
 {

@@ -1,8 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name;
 using Nova.CodeDOM;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name
 {

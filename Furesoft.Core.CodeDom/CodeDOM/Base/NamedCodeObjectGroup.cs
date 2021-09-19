@@ -5,8 +5,10 @@
 using System;
 using System.Collections;
 using System.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
     /// <summary>
     /// Represents a group of named code objects (<see cref="INamedCodeObject"/>s and/or <see cref="MemberInfo"/>s)

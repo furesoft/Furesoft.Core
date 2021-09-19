@@ -2,8 +2,9 @@
 using System.Reflection;
 using Furesoft.Core.CodeDom.Utilities.Reflection;
 using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 
 namespace Nova.CodeDOM
 {

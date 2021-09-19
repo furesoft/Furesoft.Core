@@ -5,9 +5,6 @@
 using System;
 using System.Configuration;
 using System.Reflection;
-
-using Nova.CodeDOM;
-using Furesoft.Core.CodeDom;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Furesoft.Core.CodeDom

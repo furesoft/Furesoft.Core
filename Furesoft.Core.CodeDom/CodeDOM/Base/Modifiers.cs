@@ -8,7 +8,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
     /// <summary>
     /// These modifiers are usable on various code objects to specify access and special behaviors.

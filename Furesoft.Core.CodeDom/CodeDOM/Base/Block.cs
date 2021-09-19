@@ -13,10 +13,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
     /// <summary>
     /// Represents the body of a <see cref="BlockStatement"/> or <see cref="AnonymousMethod"/> (containing
