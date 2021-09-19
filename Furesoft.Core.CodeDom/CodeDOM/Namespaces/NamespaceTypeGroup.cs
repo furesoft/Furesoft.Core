@@ -7,8 +7,10 @@ using System.Collections;
 using System.Reflection;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
 {
     /// <summary>
     /// Represents a group of types (<see cref="TypeDecl"/>s and/or <see cref="Type"/>s)

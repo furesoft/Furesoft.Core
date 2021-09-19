@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
 {
     /// <summary>
     /// Represents a namespace of type declarations and optional child namespaces.

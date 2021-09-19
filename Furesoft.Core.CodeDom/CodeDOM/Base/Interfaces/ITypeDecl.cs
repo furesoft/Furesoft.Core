@@ -5,6 +5,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
 {

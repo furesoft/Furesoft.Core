@@ -195,7 +195,7 @@
           "bin/placeholder/Furesoft.Core.dll": {}
         }
       },
-      "Furesoft.Core.CodeDom/1.0.0": {
+      "Furesoft.Core.CodeDom/1.0.1": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v5.0",
         "dependencies": {
@@ -658,7 +658,7 @@
       "path": "../Furesoft.Core/Furesoft.Core.csproj",
       "msbuildProject": "../Furesoft.Core/Furesoft.Core.csproj"
     },
-    "Furesoft.Core.CodeDom/1.0.0": {
+    "Furesoft.Core.CodeDom/1.0.1": {
       "type": "project",
       "path": "../Furesoft.Core.CodeDom/Furesoft.Core.CodeDom.csproj",
       "msbuildProject": "../Furesoft.Core.CodeDom/Furesoft.Core.CodeDom.csproj"
@@ -667,7 +667,7 @@
   "projectFileDependencyGroups": {
     "net5.0": [
       "Furesoft.Core >= 1.0.5",
-      "Furesoft.Core.CodeDom >= 1.0.0"
+      "Furesoft.Core.CodeDom >= 1.0.1"
     ]
   },
   "packageFolders": {

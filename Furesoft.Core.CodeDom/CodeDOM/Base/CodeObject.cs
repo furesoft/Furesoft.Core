@@ -16,6 +16,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {

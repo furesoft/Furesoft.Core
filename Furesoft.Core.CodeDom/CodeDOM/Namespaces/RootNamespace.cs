@@ -4,8 +4,10 @@
 
 using System.Collections.Generic;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
 {
     /// <summary>
     /// Represents the top-level namespace (either a project's global namespace, or an extern alias namespace).

@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
+using Nova.CodeDOM;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
 {
     /// <summary>
     /// Represents a dictionary of <see cref="Namespace"/>s and types (<see cref="TypeDecl"/>s and/or <see cref="Type"/>s),
