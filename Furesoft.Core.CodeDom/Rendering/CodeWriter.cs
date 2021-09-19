@@ -8,9 +8,9 @@ using System.IO;
 using System.Text;
 
 using Nova.CodeDOM;
-using Nova.Utilities;
 using Attribute = Nova.CodeDOM.Attribute;
 using Furesoft.Core.CodeDom;
+using Furesoft.Core.CodeDom.Utilities;
 
 namespace Nova.Rendering
 {

@@ -5,8 +5,9 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities.Reflection
 {
     /// <summary>
     /// Static helper methods for <see cref="Type"/>.

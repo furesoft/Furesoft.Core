@@ -8,7 +8,7 @@ using System.IO;
 using System.Text;
 
 using Nova.CodeDOM;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Utilities;
 
 namespace Nova.Parsing
 {

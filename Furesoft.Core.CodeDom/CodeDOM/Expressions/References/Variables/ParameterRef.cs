@@ -3,11 +3,11 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using Nova.Rendering;
-using Nova.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
 
 namespace Nova.CodeDOM
 {

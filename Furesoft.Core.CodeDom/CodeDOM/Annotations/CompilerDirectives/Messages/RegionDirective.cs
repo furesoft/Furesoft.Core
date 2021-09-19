@@ -3,7 +3,7 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using Nova.Parsing;
-using Nova.Utilities;
+using Furesoft.Core.CodeDom.Utilities;
 
 namespace Nova.CodeDOM
 {

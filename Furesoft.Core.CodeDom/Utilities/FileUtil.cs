@@ -6,7 +6,7 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 
-namespace Nova.Utilities
+namespace Furesoft.Core.CodeDom.Utilities
 {
     /// <summary>
     /// Helper methods for working with files and directories.

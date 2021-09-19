@@ -4,12 +4,14 @@
 
 using Nova.Parsing;
 using Nova.Rendering;
-using Nova.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using Furesoft.Core.CodeDom.Utilities;
+using static Furesoft.Core.CodeDom.Utilities.Reflection.TypeUtil;
 
 namespace Nova.CodeDOM
 {
@@ -1513,7 +1515,7 @@ namespace Nova.CodeDOM
 
             AsyncCallbackRef = FindTypeRef(typeof(AsyncCallback));
             IAsyncResultRef = FindTypeRef(typeof(IAsyncResult));
-            TypeUtilTRef = FindTypeRef(typeof(TypeUtil.T));
+            TypeUtilTRef = FindTypeRef(typeof(T));
 
             // Initialize the keyword-to-type map.
             KeywordToTypeRefMap = new Dictionary<string, TypeRef>(16)

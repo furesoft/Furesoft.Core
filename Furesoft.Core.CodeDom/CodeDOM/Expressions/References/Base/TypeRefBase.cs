@@ -4,12 +4,12 @@
 
 using Nova.Parsing;
 using Nova.Rendering;
-using Nova.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
 
 namespace Nova.CodeDOM
 {
