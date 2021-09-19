@@ -170,6 +170,11 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="Try"/>.
         /// </summary>
@@ -197,11 +202,6 @@ namespace Nova.CodeDOM
             if (_catches == null)
                 _catches = new ChildList<Catch>(this);
             return _catches;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)

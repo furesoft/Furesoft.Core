@@ -46,6 +46,11 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="DocSummary"/>.
         /// </summary>
@@ -60,11 +65,6 @@ namespace Nova.CodeDOM
         public override DocSummary GetDocSummary()
         {
             return this;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
     }
 }

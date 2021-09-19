@@ -19,8 +19,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class EnumMemberDecl : VariableDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an enum member declaration.
         /// </summary>
@@ -38,25 +36,24 @@ namespace Nova.CodeDOM
             : base(name, null, null)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The type of the parent <see cref="EnumDecl"/>.
-        /// </summary>
-        public override Expression Type
-        {
-            get { return (_parent is MultiEnumMemberDecl ? ((MultiEnumMemberDecl)_parent).Type : null); }
-            set { throw new Exception("Can't change the Type of an EnumMemberDecl - it's always the parent EnumDecl."); }
-        }
-
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public override string Category
         {
             get { return "enum"; }
+        }
+
+        /// <summary>
+        /// True if this is a member of a bit-flag enum.
+        /// </summary>
+        public bool IsBitFlag
+        {
+            get
+            {
+                EnumDecl enumDecl = ParentEnumDecl;
+                return (enumDecl != null && enumDecl.IsBitFlags);
+            }
         }
 
         /// <summary>
@@ -90,20 +87,13 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if this is a member of a bit-flag enum.
+        /// The type of the parent <see cref="EnumDecl"/>.
         /// </summary>
-        public bool IsBitFlag
+        public override Expression Type
         {
-            get
-            {
-                EnumDecl enumDecl = ParentEnumDecl;
-                return (enumDecl != null && enumDecl.IsBitFlags);
-            }
+            get { return (_parent is MultiEnumMemberDecl ? ((MultiEnumMemberDecl)_parent).Type : null); }
+            set { throw new Exception("Can't change the Type of an EnumMemberDecl - it's always the parent EnumDecl."); }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Create a reference to the <see cref="EnumMemberDecl"/>.
@@ -127,11 +117,36 @@ namespace Nova.CodeDOM
             return _name;
         }
 
-        #endregion
+        /// <summary>
+        /// Parse an <see cref="EnumMemberDecl"/>.
+        /// </summary>
+        public EnumMemberDecl(Parser parser, CodeObject parent, bool unusedName)
+            : base(parser, parent)
+        {
+            Token token;
+            if (unusedName)
+            {
+                // Get the name from the Unused list
+                token = parser.RemoveLastUnusedToken();
+                _name = token.NonVerbatimText;
+            }
+            else
+            {
+                // Parse the name
+                _name = parser.GetIdentifierText();
+                token = parser.LastToken;
+            }
+            MoveLocationAndComment(token);
 
-        #region /* PARSING */
+            ParseUnusedAnnotations(parser, this, true);  // Parse any annotations from the Unused list
+            ParseInitialization(parser, parent);         // Parse the initialization (if any)
 
-        internal static void AddParsePoints()
+            // Move any EOL or Postfix annotations on the init expression to the parent
+            if (_initialization != null)
+                MoveEOLAndPostAnnotations(_initialization);
+        }
+
+        public static void AddParsePoints()
         {
             // We detect enum member declarations by '=' or ',' at the top level of an EnumDecl block.
             // We parse backwards from the parse-point, and then parse forwards to complete the parsing.
@@ -215,52 +230,13 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Parse an <see cref="EnumMemberDecl"/>.
+        /// Determines if the code object has a terminator character.
         /// </summary>
-        public EnumMemberDecl(Parser parser, CodeObject parent, bool unusedName)
-            : base(parser, parent)
+        public override bool HasTerminator
         {
-            Token token;
-            if (unusedName)
-            {
-                // Get the name from the Unused list
-                token = parser.RemoveLastUnusedToken();
-                _name = token.NonVerbatimText;
-            }
-            else
-            {
-                // Parse the name
-                _name = parser.GetIdentifierText();
-                token = parser.LastToken;
-            }
-            MoveLocationAndComment(token);
-
-            ParseUnusedAnnotations(parser, this, true);  // Parse any annotations from the Unused list
-            ParseInitialization(parser, parent);         // Parse the initialization (if any)
-
-            // Move any EOL or Postfix annotations on the init expression to the parent
-            if (_initialization != null)
-                MoveEOLAndPostAnnotations(_initialization);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object only requires a single line for display by default.
-        /// </summary>
-        public override bool IsSingleLineDefault
-        {
-            get { return !HasFirstOnLineAnnotations; }
-        }
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return HasFirstOnLineAnnotations; }
+            // EnumMemberDecls don't have terminators, so disable use of this flag
+            get { return false; }
+            set { }
         }
 
         /// <summary>
@@ -272,25 +248,19 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Determines if the code object has a terminator character.
+        /// True if the code object defaults to starting on a new line.
         /// </summary>
-        public override bool HasTerminator
+        public override bool IsFirstOnLineDefault
         {
-            // EnumMemberDecls don't have terminators, so disable use of this flag
-            get { return false; }
-            set { }
+            get { return HasFirstOnLineAnnotations; }
         }
 
         /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// True if the code object only requires a single line for display by default.
         /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
+        public override bool IsSingleLineDefault
         {
-            // Default to a preceeding blank line if the object has first-on-line annotations, or if
-            // it's not another enum member declaration.
-            if (HasFirstOnLineAnnotations || !(previous is EnumMemberDecl))
-                return 2;
-            return 1;
+            get { return !HasFirstOnLineAnnotations; }
         }
 
         /// <summary>
@@ -316,9 +286,17 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Default to a preceeding blank line if the object has first-on-line annotations, or if
+            // it's not another enum member declaration.
+            if (HasFirstOnLineAnnotations || !(previous is EnumMemberDecl))
+                return 2;
+            return 1;
+        }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
         {
@@ -350,7 +328,5 @@ namespace Nova.CodeDOM
                 AsTextInitialization(writer, passFlags);
             }
         }
-
-        #endregion
     }
 }

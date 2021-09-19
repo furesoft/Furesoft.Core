@@ -55,17 +55,17 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="ElseDirective"/>.
         /// </summary>
         public static ElseDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new ElseDirective(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

@@ -41,17 +41,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="UnDefSymbol"/>.
         /// </summary>
         public static UnDefSymbol Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new UnDefSymbol(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

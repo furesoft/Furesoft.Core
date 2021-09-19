@@ -133,6 +133,12 @@ namespace Nova.CodeDOM
             }
         }
 
+        public static void AddParsePoints()
+        {
+            // Use a parse-priority of 400 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300)
+            Parser.AddParsePoint(ParseTokenStartGroup, 400, ParseParenthesizedExpression);
+        }
+
         /// <summary>
         /// Implicit conversion of a <see cref="Namespace"/> to an <see cref="Expression"/> (actually, a <see cref="NamespaceRef"/>).
         /// </summary>
@@ -857,12 +863,6 @@ namespace Nova.CodeDOM
         public virtual Expression SkipPrefixes()
         {
             return this;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 400 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300)
-            Parser.AddParsePoint(ParseTokenStartGroup, 400, ParseParenthesizedExpression);
         }
 
         /// <summary>

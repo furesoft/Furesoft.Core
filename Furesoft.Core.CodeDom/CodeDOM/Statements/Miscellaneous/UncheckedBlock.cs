@@ -11,8 +11,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class UncheckedBlock : BlockStatement
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="UncheckedBlock"/>.
         /// </summary>
@@ -27,10 +25,6 @@ namespace Nova.CodeDOM
             : base(null, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
@@ -39,16 +33,19 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = Unchecked.ParseToken;
 
-        internal static void AddParsePoints()
+        protected UncheckedBlock(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        {
+            parser.NextToken();                        // Move past 'unchecked'
+            new Block(out _body, parser, this, true);  // Parse the body
+        }
+
+        public static void AddParsePoints()
         {
             // Use a parse-priority of 0 (Unchecked uses 100)
             Parser.AddParsePoint(ParseToken, 0, Parse, typeof(IBlock));
@@ -65,17 +62,6 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected UncheckedBlock(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            parser.NextToken();                        // Move past 'unchecked'
-            new Block(out _body, parser, this, true);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
@@ -83,7 +69,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
     }
 }

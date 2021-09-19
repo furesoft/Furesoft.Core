@@ -39,17 +39,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="ElIfDirective"/>.
         /// </summary>
         public static ElIfDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new ElIfDirective(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

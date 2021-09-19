@@ -68,17 +68,17 @@ namespace Nova.CodeDOM
             set { _path = value; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="DocInclude"/>.
         /// </summary>
         public static new DocInclude Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new DocInclude(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         protected override void AsTextEnd(CodeWriter writer, RenderFlags flags)

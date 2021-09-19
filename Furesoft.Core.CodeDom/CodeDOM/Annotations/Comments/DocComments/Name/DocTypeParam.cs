@@ -59,17 +59,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="DocTypeParam"/>.
         /// </summary>
         public static new DocTypeParam Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new DocTypeParam(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
     }
 }

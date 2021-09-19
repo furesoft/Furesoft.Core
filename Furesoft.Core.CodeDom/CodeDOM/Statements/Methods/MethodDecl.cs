@@ -66,6 +66,15 @@ namespace Nova.CodeDOM
             }
         }
 
+        public static void AddParsePoints()
+        {
+            // Methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            // Use a parse-priority of 50 (ConstructorDecl uses 0, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400).
+            Parser.AddParsePoint(ParseTokenStart, 50, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="MethodDecl"/>.
         /// </summary>
@@ -98,15 +107,6 @@ namespace Nova.CodeDOM
         public override SymbolicRef CreateRef(bool isFirstOnLine)
         {
             return new MethodRef(this, isFirstOnLine);
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            // Use a parse-priority of 50 (ConstructorDecl uses 0, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400).
-            Parser.AddParsePoint(ParseTokenStart, 50, Parse, typeof(IBlock));
         }
     }
 }

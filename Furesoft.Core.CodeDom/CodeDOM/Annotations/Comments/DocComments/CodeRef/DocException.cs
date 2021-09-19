@@ -45,17 +45,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="DocException"/>.
         /// </summary>
         public static new DocException Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new DocException(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
     }
 }

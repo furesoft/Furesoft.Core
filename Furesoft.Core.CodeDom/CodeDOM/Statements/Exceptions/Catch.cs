@@ -162,6 +162,13 @@ namespace Nova.CodeDOM
             }
         }
 
+        public static void AddParsePoints()
+        {
+            // Normally, a 'catch' is parsed by the 'try' parse logic (see Try).
+            // This parse-point exists only to catch an orphaned 'catch' statement.
+            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="Catch"/>.
         /// </summary>
@@ -189,13 +196,6 @@ namespace Nova.CodeDOM
             Catch clone = (Catch)base.Clone();
             clone.CloneField(ref clone._target, _target);
             return clone;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Normally, a 'catch' is parsed by the 'try' parse logic (see Try).
-            // This parse-point exists only to catch an orphaned 'catch' statement.
-            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)

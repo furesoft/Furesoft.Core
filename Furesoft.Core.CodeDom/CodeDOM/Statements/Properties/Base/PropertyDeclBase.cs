@@ -14,14 +14,7 @@ namespace Nova.CodeDOM
     /// </summary>
     public abstract class PropertyDeclBase : BlockStatement, IVariableDecl, IModifiers
     {
-        #region /* FIELDS */
-
         protected Modifiers _modifiers;
-
-        /// <summary>
-        /// The return type is an <see cref="Expression"/> that must evaluate to a <see cref="TypeRef"/> in valid code.
-        /// </summary>
-        protected Expression _type;
 
         /// <summary>
         /// The name can be a string or an Expression (in which case it should be a Dot operator
@@ -31,9 +24,10 @@ namespace Nova.CodeDOM
         /// </summary>
         protected object _name;
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The return type is an <see cref="Expression"/> that must evaluate to a <see cref="TypeRef"/> in valid code.
+        /// </summary>
+        protected Expression _type;
 
         protected PropertyDeclBase(string name, Expression type, Modifiers modifiers, CodeObject body)
             : base(body, true)
@@ -57,58 +51,25 @@ namespace Nova.CodeDOM
             _name = name;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the property.
-        /// </summary>
-        public virtual string Name
-        {
-            get
-            {
-                if (_name is string)
-                    return (string)_name;
-                // If it's an explicit interface implementation, use the full name
-                if (_name is Expression)
-                    return ((Expression)_name).AsString();
-                return null;
-            }
-            set { _name = value; }
-        }
-
         /// <summary>
         /// The descriptive category of the code object.
         /// </summary>
         public abstract string Category { get; }
 
         /// <summary>
-        /// The type of the property.
+        /// Get the declaring <see cref="TypeDecl"/>.
         /// </summary>
-        public Expression Type
+        public TypeDecl DeclaringType
         {
-            get { return _type; }
-            set { SetField(ref _type, value, true); }
+            get { return (_parent as TypeDecl); }
         }
 
         /// <summary>
-        /// True if the property is readable.
+        /// Get the explicit interface expression (if any).
         /// </summary>
-        public abstract bool IsReadable { get; }
-
-        /// <summary>
-        /// True if the property is writable.
-        /// </summary>
-        public abstract bool IsWritable { get; }
-
-        /// <summary>
-        /// Optional <see cref="Modifiers"/> for the property.
-        /// </summary>
-        public Modifiers Modifiers
+        public Expression ExplicitInterfaceExpression
         {
-            get { return _modifiers; }
-            set { _modifiers = value; }
+            get { return _name as Expression; }
         }
 
         /// <summary>
@@ -121,22 +82,30 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the property is static.
+        /// True if this is an explicit interface implementation.
         /// </summary>
-        public bool IsStatic
+        public bool IsExplicitInterfaceImplementation
         {
-            get { return _modifiers.HasFlag(Modifiers.Static); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
+            get { return _name is Dot; }
         }
 
         /// <summary>
-        /// True if the property has public access.
+        /// True if the property has internal access.
         /// </summary>
-        public bool IsPublic
+        public bool IsInternal
         {
-            get { return _modifiers.HasFlag(Modifiers.Public); }
-            // Force other flags off if setting to Public
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
+            get { return _modifiers.HasFlag(Modifiers.Internal); }
+            // Force certain other flags off if setting to Protected
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
+        }
+
+        /// <summary>
+        /// True if the method is an override.
+        /// </summary>
+        public bool IsOverride
+        {
+            get { return _modifiers.HasFlag(Modifiers.Override); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Override : _modifiers & ~Modifiers.Override); }
         }
 
         /// <summary>
@@ -160,22 +129,27 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if the property has internal access.
+        /// True if the property has public access.
         /// </summary>
-        public bool IsInternal
+        public bool IsPublic
         {
-            get { return _modifiers.HasFlag(Modifiers.Internal); }
-            // Force certain other flags off if setting to Protected
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
+            get { return _modifiers.HasFlag(Modifiers.Public); }
+            // Force other flags off if setting to Public
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
         }
 
         /// <summary>
-        /// True if the method is an override.
+        /// True if the property is readable.
         /// </summary>
-        public bool IsOverride
+        public abstract bool IsReadable { get; }
+
+        /// <summary>
+        /// True if the property is static.
+        /// </summary>
+        public bool IsStatic
         {
-            get { return _modifiers.HasFlag(Modifiers.Override); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Override : _modifiers & ~Modifiers.Override); }
+            get { return _modifiers.HasFlag(Modifiers.Static); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
         }
 
         /// <summary>
@@ -188,32 +162,44 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// True if this is an explicit interface implementation.
+        /// True if the property is writable.
         /// </summary>
-        public bool IsExplicitInterfaceImplementation
+        public abstract bool IsWritable { get; }
+
+        /// <summary>
+        /// Optional <see cref="Modifiers"/> for the property.
+        /// </summary>
+        public Modifiers Modifiers
         {
-            get { return _name is Dot; }
+            get { return _modifiers; }
+            set { _modifiers = value; }
         }
 
         /// <summary>
-        /// Get the explicit interface expression (if any).
+        /// The name of the property.
         /// </summary>
-        public Expression ExplicitInterfaceExpression
+        public virtual string Name
         {
-            get { return _name as Expression; }
+            get
+            {
+                if (_name is string)
+                    return (string)_name;
+                // If it's an explicit interface implementation, use the full name
+                if (_name is Expression)
+                    return ((Expression)_name).AsString();
+                return null;
+            }
+            set { _name = value; }
         }
 
         /// <summary>
-        /// Get the declaring <see cref="TypeDecl"/>.
+        /// The type of the property.
         /// </summary>
-        public TypeDecl DeclaringType
+        public Expression Type
         {
-            get { return (_parent as TypeDecl); }
+            get { return _type; }
+            set { SetField(ref _type, value, true); }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add the <see cref="CodeObject"/> to the specified dictionary.
@@ -222,19 +208,6 @@ namespace Nova.CodeDOM
         {
             dictionary.Add(Name, this);
         }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Remove(Name, this);
-        }
-
-        /// <summary>
-        /// Get the access rights of the property.
-        /// </summary>
-        public abstract void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal);
 
         /// <summary>
         /// Deep-clone the code object.
@@ -246,6 +219,11 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._name, _name);
             return clone;
         }
+
+        /// <summary>
+        /// Get the access rights of the property.
+        /// </summary>
+        public abstract void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal);
 
         /// <summary>
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
@@ -266,36 +244,12 @@ namespace Nova.CodeDOM
             return GetFullName(false);
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        internal static void AddParsePoints()
-        {
-            // Property declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            // Use a parse-priority of 200 (GenericMethodDecl uses 0, UnresolvedRef uses 100, BlockDecl uses 300, Initializer uses 400)
-            Parser.AddParsePoint(Block.ParseTokenStart, 200, Parse, typeof(IBlock));
-        }
-
         /// <summary>
-        /// Parse a <see cref="PropertyDecl"/> or <see cref="EventDecl"/>.
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
         /// </summary>
-        public static PropertyDeclBase Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
         {
-            // If our parent is a TypeDecl, verify that we have an unused Expression (it can be either an
-            // identifier or a Dot operator for explicit interface implementations).  Otherwise, require a
-            // possible type in addition to the Expression.
-            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
-            if ((parent is TypeDecl && parser.HasUnusedExpression) || parser.HasUnusedTypeRefAndExpression)
-            {
-                // If we have an unused 'event' modifier, it's an event, otherwise treat it as a property
-                string eventModifier = ModifiersHelpers.AsString(Modifiers.Event).Trim();
-                bool isEvent = (Enumerable.Any(parser.Unused, delegate(ParsedObject parsedObject) { return parsedObject is Token && ((Token)parsedObject).Text == eventModifier; }));
-                return (isEvent ? (PropertyDeclBase)new EventDecl(parser, parent) : new PropertyDecl(parser, parent));
-            }
-            return null;
+            dictionary.Remove(Name, this);
         }
 
         protected PropertyDeclBase(Parser parser, CodeObject parent, bool parse)
@@ -327,11 +281,32 @@ namespace Nova.CodeDOM
             }
         }
 
-        protected void ParseTypeModifiersAnnotations(Parser parser)
+        public static void AddParsePoints()
         {
-            ParseUnusedType(parser, ref _type);                 // Parse the type from the Unused list
-            _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
-            ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
+            // Property declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            // Use a parse-priority of 200 (GenericMethodDecl uses 0, UnresolvedRef uses 100, BlockDecl uses 300, Initializer uses 400)
+            Parser.AddParsePoint(Block.ParseTokenStart, 200, Parse, typeof(IBlock));
+        }
+
+        /// <summary>
+        /// Parse a <see cref="PropertyDecl"/> or <see cref="EventDecl"/>.
+        /// </summary>
+        public static PropertyDeclBase Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // If our parent is a TypeDecl, verify that we have an unused Expression (it can be either an
+            // identifier or a Dot operator for explicit interface implementations).  Otherwise, require a
+            // possible type in addition to the Expression.
+            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
+            if ((parent is TypeDecl && parser.HasUnusedExpression) || parser.HasUnusedTypeRefAndExpression)
+            {
+                // If we have an unused 'event' modifier, it's an event, otherwise treat it as a property
+                string eventModifier = ModifiersHelpers.AsString(Modifiers.Event).Trim();
+                bool isEvent = (Enumerable.Any(parser.Unused, delegate (ParsedObject parsedObject) { return parsedObject is Token && ((Token)parsedObject).Text == eventModifier; }));
+                return (isEvent ? (PropertyDeclBase)new EventDecl(parser, parent) : new PropertyDecl(parser, parent));
+            }
+            return null;
         }
 
         /// <summary>
@@ -342,59 +317,11 @@ namespace Nova.CodeDOM
             return true;
         }
 
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
-        /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
+        protected void ParseTypeModifiersAnnotations(Parser parser)
         {
-            // Always default to a blank line before a property declaration, unless it's formatted on a
-            // single line and is preceeded by another single-line property declaration of the same type or a comment.
-            if (IsSingleLine && ((previous.GetType() == GetType() && previous.IsSingleLine) || previous is Comment))
-                return 1;
-            return 2;
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the object (0 to N).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return base.NewLines; }
-            set
-            {
-                // If we're changing to or from zero, also change any prefix attributes
-                bool isFirstOnLine = (value != 0);
-                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
-                {
-                    foreach (Annotation annotation in _annotations)
-                    {
-                        if (annotation is Attribute)
-                            annotation.IsFirstOnLine = isFirstOnLine;
-                    }
-                }
-
-                base.NewLines = value;
-            }
-        }
-
-        /// <summary>
-        /// Reformat the <see cref="Block"/> body.
-        /// </summary>
-        public override void ReformatBlock()
-        {
-            base.ReformatBlock();
-
-            // If the child accessors have no bodies (they are interface properties/indexers/events),
-            // then format the entire statement as a single line.
-            if (_body != null)
-            {
-                if (Enumerable.All(_body, delegate(CodeObject codeObject) { return codeObject is AccessorDecl && ((AccessorDecl)codeObject).Body == null; }))
-                    IsSingleLine = true;
-            }
+            ParseUnusedType(parser, ref _type);                 // Parse the type from the Unused list
+            _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
+            ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
         }
 
         /// <summary>
@@ -426,9 +353,56 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
+        /// <summary>
+        /// The number of newlines preceeding the object (0 to N).
+        /// </summary>
+        public override int NewLines
+        {
+            get { return base.NewLines; }
+            set
+            {
+                // If we're changing to or from zero, also change any prefix attributes
+                bool isFirstOnLine = (value != 0);
+                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
+                {
+                    foreach (Annotation annotation in _annotations)
+                    {
+                        if (annotation is Attribute)
+                            annotation.IsFirstOnLine = isFirstOnLine;
+                    }
+                }
 
-        #region /* RENDERING */
+                base.NewLines = value;
+            }
+        }
+
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Always default to a blank line before a property declaration, unless it's formatted on a
+            // single line and is preceeded by another single-line property declaration of the same type or a comment.
+            if (IsSingleLine && ((previous.GetType() == GetType() && previous.IsSingleLine) || previous is Comment))
+                return 1;
+            return 2;
+        }
+
+        /// <summary>
+        /// Reformat the <see cref="Block"/> body.
+        /// </summary>
+        public override void ReformatBlock()
+        {
+            base.ReformatBlock();
+
+            // If the child accessors have no bodies (they are interface properties/indexers/events),
+            // then format the entire statement as a single line.
+            if (_body != null)
+            {
+                if (Enumerable.All(_body, delegate (CodeObject codeObject) { return codeObject is AccessorDecl && ((AccessorDecl)codeObject).Body == null; }))
+                    IsSingleLine = true;
+            }
+        }
 
         protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
         {
@@ -451,7 +425,5 @@ namespace Nova.CodeDOM
             else if (_name is Expression)
                 ((Expression)_name).AsText(writer, passFlags & ~(RenderFlags.Description | RenderFlags.ShowParentTypes));
         }
-
-        #endregion
     }
 }

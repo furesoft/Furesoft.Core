@@ -23,8 +23,6 @@ namespace Nova.Parsing
     /// </remarks>
     public class Parser : IDisposable
     {
-        #region /* FIELDS */
-
         /// <summary>
         /// The <see cref="CodeUnit"/> being parsed.
         /// </summary>
@@ -50,6 +48,14 @@ namespace Nova.Parsing
         /// </summary>
         public TokenType TokenType;
 
+        public static void AddMultipleParsePoints(string[] startTokens, ParseDelegate callback)
+        {
+            foreach (var item in startTokens)
+            {
+                Parser.AddParsePoint(item, callback);
+            }
+        }
+
         /// <summary>
         /// The last token.
         /// </summary>
@@ -73,7 +79,7 @@ namespace Nova.Parsing
         /// <summary>
         /// Delegate for parsing single unused identifiers in Blocks (used for EnumDecls).
         /// </summary>
-        public Func<Parser, CodeObject, ParseFlags, CodeObject> SingleUnusedIdentifierParser; 
+        public Func<Parser, CodeObject, ParseFlags, CodeObject> SingleUnusedIdentifierParser;
 
         /// <summary>
         /// Unused tokens or code objects in the current active scope.
@@ -90,6 +96,7 @@ namespace Nova.Parsing
 
         // List of tokens pre-fetched by the peek-ahead logic
         protected readonly List<Token> _peekAheadTokens = new List<Token>();
+
         protected int _peekAheadIndex;
 
         // Stack of objects at which bubble-up normalization of EOL comments should stop
@@ -111,10 +118,6 @@ namespace Nova.Parsing
         protected int _linesWithSpaces;    // Number of lines starting with spaces
         protected int _linesWithTabs;      // Number of lines starting with tabs
         protected bool _isSLOC;            // True if the current line should be counted towards the SLOC total
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Parse source code from the specified CodeUnit.
@@ -157,10 +160,6 @@ namespace Nova.Parsing
         public Parser(CodeUnit codeUnit)
             : this(codeUnit, ParseFlags.None, false)
         { }
-
-        #endregion
-
-        #region /* PROPERTIES */
 
         /// <summary>
         /// The current token.
@@ -354,10 +353,6 @@ namespace Nova.Parsing
         /// </summary>
         public bool IsGeneratedRegion { get; set; }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Add a code object that was just parsed but not yet needed to the unused list.
         /// </summary>
@@ -522,85 +517,85 @@ namespace Nova.Parsing
 
                     case TokenType.Identifier:
                     case TokenType.Symbol:
-                    {
-                        // If it's an Identifier or Symbol, look for a parse-point
-                        List<ParsePoint> list;
-                        if (_tokenMap.TryGetValue(TokenText, out list))
                         {
-                            // Check each parse-point in priority order until one parses successfully
-                            foreach (ParsePoint parsePoint in list)
+                            // If it's an Identifier or Symbol, look for a parse-point
+                            List<ParsePoint> list;
+                            if (_tokenMap.TryGetValue(TokenText, out list))
                             {
-                                // Only call the parse-point if we're in a valid context
-                                if (parsePoint.IsContextValid(this, parent, flags))
+                                // Check each parse-point in priority order until one parses successfully
+                                foreach (ParsePoint parsePoint in list)
                                 {
-                                    // Callback to the static code object method, so it can parse itself
-                                    obj = parsePoint.Callback(this, parent, flags);
-
-                                    // Reset the peek-ahead queue between attempts
-                                    _peekAheadIndex = 0;
-
-                                    if (obj != null)
-                                        break;
-                                }
-                            }
-                        }
-                        // If we didn't recognize the token, save it in the Unused list and move ahead to the next one
-                        if (obj == null)
-                        {
-                            // Special logic to ignore any extraneous empty statements (';')
-                            if (TokenText == Statement.ParseTokenTerminator)
-                            {
-                                // Discard token and get any comment as a non-EOL comment
-                                NextToken();
-                                List<CommentBase> comments = LastToken.TrailingComments;
-                                if (comments != null && comments.Count > 0)
-                                {
-                                    CommentBase comment = comments[0];
-                                    comment.IsEOL = false;
-                                    comment.NewLines += LastToken.NewLines;
-                                    comments.RemoveAt(0);
-                                    obj = comment;
-                                }
-                            }
-                            else
-                            {
-                                SaveAndNextToken();
-
-                                // Do a special check for a single unused identifier in a Block (used for EnumMemberDecls)
-                                if (TokenText == Block.ParseTokenEnd && LastToken.IsIdentifier && SingleUnusedIdentifierParser != null)
-                                {
-                                    obj = SingleUnusedIdentifierParser(this, parent, ParseFlags.None);
-                                }
-                                // Do a special check for "Type`N" style names embedded in doc comments, and convert to "Type<>"
-                                else if (TokenText == "`" && _inDocCommentCodeContent)
-                                {
-                                    int number = int.Parse(PeekNextTokenText());
-                                    if (number > 0)
+                                    // Only call the parse-point if we're in a valid context
+                                    if (parsePoint.IsContextValid(this, parent, flags))
                                     {
-                                        NextToken(); // Skip past '`'
-                                        NextToken(); // Skip past the number token
-                                        obj = new UnresolvedRef(RemoveLastUnusedToken()) { TypeArguments = ChildList<Expression>.CreateListOfNulls(number) };
+                                        // Callback to the static code object method, so it can parse itself
+                                        obj = parsePoint.Callback(this, parent, flags);
+
+                                        // Reset the peek-ahead queue between attempts
+                                        _peekAheadIndex = 0;
+
+                                        if (obj != null)
+                                            break;
                                     }
                                 }
                             }
+                            // If we didn't recognize the token, save it in the Unused list and move ahead to the next one
+                            if (obj == null)
+                            {
+                                // Special logic to ignore any extraneous empty statements (';')
+                                if (TokenText == Statement.ParseTokenTerminator)
+                                {
+                                    // Discard token and get any comment as a non-EOL comment
+                                    NextToken();
+                                    List<CommentBase> comments = LastToken.TrailingComments;
+                                    if (comments != null && comments.Count > 0)
+                                    {
+                                        CommentBase comment = comments[0];
+                                        comment.IsEOL = false;
+                                        comment.NewLines += LastToken.NewLines;
+                                        comments.RemoveAt(0);
+                                        obj = comment;
+                                    }
+                                }
+                                else
+                                {
+                                    SaveAndNextToken();
+
+                                    // Do a special check for a single unused identifier in a Block (used for EnumMemberDecls)
+                                    if (TokenText == Block.ParseTokenEnd && LastToken.IsIdentifier && SingleUnusedIdentifierParser != null)
+                                    {
+                                        obj = SingleUnusedIdentifierParser(this, parent, ParseFlags.None);
+                                    }
+                                    // Do a special check for "Type`N" style names embedded in doc comments, and convert to "Type<>"
+                                    else if (TokenText == "`" && _inDocCommentCodeContent)
+                                    {
+                                        int number = int.Parse(PeekNextTokenText());
+                                        if (number > 0)
+                                        {
+                                            NextToken(); // Skip past '`'
+                                            NextToken(); // Skip past the number token
+                                            obj = new UnresolvedRef(RemoveLastUnusedToken()) { TypeArguments = ChildList<Expression>.CreateListOfNulls(number) };
+                                        }
+                                    }
+                                }
+                            }
+                            break;
                         }
-                        break;
-                    }
                     case TokenType.CompilerDirective:
-                    {
-                        // If it's a compiler directive start symbol, look for a parse-point
-                        Token next = PeekNextToken();
-                        if (next != null && !next.IsFirstOnLine && next.TokenType == TokenType.Identifier)
                         {
-                            ParseDelegate @delegate;
-                            if (_compilerDirectiveMap.TryGetValue(next.Text, out @delegate))
-                                obj = @delegate(this, parent, flags);
+                            // If it's a compiler directive start symbol, look for a parse-point
+                            Token next = PeekNextToken();
+                            if (next != null && !next.IsFirstOnLine && next.TokenType == TokenType.Identifier)
+                            {
+                                ParseDelegate @delegate;
+                                if (_compilerDirectiveMap.TryGetValue(next.Text, out @delegate))
+                                    obj = @delegate(this, parent, flags);
+                            }
+                            // If we didn't recognize the compiler directive, save the '#' in the Unused list and move ahead to the next token
+                            if (obj == null)
+                                SaveAndNextToken();
+                            break;
                         }
-                        // If we didn't recognize the compiler directive, save the '#' in the Unused list and move ahead to the next token
-                        if (obj == null)
-                            SaveAndNextToken();
-                        break;
-                    }
                     default:
                         // For unrecognized token types, save them in the unused list
                         SaveAndNextToken();
@@ -1457,7 +1452,6 @@ namespace Nova.Parsing
                 }
             }
 
-
             // Check for escaped chars inside documentation comments
             if (_inDocComment && _ch == '&')
             {
@@ -1577,10 +1571,6 @@ namespace Nova.Parsing
             codeObject.AttachAnnotation(new TokenMessage(text, token));
         }
 
-        #endregion
-
-        #region /* CONDITIONAL DIRECTIVES */
-
         /// <summary>
         /// True if parsing a compiler directive expression.
         /// </summary>
@@ -1628,10 +1618,6 @@ namespace Nova.Parsing
         {
             _compilerDirectiveMap.Add(token, callback);
         }
-
-        #endregion
-
-        #region /* DOCUMENTATION COMMENTS */
 
         private bool _inDocComment;
         private bool _inBlockDocComment;
@@ -1752,10 +1738,6 @@ namespace Nova.Parsing
             _docCommentTagMap.Add(tag, callback);
         }
 
-        #endregion
-
-        #region /* PARSE-POINTS */
-
         /// <summary>
         /// Delegate for parser callbacks.
         /// </summary>
@@ -1851,8 +1833,6 @@ namespace Nova.Parsing
             _operatorInfoMap.Add(token, new OperatorInfo(precedence, leftAssociative, unary));
         }
 
-        #region /* PARSEPOINT CLASS */
-
         private class ParsePoint
         {
             public int Priority;
@@ -1896,14 +1876,9 @@ namespace Nova.Parsing
             }
         }
 
-        #endregion
-
-        #endregion
-
-        #region /* SYMBOL MAPS */
-
         // Nested maps of symbols used to tokenize the longest possible tokens
         private static readonly CharMap _symbolMap = new CharMap();
+
         private class CharMap : Dictionary<char, CharMap>
         {
             public void AddSymbolMap(string token)
@@ -1953,7 +1928,5 @@ namespace Nova.Parsing
                 Unary = unary;
             }
         }
-
-        #endregion
     }
 }

@@ -60,6 +60,12 @@ namespace Nova.CodeDOM
             }
         }
 
+        public static void AddParsePoints()
+        {
+            // Use a parse-priority of 0 (Complement uses 100)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(TypeDecl));
+        }
+
         /// <summary>
         /// Parse a <see cref="DestructorDecl"/>.
         /// </summary>
@@ -80,12 +86,6 @@ namespace Nova.CodeDOM
             if (_parent is TypeDecl)
                 name = ((TypeDecl)_parent).GetFullName(descriptive) + "." + name;
             return name;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 0 (Complement uses 100)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(TypeDecl));
         }
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)

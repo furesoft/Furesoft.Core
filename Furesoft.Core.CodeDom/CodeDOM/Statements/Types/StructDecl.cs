@@ -26,8 +26,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class StructDecl : BaseListTypeDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="StructDecl"/> with the specified name.
         /// </summary>
@@ -56,10 +54,6 @@ namespace Nova.CodeDOM
             : base(name, modifiers, baseTypes)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// Always <c>true</c>.
         /// </summary>
@@ -84,10 +78,6 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
         /// Get the base type.
         /// </summary>
@@ -96,30 +86,10 @@ namespace Nova.CodeDOM
             return TypeRef.ValueTypeRef;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "struct";
-
-        internal static void AddParsePoints()
-        {
-            // Structs are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="StructDecl"/>.
-        /// </summary>
-        public static StructDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new StructDecl(parser, parent);
-        }
 
         protected StructDecl(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -149,9 +119,21 @@ namespace Nova.CodeDOM
                 parser.NextToken();
         }
 
-        #endregion
+        public static void AddParsePoints()
+        {
+            // Structs are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// Parse a <see cref="StructDecl"/>.
+        /// </summary>
+        public static StructDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new StructDecl(parser, parent);
+        }
 
         /// <summary>
         /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
@@ -161,7 +143,5 @@ namespace Nova.CodeDOM
             // Always default to a blank line before a struct declaration
             return 2;
         }
-
-        #endregion
     }
 }

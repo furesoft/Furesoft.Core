@@ -252,6 +252,14 @@ namespace Nova.CodeDOM
             get { return _target; }
         }
 
+        public static void AddParsePoints()
+        {
+            // Use a parse-priority of 300 (IndexerDecl uses 0, TypeRef uses 100, Index uses 200)
+            // Attributes can appear in many places (see top of this file), so we won't restrict their
+            // scope for parsing (but static analysis will flag them if they aren't in a valid place.
+            Parser.AddParsePoint(ParseTokenStart, 300, Parse);
+        }
+
         /// <summary>
         /// Helper method to convert a collection of Attributes to text.
         /// </summary>
@@ -431,14 +439,6 @@ namespace Nova.CodeDOM
                 }
             }
             return false;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 300 (IndexerDecl uses 0, TypeRef uses 100, Index uses 200)
-            // Attributes can appear in many places (see top of this file), so we won't restrict their
-            // scope for parsing (but static analysis will flag them if they aren't in a valid place.
-            Parser.AddParsePoint(ParseTokenStart, 300, Parse);
         }
 
         protected static void AsTextAttributes(CodeWriter writer, IList<CustomAttributeData> attributes, AttributeTarget attributeTarget)

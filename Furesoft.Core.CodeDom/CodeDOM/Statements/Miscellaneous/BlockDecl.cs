@@ -12,8 +12,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class BlockDecl : BlockStatement
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="BlockDecl"/>.
         /// </summary>
@@ -35,10 +33,6 @@ namespace Nova.CodeDOM
             : base(codeObjects)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// Always <c>false</c>.
         /// </summary>
@@ -46,10 +40,6 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Attach an <see cref="Annotation"/> (<see cref="Comment"/>, <see cref="DocComment"/>, <see cref="Attribute"/>, <see cref="CompilerDirective"/>, or <see cref="Message"/>) to the <see cref="CodeObject"/>.
@@ -66,11 +56,16 @@ namespace Nova.CodeDOM
                 base.AttachAnnotation(annotation, atFront);
         }
 
-        #endregion
+        /// <summary>
+        /// Parse a <see cref="BlockDecl"/>.
+        /// </summary>
+        public BlockDecl(Parser parser, CodeObject parent, params string[] terminators)
+            : base(parser, parent)
+        {
+            new Block(out _body, parser, this, true, terminators);  // Parse the body
+        }
 
-        #region /* PARSING */
-
-        internal static void AddParsePoints()
+        public static void AddParsePoints()
         {
             // Use a parse-priority of 300 (GenericMethodDecl uses 0, UnresolvedRef uses 100, PropertyDeclBase uses 200, Initializer uses 400)
             Parser.AddParsePoint(Block.ParseTokenStart, 300, Parse, typeof(IBlock));
@@ -83,19 +78,6 @@ namespace Nova.CodeDOM
         {
             return new BlockDecl(parser, parent);
         }
-
-        /// <summary>
-        /// Parse a <see cref="BlockDecl"/>.
-        /// </summary>
-        public BlockDecl(Parser parser, CodeObject parent, params string[] terminators)
-            : base(parser, parent)
-        {
-            new Block(out _body, parser, this, true, terminators);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
@@ -117,10 +99,6 @@ namespace Nova.CodeDOM
             _body.SetNewLines(1);
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             if (flags.HasFlag(RenderFlags.Description))
@@ -129,16 +107,14 @@ namespace Nova.CodeDOM
                 base.AsText(writer, flags);
         }
 
-        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
-        {
-            UpdateLineCol(writer, flags);
-        }
-
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
         {
             base.AsTextAfter(writer, flags | RenderFlags.SuppressNewLine);
         }
 
-        #endregion
+        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        {
+            UpdateLineCol(writer, flags);
+        }
     }
 }

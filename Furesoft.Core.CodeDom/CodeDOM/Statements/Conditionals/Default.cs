@@ -61,6 +61,12 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            // Use a parse-priority of 0 (DefaultValue uses 100)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
+        }
+
         /// <summary>
         /// Parse a <see cref="Default"/>.
         /// </summary>
@@ -70,12 +76,6 @@ namespace Nova.CodeDOM
             if (parser.PeekNextTokenText() == ParseTokenTerminator)
                 return new Default(parser, parent);
             return null;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 0 (DefaultValue uses 100)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
         }
     }
 }

@@ -59,6 +59,13 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            // Normally, a 'finally' is parsed by the 'try' parse logic (see Try).
+            // This parse-point exists only to catch an orphaned 'finally' statement.
+            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="Finally"/>.
         /// </summary>
@@ -76,13 +83,6 @@ namespace Nova.CodeDOM
             Finally @finally = Parse(parser, parent);
             parser.AttachMessage(@finally, "Orphaned 'finally' - missing parent 'try'", token);
             return @finally;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Normally, a 'finally' is parsed by the 'try' parse logic (see Try).
-            // This parse-point exists only to catch an orphaned 'finally' statement.
-            Parser.AddParsePoint(ParseToken, ParseOrphan, typeof(IBlock));
         }
     }
 }

@@ -40,17 +40,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="ErrorDirective"/>.
         /// </summary>
         public static ErrorDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new ErrorDirective(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

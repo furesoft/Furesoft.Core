@@ -68,6 +68,11 @@ namespace Nova.CodeDOM
             get { return StringUtil.ContainsIgnoreCase(_message, "generated code"); }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="RegionDirective"/>.
         /// </summary>
@@ -83,11 +88,6 @@ namespace Nova.CodeDOM
         {
             // Always default to a blank line before a region directive
             return 2;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

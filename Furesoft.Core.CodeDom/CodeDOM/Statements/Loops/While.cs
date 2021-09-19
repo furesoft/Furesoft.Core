@@ -229,6 +229,12 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+            Parser.AddParsePoint(ParseTokenDo, ParseDoWhile, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="While"/>.
         /// </summary>
@@ -254,12 +260,6 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._conditional, _conditional);
             clone.CloneField(ref clone._doWhile, _doWhile);
             return clone;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-            Parser.AddParsePoint(ParseTokenDo, ParseDoWhile, typeof(IBlock));
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)

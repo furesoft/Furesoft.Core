@@ -42,6 +42,11 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="IfDirective"/>.
         /// </summary>
@@ -49,11 +54,6 @@ namespace Nova.CodeDOM
         {
             parser.StartConditionalDirective();
             return new IfDirective(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

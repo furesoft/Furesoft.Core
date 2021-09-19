@@ -53,17 +53,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Pase a <see cref="Break"/>.
         /// </summary>
         public static Break Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new Break(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
     }
 }

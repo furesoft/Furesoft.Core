@@ -3,6 +3,7 @@ using Nova.CodeDOM;
 using Nova.Parsing;
 using Nova.Rendering;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace TestApp
@@ -45,16 +46,13 @@ namespace TestApp
 
         public static int Main(string[] args)
         {
-            var src = "loop: \n\t     mov 0x12, [hello + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
+            var src = "loop: \n\tmov 0x12, [hello + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
 
             Parser.AddOperatorParsePoint("+", 2, true, false, parse);
             Parser.AddOperatorParsePoint("*", 1, true, false, parse2);
             Parser.AddParsePoint("[", ParseSquared);
 
-            foreach (var item in new[] { "mov", "load", "add", "sub", "inc" })
-            {
-                Parser.AddParsePoint(item, ParseMov);
-            }
+            Parser.AddMultipleParsePoints(new[] { "mov", "load", "add", "sub", "inc" }, ParseMov);
 
             Label.AddParsePoints();
             Goto.AddParsePoints();
@@ -72,6 +70,11 @@ namespace TestApp
             var instr = body.First();
 
             var children = body.GetChildren<Instruction>();
+
+            foreach (var item in body)
+            {
+                Debug.WriteLine(item.GetIndentLevel());
+            }
 
             return App.Current.Run();
         }

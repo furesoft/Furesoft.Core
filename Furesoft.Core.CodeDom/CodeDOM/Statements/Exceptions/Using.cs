@@ -151,6 +151,12 @@ namespace Nova.CodeDOM
             }
         }
 
+        public static void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (Alias uses 0, UsingDirective uses 100)
+            Parser.AddParsePoint(ParseToken, 200, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Pase a <see cref="Using"/>.
         /// </summary>
@@ -176,12 +182,6 @@ namespace Nova.CodeDOM
         {
             // Turn off braces if we have a nested child using
             return (base.ShouldHaveBraces() && !HasNestedUsing);
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 200 (Alias uses 0, UsingDirective uses 100)
-            Parser.AddParsePoint(ParseToken, 200, Parse, typeof(IBlock));
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)

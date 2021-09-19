@@ -20,18 +20,12 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class DelegateDecl : TypeDecl, IParameters
     {
-        #region /* FIELDS */
+        protected ChildList<ParameterDecl> _parameters;
 
         /// <summary>
         /// The return type is an <see cref="Expression"/> that must evaluate to a <see cref="TypeRef"/> in valid code.
         /// </summary>
         protected Expression _returnType;
-
-        protected ChildList<ParameterDecl> _parameters;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="DelegateDecl"/> with the specified name and return type.
@@ -124,41 +118,12 @@ namespace Nova.CodeDOM
             : this(name, returnType.CreateRef(), modifiers, typeParameters)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The return type of the delegate (never null - will be type 'void' instead).
-        /// </summary>
-        public Expression ReturnType
-        {
-            get { return (_returnType ?? TypeRef.VoidRef); }
-            set { SetField(ref _returnType, value, true); }
-        }
-
-        /// <summary>
-        /// The list of <see cref="ParameterDecl"/>s.
-        /// </summary>
-        public ChildList<ParameterDecl> Parameters
-        {
-            get { return _parameters; }
-        }
-
         /// <summary>
         /// True if there are any parameters.
         /// </summary>
         public bool HasParameters
         {
             get { return (_parameters != null && _parameters.Count > 0); }
-        }
-
-        /// <summary>
-        /// The number of parameters.
-        /// </summary>
-        public int ParameterCount
-        {
-            get { return (_parameters != null ? _parameters.Count : 0); }
         }
 
         /// <summary>
@@ -177,19 +142,35 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// The number of parameters.
+        /// </summary>
+        public int ParameterCount
+        {
+            get { return (_parameters != null ? _parameters.Count : 0); }
+        }
 
         /// <summary>
-        /// Create the list of <see cref="ParameterDecl"/>s, or return the existing list.
+        /// The list of <see cref="ParameterDecl"/>s.
         /// </summary>
-        public ChildList<ParameterDecl> CreateParameters()
+        public ChildList<ParameterDecl> Parameters
         {
-            if (_parameters == null)
-                _parameters = new ChildList<ParameterDecl>(this);
-            return _parameters;
+            get { return _parameters; }
         }
+
+        /// <summary>
+        /// The return type of the delegate (never null - will be type 'void' instead).
+        /// </summary>
+        public Expression ReturnType
+        {
+            get { return (_returnType ?? TypeRef.VoidRef); }
+            set { SetField(ref _returnType, value, true); }
+        }
+
+        /// <summary>
+        /// The name of the parameter of the constructor of the delegate that accepts a delegate type.
+        /// </summary>
+        public const string DelegateConstructorParameterName = "target";
 
         /// <summary>
         /// Add one or more <see cref="ParameterDecl"/>s.
@@ -200,56 +181,24 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Get the parameters of this delegate type.
+        /// Deep-clone the code object.
         /// </summary>
-        public override ICollection GetDelegateParameters()
+        public override CodeObject Clone()
         {
-            // Return an empty list instead of null if we have no parameters - this is used elsewhere
-            // to distinguish between zero parameters and no parameters available.
-            return (_parameters ?? new List<ParameterDecl>());
+            DelegateDecl clone = (DelegateDecl)base.Clone();
+            clone.CloneField(ref clone._returnType, _returnType);
+            clone._typeParameters = ChildListHelpers.Clone(_typeParameters, clone);
+            return clone;
         }
 
         /// <summary>
-        /// Get the return type of this delegate type.
+        /// Create the list of <see cref="ParameterDecl"/>s, or return the existing list.
         /// </summary>
-        public override TypeRefBase GetDelegateReturnType()
+        public ChildList<ParameterDecl> CreateParameters()
         {
-            return (_returnType != null ? _returnType.SkipPrefixes() as TypeRefBase : null);
-        }
-
-        /// <summary>
-        /// Get the base type.
-        /// </summary>
-        public override TypeRef GetBaseType()
-        {
-            return TypeRef.MulticastDelegateRef;
-        }
-
-        /// <summary>
-        /// Get the non-static constructor with the specified parameters.
-        /// </summary>
-        public override ConstructorRef GetConstructor(params TypeRefBase[] parameterTypes)
-        {
-            ConstructorDecl found = GetMethod<ConstructorDecl>(Name, parameterTypes);
-            if (found != null)
-                return (ConstructorRef)found.CreateRef();
-            return null;  // Don't look in base types for DelegateDecls
-        }
-
-        /// <summary>
-        /// The name of the parameter of the constructor of the delegate that accepts a delegate type.
-        /// </summary>
-        public const string DelegateConstructorParameterName = "target";
-
-        /// <summary>
-        /// Get all non-static constructors for this type.
-        /// </summary>
-        public override NamedCodeObjectGroup GetConstructors(bool currentPartOnly)
-        {
-            // Find the constructor (ignore 'currentPartOnly', since delegates have no bodies)
-            TypeRef delegateTypeRef = CreateRef();
-            ConstructorRef constructorRef = GetConstructor(delegateTypeRef);
-            return new NamedCodeObjectGroup(constructorRef != null ? constructorRef.Reference : null);
+            if (_parameters == null)
+                _parameters = new ChildList<ParameterDecl>(this);
+            return _parameters;
         }
 
         /// <summary>
@@ -299,19 +248,52 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Deep-clone the code object.
+        /// Get the base type.
         /// </summary>
-        public override CodeObject Clone()
+        public override TypeRef GetBaseType()
         {
-            DelegateDecl clone = (DelegateDecl)base.Clone();
-            clone.CloneField(ref clone._returnType, _returnType);
-            clone._typeParameters = ChildListHelpers.Clone(_typeParameters, clone);
-            return clone;
+            return TypeRef.MulticastDelegateRef;
         }
 
-        #endregion
+        /// <summary>
+        /// Get the non-static constructor with the specified parameters.
+        /// </summary>
+        public override ConstructorRef GetConstructor(params TypeRefBase[] parameterTypes)
+        {
+            ConstructorDecl found = GetMethod<ConstructorDecl>(Name, parameterTypes);
+            if (found != null)
+                return (ConstructorRef)found.CreateRef();
+            return null;  // Don't look in base types for DelegateDecls
+        }
 
-        #region /* PARSING */
+        /// <summary>
+        /// Get all non-static constructors for this type.
+        /// </summary>
+        public override NamedCodeObjectGroup GetConstructors(bool currentPartOnly)
+        {
+            // Find the constructor (ignore 'currentPartOnly', since delegates have no bodies)
+            TypeRef delegateTypeRef = CreateRef();
+            ConstructorRef constructorRef = GetConstructor(delegateTypeRef);
+            return new NamedCodeObjectGroup(constructorRef != null ? constructorRef.Reference : null);
+        }
+
+        /// <summary>
+        /// Get the parameters of this delegate type.
+        /// </summary>
+        public override ICollection GetDelegateParameters()
+        {
+            // Return an empty list instead of null if we have no parameters - this is used elsewhere
+            // to distinguish between zero parameters and no parameters available.
+            return (_parameters ?? new List<ParameterDecl>());
+        }
+
+        /// <summary>
+        /// Get the return type of this delegate type.
+        /// </summary>
+        public override TypeRefBase GetDelegateReturnType()
+        {
+            return (_returnType != null ? _returnType.SkipPrefixes() as TypeRefBase : null);
+        }
 
         /// <summary>
         /// The token used to parse the code object.
@@ -319,31 +301,14 @@ namespace Nova.CodeDOM
         public const string ParseToken = "delegate";
 
         /// <summary>
-        /// The token used to parse the start of the parameters.
-        /// </summary>
-        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
-
-        /// <summary>
         /// The token used to parse the end of the parameters.
         /// </summary>
         public const string ParseTokenEnd = ParameterDecl.ParseTokenEnd;
 
-        internal static void AddParsePoints()
-        {
-            // Delegates are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            // Use a parse-priority of 0 (AnonymousMethod uses 100)
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
         /// <summary>
-        /// Parse a <see cref="DelegateDecl"/>.
+        /// The token used to parse the start of the parameters.
         /// </summary>
-        public static DelegateDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DelegateDecl(parser, parent);
-        }
+        public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
 
         protected DelegateDecl(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -365,9 +330,22 @@ namespace Nova.CodeDOM
             GenerateMethods();  // Generate invoke methods and constructor
         }
 
-        #endregion
+        public static void AddParsePoints()
+        {
+            // Delegates are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            // Use a parse-priority of 0 (AnonymousMethod uses 100)
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// Parse a <see cref="DelegateDecl"/>.
+        /// </summary>
+        public static DelegateDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new DelegateDecl(parser, parent);
+        }
 
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
@@ -383,18 +361,6 @@ namespace Nova.CodeDOM
         public override bool HasTerminatorDefault
         {
             get { return true; }
-        }
-
-        /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
-        /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
-        {
-            // Default to a preceeding blank line if the object has first-on-line annotations, or if
-            // it's not another delegate declaration.
-            if (HasFirstOnLineAnnotations || !(previous is DelegateDecl))
-                return 2;
-            return 1;
         }
 
         /// <summary>
@@ -426,21 +392,17 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
         {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            UpdateLineCol(writer, flags);
-            writer.Write(ParseToken);
-            _returnType.AsText(writer, passFlags | RenderFlags.IsPrefix | RenderFlags.PrefixSpace);
-            base.AsTextArgument(writer, flags);
+            // Default to a preceeding blank line if the object has first-on-line annotations, or if
+            // it's not another delegate declaration.
+            if (HasFirstOnLineAnnotations || !(previous is DelegateDecl))
+                return 2;
+            return 1;
         }
-
-        protected override void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
-        { }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
@@ -451,6 +413,16 @@ namespace Nova.CodeDOM
                 writer.WriteLine();
         }
 
-        #endregion
+        protected override void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
+        { }
+
+        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        {
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            UpdateLineCol(writer, flags);
+            writer.Write(ParseToken);
+            _returnType.AsText(writer, passFlags | RenderFlags.IsPrefix | RenderFlags.PrefixSpace);
+            base.AsTextArgument(writer, flags);
+        }
     }
 }

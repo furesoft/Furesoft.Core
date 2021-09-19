@@ -72,17 +72,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse an <see cref="If"/>.
         /// </summary>
         public static If Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new If(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
     }
 }

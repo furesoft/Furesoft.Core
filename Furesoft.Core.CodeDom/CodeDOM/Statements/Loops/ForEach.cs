@@ -144,6 +144,11 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="ForEach"/>.
         /// </summary>
@@ -161,11 +166,6 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._iteration, _iteration);
             clone.CloneField(ref clone._collection, _collection);
             return clone;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)

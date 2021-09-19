@@ -12,13 +12,7 @@ namespace Nova.CodeDOM
     /// </summary>
     public class Lock : BlockStatement
     {
-        #region /* FIELDS */
-
         protected Expression _target;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="Lock"/>.
@@ -38,9 +32,13 @@ namespace Nova.CodeDOM
             Target = target;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The target <see cref="Expression"/> of the <see cref="Lock"/>.
@@ -52,18 +50,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -73,16 +59,18 @@ namespace Nova.CodeDOM
             return clone;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = "lock";
 
-        internal static void AddParsePoints()
+        protected Lock(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        {
+            ParseKeywordArgumentBody(parser, ref _target, false, false);
+        }
+
+        public static void AddParsePoints()
         {
             Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
@@ -94,16 +82,6 @@ namespace Nova.CodeDOM
         {
             return new Lock(parser, parent);
         }
-
-        protected Lock(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            ParseKeywordArgumentBody(parser, ref _target, false, false);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -138,15 +116,9 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
-
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             _target.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

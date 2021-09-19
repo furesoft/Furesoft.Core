@@ -16,25 +16,15 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ExternAlias : Statement, INamedCodeObject
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The constant name of the global extern alias.
         /// </summary>
         public const string GlobalName = "global";
 
-        #endregion
-
-        #region /* FIELDS */
-
         /// <summary>
         /// The referenced root-level namespace.
         /// </summary>
         protected SymbolicRef _rootNamespaceRef;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create an <see cref="ExternAlias"/> with the specified <see cref="RootNamespace"/>.
@@ -60,25 +50,12 @@ namespace Nova.CodeDOM
             RootNamespaceRef = new UnresolvedRef(name);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
-        /// The referenced root-level namespace.
+        /// The descriptive category of the code object.
         /// </summary>
-        public SymbolicRef RootNamespaceRef
+        public string Category
         {
-            get { return _rootNamespaceRef; }
-            set { SetField(ref _rootNamespaceRef, value, false); }
-        }
-
-        /// <summary>
-        /// The name of the referenced root-level namespace.
-        /// </summary>
-        public string Name
-        {
-            get { return _rootNamespaceRef.Name; }
+            get { return "extern alias"; }
         }
 
         /// <summary>
@@ -98,25 +75,20 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// The descriptive category of the code object.
+        /// The name of the referenced root-level namespace.
         /// </summary>
-        public string Category
+        public string Name
         {
-            get { return "extern alias"; }
+            get { return _rootNamespaceRef.Name; }
         }
 
-        #endregion
-
-        #region /* METHODS */
-
         /// <summary>
-        /// Create a reference to the <see cref="ExternAlias"/>.
+        /// The referenced root-level namespace.
         /// </summary>
-        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
-        /// <returns>An <see cref="ExternAliasRef"/>.</returns>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
+        public SymbolicRef RootNamespaceRef
         {
-            return new ExternAliasRef(this, isFirstOnLine);
+            get { return _rootNamespaceRef; }
+            set { SetField(ref _rootNamespaceRef, value, false); }
         }
 
         /// <summary>
@@ -128,14 +100,6 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Remove(Name, this);
-        }
-
-        /// <summary>
         /// Deep-clone the code object.
         /// </summary>
         public override CodeObject Clone()
@@ -143,6 +107,16 @@ namespace Nova.CodeDOM
             ExternAlias clone = (ExternAlias)base.Clone();
             clone.CloneField(ref clone._rootNamespaceRef, _rootNamespaceRef);
             return clone;
+        }
+
+        /// <summary>
+        /// Create a reference to the <see cref="ExternAlias"/>.
+        /// </summary>
+        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
+        /// <returns>An <see cref="ExternAliasRef"/>.</returns>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
+        {
+            return new ExternAliasRef(this, isFirstOnLine);
         }
 
         /// <summary>
@@ -161,9 +135,13 @@ namespace Nova.CodeDOM
             return Name;
         }
 
-        #endregion
-
-        #region /* PARSING */
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
+        /// </summary>
+        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Remove(Name, this);
+        }
 
         /// <summary>
         /// The primary token used to parse the code object.
@@ -175,7 +153,20 @@ namespace Nova.CodeDOM
         /// </summary>
         public const string ParseToken2 = "alias";
 
-        internal static void AddParsePoints()
+        protected ExternAlias(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        {
+            Token token = (Token)parser.RemoveLastUnused();
+            NewLines = token.NewLines;
+            SetLineCol(token);
+            parser.NextToken();                        // Move past 'alias' keyword
+            token = parser.Token;
+            string name = parser.GetIdentifierText();  // Parse the name
+            RootNamespaceRef = new UnresolvedRef(name, token.LineNumber, token.ColumnNumber);
+            ParseTerminator(parser);
+        }
+
+        public static void AddParsePoints()
         {
             // Set parse-point on 2nd of the 2 keywords
             Parser.AddParsePoint(ParseToken2, Parse, typeof(NamespaceDecl));
@@ -192,23 +183,6 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected ExternAlias(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            Token token = (Token)parser.RemoveLastUnused();
-            NewLines = token.NewLines;
-            SetLineCol(token);
-            parser.NextToken();                        // Move past 'alias' keyword
-            token = parser.Token;
-            string name = parser.GetIdentifierText();  // Parse the name
-            RootNamespaceRef = new UnresolvedRef(name, token.LineNumber, token.ColumnNumber);
-            ParseTerminator(parser);
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has parens around its argument.
         /// </summary>
@@ -223,18 +197,6 @@ namespace Nova.CodeDOM
         public override bool HasTerminatorDefault
         {
             get { return true; }
-        }
-
-        /// <summary>
-        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
-        /// </summary>
-        public override int DefaultNewLines(CodeObject previous)
-        {
-            // Default to a preceeding blank line if the object has first-on-line annotations, or if
-            // it's not another extern alias.
-            if (HasFirstOnLineAnnotations || !(previous is ExternAlias))
-                return 2;
-            return 1;
         }
 
         /// <summary>
@@ -254,15 +216,21 @@ namespace Nova.CodeDOM
             }
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        /// <summary>
+        /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
+        /// </summary>
+        public override int DefaultNewLines(CodeObject previous)
+        {
+            // Default to a preceeding blank line if the object has first-on-line annotations, or if
+            // it's not another extern alias.
+            if (HasFirstOnLineAnnotations || !(previous is ExternAlias))
+                return 2;
+            return 1;
+        }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
             _rootNamespaceRef.AsText(writer, flags);
         }
-
-        #endregion
     }
 }

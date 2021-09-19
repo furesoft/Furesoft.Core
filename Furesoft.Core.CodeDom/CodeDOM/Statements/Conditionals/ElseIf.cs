@@ -86,6 +86,14 @@ namespace Nova.CodeDOM
             get { return ParseToken1 + " " + ParseToken2; }
         }
 
+        public static void AddParsePoints()
+        {
+            // Normally, an 'else if' is parsed by the 'if' parse logic (see IfBase).
+            // This parse-point exists only to catch an orphaned 'else if' statement.
+            // Use a parse-priority of 100 (Else uses 200)
+            Parser.AddParsePoint(ParseToken1, 100, ParseOrphan, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse an <see cref="ElseIf"/>.
         /// </summary>
@@ -111,14 +119,6 @@ namespace Nova.CodeDOM
         public override void AsText(CodeWriter writer, RenderFlags flags)
         {
             base.AsText(writer, flags | RenderFlags.IncreaseIndent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Normally, an 'else if' is parsed by the 'if' parse logic (see IfBase).
-            // This parse-point exists only to catch an orphaned 'else if' statement.
-            // Use a parse-priority of 100 (Else uses 200)
-            Parser.AddParsePoint(ParseToken1, 100, ParseOrphan, typeof(IBlock));
         }
     }
 }

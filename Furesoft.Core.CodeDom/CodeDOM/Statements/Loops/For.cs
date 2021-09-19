@@ -232,6 +232,11 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="For"/>.
         /// </summary>
@@ -266,11 +271,6 @@ namespace Nova.CodeDOM
             clone.CloneField(ref clone._conditional, _conditional);
             clone._iterations = ChildListHelpers.Clone(_iterations, clone);
             return clone;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)

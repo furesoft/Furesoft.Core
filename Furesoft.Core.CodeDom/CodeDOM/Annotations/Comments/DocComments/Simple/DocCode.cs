@@ -84,6 +84,11 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="DocCode"/>.
         /// </summary>
@@ -165,11 +170,6 @@ namespace Nova.CodeDOM
         {
             if (_content is Block)
                 Body.RemoveAll();
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
 
         protected void AfterTextNewLine(CodeWriter writer)

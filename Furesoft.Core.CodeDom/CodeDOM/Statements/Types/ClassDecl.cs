@@ -24,8 +24,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class ClassDecl : BaseListTypeDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="ClassDecl"/> with the specified name.
         /// </summary>
@@ -63,10 +61,6 @@ namespace Nova.CodeDOM
             CheckGeneratedDefaultConstructor(true);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// Always <c>true</c>.
         /// </summary>
@@ -82,10 +76,6 @@ namespace Nova.CodeDOM
         {
             get { return ParseToken; }
         }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add a <see cref="CodeObject"/> to the <see cref="ClassDecl"/> body.
@@ -115,75 +105,6 @@ namespace Nova.CodeDOM
         {
             foreach (CodeObject codeObject in collection)
                 Add(codeObject);
-        }
-
-        /// <summary>
-        /// Insert a <see cref="CodeObject"/> at the specified index in the <see cref="ClassDecl"/> body.
-        /// </summary>
-        /// <param name="index">The index at which to insert.</param>
-        /// <param name="obj">The CodeObject to be inserted.</param>
-        public override void Insert(int index, CodeObject obj)
-        {
-            // Check if we need to remove a compiler-generated default constructor
-            if (obj is ConstructorDecl)
-                CheckRemoveGeneratedDefaultConstructor((ConstructorDecl)obj);
-            base.Insert(index, obj);
-        }
-
-        /// <summary>
-        /// Remove the specified <see cref="CodeObject"/> from the <see cref="ClassDecl"/> body.
-        /// </summary>
-        public override void Remove(CodeObject obj)
-        {
-            base.Remove(obj);
-            // Check if we need to create a compiler-generated default constructor
-            if (obj is ConstructorDecl)
-                CheckGeneratedDefaultConstructor(true);
-        }
-
-        /// <summary>
-        /// Remove all <see cref="CodeObject"/>s from the <see cref="ClassDecl"/> body.
-        /// </summary>
-        public override void RemoveAll()
-        {
-            base.RemoveAll();
-            // Check if we need to create a compiler-generated default constructor
-            CheckGeneratedDefaultConstructor(true);
-        }
-
-        /// <summary>
-        /// Get the base type.
-        /// </summary>
-        public override TypeRef GetBaseType()
-        {
-            List<Expression> baseTypes = GetAllBaseTypes();
-            if (baseTypes != null)
-            {
-                foreach (Expression baseTypeExpression in baseTypes)
-                {
-                    TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
-                    if (baseTypeRef != null && baseTypeRef.IsClass)
-                        return baseTypeRef;
-                }
-            }
-            return TypeRef.ObjectRef;
-        }
-
-        /// <summary>
-        /// Determine if the class is a subclass of the specified class.
-        /// </summary>
-        public override bool IsSubclassOf(TypeRef classTypeRef)
-        {
-            TypeRef baseTypeRef = GetBaseType();
-            while (baseTypeRef != null)
-            {
-                if (baseTypeRef.IsSameRef(classTypeRef))
-                    return true;
-                if (baseTypeRef.IsSameRef(TypeRef.ObjectRef))
-                    return false;
-                baseTypeRef = baseTypeRef.GetBaseType() as TypeRef;
-            }
-            return false;
         }
 
         /// <summary>
@@ -247,6 +168,75 @@ namespace Nova.CodeDOM
         }
 
         /// <summary>
+        /// Get the base type.
+        /// </summary>
+        public override TypeRef GetBaseType()
+        {
+            List<Expression> baseTypes = GetAllBaseTypes();
+            if (baseTypes != null)
+            {
+                foreach (Expression baseTypeExpression in baseTypes)
+                {
+                    TypeRef baseTypeRef = baseTypeExpression.SkipPrefixes() as TypeRef;
+                    if (baseTypeRef != null && baseTypeRef.IsClass)
+                        return baseTypeRef;
+                }
+            }
+            return TypeRef.ObjectRef;
+        }
+
+        /// <summary>
+        /// Insert a <see cref="CodeObject"/> at the specified index in the <see cref="ClassDecl"/> body.
+        /// </summary>
+        /// <param name="index">The index at which to insert.</param>
+        /// <param name="obj">The CodeObject to be inserted.</param>
+        public override void Insert(int index, CodeObject obj)
+        {
+            // Check if we need to remove a compiler-generated default constructor
+            if (obj is ConstructorDecl)
+                CheckRemoveGeneratedDefaultConstructor((ConstructorDecl)obj);
+            base.Insert(index, obj);
+        }
+
+        /// <summary>
+        /// Determine if the class is a subclass of the specified class.
+        /// </summary>
+        public override bool IsSubclassOf(TypeRef classTypeRef)
+        {
+            TypeRef baseTypeRef = GetBaseType();
+            while (baseTypeRef != null)
+            {
+                if (baseTypeRef.IsSameRef(classTypeRef))
+                    return true;
+                if (baseTypeRef.IsSameRef(TypeRef.ObjectRef))
+                    return false;
+                baseTypeRef = baseTypeRef.GetBaseType() as TypeRef;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Remove the specified <see cref="CodeObject"/> from the <see cref="ClassDecl"/> body.
+        /// </summary>
+        public override void Remove(CodeObject obj)
+        {
+            base.Remove(obj);
+            // Check if we need to create a compiler-generated default constructor
+            if (obj is ConstructorDecl)
+                CheckGeneratedDefaultConstructor(true);
+        }
+
+        /// <summary>
+        /// Remove all <see cref="CodeObject"/>s from the <see cref="ClassDecl"/> body.
+        /// </summary>
+        public override void RemoveAll()
+        {
+            base.RemoveAll();
+            // Check if we need to create a compiler-generated default constructor
+            CheckGeneratedDefaultConstructor(true);
+        }
+
+        /// <summary>
         /// Check if we need to remove a compiler-generated default constructor when adding a constructor.
         /// </summary>
         protected void CheckRemoveGeneratedDefaultConstructor(ConstructorDecl constructorDecl)
@@ -266,33 +256,13 @@ namespace Nova.CodeDOM
                         }
                     }
                 }
-           }
+            }
         }
-
-        #endregion
-
-        #region /* PARSING */
 
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "class";
-
-        internal static void AddParsePoints()
-        {
-            // Classes are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse a <see cref="ClassDecl"/>.
-        /// </summary>
-        public static ClassDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new ClassDecl(parser, parent);
-        }
 
         protected ClassDecl(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -328,9 +298,21 @@ namespace Nova.CodeDOM
             CheckGeneratedDefaultConstructor(false);
         }
 
-        #endregion
+        public static void AddParsePoints()
+        {
+            // Classes are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// Parse a <see cref="ClassDecl"/>.
+        /// </summary>
+        public static ClassDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new ClassDecl(parser, parent);
+        }
 
         /// <summary>
         /// Determine a default of 1 or 2 newlines when adding items to a <see cref="Block"/>.
@@ -340,7 +322,5 @@ namespace Nova.CodeDOM
             // Always default to a blank line before a class declaration
             return 2;
         }
-
-        #endregion
     }
 }

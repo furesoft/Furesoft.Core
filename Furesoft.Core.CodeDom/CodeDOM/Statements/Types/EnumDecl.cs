@@ -24,8 +24,6 @@ namespace Nova.CodeDOM
     /// </remarks>
     public class EnumDecl : BaseListTypeDecl
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create an <see cref="EnumDecl"/> with the specified name.
         /// </summary>
@@ -54,42 +52,6 @@ namespace Nova.CodeDOM
             : base(name, Modifiers.None, baseType)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// Always <c>true</c> for an enum.
-        /// </summary>
-        public override bool IsStatic
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Always <c>true</c> for an enum.
-        /// </summary>
-        public override bool IsEnum
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Always <c>false</c> for an enum.
-        /// </summary>
-        public override bool IsGenericType
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Always <c>true</c> for an enum.
-        /// </summary>
-        public override bool IsValueType
-        {
-            get { return true; }
-        }
-
         /// <summary>
         /// True if this is a bit-flag type enum, otherwise false.
         /// </summary>
@@ -111,6 +73,73 @@ namespace Nova.CodeDOM
                     if (isBitFlags)
                         RemoveAttribute(TypeUtil.FlagsAttributeName);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Always <c>true</c> for an enum.
+        /// </summary>
+        public override bool IsEnum
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Always <c>false</c> for an enum.
+        /// </summary>
+        public override bool IsGenericType
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Always <c>true</c> for an enum.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// Always <c>true</c> for an enum.
+        /// </summary>
+        public override bool IsValueType
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
+
+        /// <summary>
+        /// The EnumMemberDecl grandchildren of the EnumDecl (from the MultiEnumMemberDecl child object).
+        /// </summary>
+        public ChildList<EnumMemberDecl> MemberDecls
+        {
+            get { return MultiEnumMemberDecl.MemberDecls; }
+        }
+
+        /// <summary>
+        /// The child MultiEnumMemberDecl object that in turn holds all of the EnumMemberDecls.
+        /// </summary>
+        public MultiEnumMemberDecl MultiEnumMemberDecl
+        {
+            get
+            {
+                // Return the first existing MultiEnumMemberDecl (should be only one)
+                MultiEnumMemberDecl valueDecl = _body.FindFirst<MultiEnumMemberDecl>();
+                if (valueDecl != null)
+                    return valueDecl;
+
+                // If none was found, create one now
+                valueDecl = new MultiEnumMemberDecl();
+                _body.Add(valueDecl);
+                return valueDecl;
             }
         }
 
@@ -145,45 +174,6 @@ namespace Nova.CodeDOM
                 }
             }
         }
-
-        /// <summary>
-        /// The child MultiEnumMemberDecl object that in turn holds all of the EnumMemberDecls.
-        /// </summary>
-        public MultiEnumMemberDecl MultiEnumMemberDecl
-        {
-            get
-            {
-                // Return the first existing MultiEnumMemberDecl (should be only one)
-                MultiEnumMemberDecl valueDecl = _body.FindFirst<MultiEnumMemberDecl>();
-                if (valueDecl != null)
-                    return valueDecl;
-
-                // If none was found, create one now
-                valueDecl = new MultiEnumMemberDecl();
-                _body.Add(valueDecl);
-                return valueDecl;
-            }
-        }
-
-        /// <summary>
-        /// The EnumMemberDecl grandchildren of the EnumDecl (from the MultiEnumMemberDecl child object).
-        /// </summary>
-        public ChildList<EnumMemberDecl> MemberDecls
-        {
-            get { return MultiEnumMemberDecl.MemberDecls; }
-        }
-
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* METHODS */
 
         /// <summary>
         /// Add an <see cref="EnumMemberDecl"/>.
@@ -242,30 +232,10 @@ namespace Nova.CodeDOM
             return MultiEnumMemberDecl.GetMember(name);
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public new const string ParseToken = "enum";
-
-        internal static void AddParsePoints()
-        {
-            // Enums are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
-        }
-
-        /// <summary>
-        /// Parse an <see cref="EnumDecl"/>.
-        /// </summary>
-        public static EnumDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new EnumDecl(parser, parent);
-        }
 
         protected EnumDecl(Parser parser, CodeObject parent)
             : base(parser, parent)
@@ -295,9 +265,21 @@ namespace Nova.CodeDOM
                 _body.IsFirstOnLine = true;
         }
 
-        #endregion
+        public static void AddParsePoints()
+        {
+            // Enums are only valid with a Namespace or TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
 
-        #region /* FORMATTING */
+        /// <summary>
+        /// Parse an <see cref="EnumDecl"/>.
+        /// </summary>
+        public static EnumDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            return new EnumDecl(parser, parent);
+        }
 
         /// <summary>
         /// True if the code object only requires a single line for display by default.
@@ -315,7 +297,5 @@ namespace Nova.CodeDOM
             // Always default to a blank line before an enum declaration
             return 2;
         }
-
-        #endregion
     }
 }

@@ -150,6 +150,11 @@ namespace Nova.CodeDOM
             set { SetField(ref _target, value, true); }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="Switch"/>.
         /// </summary>
@@ -174,11 +179,6 @@ namespace Nova.CodeDOM
             Switch clone = (Switch)base.Clone();
             clone.CloneField(ref clone._target, _target);
             return clone;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)

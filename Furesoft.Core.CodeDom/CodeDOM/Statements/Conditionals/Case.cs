@@ -95,6 +95,11 @@ namespace Nova.CodeDOM
             get { return ParseToken + " " + (_constantExpression != null ? _constantExpression.AsString() : null); }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
+        }
+
         /// <summary>
         /// Parse a <see cref="Case"/>.
         /// </summary>
@@ -111,11 +116,6 @@ namespace Nova.CodeDOM
             Case clone = (Case)base.Clone();
             clone.CloneField(ref clone._constantExpression, _constantExpression);
             return clone;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse, typeof(Switch));
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)

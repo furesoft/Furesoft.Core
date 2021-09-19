@@ -37,7 +37,6 @@ namespace Nova.CodeDOM
             SetLineCol(lastToken);
             parser.NextToken();  // Move past ':'
             HasTerminator = true;
-            
         }
 
         /// <summary>

@@ -38,6 +38,11 @@ namespace Nova.CodeDOM
 
         public abstract string PragmaType { get; }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Add a parse-point for a pragma directive - triggers the callback when the specified token appears
         /// </summary>
@@ -62,11 +67,6 @@ namespace Nova.CodeDOM
                 return (PragmaDirective)callback(parser, parent, flags);
 
             return null;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)

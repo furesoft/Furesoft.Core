@@ -67,6 +67,14 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            // Normally, an 'else' is parsed by the 'if' parse logic (see IfBase).
+            // This parse-point exists only to catch an orphaned 'else' statement.
+            // Use a parse-priority of 200 (ElseIf uses 100)
+            Parser.AddParsePoint(ParseToken, 200, ParseOrphan, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse an <see cref="Else"/>.
         /// </summary>
@@ -84,14 +92,6 @@ namespace Nova.CodeDOM
             Else @else = Parse(parser, parent);
             parser.AttachMessage(@else, "Orphaned 'else' - missing parent 'if'", token);
             return @else;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Normally, an 'else' is parsed by the 'if' parse logic (see IfBase).
-            // This parse-point exists only to catch an orphaned 'else' statement.
-            // Use a parse-priority of 200 (ElseIf uses 100)
-            Parser.AddParsePoint(ParseToken, 200, ParseOrphan, typeof(IBlock));
         }
     }
 }

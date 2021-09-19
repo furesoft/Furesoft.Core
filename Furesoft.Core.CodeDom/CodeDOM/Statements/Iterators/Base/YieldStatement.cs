@@ -31,6 +31,12 @@ namespace Nova.CodeDOM
             get { return true; }
         }
 
+        public static void AddParsePoints()
+        {
+            // Set parse-point on 1st of the 2 keywords
+            Parser.AddParsePoint(ParseToken1, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Parse a <see cref="YieldBreak"/> or <see cref="YieldReturn"/>.
         /// </summary>
@@ -43,12 +49,6 @@ namespace Nova.CodeDOM
             if (nextTokenText == YieldReturn.ParseToken2)
                 return new YieldReturn(parser, parent);
             return null;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Set parse-point on 1st of the 2 keywords
-            Parser.AddParsePoint(ParseToken1, Parse, typeof(IBlock));
         }
     }
 }

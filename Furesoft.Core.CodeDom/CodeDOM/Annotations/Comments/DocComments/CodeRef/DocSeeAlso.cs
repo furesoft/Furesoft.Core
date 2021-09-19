@@ -38,17 +38,17 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddDocCommentParseTag(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="DocSeeAlso"/>.
         /// </summary>
         public static new DocSeeAlso Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new DocSeeAlso(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
         }
     }
 }

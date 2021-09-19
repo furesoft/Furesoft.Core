@@ -130,6 +130,11 @@ namespace Nova.CodeDOM
             set { _number = value; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Format a <see cref="LineDirectiveType"/> as a string.
         /// </summary>
@@ -149,11 +154,6 @@ namespace Nova.CodeDOM
         public static LineDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new LineDirective(parser, parent);
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
 
         protected static LineDirectiveType ParseLineDirectiveType(string actionName)

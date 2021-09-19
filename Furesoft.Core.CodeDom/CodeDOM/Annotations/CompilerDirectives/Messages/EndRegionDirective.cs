@@ -59,6 +59,11 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="EndRegionDirective"/>.
         /// </summary>
@@ -82,11 +87,6 @@ namespace Nova.CodeDOM
         {
             // Always default to a blank line before an end-region directive
             return 2;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

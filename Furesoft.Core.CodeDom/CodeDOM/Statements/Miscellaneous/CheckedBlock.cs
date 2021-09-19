@@ -11,8 +11,6 @@ namespace Nova.CodeDOM
     /// </summary>
     public class CheckedBlock : BlockStatement
     {
-        #region /* CONSTRUCTORS */
-
         /// <summary>
         /// Create a <see cref="CheckedBlock"/>.
         /// </summary>
@@ -27,10 +25,6 @@ namespace Nova.CodeDOM
             : base(null, false)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
         /// </summary>
@@ -39,16 +33,19 @@ namespace Nova.CodeDOM
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
         /// <summary>
         /// The token used to parse the code object.
         /// </summary>
         public const string ParseToken = Checked.ParseToken;
 
-        internal static void AddParsePoints()
+        protected CheckedBlock(Parser parser, CodeObject parent)
+            : base(parser, parent)
+        {
+            parser.NextToken();                        // Move past 'checked'
+            new Block(out _body, parser, this, true);  // Parse the body
+        }
+
+        public static void AddParsePoints()
         {
             // Use a parse-priority of 0 (Checked uses 100)
             Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
@@ -65,17 +62,6 @@ namespace Nova.CodeDOM
             return null;
         }
 
-        protected CheckedBlock(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            parser.NextToken();                        // Move past 'checked'
-            new Block(out _body, parser, this, true);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
@@ -83,7 +69,5 @@ namespace Nova.CodeDOM
         {
             get { return false; }
         }
-
-        #endregion
     }
 }

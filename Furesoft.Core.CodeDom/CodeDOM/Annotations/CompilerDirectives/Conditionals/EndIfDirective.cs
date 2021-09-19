@@ -49,6 +49,11 @@ namespace Nova.CodeDOM
             get { return false; }
         }
 
+        public static void AddParsePoints()
+        {
+            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="EndIfDirective"/>.
         /// </summary>
@@ -63,11 +68,6 @@ namespace Nova.CodeDOM
         public override bool AssociateCommentWhenParsing(CommentBase comment)
         {
             return false;
-        }
-
-        internal static void AddParsePoints()
-        {
-            Parser.AddCompilerDirectiveParsePoint(ParseToken, Parse);
         }
     }
 }

@@ -123,6 +123,12 @@ namespace Nova.CodeDOM
             }
         }
 
+        public static void AddParsePoints()
+        {
+            // Use a parse-priority of 0 (MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400)
+            Parser.AddParsePoint(ParameterDecl.ParseTokenStart, Parse, typeof(TypeDecl));
+        }
+
         /// <summary>
         /// Parse a <see cref="ConstructorDecl"/>.
         /// </summary>
@@ -181,12 +187,6 @@ namespace Nova.CodeDOM
             // Format the constructor initializer IsFirstOnLine setting to match the body
             if (_initializer != null && !_initializer.IsNewLinesSet)
                 _initializer.IsFirstOnLine = _body.IsFirstOnLine;
-        }
-
-        internal static void AddParsePoints()
-        {
-            // Use a parse-priority of 0 (MethodDecl uses 50, LambdaExpression uses 100, Call uses 200, Cast uses 300, Expression parens uses 400)
-            Parser.AddParsePoint(ParameterDecl.ParseTokenStart, Parse, typeof(TypeDecl));
         }
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
