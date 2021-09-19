@@ -4,7 +4,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base

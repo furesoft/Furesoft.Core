@@ -4,8 +4,11 @@ using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Loops;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Loops
 {
     /// <summary>
     /// Defines an iteration variable and a collection (or array) plus a body (a statement or block) that is

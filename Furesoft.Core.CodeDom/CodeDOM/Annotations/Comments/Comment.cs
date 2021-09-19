@@ -5,8 +5,8 @@ using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments
 {

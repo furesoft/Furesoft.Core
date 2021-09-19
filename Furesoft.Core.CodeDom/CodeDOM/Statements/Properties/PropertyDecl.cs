@@ -3,8 +3,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
 {
     /// <summary>
     /// Represents a "property" - a virtual field accessed only by calling get and/or set methods.

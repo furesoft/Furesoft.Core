@@ -11,7 +11,6 @@ using System.Text;
 using Furesoft.Core.CodeDom.Utilities;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
@@ -21,6 +20,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 
 namespace Furesoft.Core.CodeDom.CodeDOM
 {

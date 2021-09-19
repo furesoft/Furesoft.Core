@@ -1,8 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Loops;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Loops
 {
     /// <summary>
     /// Causes execution to jump back to the top of the active loop.

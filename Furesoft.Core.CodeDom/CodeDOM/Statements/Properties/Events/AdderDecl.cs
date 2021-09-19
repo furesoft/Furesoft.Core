@@ -1,7 +1,9 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
 {
     /// <summary>
     /// Represents a special type of method used to add to an event.

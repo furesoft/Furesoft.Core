@@ -4,7 +4,7 @@
 
 using System.Reflection;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
 {

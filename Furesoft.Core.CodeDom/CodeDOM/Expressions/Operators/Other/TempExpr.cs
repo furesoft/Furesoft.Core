@@ -1,6 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Nova.CodeDOM;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 {

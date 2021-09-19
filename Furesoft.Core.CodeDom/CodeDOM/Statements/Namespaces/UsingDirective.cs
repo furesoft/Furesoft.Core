@@ -5,8 +5,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
 {
     /// <summary>
     /// Imports the contents of a <see cref="Namespace"/> into the current scope.

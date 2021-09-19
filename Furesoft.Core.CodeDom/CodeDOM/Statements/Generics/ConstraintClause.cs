@@ -4,8 +4,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
 {
     /// <summary>
     /// Represents one or more contraints on a type parameter.

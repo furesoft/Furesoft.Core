@@ -1,8 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps
 {
     /// <summary>
     /// Causes execution of the active loop or switch/case block to terminate.

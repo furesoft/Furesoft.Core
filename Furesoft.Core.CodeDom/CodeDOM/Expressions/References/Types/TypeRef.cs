@@ -20,8 +20,13 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {

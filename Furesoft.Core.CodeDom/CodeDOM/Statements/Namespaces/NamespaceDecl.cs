@@ -11,8 +11,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
 {
     /// <summary>
     /// Declares a namespace plus a body of declarations that belong to it.

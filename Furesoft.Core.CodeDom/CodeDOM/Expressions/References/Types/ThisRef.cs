@@ -5,7 +5,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {

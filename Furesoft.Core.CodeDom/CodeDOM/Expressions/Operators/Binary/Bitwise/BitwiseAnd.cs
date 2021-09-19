@@ -3,7 +3,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
-using Nova.CodeDOM;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise
 {

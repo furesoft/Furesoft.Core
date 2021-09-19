@@ -1,7 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets.Base;
-using Nova.CodeDOM;
 using static Furesoft.Core.CodeDom.CodeDOM.Base.CodeObject;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets
 {

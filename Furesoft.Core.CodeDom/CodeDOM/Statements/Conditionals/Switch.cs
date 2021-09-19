@@ -9,8 +9,13 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
 {
     /// <summary>
     /// Represents conditional flow control, and consists of a constant expression (of integral or string type)

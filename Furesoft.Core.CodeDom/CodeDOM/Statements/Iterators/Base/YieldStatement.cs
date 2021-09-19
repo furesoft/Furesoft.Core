@@ -1,8 +1,11 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators.Base
 {
     /// <summary>
     /// The common base class of <see cref="YieldReturn"/> and <see cref="YieldBreak"/>.

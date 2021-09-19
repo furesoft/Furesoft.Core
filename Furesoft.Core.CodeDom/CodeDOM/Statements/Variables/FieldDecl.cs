@@ -15,8 +15,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 {
     /// <summary>
     /// Represents a class member variable declaration.

@@ -4,7 +4,7 @@
 
 using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces
 {

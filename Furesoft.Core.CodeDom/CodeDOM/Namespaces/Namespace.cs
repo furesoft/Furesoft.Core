@@ -4,13 +4,14 @@ using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
 {

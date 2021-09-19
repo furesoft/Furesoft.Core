@@ -4,7 +4,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary

@@ -15,8 +15,13 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
 {
     /// <summary>
     /// The common base class of <see cref="PropertyDecl"/>, <see cref="IndexerDecl"/>, and <see cref="EventDecl"/>.

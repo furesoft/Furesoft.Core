@@ -2,8 +2,10 @@
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
 {
     /// <summary>
     /// Used as a child of a <see cref="Switch"/>.  Includes a constant expression plus a body (a statement or block).

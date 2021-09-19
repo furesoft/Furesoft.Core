@@ -10,9 +10,12 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties
 {

@@ -3,8 +3,9 @@ using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints
 {
     /// <summary>
     /// Constrains the type that a <see cref="TypeParameter"/> can represent to one with a default constructor.

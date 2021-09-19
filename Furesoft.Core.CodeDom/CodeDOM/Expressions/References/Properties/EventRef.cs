@@ -5,9 +5,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties
 {

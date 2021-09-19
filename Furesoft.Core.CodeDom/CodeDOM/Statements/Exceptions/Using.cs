@@ -4,8 +4,11 @@ using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
 {
     /// <summary>
     /// Enforces the disposal of an object when it's no longer needed.  It accepts either an <see cref="Expression"/> or a

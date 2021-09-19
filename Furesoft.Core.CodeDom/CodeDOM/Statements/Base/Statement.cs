@@ -5,8 +5,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
 {
     /// <summary>
     /// The common base class of all statements (<see cref="BlockStatement"/>, <see cref="VariableDecl"/>, <see cref="UsingDirective"/>,

@@ -13,8 +13,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
 {
     /// <summary>
     /// Declares an enumerated type, and includes a name and a body with a list of identifiers

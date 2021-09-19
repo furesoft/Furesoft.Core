@@ -1,7 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods

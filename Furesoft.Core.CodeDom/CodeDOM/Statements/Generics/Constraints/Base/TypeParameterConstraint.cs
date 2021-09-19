@@ -6,8 +6,10 @@ using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base
 {
     /// <summary>
     /// The common base class of <see cref="ClassConstraint"/>, <see cref="StructConstraint"/>, <see cref="NewConstraint"/>, and <see cref="TypeConstraint"/>.

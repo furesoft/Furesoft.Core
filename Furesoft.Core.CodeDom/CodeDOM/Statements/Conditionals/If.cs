@@ -2,8 +2,10 @@
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals
 {
     /// <summary>
     /// Represents conditional flow control, and includes a conditional expression, a body, and an optional <see cref="Else"/> or <see cref="ElseIf"/> statement.

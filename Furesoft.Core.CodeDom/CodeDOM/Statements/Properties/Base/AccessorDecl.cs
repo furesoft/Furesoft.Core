@@ -2,8 +2,9 @@
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
 {
     /// <summary>
     /// The common base class of <see cref="GetterDecl"/>, <see cref="SetterDecl"/>, <see cref="AdderDecl"/>,

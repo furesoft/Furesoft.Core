@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
 
 // The Nova Project by Ken Beckett.
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.

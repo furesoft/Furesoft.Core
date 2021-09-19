@@ -4,8 +4,8 @@
 
 using System;
 using System.Collections.Generic;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {

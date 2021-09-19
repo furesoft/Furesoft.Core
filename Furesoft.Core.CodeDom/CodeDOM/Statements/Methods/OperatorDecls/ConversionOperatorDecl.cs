@@ -4,8 +4,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls
 {
     /// <summary>
     /// Represents a user-defined conversion operator.

@@ -1,8 +1,12 @@
 ﻿using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods
 {
     /// <summary>
     /// Represents a named <see cref="Block"/> of code used to destruct the instance of a class.

@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using Furesoft.Core.CodeDom.Rendering;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties
 {

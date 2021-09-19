@@ -6,7 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {

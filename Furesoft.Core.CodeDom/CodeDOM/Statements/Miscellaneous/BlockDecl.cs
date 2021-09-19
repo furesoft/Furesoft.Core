@@ -4,8 +4,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
 {
     /// <summary>
     /// Represents a stand-alone block of code restricted to a local scope (surrounded by braces).

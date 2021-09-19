@@ -18,8 +18,12 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous
 {
     /// <summary>
     /// Represents an alias to a <see cref="Namespace"/> or a type (<see cref="TypeDecl"/>, or <see cref="Type"/>).

@@ -3,11 +3,13 @@ using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 {

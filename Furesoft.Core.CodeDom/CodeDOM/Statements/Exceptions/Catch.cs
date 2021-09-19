@@ -5,8 +5,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
 {
     /// <summary>
     /// Has an optional <see cref="Expression"/> or <see cref="LocalDecl"/> (which must evaluate to an <see cref="Exception"/>

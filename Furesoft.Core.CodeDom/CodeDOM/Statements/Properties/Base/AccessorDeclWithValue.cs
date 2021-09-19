@@ -1,8 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
 {
     /// <summary>
     /// The common base class of <see cref="SetterDecl"/>, <see cref="AdderDecl"/>, and <see cref="RemoverDecl"/>.

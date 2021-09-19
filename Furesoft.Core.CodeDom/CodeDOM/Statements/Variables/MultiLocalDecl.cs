@@ -11,8 +11,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 {
     /// <summary>
     /// Represents a compound local variable declaration - the declaration of multiple local variables of

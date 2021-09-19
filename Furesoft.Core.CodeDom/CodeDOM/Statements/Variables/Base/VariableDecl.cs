@@ -4,8 +4,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base
 {
     /// <summary>
     /// The common base class of <see cref="FieldDecl"/>, <see cref="LocalDecl"/>, <see cref="ParameterDecl"/>, and <see cref="EnumMemberDecl"/>.

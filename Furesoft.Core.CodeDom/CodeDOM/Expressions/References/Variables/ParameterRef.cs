@@ -12,8 +12,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Nova.CodeDOM;
-using ParameterModifier = Nova.CodeDOM.ParameterModifier;
+using ParameterModifier = Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.ParameterModifier;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables
 {

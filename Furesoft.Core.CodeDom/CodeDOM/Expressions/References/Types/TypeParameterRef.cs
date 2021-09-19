@@ -12,7 +12,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {

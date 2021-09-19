@@ -6,8 +6,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
 {
     /// <summary>
     /// Used together with compiler command-line options to create additional root-level namespaces.

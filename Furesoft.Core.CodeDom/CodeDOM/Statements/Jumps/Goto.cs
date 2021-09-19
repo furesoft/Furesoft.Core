@@ -6,8 +6,12 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps
 {
     /// <summary>
     /// Redirects execution to the specified <see cref="Label"/> or <see cref="SwitchItem"/> (<see cref="Case"/> or <see cref="Default"/>).

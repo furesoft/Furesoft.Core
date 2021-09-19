@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Utilities.Reflection;
 using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
 {

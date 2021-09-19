@@ -5,8 +5,10 @@
 using System;
 using Furesoft.Core.CodeDom.Rendering;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 {
     /// <summary>
     /// Represents the declaration of an implicit 'value' parameter for a <see cref="GetterDecl"/>, <see cref="AdderDecl"/>, or <see cref="RemoverDecl"/>.

@@ -1,5 +1,4 @@
 ﻿using Furesoft.Core.CLI;
-using Nova.CodeDOM;
 using System.Collections.Generic;
 using System.Linq;
 using Furesoft.Core.CodeDom.Rendering;
@@ -14,6 +13,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
 
 namespace TestApp
 {
@@ -55,7 +55,7 @@ namespace TestApp
 
         public static int Main(string[] args)
         {
-            var src = "loop: \n\tmov 0x12, [hello + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
+            var src = "loop: \n\tmov 0x12, [A + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
             CodeObject.AutoDetectTabs = true;
 
             Parser.AddOperatorParsePoint("+", 2, true, false, parse);
@@ -121,8 +121,25 @@ namespace TestApp
             }
             else if (obj is BinaryOperator binary)
             {
-                Bind(binary.Left);
-                Bind(binary.Right);
+                if (binary.Left is UnresolvedRef ul)
+                {
+                    if (_registers.ContainsKey(ul.Reference.ToString()))
+                    {
+                        binary.Left = new RegisterRef(_registers[ul.Reference.ToString()]);
+                    }
+                }
+                else if (binary.Right is UnresolvedRef ur)
+                {
+                    if (_registers.ContainsKey(ur.Reference.ToString()))
+                    {
+                        binary.Right = new RegisterRef(_registers[ur.Reference.ToString()]);
+                    }
+                }
+                else
+                {
+                    Bind(binary.Left);
+                    Bind(binary.Right);
+                }
             }
             else if (obj is Goto gt)
             {

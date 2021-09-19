@@ -7,8 +7,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
 {

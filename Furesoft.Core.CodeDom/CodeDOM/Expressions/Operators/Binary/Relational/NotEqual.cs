@@ -3,7 +3,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
-using Nova.CodeDOM;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational
 {

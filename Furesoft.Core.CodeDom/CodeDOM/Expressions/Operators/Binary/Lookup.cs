@@ -5,8 +5,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
 {

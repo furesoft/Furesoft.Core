@@ -6,9 +6,11 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 {

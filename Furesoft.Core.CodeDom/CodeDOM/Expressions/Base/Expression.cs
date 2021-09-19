@@ -12,7 +12,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
@@ -22,6 +21,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
 using Index = Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Index;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
 {

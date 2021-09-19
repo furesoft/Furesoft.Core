@@ -2,8 +2,10 @@
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
 {
     /// <summary>
     /// Contains a body of code that is scoped to one or more <see cref="Catch"/> statements and/or a <see cref="Finally"/> statement.

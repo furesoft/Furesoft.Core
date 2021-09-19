@@ -12,8 +12,14 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
 {
     /// <summary>
     /// Represents a type parameter of a generic type or method declaration.

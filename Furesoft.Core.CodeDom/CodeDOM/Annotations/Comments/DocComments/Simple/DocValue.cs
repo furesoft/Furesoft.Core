@@ -1,6 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.Parsing;
-using Nova.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple
 {

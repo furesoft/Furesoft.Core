@@ -2,8 +2,10 @@
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators
 {
     /// <summary>
     /// Yields the current value of an iterator.

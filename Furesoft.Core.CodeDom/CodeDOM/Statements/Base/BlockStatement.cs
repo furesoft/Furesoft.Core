@@ -7,8 +7,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 
-namespace Nova.CodeDOM
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
 {
     /// <summary>
     /// The common base class of all <see cref="Statement"/>s that can have a <see cref="Block"/> as a body (<see cref="NamespaceDecl"/>,

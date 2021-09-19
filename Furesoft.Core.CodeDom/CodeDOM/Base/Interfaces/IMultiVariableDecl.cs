@@ -3,7 +3,7 @@
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
 using System.Collections.Generic;
-using Nova.CodeDOM;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
 {
