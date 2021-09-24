@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
 {
@@ -177,6 +176,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 400 (GenericMethodDecl uses 0, UnresolvedRef uses 100, PropertyDeclBase uses 200, BlockDecl uses 300)
+            Parser.AddParsePoint(ParseTokenStart, 400, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="Initializer"/>.
         /// </summary>
@@ -290,12 +295,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             if (_expressions == null)
                 _expressions = new ChildList<Expression>(this);
             return _expressions;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 400 (GenericMethodDecl uses 0, UnresolvedRef uses 100, PropertyDeclBase uses 200, BlockDecl uses 300)
-            Parser.AddParsePoint(ParseTokenStart, 400, Parse);
         }
 
         protected int[] CalculateColumnWidths(CodeWriter writer)

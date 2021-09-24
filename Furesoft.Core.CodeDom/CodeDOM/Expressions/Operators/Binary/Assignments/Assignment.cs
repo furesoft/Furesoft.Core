@@ -1,8 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
 {
@@ -68,6 +67,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
             get { return ParseToken; }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 300 (FieldDecl uses 0, LocalDecl uses 100, MultiEnumMemberDecl uses 200)
+            Parser.AddOperatorParsePoint(ParseToken, 300, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="Assignment"/>.
         /// </summary>
@@ -82,12 +87,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 300 (FieldDecl uses 0, LocalDecl uses 100, MultiEnumMemberDecl uses 200)
-            Parser.AddOperatorParsePoint(ParseToken, 300, Precedence, LeftAssociative, false, Parse);
         }
     }
 }

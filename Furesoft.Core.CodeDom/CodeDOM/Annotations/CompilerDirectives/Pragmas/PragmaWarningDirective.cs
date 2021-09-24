@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas
 {
@@ -121,6 +121,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas
             get { return _warningNumbers; }
         }
 
+        public static new void AddParsePoints()
+        {
+            AddPragmaParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="PragmaWarningDirective"/>.
         /// </summary>
@@ -161,11 +166,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas
             if (_warningNumbers == null)
                 _warningNumbers = new List<int>();
             return _warningNumbers;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            AddPragmaParsePoint(ParseToken, Parse);
         }
 
         protected static PragmaWarningAction ParseAction(string actionName)

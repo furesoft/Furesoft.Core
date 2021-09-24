@@ -1,8 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {
@@ -66,17 +65,17 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
             }
         }
 
+        public static new void AddParsePoints()
+        {
+            Parser.AddParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="BaseRef"/>.
         /// </summary>
         public static BaseRef Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new BaseRef(parser, parent);
-        }
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddParsePoint(ParseToken, Parse);
         }
     }
 }

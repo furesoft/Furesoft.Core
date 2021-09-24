@@ -1,8 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
 {
@@ -46,6 +45,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
             get { return ParseToken; }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (Decrement uses 0)
+            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="PostDecrement"/> operator.
         /// </summary>
@@ -60,12 +65,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 100 (Decrement uses 0)
-            Parser.AddOperatorParsePoint(ParseToken, 100, Precedence, LeftAssociative, false, Parse);
         }
     }
 }

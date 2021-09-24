@@ -1,7 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas
 {
@@ -87,17 +87,17 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas
 
         public override string PragmaType { get { return ParseToken; } }
 
+        public static new void AddParsePoints()
+        {
+            AddPragmaParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="PragmaChecksumDirective"/>.
         /// </summary>
         public static new PragmaChecksumDirective Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new PragmaChecksumDirective(parser, parent);
-        }
-
-        internal static new void AddParsePoints()
-        {
-            AddPragmaParsePoint(ParseToken, Parse);
         }
 
         protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)

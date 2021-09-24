@@ -1,19 +1,23 @@
 ﻿using Furesoft.Core.CLI;
-using System.Collections.Generic;
-using System.Linq;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace TestApp
 {
@@ -55,19 +59,24 @@ namespace TestApp
 
         public static int Main(string[] args)
         {
-            var src = "loop: \n\tmov 0x12, [A + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
+            var src = "sizeof(int); loop: \n\tmov 0x12, [A + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
             CodeObject.AutoDetectTabs = true;
 
             Parser.AddOperatorParsePoint("+", 2, true, false, parse);
             Parser.AddOperatorParsePoint("*", 1, true, false, parse2);
             Parser.AddParsePoint("[", ParseSquared);
 
-            Parser.AddMultipleParsePoints(new[] { "mov", "load", "add", "sub", "inc" }, ParseMov);
+            Parser.AddMultipleParsePoints(new[] { "mov", "load", "add", "sub", "inc" }, (parser, parent, flags) =>
+            {
+                return new Instruction(parser, parent);
+            });
 
             Label.AddParsePoints();
             Goto.AddParsePoints();
+            TypeRef.AddParsePoints();
+            SizeOf.AddParsePoints();
 
-            //CodeUnit.LoadDefaultParsePoints();
+            // CodeUnit.LoadDefaultParsePoints();
 
             var expr = Expression.Parse(src, out var root);
 
@@ -148,6 +157,12 @@ namespace TestApp
                     gt.Target = new LabelRef(_labels[gt.Target.Name]);
                 }
             }
+            else if (obj is SizeOf so && so.Expression is TypeRef tr)
+            {
+                var typeSize = Marshal.SizeOf((Type)tr.Reference);
+
+                so.Expression = new Literal(typeSize);
+            }
             else if (obj is UnresolvedRef uref)
             {
                 uref.Parent.AttachMessage($"Reference '{uref.Reference}' cannot be bind", MessageSeverity.Error, MessageSource.Resolve);
@@ -182,11 +197,6 @@ namespace TestApp
         private static CodeObject parse2(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new MulOp(parser, parent);
-        }
-
-        private static CodeObject ParseMov(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new Instruction(parser, parent);
         }
 
         private static CodeObject ParseSquared(Parser parser, CodeObject parent, ParseFlags flags)

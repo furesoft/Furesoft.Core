@@ -1,16 +1,15 @@
-﻿using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 {
@@ -180,6 +179,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
             set { SetField(ref _then, value, true); }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 0 (TypeRef uses 100 for nullable types)
+            Parser.AddOperatorParsePoint(ParseToken1, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="Conditional"/> operator.
         /// </summary>
@@ -267,12 +272,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
                 MoveAllComments(token);
             else
                 _if.MoveCommentsToLeftMost(token, false);
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 0 (TypeRef uses 100 for nullable types)
-            Parser.AddOperatorParsePoint(ParseToken1, Precedence, LeftAssociative, false, Parse);
         }
 
         protected static bool PeekConditional(Parser parser, CodeObject parent, int colonCount, ParseFlags flags)

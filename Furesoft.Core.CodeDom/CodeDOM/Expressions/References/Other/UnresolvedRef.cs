@@ -1,15 +1,14 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
 {
@@ -183,6 +182,22 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
             get { return (string)_reference; }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Parse generic type and method references and arrays here in UnresolvedRef, because they may
+            // or may not parse as resolved.  Built-in types and '?' nullable types are parsed in TypeRef,
+            // because they will parse as resolved.
+
+            // Use a parse-priority of 100 (IndexerDecl uses 0, Index uses 200, Attribute uses 300)
+            Parser.AddParsePoint(ParseTokenArrayStart, 100, ParseArrayRanks);
+
+            // Use a parse-priority of 100 (GenericMethodDecl uses 0, LessThan uses 200)
+            Parser.AddParsePoint(ParseTokenArgumentStart, 100, ParseTypeArguments);
+            // Support alternate symbols for doc comments:
+            // Use a parse-priority of 100 (GenericMethodDecl uses 0, PropertyDeclBase uses 200, BlockDecl uses 300, Initializer uses 400)
+            Parser.AddParsePoint(ParseTokenAltArgumentStart, 100, ParseAltTypeArguments);
+        }
+
         /// <summary>
         /// Create an <see cref="UnresolvedRef"/> from the specified <see cref="Token"/>.
         /// </summary>
@@ -290,22 +305,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other
             SymbolicRef dotPrefix = (parentDot != null && parentDot.Right == this ? parentDot.Left as SymbolicRef : null);
             SymbolicRef dotPrefix2 = (parentDot2 != null && parentDot2.Right == this ? parentDot2.Left as SymbolicRef : null);
             return (dotPrefix == null || dotPrefix2 == null || dotPrefix.IsSameRef(dotPrefix2));
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Parse generic type and method references and arrays here in UnresolvedRef, because they may
-            // or may not parse as resolved.  Built-in types and '?' nullable types are parsed in TypeRef,
-            // because they will parse as resolved.
-
-            // Use a parse-priority of 100 (IndexerDecl uses 0, Index uses 200, Attribute uses 300)
-            Parser.AddParsePoint(ParseTokenArrayStart, 100, ParseArrayRanks);
-
-            // Use a parse-priority of 100 (GenericMethodDecl uses 0, LessThan uses 200)
-            Parser.AddParsePoint(ParseTokenArgumentStart, 100, ParseTypeArguments);
-            // Support alternate symbols for doc comments:
-            // Use a parse-priority of 100 (GenericMethodDecl uses 0, PropertyDeclBase uses 200, BlockDecl uses 300, Initializer uses 400)
-            Parser.AddParsePoint(ParseTokenAltArgumentStart, 100, ParseAltTypeArguments);
         }
     }
 }

@@ -1,7 +1,6 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
 {
@@ -14,16 +13,15 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
     /// </remarks>
     public class SetterDecl : AccessorDeclWithValue
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name prefix.
         /// </summary>
         public const string NamePrefix = ParseToken + "_";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "set";
 
         /// <summary>
         /// Create a <see cref="SetterDecl"/>.
@@ -53,9 +51,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             : base(NamePrefix, body)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected SetterDecl(Parser parser, CodeObject parent, ParseFlags flags)
+                    : base(parser, parent, NamePrefix, flags)
+        {
+            ParseAccessor(parser, flags);
+        }
 
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
@@ -65,16 +65,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "set";
-
-        internal static new void AddParsePoints()
+        public static new void AddParsePoints()
         {
             // Parse 'set' for Properties, Indexers, and Events
             // (analysis will complain in the last case that it should be 'remove' instead)
@@ -88,13 +79,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
         {
             return new SetterDecl(parser, parent, flags);
         }
-
-        protected SetterDecl(Parser parser, CodeObject parent, ParseFlags flags)
-            : base(parser, parent, NamePrefix, flags)
-        {
-            ParseAccessor(parser, flags);
-        }
-
-        #endregion
     }
 }

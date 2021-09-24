@@ -1,7 +1,6 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
 {
@@ -14,16 +13,15 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
     /// </remarks>
     public class RemoverDecl : AccessorDeclWithValue
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name prefix.
         /// </summary>
         public const string NamePrefix = ParseToken + "__";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "remove";
 
         /// <summary>
         /// Create a <see cref="RemoverDecl"/>.
@@ -39,9 +37,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
             : base(NamePrefix, Modifiers.None)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected RemoverDecl(Parser parser, CodeObject parent, ParseFlags flags)
+                    : base(parser, parent, NamePrefix, flags)
+        {
+            ParseAccessor(parser, flags);
+        }
 
         /// <summary>
         /// The keyword associated with the <see cref="Statement"/>.
@@ -51,16 +51,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
             get { return ParseToken; }
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "remove";
-
-        internal static new void AddParsePoints()
+        public static new void AddParsePoints()
         {
             Parser.AddParsePoint(ParseToken, Parse, typeof(EventDecl));
         }
@@ -72,13 +63,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Events
         {
             return new RemoverDecl(parser, parent, flags);
         }
-
-        protected RemoverDecl(Parser parser, CodeObject parent, ParseFlags flags)
-            : base(parser, parent, NamePrefix, flags)
-        {
-            ParseAccessor(parser, flags);
-        }
-
-        #endregion
     }
 }

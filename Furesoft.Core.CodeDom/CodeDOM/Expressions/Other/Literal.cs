@@ -1,10 +1,9 @@
-﻿using System.Text;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Text;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
 {
@@ -236,6 +235,18 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             }
         }
 
+        public static new void AddParsePoints()
+        {
+            // NOTE: No parse-points are installed for string, char, or numeric literals - instead, the parser
+            //       calls the parsing constructor directly based upon the token type.  This is because we want
+            //       to parse literals into individual tokens within the parser itself to preserve whitespace.
+
+            // Install parse-points for 'null', 'true', and 'false' literals (without scope restrictions)
+            Parser.AddParsePoint(ParseTokenNull, Parse);
+            Parser.AddParsePoint(ParseTokenTrue, Parse);
+            Parser.AddParsePoint(ParseTokenFalse, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="Literal"/>.
         /// </summary>
@@ -250,18 +261,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             writer.EscapeUnicode = false;
             writer.Write(_text);
             writer.EscapeUnicode = true;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // NOTE: No parse-points are installed for string, char, or numeric literals - instead, the parser
-            //       calls the parsing constructor directly based upon the token type.  This is because we want
-            //       to parse literals into individual tokens within the parser itself to preserve whitespace.
-
-            // Install parse-points for 'null', 'true', and 'false' literals (without scope restrictions)
-            Parser.AddParsePoint(ParseTokenNull, Parse);
-            Parser.AddParsePoint(ParseTokenTrue, Parse);
-            Parser.AddParsePoint(ParseTokenFalse, Parse);
         }
 
         protected static void CharToEscapedString(StringBuilder builder, char ch, bool isChar)

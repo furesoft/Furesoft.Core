@@ -1,13 +1,12 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 {
@@ -80,6 +79,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
             get { return _indexerRef; }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (IndexerDecl uses 0, UnresolvedRef uses 100, Attribute uses 300)
+            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="Index"/> operator.
         /// </summary>
@@ -122,12 +127,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 200 (IndexerDecl uses 0, UnresolvedRef uses 100, Attribute uses 300)
-            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
         }
 
         protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)

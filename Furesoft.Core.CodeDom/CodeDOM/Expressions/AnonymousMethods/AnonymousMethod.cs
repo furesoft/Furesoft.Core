@@ -1,23 +1,22 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Iterators;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
 {
@@ -184,6 +183,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
         public ChildList<ParameterDecl> Parameters
         {
             get { return _parameters; }
+        }
+
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 100 (DelegateDecl uses 0)
+            Parser.AddParsePoint(ParseToken, 100, Parse);
         }
 
         /// <summary>
@@ -456,12 +461,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
         {
             if (_body != null)
                 _body.RemoveAll();
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 100 (DelegateDecl uses 0)
-            Parser.AddParsePoint(ParseToken, 100, Parse);
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)

@@ -1,11 +1,10 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {
@@ -68,6 +67,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
             }
         }
 
+        public static new void AddParsePoints()
+        {
+            // When 'this' is used for constructor initializers, it's not at Block scope, and is
+            // parsed by the ConstructorInitializer base class of ThisInitializer instead of here.
+            Parser.AddParsePoint(ParseToken, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="ThisRef"/>.
         /// </summary>
@@ -84,13 +90,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 
             // By default, assume 'this' is a ThisRef
             return new ThisRef(parser, parent);
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // When 'this' is used for constructor initializers, it's not at Block scope, and is
-            // parsed by the ConstructorInitializer base class of ThisInitializer instead of here.
-            Parser.AddParsePoint(ParseToken, Parse);
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
 {
@@ -50,6 +49,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
             get { return ParseToken; }
         }
 
+        public static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, true, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="Increment"/> operator.
         /// </summary>
@@ -76,11 +80,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, true, Parse);
         }
     }
 }

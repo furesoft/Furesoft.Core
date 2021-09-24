@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
@@ -10,10 +7,12 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
 {
@@ -185,6 +184,23 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
         public ChildList<TypeParameter> TypeParameters
         {
             get { return _typeParameters; }
+        }
+
+        // Alternate type argument delimiters are allowed for code embedded inside documentation comments.
+        // The C# style delimiters are also allowed in doc comments, although they shouldn't show up
+        // usually, since they cause errors with parsing the XML properly - but they could be used
+        // programmatically in certain situations.  Both styles are thus supported inside doc comments,
+        // but the open and close delimiters must match for each pair.
+        public static new void AddParsePoints()
+        {
+            // Generic methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            // Use a parse-priority of 0 (UnresolvedRef uses 100, LessThan uses 200).
+            Parser.AddParsePoint(ParseTokenArgumentStart, 0, Parse, typeof(IBlock));
+            // Support alternate symbols for doc comments:
+            // Use a parse-priority of 0 (UnresolvedRef uses 100, PropertyDeclBase uses 200, BlockDecl uses 300, Initializer uses 400)
+            Parser.AddParsePoint(ParseTokenAltArgumentStart, ParseAlt, typeof(IBlock));
         }
 
         /// <summary>
@@ -384,23 +400,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
                 }
             }
             return null;
-        }
-
-        // Alternate type argument delimiters are allowed for code embedded inside documentation comments.
-        // The C# style delimiters are also allowed in doc comments, although they shouldn't show up
-        // usually, since they cause errors with parsing the XML properly - but they could be used
-        // programmatically in certain situations.  Both styles are thus supported inside doc comments,
-        // but the open and close delimiters must match for each pair.
-        internal static new void AddParsePoints()
-        {
-            // Generic methods are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            // Use a parse-priority of 0 (UnresolvedRef uses 100, LessThan uses 200).
-            Parser.AddParsePoint(ParseTokenArgumentStart, 0, Parse, typeof(IBlock));
-            // Support alternate symbols for doc comments:
-            // Use a parse-priority of 0 (UnresolvedRef uses 100, PropertyDeclBase uses 200, BlockDecl uses 300, Initializer uses 400)
-            Parser.AddParsePoint(ParseTokenAltArgumentStart, ParseAlt, typeof(IBlock));
         }
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)

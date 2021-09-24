@@ -1,19 +1,18 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
 {
@@ -29,26 +28,31 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
     /// </remarks>
     public class IndexerDecl : PropertyDeclBase, IParameters
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name for an indexer.
         /// </summary>
         public const string IndexerName = "Item";
 
-        #endregion
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = ThisRef.ParseToken;
 
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the end of the parameters.
+        /// </summary>
+        public const string ParseTokenEnd = TypeRefBase.ParseTokenArrayEnd;
+
+        /// <summary>
+        /// The token used to parse the start of the parameters.
+        /// </summary>
+        public const string ParseTokenStart = TypeRefBase.ParseTokenArrayStart;
 
         // The '_name' base-class member should always be an Expression - which should be either a ThisRef,
         // or a Dot operator with a TypeRef to an Interface on the left and a ThisRef on the right (ThisRef
         // is used by default to represent the 'this', even though it's really an IndexerDecl and not a
         // self-reference).
         protected ChildList<ParameterDecl> _parameters;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create an <see cref="IndexerDecl"/>.
@@ -82,9 +86,118 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             : this(type, Modifiers.None, parameters)
         { }
 
-        #endregion
+        protected IndexerDecl(Parser parser, CodeObject parent)
+                    : base(parser, parent, false)
+        {
+            // Get the ThisRef or Dot expression.  If it's a Dot, replace the ThisRef with an UnresolvedThisRef,
+            // which has an internal name of "Item", but displays as "this".
+            Expression expression = parser.RemoveLastUnusedExpression();
+            SetField(ref _name, CheckUnresolvedThisRef(expression), false);
+            Expression leftExpression = (expression is BinaryOperator ? ((BinaryOperator)expression).Left : expression);
+            _lineNumber = leftExpression.LineNumber;
+            _columnNumber = (ushort)leftExpression.ColumnNumber;
+            ParseTypeModifiersAnnotations(parser);  // Parse type and any modifiers and/or attributes
 
-        #region /* PROPERTIES */
+            // Parse the parameter declarations
+            bool isEndFirstOnLine;
+            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out isEndFirstOnLine);
+            IsEndFirstOnLine = isEndFirstOnLine;
+
+            new Block(out _body, parser, this, true);  // Parse the body
+        }
+
+        /// <summary>
+        /// The descriptive category of the code object.
+        /// </summary>
+        public override string Category
+        {
+            get { return "indexer"; }
+        }
+
+        /// <summary>
+        /// The 'getter' method for the indexer.
+        /// </summary>
+        public GetterDecl Getter
+        {
+            get { return _body.FindFirst<GetterDecl>(); }
+            set
+            {
+                if (_body != null)
+                {
+                    GetterDecl existing = _body.FindFirst<GetterDecl>();
+                    if (existing != null)
+                        _body.Remove(existing);
+                }
+                Insert(0, value);  // Always put the 'getter' first
+            }
+        }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has an argument.
+        /// </summary>
+        public override bool HasArgument
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has parens around its argument.
+        /// </summary>
+        public override bool HasArgumentParens
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True if the indexer has a getter method.
+        /// </summary>
+        public bool HasGetter
+        {
+            get { return (_body.FindFirst<GetterDecl>() != null); }
+        }
+
+        /// <summary>
+        /// True if the indexer has parameters.
+        /// </summary>
+        public bool HasParameters
+        {
+            get { return (_parameters != null && _parameters.Count > 0); }
+        }
+
+        /// <summary>
+        /// True if the indexer has a setter method.
+        /// </summary>
+        public bool HasSetter
+        {
+            get { return (_body.FindFirst<SetterDecl>() != null); }
+        }
+
+        /// <summary>
+        /// True if the indexer is readable.
+        /// </summary>
+        public override bool IsReadable { get { return HasGetter; } }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_parameters == null || _parameters.Count == 0 || (!_parameters[0].IsFirstOnLine && _parameters.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value && _parameters != null && _parameters.Count > 0)
+                {
+                    _parameters[0].IsFirstOnLine = false;
+                    _parameters.IsSingleLine = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if the indexer is writable.
+        /// </summary>
+        public override bool IsWritable { get { return HasSetter; } }
 
         /// <summary>
         /// The name of the <see cref="IndexerDecl"/>.
@@ -113,30 +226,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
         }
 
         /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public override string Category
-        {
-            get { return "indexer"; }
-        }
-
-        /// <summary>
-        /// A collection of <see cref="ParameterDecl"/>s for the parameters of the indexer.
-        /// </summary>
-        public ChildList<ParameterDecl> Parameters
-        {
-            get { return _parameters; }
-        }
-
-        /// <summary>
-        /// True if the indexer has parameters.
-        /// </summary>
-        public bool HasParameters
-        {
-            get { return (_parameters != null && _parameters.Count > 0); }
-        }
-
-        /// <summary>
         /// The number of parameters the indexer has.
         /// </summary>
         public int ParameterCount
@@ -145,37 +234,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
         }
 
         /// <summary>
-        /// True if the indexer has a getter method.
+        /// A collection of <see cref="ParameterDecl"/>s for the parameters of the indexer.
         /// </summary>
-        public bool HasGetter
+        public ChildList<ParameterDecl> Parameters
         {
-            get { return (_body.FindFirst<GetterDecl>() != null); }
-        }
-
-        /// <summary>
-        /// True if the indexer has a setter method.
-        /// </summary>
-        public bool HasSetter
-        {
-            get { return (_body.FindFirst<SetterDecl>() != null); }
-        }
-
-        /// <summary>
-        /// The 'getter' method for the indexer.
-        /// </summary>
-        public GetterDecl Getter
-        {
-            get { return _body.FindFirst<GetterDecl>(); }
-            set
-            {
-                if (_body != null)
-                {
-                    GetterDecl existing = _body.FindFirst<GetterDecl>();
-                    if (existing != null)
-                        _body.Remove(existing);
-                }
-                Insert(0, value);  // Always put the 'getter' first
-            }
+            get { return _parameters; }
         }
 
         /// <summary>
@@ -196,19 +259,44 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             }
         }
 
-        /// <summary>
-        /// True if the indexer is readable.
-        /// </summary>
-        public override bool IsReadable { get { return HasGetter; } }
+        public static new void AddParsePoints()
+        {
+            // Indexer declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            // Use a parse-priority of 0 (TypeRef uses 100, Index uses 200, Attribute uses 300)
+            Parser.AddParsePoint(ParseTokenStart, Parse, typeof(IBlock));
+        }
 
         /// <summary>
-        /// True if the indexer is writable.
+        /// Parse an <see cref="IndexerDecl"/>.
         /// </summary>
-        public override bool IsWritable { get { return HasSetter; } }
+        public static new IndexerDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            // If our parent is a TypeDecl, verify that we have an unused Expression (it can be either an
+            // identifier or a Dot operator for explicit interface implementations).  Otherwise, require a
+            // possible type in addition to the Expression.
+            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
+            if ((parent is TypeDecl && parser.HasUnusedExpression) || parser.HasUnusedTypeRefAndExpression)
+            {
+                // Verify that we have a 'this' or 'Interface.this' (in the first case, the 'this' will be
+                // a ThisRef, in the second case, it will be an UnresolvedThisRef).
+                CodeObject lastUnusedCodeObject = parser.LastUnusedCodeObject;
+                if (lastUnusedCodeObject is ThisRef || (lastUnusedCodeObject is Dot && ((Dot)lastUnusedCodeObject).Right is UnresolvedThisRef))
+                    return new IndexerDecl(parser, parent);
+            }
+            return null;
+        }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            IndexerDecl clone = (IndexerDecl)base.Clone();
+            clone._parameters = ChildListHelpers.Clone(_parameters, clone);
+            return clone;
+        }
 
         /// <summary>
         /// Create a reference to the <see cref="IndexerDecl"/>.
@@ -218,18 +306,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
         public override SymbolicRef CreateRef(bool isFirstOnLine)
         {
             return new IndexerRef(this, isFirstOnLine);
-        }
-
-        private static Expression CheckUnresolvedThisRef(Expression expression)
-        {
-            // If we have an "Interface.this" expression, convert a ThisRef to an UnresolvedThisRef
-            if (expression is Dot)
-            {
-                Dot dot = (Dot)expression;
-                if (dot.Right is ThisRef)
-                    dot.Right = new UnresolvedThisRef(dot.Right as ThisRef);
-            }
-            return expression;
         }
 
         /// <summary>
@@ -274,16 +350,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
         }
 
         /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            IndexerDecl clone = (IndexerDecl)base.Clone();
-            clone._parameters = ChildListHelpers.Clone(_parameters, clone);
-            return clone;
-        }
-
-        /// <summary>
         /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
         /// </summary>
         /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
@@ -301,114 +367,19 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             return name;
         }
 
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = ThisRef.ParseToken;
-
-        /// <summary>
-        /// The token used to parse the start of the parameters.
-        /// </summary>
-        public const string ParseTokenStart = TypeRefBase.ParseTokenArrayStart;
-
-        /// <summary>
-        /// The token used to parse the end of the parameters.
-        /// </summary>
-        public const string ParseTokenEnd = TypeRefBase.ParseTokenArrayEnd;
-
-        internal static new void AddParsePoints()
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
         {
-            // Indexer declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            // Use a parse-priority of 0 (TypeRef uses 100, Index uses 200, Attribute uses 300)
-            Parser.AddParsePoint(ParseTokenStart, Parse, typeof(IBlock));
+            RenderFlags passFlags = (flags & RenderFlags.PassMask);
+            writer.Write(ParseTokenStart);
+            AsTextInfixComments(writer, 0, flags);
+            writer.WriteList(_parameters, passFlags, this);
+            if (IsEndFirstOnLine)
+                writer.WriteLine();
+            writer.Write(ParseTokenEnd);
         }
 
-        /// <summary>
-        /// Parse an <see cref="IndexerDecl"/>.
-        /// </summary>
-        public static new IndexerDecl Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            // If our parent is a TypeDecl, verify that we have an unused Expression (it can be either an
-            // identifier or a Dot operator for explicit interface implementations).  Otherwise, require a
-            // possible type in addition to the Expression.
-            // If it doesn't seem to match the proper pattern, abort so that other types can try parsing it.
-            if ((parent is TypeDecl && parser.HasUnusedExpression) || parser.HasUnusedTypeRefAndExpression)
-            {
-                // Verify that we have a 'this' or 'Interface.this' (in the first case, the 'this' will be
-                // a ThisRef, in the second case, it will be an UnresolvedThisRef).
-                CodeObject lastUnusedCodeObject = parser.LastUnusedCodeObject;
-                if (lastUnusedCodeObject is ThisRef || (lastUnusedCodeObject is Dot && ((Dot)lastUnusedCodeObject).Right is UnresolvedThisRef))
-                    return new IndexerDecl(parser, parent);
-            }
-            return null;
-        }
-
-        protected IndexerDecl(Parser parser, CodeObject parent)
-            : base(parser, parent, false)
-        {
-            // Get the ThisRef or Dot expression.  If it's a Dot, replace the ThisRef with an UnresolvedThisRef,
-            // which has an internal name of "Item", but displays as "this".
-            Expression expression = parser.RemoveLastUnusedExpression();
-            SetField(ref _name, CheckUnresolvedThisRef(expression), false);
-            Expression leftExpression = (expression is BinaryOperator ? ((BinaryOperator)expression).Left : expression);
-            _lineNumber = leftExpression.LineNumber;
-            _columnNumber = (ushort)leftExpression.ColumnNumber;
-            ParseTypeModifiersAnnotations(parser);  // Parse type and any modifiers and/or attributes
-
-            // Parse the parameter declarations
-            bool isEndFirstOnLine;
-            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out isEndFirstOnLine);
-            IsEndFirstOnLine = isEndFirstOnLine;
-
-            new Block(out _body, parser, this, true);  // Parse the body
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has an argument.
-        /// </summary>
-        public override bool HasArgument
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has parens around its argument.
-        /// </summary>
-        public override bool HasArgumentParens
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_parameters == null || _parameters.Count == 0 || (!_parameters[0].IsFirstOnLine && _parameters.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value && _parameters != null && _parameters.Count > 0)
-                {
-                    _parameters[0].IsFirstOnLine = false;
-                    _parameters.IsSingleLine = true;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
+        protected override void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
+        { }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
         {
@@ -427,20 +398,16 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
                 ((Expression)_name).AsText(writer, passFlags & ~(RenderFlags.Description | RenderFlags.ShowParentTypes));
         }
 
-        protected override void AsTextArgumentPrefix(CodeWriter writer, RenderFlags flags)
-        { }
-
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        private static Expression CheckUnresolvedThisRef(Expression expression)
         {
-            RenderFlags passFlags = (flags & RenderFlags.PassMask);
-            writer.Write(ParseTokenStart);
-            AsTextInfixComments(writer, 0, flags);
-            writer.WriteList(_parameters, passFlags, this);
-            if (IsEndFirstOnLine)
-                writer.WriteLine();
-            writer.Write(ParseTokenEnd);
+            // If we have an "Interface.this" expression, convert a ThisRef to an UnresolvedThisRef
+            if (expression is Dot)
+            {
+                Dot dot = (Dot)expression;
+                if (dot.Right is ThisRef)
+                    dot.Right = new UnresolvedThisRef(dot.Right as ThisRef);
+            }
+            return expression;
         }
-
-        #endregion
     }
 }

@@ -1,10 +1,9 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
 {
@@ -69,6 +68,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
             get { return ParseToken; }
         }
 
+        public static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
+
         public static void AsTextDot(CodeWriter writer)
         {
             writer.Write(ParseToken);
@@ -127,11 +131,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
         public override Expression SkipPrefixes()
         {
             return Right.SkipPrefixes();
-        }
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
         }
     }
 }

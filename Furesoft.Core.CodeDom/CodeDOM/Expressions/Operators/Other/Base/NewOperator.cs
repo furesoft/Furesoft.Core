@@ -1,14 +1,12 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
 {
@@ -83,6 +81,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
             get { return ParseToken; }
         }
 
+        public static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="NewObject"/> or <see cref="NewArray"/> operator.
         /// </summary>
@@ -132,11 +135,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
         }
 
         protected override void AsTextInitializer(CodeWriter writer, RenderFlags flags)

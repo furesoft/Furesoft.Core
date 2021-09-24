@@ -2,12 +2,11 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System;
-using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
+using Furesoft.Core.CodeDom.Parsing;
+using System;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
 {
@@ -20,16 +19,15 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
     /// </remarks>
     public class GetterDecl : AccessorDecl
     {
-        #region /* CONSTANTS */
-
         /// <summary>
         /// The internal name prefix.
         /// </summary>
         public const string NamePrefix = ParseToken + "_";
 
-        #endregion
-
-        #region /* CONSTRUCTORS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = "get";
 
         /// <summary>
         /// Create a <see cref="GetterDecl"/>.
@@ -59,9 +57,19 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             : base(NamePrefix, null, body)
         { }
 
-        #endregion
+        protected GetterDecl(Parser parser, CodeObject parent, ParseFlags flags)
+                    : base(parser, parent, NamePrefix, flags)
+        {
+            ParseAccessor(parser, flags);
+        }
 
-        #region /* PROPERTIES */
+        /// <summary>
+        /// The keyword associated with the <see cref="Statement"/>.
+        /// </summary>
+        public override string Keyword
+        {
+            get { return ParseToken; }
+        }
 
         /// <summary>
         /// The return type of the method (never null - will be type 'void' instead).
@@ -73,24 +81,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             set { throw new Exception("Can't set the ReturnType of a GetterDecl - change the type of the PropertyDecl instead."); }
         }
 
-        /// <summary>
-        /// The keyword associated with the <see cref="Statement"/>.
-        /// </summary>
-        public override string Keyword
-        {
-            get { return ParseToken; }
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "get";
-
-        internal static new void AddParsePoints()
+        public static new void AddParsePoints()
         {
             // Parse 'get' for Properties, Indexers, and Events
             // (analysis will complain in the last case that it should be 'add' instead)
@@ -104,13 +95,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
         {
             return new GetterDecl(parser, parent, flags);
         }
-
-        protected GetterDecl(Parser parser, CodeObject parent, ParseFlags flags)
-            : base(parser, parent, NamePrefix, flags)
-        {
-            ParseAccessor(parser, flags);
-        }
-
-        #endregion
     }
 }

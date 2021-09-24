@@ -1,8 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
 {
@@ -53,6 +52,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
             get { return ParseToken; }
         }
 
+        public static new void AddParsePoints()
+        {
+            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse an <see cref="As"/> operator.
         /// </summary>
@@ -67,11 +71,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
         }
     }
 }

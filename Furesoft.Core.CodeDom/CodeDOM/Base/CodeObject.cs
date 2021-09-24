@@ -1,28 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Furesoft.Core.CodeDom.Rendering;
-using static Furesoft.Core.CodeDom.Rendering.CodeWriter;
-using Furesoft.Core.CodeDom.Parsing;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
-using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Conditionals.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using static Furesoft.Core.CodeDom.Rendering.CodeWriter;
+using Attribute = Furesoft.Core.CodeDom.CodeDOM.Annotations.Attribute;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Base
 {
@@ -129,7 +129,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             {
                 if (type.IsSubclassOf(typeof(CodeObject)))
                 {
-                    MethodInfo method = type.GetMethod("AddParsePoints", BindingFlags.NonPublic | BindingFlags.Static);
+                    MethodInfo method = type.GetMethod("AddParsePoints", BindingFlags.Public | BindingFlags.Static);
                     if (method != null)
                         method.Invoke(null, null);
                 }
@@ -236,14 +236,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// </summary>
         protected void SetField(ref object field, object value, bool format)
         {
-            if (field is CodeObject)
-                ((CodeObject)field).Dispose();
+            if (field is CodeObject @object)
+                @object.Dispose();
             field = value;
             if (value != null)
             {
-                if (field is CodeObject)
+                if (field is CodeObject codeObject)
                 {
-                    CodeObject codeObject = (CodeObject)field;
                     codeObject.Parent = this;
                     if (format)
                         DefaultFormatField(codeObject);
@@ -284,10 +283,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// </summary>
         protected void CloneField(ref object field, object value)
         {
-            if (field is CodeObject && value != null)
+            if (field is CodeObject @object && value != null)
             {
                 field = ((CodeObject)value).Clone();
-                ((CodeObject)field).Parent = this;
+                @object.Parent = this;
             }
         }
 

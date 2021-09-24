@@ -1,12 +1,11 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
 {
@@ -80,6 +79,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
             parser.ParentStartingToken = startingToken;
         }
 
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Cast uses 300, Expression parens uses 400)
+            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="Call"/>.
         /// </summary>
@@ -111,12 +116,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 200 (ConstructorDecl uses 0, MethodDecl uses 50, LambdaExpression uses 100, Cast uses 300, Expression parens uses 400)
-            Parser.AddOperatorParsePoint(ParseTokenStart, 200, Precedence, LeftAssociative, false, Parse);
         }
 
         protected override void AsTextEndArguments(CodeWriter writer, RenderFlags flags)

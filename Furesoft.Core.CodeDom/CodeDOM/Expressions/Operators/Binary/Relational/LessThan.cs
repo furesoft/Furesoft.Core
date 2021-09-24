@@ -1,8 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational
 {
@@ -50,6 +49,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational
             get { return ParseToken; }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Use a parse-priority of 200 (GenericMethodDecl uses 0, UnresolvedRef uses 100)
+            Parser.AddOperatorParsePoint(ParseToken, 200, Precedence, LeftAssociative, false, Parse);
+        }
+
         /// <summary>
         /// Parse a <see cref="LessThan"/> operator.
         /// </summary>
@@ -72,12 +77,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Use a parse-priority of 200 (GenericMethodDecl uses 0, UnresolvedRef uses 100)
-            Parser.AddOperatorParsePoint(ParseToken, 200, Precedence, LeftAssociative, false, Parse);
         }
     }
 }

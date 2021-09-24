@@ -1,32 +1,31 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.Serialization;
-using Furesoft.Core.CodeDom.Utilities.Reflection;
-using Furesoft.Core.CodeDom.Utilities;
-using static Furesoft.Core.CodeDom.Utilities.Reflection.TypeUtil;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Miscellaneous;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using Furesoft.Core.CodeDom.Utilities;
+using Furesoft.Core.CodeDom.Utilities.Reflection;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.Serialization;
+using static Furesoft.Core.CodeDom.Utilities.Reflection.TypeUtil;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 {
@@ -1001,6 +1000,21 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
                     return ((EnumConstant)_reference).EnumTypeRef.NamespaceName;
                 return _reference.GetType().Namespace;
             }
+        }
+
+        public static new void AddParsePoints()
+        {
+            // Parse built-in types and '?' nullable types here in TypeRef, because they will
+            // parse as resolved TypeRefs.  Generic types and arrays are parsed in UnresolvedRef,
+            // because they may or may not parse as resolved.
+
+            // Install parse-points for all built-in type names (without any scope restrictions) - this
+            // will also parse built-in nullable types.
+            foreach (KeyValuePair<string, TypeRef> keyValue in KeywordToTypeRefMap)
+                Parser.AddParsePoint(keyValue.Key, ParseType);
+
+            // Parse nullable types - use a parse-priority of 100 (Conditional uses 0)
+            Parser.AddParsePoint(ParseTokenNullable, 100, ParseNullableType);
         }
 
         /// <summary>
@@ -2292,21 +2306,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         {
             TypeRefBase baseTypeRef = GetBaseType();
             return (baseTypeRef is TypeRef && (baseTypeRef.IsSameRef(classTypeRef) || ((TypeRef)baseTypeRef).IsSubclassOf(classTypeRef)));
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Parse built-in types and '?' nullable types here in TypeRef, because they will
-            // parse as resolved TypeRefs.  Generic types and arrays are parsed in UnresolvedRef,
-            // because they may or may not parse as resolved.
-
-            // Install parse-points for all built-in type names (without any scope restrictions) - this
-            // will also parse built-in nullable types.
-            foreach (KeyValuePair<string, TypeRef> keyValue in KeywordToTypeRefMap)
-                Parser.AddParsePoint(keyValue.Key, ParseType);
-
-            // Parse nullable types - use a parse-priority of 100 (Conditional uses 0)
-            Parser.AddParsePoint(ParseTokenNullable, 100, ParseNullableType);
         }
 
         protected internal static TypeRefBase CreateTypeRef(object obj, string name, bool isFirstOnLine)

@@ -1,21 +1,19 @@
-﻿using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Shift;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls
 {
@@ -131,6 +129,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls
             get { return _symbol; }
         }
 
+        public static new void AddParsePoints()
+        {
+            // Operator declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
+            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
+            // This also allows for them to be embedded in a DocCode object.
+            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
+        }
+
         /// <summary>
         /// Determine the symbol for an operator given its internal name.
         /// </summary>
@@ -184,14 +190,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls
             if (_parent is TypeDecl)
                 name = ((TypeDecl)_parent).GetFullName(descriptive) + "." + name;
             return name;
-        }
-
-        internal static new void AddParsePoints()
-        {
-            // Operator declarations are only valid with a TypeDecl parent, but we'll allow any IBlock so that we can
-            // properly parse them if they accidentally end up at the wrong level (only to flag them as errors).
-            // This also allows for them to be embedded in a DocCode object.
-            Parser.AddParsePoint(ParseToken, Parse, typeof(IBlock));
         }
 
         internal override void AsTextName(CodeWriter writer, RenderFlags flags)
