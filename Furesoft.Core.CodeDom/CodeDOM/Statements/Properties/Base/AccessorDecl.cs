@@ -1,8 +1,8 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
 {
@@ -20,8 +20,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
     /// </remarks>
     public abstract class AccessorDecl : MethodDecl
     {
-        #region /* CONSTRUCTORS */
-
         protected AccessorDecl(string namePrefix, Expression returnType, Modifiers modifiers, CodeObject body)
             : base(namePrefix, returnType, modifiers, body)
         { }
@@ -34,40 +32,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
             : base(namePrefix, returnType, body)
         { }
 
-        #endregion
-
-        #region /* PARSING */
-
         protected AccessorDecl(Parser parser, CodeObject parent, string namePrefix, ParseFlags flags)
             : base(parser, parent, false, flags)
         {
             _name = namePrefix;
         }
-
-        protected void ParseAccessor(Parser parser, ParseFlags flags)
-        {
-            // Preserve the parsed NewLines value (MethodDeclBase forces it to 1 if it's 0), but
-            // we'll allow accessors to be inlined by default.
-            NewLines = parser.Token.NewLines;
-
-            ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
-            parser.NextToken();                    // Move past keyword
-            ParseTerminatorOrBody(parser, flags);
-
-            if (AutomaticFormattingCleanup && !parser.IsGenerated)
-            {
-                // Force property accessors (get/set) to a single line if they have a single-line body,
-                // and remove any blank lines preceeding them in the property declaration (includes events).
-                if (_body != null && _body.Count < 2 && _body.IsSingleLine)
-                    IsSingleLine = true;
-                if (NewLines > 1)
-                    NewLines = 1;
-            }
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
 
         /// <summary>
         /// True if the <see cref="Statement"/> has an argument.
@@ -94,9 +63,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
             return 1;
         }
 
-        #endregion
-
-        #region /* RENDERING */
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        { }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
         {
@@ -104,9 +72,25 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
             writer.Write(Keyword);
         }
 
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        { }
+        protected void ParseAccessor(Parser parser, ParseFlags flags)
+        {
+            // Preserve the parsed NewLines value (MethodDeclBase forces it to 1 if it's 0), but
+            // we'll allow accessors to be inlined by default.
+            NewLines = parser.Token.NewLines;
 
-        #endregion
+            ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers
+            parser.NextToken();                    // Move past keyword
+            ParseTerminatorOrBody(parser, flags);
+
+            if (AutomaticFormattingCleanup && !parser.IsGenerated)
+            {
+                // Force property accessors (get/set) to a single line if they have a single-line body,
+                // and remove any blank lines preceeding them in the property declaration (includes events).
+                if (_body != null && _body.Count < 2 && _body.IsSingleLine)
+                    IsSingleLine = true;
+                if (NewLines > 1)
+                    NewLines = 1;
+            }
+        }
     }
 }

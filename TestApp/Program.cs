@@ -12,6 +12,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.GotoTargets;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Jumps;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
 using System;
@@ -59,7 +60,7 @@ namespace TestApp
 
         public static int Main(string[] args)
         {
-            var src = "sizeof(int); loop: \n\tmov 0x12, [A + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
+            var src = "var k = 12; sizeof(int); loop: \n\tmov 0x12, [A + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
             CodeObject.AutoDetectTabs = true;
 
             Parser.AddOperatorParsePoint("+", 2, true, false, parse);
@@ -75,11 +76,12 @@ namespace TestApp
             Goto.AddParsePoints();
             TypeRef.AddParsePoints();
             SizeOf.AddParsePoints();
+            LocalDecl.AddParsePoints();
 
             // CodeUnit.LoadDefaultParsePoints();
 
-            var expr = Expression.Parse(src, out var root);
-
+            var expr = Expression.Parse("sizeof(int) * 4 + 2", out var root);
+            
             var result = Evaluate(expr);
 
             Block body = CodeUnit.LoadFragment(src, "d").Body;
@@ -157,15 +159,16 @@ namespace TestApp
                     gt.Target = new LabelRef(_labels[gt.Target.Name]);
                 }
             }
-            else if (obj is SizeOf so && so.Expression is TypeRef tr)
-            {
-                var typeSize = Marshal.SizeOf((Type)tr.Reference);
-
-                so.Expression = new Literal(typeSize);
-            }
             else if (obj is UnresolvedRef uref)
             {
                 uref.Parent.AttachMessage($"Reference '{uref.Reference}' cannot be bind", MessageSeverity.Error, MessageSource.Resolve);
+            }
+            else if (obj is LocalDecl ld && ld.Initialization is Literal i && ld.Type is UnresolvedRef ur && ur.Name == "var")
+            {
+                if (int.TryParse(i.Text, out var r))
+                {
+                    ld.Type = TypeRef.IntRef;
+                }
             }
         }
 
@@ -182,6 +185,12 @@ namespace TestApp
             else if (expr is Literal lit)
             {
                 return int.Parse(lit.Text);
+            }
+            else if (expr is SizeOf so && so.Expression is TypeRef tr)
+            {
+                var typeSize = Marshal.SizeOf((Type)tr.Reference);
+
+                return typeSize;
             }
             else
             {
@@ -252,6 +261,9 @@ namespace TestApp
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
+            Left.AsTextExpression(writer, flags);
+            AsTextOperator(writer, flags);
+            Right.AsTextExpression(writer, flags);
         }
 
         public override int GetPrecedence()

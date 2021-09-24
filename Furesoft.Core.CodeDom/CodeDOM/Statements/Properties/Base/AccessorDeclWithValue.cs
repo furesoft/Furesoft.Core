@@ -1,8 +1,7 @@
-﻿using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
 {
@@ -11,8 +10,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
     /// </summary>
     public abstract class AccessorDeclWithValue : AccessorDecl
     {
-        #region /* CONSTRUCTORS */
-
         protected AccessorDeclWithValue(string namePrefix, Modifiers modifiers, CodeObject body)
             : base(namePrefix, TypeRef.VoidRef, modifiers, body)
         {
@@ -28,9 +25,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
             : this(namePrefix, Modifiers.None, body)
         { }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected AccessorDeclWithValue(Parser parser, CodeObject parent, string namePrefix, ParseFlags flags)
+                    : base(parser, parent, namePrefix, flags)
+        {
+            // Add the implicit 'value' parameter - the type is always the type of the Parent (null if no Parent exists yet)
+            CreateParameters().Add(new ValueParameterDecl());
+        }
 
         /// <summary>
         /// The 'value' parameter.
@@ -39,18 +39,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties.Base
         {
             get { return _parameters.Last; }
         }
-
-        #endregion
-
-        #region /* PARSING */
-
-        protected AccessorDeclWithValue(Parser parser, CodeObject parent, string namePrefix, ParseFlags flags)
-            : base(parser, parent, namePrefix, flags)
-        {
-            // Add the implicit 'value' parameter - the type is always the type of the Parent (null if no Parent exists yet)
-            CreateParameters().Add(new ValueParameterDecl());
-        }
-
-        #endregion
     }
 }
