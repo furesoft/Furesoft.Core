@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler;
 
-namespace Flame.Compiler
+namespace Furesoft.Core.CodeDom.Compiler
 {
     /// <summary>
     /// A basic block in a control-flow graph.

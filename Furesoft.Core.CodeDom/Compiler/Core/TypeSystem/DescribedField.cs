@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using Flame.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// A field that can be constructed incrementally in an imperative fashion.

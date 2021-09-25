@@ -1,4 +1,5 @@
-namespace Flame.TypeSystem
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// An accessor specialization that is obtained by observing an accessor

@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Flame.Compiler.Flow;
-using Flame.Collections;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler;
 
-namespace Flame.Compiler
+namespace Furesoft.Core.CodeDom.Compiler
 {
     /// <summary>
     /// The data behind a basic block in a control-flow graph.

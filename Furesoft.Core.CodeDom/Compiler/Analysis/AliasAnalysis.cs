@@ -1,4 +1,4 @@
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// Enumerates possible aliasing relations between pointers.

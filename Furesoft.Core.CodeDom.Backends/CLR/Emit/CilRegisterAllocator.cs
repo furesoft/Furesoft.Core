@@ -1,11 +1,11 @@
-using Flame;
-using Flame.Compiler;
-using Flame.Compiler.Analysis;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
 {

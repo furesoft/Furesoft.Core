@@ -1,6 +1,8 @@
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler;
 
-namespace Flame.Compiler
+namespace Furesoft.Core.CodeDom.Compiler
 {
     /// <summary>
     /// A parameter to a basic block.

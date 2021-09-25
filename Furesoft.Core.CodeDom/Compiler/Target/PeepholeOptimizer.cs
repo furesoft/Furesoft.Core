@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Target;
 
-namespace Flame.Compiler.Target
+namespace Furesoft.Core.CodeDom.Compiler.Target
 {
     /// <summary>
     /// A target-specific peephole optimizer: an optimizer that walks

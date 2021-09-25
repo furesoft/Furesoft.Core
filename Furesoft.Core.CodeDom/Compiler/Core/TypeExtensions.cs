@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Flame.Collections;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// A collection of extension and helper methods that simplify

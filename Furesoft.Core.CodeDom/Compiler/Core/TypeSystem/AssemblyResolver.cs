@@ -1,4 +1,4 @@
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// Resolves assemblies based on assembly identities.

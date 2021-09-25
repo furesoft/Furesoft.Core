@@ -1,11 +1,11 @@
-using Flame;
-using Flame.Collections;
-using Flame.Compiler;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -24,45 +24,45 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
         private static readonly IReadOnlyDictionary<OpCode, string> checkedSignedBinaryOperators =
                     new Dictionary<OpCode, string>()
                 {
-            { OpCodes.Add_Ovf, ArithmeticIntrinsics.Operators.Add },
-            { OpCodes.Sub_Ovf, ArithmeticIntrinsics.Operators.Subtract },
-            { OpCodes.Mul_Ovf, ArithmeticIntrinsics.Operators.Multiply }
+            { OpCodes.Add_Ovf, ArithmeticIntrinsics.Operators.Add},
+            { OpCodes.Sub_Ovf, ArithmeticIntrinsics.Operators.Subtract},
+            { OpCodes.Mul_Ovf, ArithmeticIntrinsics.Operators.Multiply}
                 };
 
         private static readonly IReadOnlyDictionary<OpCode, string> checkedUnsignedBinaryOperators =
                     new Dictionary<OpCode, string>()
                 {
-            { OpCodes.Add_Ovf_Un, ArithmeticIntrinsics.Operators.Add },
-            { OpCodes.Sub_Ovf_Un, ArithmeticIntrinsics.Operators.Subtract },
-            { OpCodes.Mul_Ovf_Un, ArithmeticIntrinsics.Operators.Multiply }
+            { OpCodes.Add_Ovf_Un, ArithmeticIntrinsics.Operators.Add},
+            { OpCodes.Sub_Ovf_Un, ArithmeticIntrinsics.Operators.Subtract},
+            { OpCodes.Mul_Ovf_Un, ArithmeticIntrinsics.Operators.Multiply}
                 };
 
         private static readonly IReadOnlyDictionary<OpCode, string> signedBinaryOperators =
                     new Dictionary<OpCode, string>()
                 {
-            { OpCodes.Add, ArithmeticIntrinsics.Operators.Add },
-            { OpCodes.Sub, ArithmeticIntrinsics.Operators.Subtract },
-            { OpCodes.Mul, ArithmeticIntrinsics.Operators.Multiply },
-            { OpCodes.Div, ArithmeticIntrinsics.Operators.Divide },
-            { OpCodes.Rem, ArithmeticIntrinsics.Operators.Remainder },
-            { OpCodes.Cgt, ArithmeticIntrinsics.Operators.IsGreaterThan },
-            { OpCodes.Ceq, ArithmeticIntrinsics.Operators.IsEqualTo },
-            { OpCodes.Clt, ArithmeticIntrinsics.Operators.IsLessThan },
-            { OpCodes.And, ArithmeticIntrinsics.Operators.And },
-            { OpCodes.Or, ArithmeticIntrinsics.Operators.Or },
-            { OpCodes.Xor, ArithmeticIntrinsics.Operators.Xor },
-            { OpCodes.Shl, ArithmeticIntrinsics.Operators.LeftShift },
-            { OpCodes.Shr, ArithmeticIntrinsics.Operators.RightShift }
+            { OpCodes.Add, ArithmeticIntrinsics.Operators.Add},
+            { OpCodes.Sub, ArithmeticIntrinsics.Operators.Subtract},
+            { OpCodes.Mul, ArithmeticIntrinsics.Operators.Multiply},
+            { OpCodes.Div, ArithmeticIntrinsics.Operators.Divide},
+            { OpCodes.Rem, ArithmeticIntrinsics.Operators.Remainder},
+            { OpCodes.Cgt, ArithmeticIntrinsics.Operators.IsGreaterThan},
+            { OpCodes.Ceq, ArithmeticIntrinsics.Operators.IsEqualTo},
+            { OpCodes.Clt, ArithmeticIntrinsics.Operators.IsLessThan},
+            { OpCodes.And, ArithmeticIntrinsics.Operators.And},
+            { OpCodes.Or,  ArithmeticIntrinsics.Operators.Or},
+            { OpCodes.Xor, ArithmeticIntrinsics.Operators.Xor},
+            { OpCodes.Shl, ArithmeticIntrinsics.Operators.LeftShift},
+            { OpCodes.Shr, ArithmeticIntrinsics.Operators.RightShift}
                 };
 
         private static readonly IReadOnlyDictionary<OpCode, string> unsignedBinaryOperators =
                     new Dictionary<OpCode, string>()
                 {
-            { OpCodes.Div_Un, ArithmeticIntrinsics.Operators.Divide },
-            { OpCodes.Rem_Un, ArithmeticIntrinsics.Operators.Remainder },
-            { OpCodes.Cgt_Un, ArithmeticIntrinsics.Operators.IsGreaterThan },
-            { OpCodes.Clt_Un, ArithmeticIntrinsics.Operators.IsLessThan },
-            { OpCodes.Shr_Un, ArithmeticIntrinsics.Operators.RightShift }
+            { OpCodes.Div_Un, ArithmeticIntrinsics.Operators.Divide},
+            { OpCodes.Rem_Un, ArithmeticIntrinsics.Operators.Remainder},
+            { OpCodes.Cgt_Un, ArithmeticIntrinsics.Operators.IsGreaterThan},
+            { OpCodes.Clt_Un, ArithmeticIntrinsics.Operators.IsLessThan},
+            { OpCodes.Shr_Un, ArithmeticIntrinsics.Operators.RightShift}
                 };
 
         /// <summary>
@@ -781,7 +781,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
                 var operandType = context.GetValueType(operand);
                 context.Push(
                     ArithmeticIntrinsics.CreatePrototype(
-                        ArithmeticIntrinsics.Operators.Not,
+ArithmeticIntrinsics.Operators.Not,
                         false,
                         operandType,
                         operandType)
@@ -793,7 +793,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
                 var operandType = context.GetValueType(operand);
                 context.Push(
                     ArithmeticIntrinsics.CreatePrototype(
-                        ArithmeticIntrinsics.Operators.Subtract,
+ArithmeticIntrinsics.Operators.Subtract,
                         false,
                         operandType,
                         operandType,
@@ -1809,8 +1809,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
             var firstType = context.GetValueType(first);
             var secondType = context.GetValueType(second);
 
-            bool isRelational = ArithmeticIntrinsics.Operators
-                .IsRelationalOperator(operatorName);
+            bool isRelational = ArithmeticIntrinsics.Operators.IsRelationalOperator(operatorName);
 
             var resultType = isRelational ? Assembly.Resolver.TypeEnvironment.Boolean : firstType;
 

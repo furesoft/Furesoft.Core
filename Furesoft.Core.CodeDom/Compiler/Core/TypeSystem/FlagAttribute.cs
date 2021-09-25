@@ -1,4 +1,5 @@
-namespace Flame.TypeSystem
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// A collection of constants and methods that relate to simple

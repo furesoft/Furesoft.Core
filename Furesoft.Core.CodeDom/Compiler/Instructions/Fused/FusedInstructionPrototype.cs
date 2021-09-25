@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame.Compiler.Instructions.Fused
+namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
 {
     /// <summary>
     /// A prototype for a fused instruction: a special composite

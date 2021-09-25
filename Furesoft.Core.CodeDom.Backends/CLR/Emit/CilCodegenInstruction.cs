@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Flame.Compiler;
 using OpCode = Mono.Cecil.Cil.OpCode;
 using CilInstruction = Mono.Cecil.Cil.Instruction;
+using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
 {

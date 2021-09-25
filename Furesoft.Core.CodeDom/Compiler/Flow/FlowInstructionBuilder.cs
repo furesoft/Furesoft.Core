@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Flame.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 
-namespace Flame.Compiler.Flow
+namespace Furesoft.Core.CodeDom.Compiler.Flow
 {
     /// <summary>
     /// An instruction reference to an unnamed instruction in

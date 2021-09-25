@@ -1,6 +1,7 @@
-using Flame.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// A collection of constants and methods that relate to integer

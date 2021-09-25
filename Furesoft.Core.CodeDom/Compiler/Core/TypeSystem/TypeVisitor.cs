@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// A type of object that recursively applies a mapping to

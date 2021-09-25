@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// A transformation that reorders instructions. It is intended to be used prior

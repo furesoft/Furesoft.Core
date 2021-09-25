@@ -1,8 +1,8 @@
-using Flame;
-using Flame.Collections;
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR
 {

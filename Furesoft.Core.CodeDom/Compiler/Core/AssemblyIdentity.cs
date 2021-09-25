@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
-using Flame.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// A reference to a particular assembly.

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// Manages a collection of default control-flow graph analyses, which

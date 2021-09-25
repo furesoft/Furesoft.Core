@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Flame.Collections;
-using Flame.Compiler.Flow;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler;
 
-namespace Flame.Compiler
+namespace Furesoft.Core.CodeDom.Compiler
 {
     /// <summary>
     /// A method body: a method implementation represented as a

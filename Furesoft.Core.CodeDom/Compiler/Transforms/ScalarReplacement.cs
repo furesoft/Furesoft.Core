@@ -2,13 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Instructions;
-using Flame.Compiler.Pipeline;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Pipeline;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// The scalar replacement of aggregates transform, which tries to

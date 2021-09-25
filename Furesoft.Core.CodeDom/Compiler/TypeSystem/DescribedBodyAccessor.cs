@@ -1,6 +1,8 @@
-using Flame.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 {
     /// <summary>
     /// A property accessor that can be constructed incrementally in an

@@ -1,4 +1,4 @@
-namespace Flame.Constants
+namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
     /// <summary>
     /// A field token constant: a constant that wraps a runtime handle

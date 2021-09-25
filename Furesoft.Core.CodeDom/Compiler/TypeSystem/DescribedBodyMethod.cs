@@ -1,6 +1,9 @@
-using Flame.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler;
 
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 {
     /// <summary>
     /// A method that can be constructed incrementally in an imperative fashion

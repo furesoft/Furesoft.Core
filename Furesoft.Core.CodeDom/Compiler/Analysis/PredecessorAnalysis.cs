@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// A data structure that can be queried to get the predecessors

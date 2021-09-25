@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Compiler;
-using Flame.Compiler.Instructions;
-using Flame.Compiler.Target;
-using Flame.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Target;
+using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
 {

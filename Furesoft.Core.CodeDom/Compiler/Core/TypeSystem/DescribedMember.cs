@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// A member that can be constructed incrementally in an imperative fashion.

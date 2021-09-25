@@ -1,4 +1,4 @@
-namespace Flame.Compiler.Instructions
+namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
     /// <summary>
     /// An enumeration of method lookup strategies.

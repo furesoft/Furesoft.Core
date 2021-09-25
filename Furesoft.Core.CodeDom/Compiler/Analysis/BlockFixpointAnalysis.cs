@@ -2,31 +2,26 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// A base class for analyses that process blocks until they reach a fixpoint.
     /// </summary>
     /// <typeparam name="TBlockState">The result of analyzing a single block.</typeparam>
     public abstract class BlockFixpointAnalysis<TBlockState>
-        : IFlowGraphAnalysis<BlockFixpointAnalysis<TBlockState>.Result>
+        : IFlowGraphAnalysis<Result>
     {
-        /// <summary>
-        /// The result of a block fixpoint analysis.
-        /// </summary>
-        public struct Result
+        public Result AnalyzeWithUpdates(FlowGraph graph, Result previousResult, IReadOnlyList<FlowGraphUpdate> updates)
         {
-            internal Result(IReadOnlyDictionary<BasicBlockTag, TBlockState> results)
-            {
-                this.BlockResults = results;
-            }
-
-            /// <summary>
-            /// Gets a mapping of basic blocks to block analysis results.
-            /// </summary>
-            /// <value>A mapping of basic blocks to analysis results.</value>
-            public IReadOnlyDictionary<BasicBlockTag, TBlockState> BlockResults { get; private set; }
+            return Analyze(graph);
         }
+
+        /// <summary>
+        /// Creates an input block state for an entry point block.
+        /// </summary>
+        /// <param name="entryPoint">The entry point block to create a state for.</param>
+        /// <returns>An input block state for the entry point.</returns>
+        public abstract TBlockState CreateEntryPointInput(BasicBlock entryPoint);
 
         /// <summary>
         /// Tests if two block states are the same.
@@ -41,34 +36,6 @@ namespace Flame.Compiler.Analysis
         /// <c>true</c> if <paramref name="first"/> equals <paramref name="second"/>; otherwise, <c>false</c>.
         /// </returns>
         public abstract bool Equals(TBlockState first, TBlockState second);
-
-        /// <summary>
-        /// Merges two block states. This method unifies outgoing block
-        /// states into a single input block state.
-        /// </summary>
-        /// <param name="first">
-        /// A first block state.
-        /// </param>
-        /// <param name="second">
-        /// A second block state.
-        /// </param>
-        /// <returns>A merged block state.</returns>
-        public abstract TBlockState Merge(TBlockState first, TBlockState second);
-
-        /// <summary>
-        /// Creates an input block state for an entry point block.
-        /// </summary>
-        /// <param name="entryPoint">The entry point block to create a state for.</param>
-        /// <returns>An input block state for the entry point.</returns>
-        public abstract TBlockState CreateEntryPointInput(BasicBlock entryPoint);
-
-        /// <summary>
-        /// Processes a block's contents.
-        /// </summary>
-        /// <param name="block">A block to process.</param>
-        /// <param name="input">The block's input state.</param>
-        /// <returns>The block's output state.</returns>
-        public abstract TBlockState Process(BasicBlock block, TBlockState input);
 
         /// <summary>
         /// Gets a block's outgoing inputs: a sequence of key-value pairs where the
@@ -92,8 +59,28 @@ namespace Flame.Compiler.Analysis
             return results;
         }
 
-        /// <inheritdoc/>
-        public Result Analyze(FlowGraph graph)
+        /// <summary>
+        /// Merges two block states. This method unifies outgoing block
+        /// states into a single input block state.
+        /// </summary>
+        /// <param name="first">
+        /// A first block state.
+        /// </param>
+        /// <param name="second">
+        /// A second block state.
+        /// </param>
+        /// <returns>A merged block state.</returns>
+        public abstract TBlockState Merge(TBlockState first, TBlockState second);
+
+        /// <summary>
+        /// Processes a block's contents.
+        /// </summary>
+        /// <param name="block">A block to process.</param>
+        /// <param name="input">The block's input state.</param>
+        /// <returns>The block's output state.</returns>
+        public abstract TBlockState Process(BasicBlock block, TBlockState input);
+
+        private Result Analyze(FlowGraph graph)
         {
             // Create the input state for the entry point.
             var inputs = new Dictionary<BasicBlockTag, TBlockState>();
@@ -145,13 +132,21 @@ namespace Flame.Compiler.Analysis
             return new Result(outputs.ToImmutable());
         }
 
-        /// <inheritdoc/>
-        public Result AnalyzeWithUpdates(
-            FlowGraph graph,
-            Result previousResult,
-            IReadOnlyList<FlowGraphUpdate> updates)
+        /// <summary>
+        /// The result of a block fixpoint analysis.
+        /// </summary>
+        public struct Result
         {
-            return Analyze(graph);
+            internal Result(IReadOnlyDictionary<BasicBlockTag, TBlockState> results)
+            {
+                this.BlockResults = results;
+            }
+
+            /// <summary>
+            /// Gets a mapping of basic blocks to block analysis results.
+            /// </summary>
+            /// <value>A mapping of basic blocks to analysis results.</value>
+            public IReadOnlyDictionary<BasicBlockTag, TBlockState> BlockResults { get; private set; }
         }
     }
 }

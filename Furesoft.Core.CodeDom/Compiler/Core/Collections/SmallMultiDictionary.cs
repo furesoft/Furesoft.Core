@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// A key-value pair that includes the hash code of the key.

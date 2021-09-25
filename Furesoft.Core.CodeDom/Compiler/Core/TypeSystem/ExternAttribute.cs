@@ -1,4 +1,4 @@
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// An attribute that indicates that a method is implemented by calling

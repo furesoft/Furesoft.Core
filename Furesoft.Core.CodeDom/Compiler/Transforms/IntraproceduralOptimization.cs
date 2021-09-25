@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
-using Flame.Compiler.Pipeline;
+using Furesoft.Core.CodeDom.Compiler.Pipeline;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// Describes an intraprocedural optimization: an optimization

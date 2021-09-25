@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame.Compiler.Pipeline
+namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
     /// <summary>
     /// A base class for optimizers: objects that manage method bodies

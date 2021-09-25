@@ -1,8 +1,9 @@
 using System.Collections.Generic;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// An optimization that replaces direct jumps to blocks that

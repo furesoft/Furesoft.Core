@@ -1,14 +1,15 @@
 using System.Collections.Generic;
-using Flame.Collections;
-using Flame.Compiler.Flow;
 using System.Collections.Immutable;
 using System;
-using Flame.TypeSystem;
 using System.Linq;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Transforms;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
+using Furesoft.Core.CodeDom.Compiler;
 
-namespace Flame.Compiler
+namespace Furesoft.Core.CodeDom.Compiler
 {
     /// <summary>
     /// An immutable control-flow graph that consists of basic blocks.

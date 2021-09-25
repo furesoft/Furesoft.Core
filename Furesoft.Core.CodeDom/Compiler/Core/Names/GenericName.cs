@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core.Names
 {
     /// <summary>
     /// Defines a generic name; a simple name that is instantiated by

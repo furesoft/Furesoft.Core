@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// A growable list that is implemented as a value type.

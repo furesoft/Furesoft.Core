@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Flame.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// The result of a lattice analysis.

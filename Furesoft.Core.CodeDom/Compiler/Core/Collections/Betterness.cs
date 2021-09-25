@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// Specifies if one of two items is better than the other.

@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// Removes unused, non-effectful instructions and basic block

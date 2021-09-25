@@ -4,8 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Pipeline;
 
-namespace Flame.Compiler.Pipeline
+namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
     /// <summary>
     /// An optimizer that computes optimized method bodies on an on-demand

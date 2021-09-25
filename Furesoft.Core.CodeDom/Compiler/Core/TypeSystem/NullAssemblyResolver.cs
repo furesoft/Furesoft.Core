@@ -1,4 +1,4 @@
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// An assembly resolver implementation that never successfully resolves

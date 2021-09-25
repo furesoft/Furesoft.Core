@@ -2,11 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Flame.Collections;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 
-namespace Flame.Compiler.Flow
+namespace Furesoft.Core.CodeDom.Compiler.Flow
 {
     /// <summary>
     /// Switch flow, which tries to match a value against a list of

@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Collections;
-using Flame.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// A mapping of values to representative values for a particular
@@ -132,9 +133,9 @@ namespace Flame.Compiler.Analysis
         private static bool IsCopyableIntrinsic(IntrinsicPrototype intrinsic)
         {
             return ArithmeticIntrinsics.IsArithmeticIntrinsicPrototype(intrinsic)
-                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, ArrayIntrinsics.Operators.GetLength)
-                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, ArrayIntrinsics.Operators.GetElementPointer)
-                || ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, ExceptionIntrinsics.Operators.GetCapturedException);
+                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetLength)
+                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetElementPointer)
+                || ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetCapturedException);
         }
     }
 

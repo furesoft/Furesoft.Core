@@ -1,12 +1,13 @@
-using Flame;
-using Flame.Collections;
-using Flame.TypeSystem;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using PointerType = Flame.TypeSystem.PointerType;
+using PointerType = Furesoft.Core.CodeDom.Compiler.Core.TypeSystem.PointerType;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR
 {

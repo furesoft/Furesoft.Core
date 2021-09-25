@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using Flame.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// A base class for rules about whether or not exceptions
@@ -193,7 +194,7 @@ namespace Flame.Compiler.Analysis
         private static readonly HashSet<string> delayableIntrinsics =
             new HashSet<string>()
         {
-            ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetElementPointer)
+            ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetElementPointer)
         };
     }
 }

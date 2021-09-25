@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Flame.Collections;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions.Fused;
 
-namespace Flame.Compiler.Instructions.Fused
+namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
 {
     /// <summary>
     /// An instruction prototype that loads a field. It is a

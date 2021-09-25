@@ -1,30 +1,44 @@
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Compiler.Instructions;
-using Flame.TypeSystem;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
+    /// <summary>
+    /// Extension methods that make working with memory specifications easier.
+    /// </summary>
+    public static class MemorySpecificationExtensions
+    {
+        /// <summary>
+        /// Gets a method's memory specification.
+        /// </summary>
+        /// <param name="method">The method to examine.</param>
+        /// <returns>
+        /// The explicit memory specification encoded in <paramref name="method"/>'s memory specification
+        /// attribute, if it has one; otherwise, an unknown read/write specification.
+        /// </returns>
+        public static MemorySpecification GetMemorySpecification(this IMethod method)
+        {
+            IAttribute attr;
+            if (method.Attributes.TryGet(MemorySpecificationAttribute.AttributeType, out attr))
+            {
+                return ((MemorySpecificationAttribute)attr).Specification;
+            }
+            else
+            {
+                return MemorySpecification.Unknown;
+            }
+        }
+    }
+
     /// <summary>
     /// A base class for descriptions of how an instruction interacts with memory.
     /// </summary>
     public abstract class MemorySpecification
     {
-        /// <summary>
-        /// Tells if this memory access spec implies that the instruction it is attached
-        /// to might read from some address.
-        /// </summary>
-        /// <returns><c>true</c> if the instruction might read; otherwise, <c>false</c>.</returns>
-        public abstract bool MayRead { get; }
-
-        /// <summary>
-        /// Tells if this memory access spec implies that the instruction it is attached
-        /// to might write to some address.
-        /// </summary>
-        /// <returns><c>true</c> if the instruction might write; otherwise, <c>false</c>.</returns>
-        public abstract bool MayWrite { get; }
-
         /// <summary>
         /// A memory access spec that indicates that an instruction neither
         /// reads from or writes to memory.
@@ -55,23 +69,19 @@ namespace Flame.Compiler.Analysis
         public static readonly MemorySpecification UnknownWrite =
             new UnknownSpec(false, true);
 
-        private sealed class UnknownSpec : MemorySpecification
-        {
-            public UnknownSpec(bool mayRead, bool mayWrite)
-            {
-                this.mayReadValue = mayRead;
-                this.mayWriteValue = mayWrite;
-            }
+        /// <summary>
+        /// Tells if this memory access spec implies that the instruction it is attached
+        /// to might read from some address.
+        /// </summary>
+        /// <returns><c>true</c> if the instruction might read; otherwise, <c>false</c>.</returns>
+        public abstract bool MayRead { get; }
 
-            private bool mayReadValue;
-            private bool mayWriteValue;
-
-            /// <inheritdoc/>
-            public override bool MayRead => mayReadValue;
-
-            /// <inheritdoc/>
-            public override bool MayWrite => mayWriteValue;
-        }
+        /// <summary>
+        /// Tells if this memory access spec implies that the instruction it is attached
+        /// to might write to some address.
+        /// </summary>
+        /// <returns><c>true</c> if the instruction might write; otherwise, <c>false</c>.</returns>
+        public abstract bool MayWrite { get; }
 
         /// <summary>
         /// A read from an address encoded by an argument.
@@ -83,18 +93,18 @@ namespace Flame.Compiler.Analysis
                 this.ParameterIndex = parameterIndex;
             }
 
+            /// <inheritdoc/>
+            public override bool MayRead => true;
+
+            /// <inheritdoc/>
+            public override bool MayWrite => false;
+
             /// <summary>
             /// Gets the index of the parameter that corresponds to
             /// the argument that is read.
             /// </summary>
             /// <value>A parameter index.</value>
             public int ParameterIndex { get; private set; }
-
-            /// <inheritdoc/>
-            public override bool MayRead => true;
-
-            /// <inheritdoc/>
-            public override bool MayWrite => false;
 
             /// <summary>
             /// Creates a memory access spec that corresponds to a read
@@ -121,18 +131,18 @@ namespace Flame.Compiler.Analysis
                 this.ParameterIndex = parameterIndex;
             }
 
+            /// <inheritdoc/>
+            public override bool MayRead => false;
+
+            /// <inheritdoc/>
+            public override bool MayWrite => true;
+
             /// <summary>
             /// Gets the index of the parameter that corresponds to
             /// the argument that is written to.
             /// </summary>
             /// <value>A parameter index.</value>
             public int ParameterIndex { get; private set; }
-
-            /// <inheritdoc/>
-            public override bool MayRead => false;
-
-            /// <inheritdoc/>
-            public override bool MayWrite => true;
 
             /// <summary>
             /// Creates a memory access spec that corresponds to a write
@@ -182,32 +192,24 @@ namespace Flame.Compiler.Analysis
                 return new Union(elements);
             }
         }
-    }
 
-    /// <summary>
-    /// Extension methods that make working with memory specifications easier.
-    /// </summary>
-    public static class MemorySpecificationExtensions
-    {
-        /// <summary>
-        /// Gets a method's memory specification.
-        /// </summary>
-        /// <param name="method">The method to examine.</param>
-        /// <returns>
-        /// The explicit memory specification encoded in <paramref name="method"/>'s memory specification
-        /// attribute, if it has one; otherwise, an unknown read/write specification.
-        /// </returns>
-        public static MemorySpecification GetMemorySpecification(this IMethod method)
+        private sealed class UnknownSpec : MemorySpecification
         {
-            IAttribute attr;
-            if (method.Attributes.TryGet(MemorySpecificationAttribute.AttributeType, out attr))
+            private bool mayReadValue;
+
+            private bool mayWriteValue;
+
+            public UnknownSpec(bool mayRead, bool mayWrite)
             {
-                return ((MemorySpecificationAttribute)attr).Specification;
+                this.mayReadValue = mayRead;
+                this.mayWriteValue = mayWrite;
             }
-            else
-            {
-                return MemorySpecification.Unknown;
-            }
+
+            /// <inheritdoc/>
+            public override bool MayRead => mayReadValue;
+
+            /// <inheritdoc/>
+            public override bool MayWrite => mayWriteValue;
         }
     }
 
@@ -232,6 +234,91 @@ namespace Flame.Compiler.Analysis
     public sealed class RuleBasedPrototypeMemorySpecs : PrototypeMemorySpecs
     {
         /// <summary>
+        /// Gets the default prototype memory spec rules.
+        /// </summary>
+        /// <value>The default prototype memory spec rules.</value>
+        public static readonly RuleBasedPrototypeMemorySpecs Default;
+
+        private RuleBasedSpecStore<MemorySpecification> store;
+
+        static RuleBasedPrototypeMemorySpecs()
+        {
+            Default = new RuleBasedPrototypeMemorySpecs();
+
+            Default.Register<AllocaArrayPrototype>(MemorySpecification.Nothing);
+            Default.Register<AllocaPrototype>(MemorySpecification.Nothing);
+            Default.Register<BoxPrototype>(MemorySpecification.Nothing);
+            Default.Register<ConstantPrototype>(MemorySpecification.Nothing);
+            Default.Register<CopyPrototype>(MemorySpecification.Nothing);
+            Default.Register<DynamicCastPrototype>(MemorySpecification.Nothing);
+            Default.Register<GetStaticFieldPointerPrototype>(MemorySpecification.Nothing);
+            Default.Register<ReinterpretCastPrototype>(MemorySpecification.Nothing);
+            Default.Register<GetFieldPointerPrototype>(MemorySpecification.Nothing);
+            Default.Register<NewDelegatePrototype>(MemorySpecification.Nothing);
+            Default.Register<UnboxPrototype>(MemorySpecification.Nothing);
+
+            // Mark volatile loads and stores as unknown to ensure that they are never reordered
+            // with regard to other memory operations.
+            // TODO: is this really how we should represent volatility?
+            Default.Register<LoadPrototype>(proto =>
+                proto.IsVolatile ? MemorySpecification.Unknown : Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentRead.Create(0));
+            Default.Register<StorePrototype>(proto =>
+                proto.IsVolatile ? MemorySpecification.Unknown : Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentWrite.Create(0));
+
+            // Call-like instruction prototypes.
+            Default.Register<CallPrototype>(
+                proto => proto.Lookup == MethodLookup.Static
+                    ? proto.Callee.GetMemorySpecification()
+                    : MemorySpecification.Unknown);
+            Default.Register<NewObjectPrototype>(
+                proto => proto.Constructor.GetMemorySpecification());
+            Default.Register<IndirectCallPrototype>(MemorySpecification.Unknown);
+
+            // Arithmetic intrinsics never read or write.
+            foreach (var name in Furesoft.Core.CodeDom.Compiler.Instructions.Operators.All)
+            {
+                Default.Register(
+                    ArithmeticIntrinsics.GetArithmeticIntrinsicName(name, false),
+                    MemorySpecification.Nothing);
+                Default.Register(
+                    ArithmeticIntrinsics.GetArithmeticIntrinsicName(name, true),
+                    MemorySpecification.Nothing);
+            }
+
+            // Array intrinsics.
+            Default.Register(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetElementPointer),
+                MemorySpecification.Nothing);
+            Default.Register(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.LoadElement),
+                MemorySpecification.UnknownRead);
+            Default.Register(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.StoreElement),
+                MemorySpecification.UnknownWrite);
+            Default.Register(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetLength),
+                MemorySpecification.Nothing);
+            Default.Register(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.NewArray),
+                MemorySpecification.Nothing);
+
+            // Exception intrinsics.
+            Default.Register(
+                ExceptionIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetCapturedException),
+                MemorySpecification.UnknownRead);
+
+            // Object intrinsics.
+            Default.Register(
+                ObjectIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.UnboxAny),
+                MemorySpecification.UnknownRead);
+
+            // Memory intrinsics.
+            Default.Register(
+                MemoryIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.AllocaPinned),
+                MemorySpecification.Nothing);
+        }
+
+        /// <summary>
         /// Creates an empty set of prototype exception spec rules.
         /// </summary>
         public RuleBasedPrototypeMemorySpecs()
@@ -247,7 +334,11 @@ namespace Flame.Compiler.Analysis
             this.store = new RuleBasedSpecStore<MemorySpecification>(other.store);
         }
 
-        private RuleBasedSpecStore<MemorySpecification> store;
+        /// <inheritdoc/>
+        public override MemorySpecification GetMemorySpecification(InstructionPrototype prototype)
+        {
+            return store.GetSpecification(prototype);
+        }
 
         /// <summary>
         /// Registers a function that computes memory specifications
@@ -317,95 +408,6 @@ namespace Flame.Compiler.Analysis
         public void Register(string intrinsicName, MemorySpecification memorySpec)
         {
             store.Register(intrinsicName, memorySpec);
-        }
-
-        /// <inheritdoc/>
-        public override MemorySpecification GetMemorySpecification(InstructionPrototype prototype)
-        {
-            return store.GetSpecification(prototype);
-        }
-
-        /// <summary>
-        /// Gets the default prototype memory spec rules.
-        /// </summary>
-        /// <value>The default prototype memory spec rules.</value>
-        public static readonly RuleBasedPrototypeMemorySpecs Default;
-
-        static RuleBasedPrototypeMemorySpecs()
-        {
-            Default = new RuleBasedPrototypeMemorySpecs();
-
-            Default.Register<AllocaArrayPrototype>(MemorySpecification.Nothing);
-            Default.Register<AllocaPrototype>(MemorySpecification.Nothing);
-            Default.Register<BoxPrototype>(MemorySpecification.Nothing);
-            Default.Register<ConstantPrototype>(MemorySpecification.Nothing);
-            Default.Register<CopyPrototype>(MemorySpecification.Nothing);
-            Default.Register<DynamicCastPrototype>(MemorySpecification.Nothing);
-            Default.Register<GetStaticFieldPointerPrototype>(MemorySpecification.Nothing);
-            Default.Register<ReinterpretCastPrototype>(MemorySpecification.Nothing);
-            Default.Register<GetFieldPointerPrototype>(MemorySpecification.Nothing);
-            Default.Register<NewDelegatePrototype>(MemorySpecification.Nothing);
-            Default.Register<UnboxPrototype>(MemorySpecification.Nothing);
-
-            // Mark volatile loads and stores as unknown to ensure that they are never reordered
-            // with regard to other memory operations.
-            // TODO: is this really how we should represent volatility?
-            Default.Register<LoadPrototype>(proto =>
-                proto.IsVolatile ? MemorySpecification.Unknown : MemorySpecification.ArgumentRead.Create(0));
-            Default.Register<StorePrototype>(proto =>
-                proto.IsVolatile ? MemorySpecification.Unknown : MemorySpecification.ArgumentWrite.Create(0));
-
-            // Call-like instruction prototypes.
-            Default.Register<CallPrototype>(
-                proto => proto.Lookup == MethodLookup.Static
-                    ? proto.Callee.GetMemorySpecification()
-                    : MemorySpecification.Unknown);
-            Default.Register<NewObjectPrototype>(
-                proto => proto.Constructor.GetMemorySpecification());
-            Default.Register<IndirectCallPrototype>(MemorySpecification.Unknown);
-
-            // Arithmetic intrinsics never read or write.
-            foreach (var name in ArithmeticIntrinsics.Operators.All)
-            {
-                Default.Register(
-                    ArithmeticIntrinsics.GetArithmeticIntrinsicName(name, false),
-                    MemorySpecification.Nothing);
-                Default.Register(
-                    ArithmeticIntrinsics.GetArithmeticIntrinsicName(name, true),
-                    MemorySpecification.Nothing);
-            }
-
-            // Array intrinsics.
-            Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetElementPointer),
-                MemorySpecification.Nothing);
-            Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.LoadElement),
-                MemorySpecification.UnknownRead);
-            Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.StoreElement),
-                MemorySpecification.UnknownWrite);
-            Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetLength),
-                MemorySpecification.Nothing);
-            Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.NewArray),
-                MemorySpecification.Nothing);
-
-            // Exception intrinsics.
-            Default.Register(
-                ExceptionIntrinsics.Namespace.GetIntrinsicName(ExceptionIntrinsics.Operators.GetCapturedException),
-                MemorySpecification.UnknownRead);
-
-            // Object intrinsics.
-            Default.Register(
-                ObjectIntrinsics.Namespace.GetIntrinsicName(ObjectIntrinsics.Operators.UnboxAny),
-                MemorySpecification.UnknownRead);
-
-            // Memory intrinsics.
-            Default.Register(
-                MemoryIntrinsics.Namespace.GetIntrinsicName(MemoryIntrinsics.Operators.AllocaPinned),
-                MemorySpecification.Nothing);
         }
     }
 }

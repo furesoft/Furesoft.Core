@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Compiler.Instructions;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler;
 
-namespace Flame.Compiler
+namespace Furesoft.Core.CodeDom.Compiler
 {
     public partial struct Instruction
     {
@@ -566,7 +568,7 @@ namespace Flame.Compiler
             ValueTag value)
         {
             return CreateArithmeticIntrinsic(
-                ArithmeticIntrinsics.Operators.Convert,
+Furesoft.Core.CodeDom.Compiler.Instructions.Operators.Convert,
                 isChecked,
                 targetType,
                 new[] { sourceType },

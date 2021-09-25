@@ -1,7 +1,8 @@
 using System;
 using System.Numerics;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 
-namespace Flame.Constants
+namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
     /// <summary>
     /// Describes an integer value that adheres to an integer spec.

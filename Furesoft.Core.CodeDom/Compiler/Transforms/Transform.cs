@@ -1,4 +1,4 @@
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// A transform that can be applied to a flow graph.

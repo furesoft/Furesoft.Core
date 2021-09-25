@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using Flame.Collections;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame.Compiler.Pipeline
+namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
     /// <summary>
     /// A container for a method body as it is being optimized.

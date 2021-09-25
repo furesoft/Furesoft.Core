@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using static Flame.ContractHelpers;
+using static Furesoft.Core.CodeDom.Compiler.Core.ContractHelpers;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core.Names
 {
     /// <summary>
     /// A data structure that represents a qualified name.

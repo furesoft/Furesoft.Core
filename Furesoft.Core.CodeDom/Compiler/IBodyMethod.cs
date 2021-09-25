@@ -1,4 +1,6 @@
-namespace Flame.Compiler
+using Furesoft.Core.CodeDom.Compiler.Core;
+
+namespace Furesoft.Core.CodeDom.Compiler
 {
     /// <summary>
     /// A method that defines a method body.

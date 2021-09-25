@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Collections;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 
-namespace Flame.Compiler.Instructions
+namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
     /// <summary>
     /// An instruction prototype for intrinsics: instructions that behave

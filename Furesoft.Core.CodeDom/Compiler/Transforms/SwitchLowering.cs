@@ -1,13 +1,14 @@
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
-using Flame.Constants;
-using Flame.TypeSystem;
+using static Furesoft.Core.CodeDom.Compiler.Instructions.ArithmeticIntrinsics;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// A switch lowering transform, which rewrites general switch
@@ -38,12 +39,6 @@ namespace Flame.Compiler.Transforms
         }
 
         /// <summary>
-        /// Gets the type environment used by this switch lowering pass.
-        /// </summary>
-        /// <value>The type environment.</value>
-        public TypeEnvironment TypeEnvironment { get; private set; }
-
-        /// <summary>
         /// Tells if it is permissible to generate bit tests.
         /// </summary>
         /// <value>
@@ -58,6 +53,12 @@ namespace Flame.Compiler.Transforms
         /// <c>true</c> if jump tables may be generated; otherwise, <c>false</c>.
         /// </value>
         public bool AllowJumpTables { get; private set; }
+
+        /// <summary>
+        /// Gets the type environment used by this switch lowering pass.
+        /// </summary>
+        /// <value>The type environment.</value>
+        public TypeEnvironment TypeEnvironment { get; private set; }
 
         /// <summary>
         /// Lowers general switch flow in a particular flow graph.
@@ -84,6 +85,44 @@ namespace Flame.Compiler.Transforms
                 }
             }
             return graphBuilder.ToImmutable();
+        }
+
+        /// <summary>
+        /// Chooses an optimal pivot at which to split an integer switch flow.
+        /// </summary>
+        /// <param name="values">
+        /// A sorted list of all values the switch flow lists in its cases.
+        /// </param>
+        /// <returns>
+        /// The index of the pivot in <paramref name="values"/>.
+        /// </returns>
+        private int ChooseIntegerPivotIndex(IntegerConstant[] values)
+        {
+            // The pivot score that is computed here is borrowed from
+            // "Improving Switch Lowering for The LLVM Compiler System" by Anton Korobeynikov
+            // (http://llvm.org/pubs/2007-05-31-Switch-Lowering.pdf)
+
+            int pivotIndex = 0;
+            double bestPivotScore = 0;
+
+            var minValue = values[0];
+            var maxValue = values[values.Length - 1];
+            for (int i = 1; i < values.Length - 1; i++)
+            {
+                var leftRange = values[i].Subtract(minValue).ToFloat64() + 1;
+                var leftDensity = (i + 1) / leftRange;
+                var rightRange = maxValue.Subtract(values[i + 1]).ToFloat64() + 1;
+                var rightDensity = (values.Length - i - 1) / rightRange;
+                var gap = values[i + 1].Subtract(values[i]).ToFloat64();
+                var score = (leftDensity + rightDensity) * Math.Log(gap);
+                if (score > bestPivotScore)
+                {
+                    pivotIndex = i;
+                    bestPivotScore = score;
+                }
+            }
+
+            return pivotIndex;
         }
 
         private SwitchFlowLowering GetSwitchFlowLowering(SwitchFlow flow)
@@ -137,92 +176,6 @@ namespace Flame.Compiler.Transforms
                 // and float64).
                 return new TestCascadeLowering(flow);
             }
-        }
-
-        /// <summary>
-        /// Splits an integer switch into two switches.
-        /// </summary>
-        /// <param name="values">
-        /// A sorted list of all values the switch flow lists in its cases.
-        /// </param>
-        /// <param name="flow">The switch flow to split.</param>
-        /// <returns>A (pivot value, left switch, right switch) triple.</returns>
-        private Tuple<IntegerConstant, SwitchFlow, SwitchFlow> SplitIntegerSwitch(
-            IntegerConstant[] values,
-            SwitchFlow flow)
-        {
-            int pivotIndex = ChooseIntegerPivotIndex(values);
-            var leftValues = ImmutableHashSet.CreateRange(
-                new ArraySegment<IntegerConstant>(
-                    values,
-                    0,
-                    pivotIndex + 1));
-
-            var rightValues = ImmutableHashSet.CreateRange(
-                new ArraySegment<IntegerConstant>(
-                    values,
-                    pivotIndex + 1,
-                    values.Length - pivotIndex - 1));
-
-            var leftCases = new List<SwitchCase>();
-            var rightCases = new List<SwitchCase>();
-            foreach (var switchCase in flow.Cases)
-            {
-                var leftPattern = switchCase.Values.Intersect(leftValues);
-                if (!leftPattern.IsEmpty)
-                {
-                    leftCases.Add(new SwitchCase(leftPattern, switchCase.Branch));
-                }
-
-                var rightPattern = switchCase.Values.Intersect(rightValues);
-                if (!rightPattern.IsEmpty)
-                {
-                    rightCases.Add(new SwitchCase(rightPattern, switchCase.Branch));
-                }
-            }
-
-            return new Tuple<IntegerConstant, SwitchFlow, SwitchFlow>(
-                values[pivotIndex],
-                new SwitchFlow(flow.SwitchValue, leftCases, flow.DefaultBranch),
-                new SwitchFlow(flow.SwitchValue, rightCases, flow.DefaultBranch));
-        }
-
-        /// <summary>
-        /// Chooses an optimal pivot at which to split an integer switch flow.
-        /// </summary>
-        /// <param name="values">
-        /// A sorted list of all values the switch flow lists in its cases.
-        /// </param>
-        /// <returns>
-        /// The index of the pivot in <paramref name="values"/>.
-        /// </returns>
-        private int ChooseIntegerPivotIndex(IntegerConstant[] values)
-        {
-            // The pivot score that is computed here is borrowed from
-            // "Improving Switch Lowering for The LLVM Compiler System" by Anton Korobeynikov
-            // (http://llvm.org/pubs/2007-05-31-Switch-Lowering.pdf)
-
-            int pivotIndex = 0;
-            double bestPivotScore = 0;
-
-            var minValue = values[0];
-            var maxValue = values[values.Length - 1];
-            for (int i = 1; i < values.Length - 1; i++)
-            {
-                var leftRange = values[i].Subtract(minValue).ToFloat64() + 1;
-                var leftDensity = (i + 1) / leftRange;
-                var rightRange = maxValue.Subtract(values[i + 1]).ToFloat64() + 1;
-                var rightDensity = (values.Length - i - 1) / rightRange;
-                var gap = values[i + 1].Subtract(values[i]).ToFloat64();
-                var score = (leftDensity + rightDensity) * Math.Log(gap);
-                if (score > bestPivotScore)
-                {
-                    pivotIndex = i;
-                    bestPivotScore = score;
-                }
-            }
-
-            return pivotIndex;
         }
 
         /// <summary>
@@ -286,47 +239,51 @@ namespace Flame.Compiler.Transforms
         }
 
         /// <summary>
-        /// A particular way to lower a switch flow.
+        /// Splits an integer switch into two switches.
         /// </summary>
-        private abstract class SwitchFlowLowering
+        /// <param name="values">
+        /// A sorted list of all values the switch flow lists in its cases.
+        /// </param>
+        /// <param name="flow">The switch flow to split.</param>
+        /// <returns>A (pivot value, left switch, right switch) triple.</returns>
+        private Tuple<IntegerConstant, SwitchFlow, SwitchFlow> SplitIntegerSwitch(
+            IntegerConstant[] values,
+            SwitchFlow flow)
         {
-            /// <summary>
-            /// Turns this switch flow lowering into an
-            /// actual block flow.
-            /// </summary>
-            /// <param name="graph">A flow graph builder.</param>
-            /// <param name="value">
-            /// The value being switched on.
-            /// </param>
-            /// <returns>Block flow.</returns>
-            public abstract BlockFlow Emit(
-                FlowGraphBuilder graph,
-                ValueTag value);
-        }
+            int pivotIndex = ChooseIntegerPivotIndex(values);
+            var leftValues = ImmutableHashSet.CreateRange(
+                new ArraySegment<IntegerConstant>(
+                    values,
+                    0,
+                    pivotIndex + 1));
 
-        /// <summary>
-        /// A switch flow lowering that redirects flow to a particular branch.
-        /// </summary>
-        private sealed class JumpLowering : SwitchFlowLowering
-        {
-            public JumpLowering(Branch branch)
+            var rightValues = ImmutableHashSet.CreateRange(
+                new ArraySegment<IntegerConstant>(
+                    values,
+                    pivotIndex + 1,
+                    values.Length - pivotIndex - 1));
+
+            var leftCases = new List<SwitchCase>();
+            var rightCases = new List<SwitchCase>();
+            foreach (var switchCase in flow.Cases)
             {
-                this.Branch = branch;
+                var leftPattern = switchCase.Values.Intersect(leftValues);
+                if (!leftPattern.IsEmpty)
+                {
+                    leftCases.Add(new SwitchCase(leftPattern, switchCase.Branch));
+                }
+
+                var rightPattern = switchCase.Values.Intersect(rightValues);
+                if (!rightPattern.IsEmpty)
+                {
+                    rightCases.Add(new SwitchCase(rightPattern, switchCase.Branch));
+                }
             }
 
-            /// <summary>
-            /// Gets the branch performed by this switch flow lowering.
-            /// </summary>
-            /// <value>A branch.</value>
-            public Branch Branch { get; private set; }
-
-            /// <inheritdoc/>
-            public override BlockFlow Emit(
-                FlowGraphBuilder graph,
-                ValueTag value)
-            {
-                return new JumpFlow(Branch);
-            }
+            return new Tuple<IntegerConstant, SwitchFlow, SwitchFlow>(
+                values[pivotIndex],
+                new SwitchFlow(flow.SwitchValue, leftCases, flow.DefaultBranch),
+                new SwitchFlow(flow.SwitchValue, rightCases, flow.DefaultBranch));
         }
 
         private sealed class BitTestLowering : SwitchFlowLowering
@@ -347,9 +304,8 @@ namespace Flame.Compiler.Transforms
 
             public IntegerConstant MinValue { get; private set; }
 
-            public IntegerConstant ValueRange { get; private set; }
-
             public TypeEnvironment TypeEnvironment { get; private set; }
+            public IntegerConstant ValueRange { get; private set; }
 
             public override BlockFlow Emit(
                 FlowGraphBuilder graph,
@@ -394,8 +350,7 @@ namespace Flame.Compiler.Transforms
                 if (!MinValue.IsZero)
                 {
                     value = entryBlock.AppendInstruction(
-                        Instruction.CreateBinaryArithmeticIntrinsic(
-                            ArithmeticIntrinsics.Operators.Subtract,
+                        Instruction.CreateBinaryArithmeticIntrinsic(Operators.Subtract,
                             false,
                             valueType,
                             value,
@@ -422,8 +377,7 @@ namespace Flame.Compiler.Transforms
 
                 // Check that the value is within range.
                 entryBlock.Flow = SwitchFlow.CreateIfElse(
-                    Instruction.CreateRelationalIntrinsic(
-                        ArithmeticIntrinsics.Operators.IsGreaterThan,
+                    Instruction.CreateRelationalIntrinsic(Operators.IsGreaterThan,
                         TypeEnvironment.Boolean,
                         valueType,
                         value,
@@ -465,8 +419,7 @@ namespace Flame.Compiler.Transforms
                     "one");
 
                 value = headerBlock.AppendInstruction(
-                    Instruction.CreateArithmeticIntrinsic(
-                        ArithmeticIntrinsics.Operators.LeftShift,
+                    Instruction.CreateArithmeticIntrinsic(Operators.LeftShift,
                         false,
                         bitmaskType,
                         new[] { bitmaskType, valueType },
@@ -492,8 +445,7 @@ namespace Flame.Compiler.Transforms
                     // Switch on the bitwise 'and' of the mask and
                     // the shifted value.
                     caseBlock.Flow = SwitchFlow.CreateIfElse(
-                        Instruction.CreateBinaryArithmeticIntrinsic(
-                            ArithmeticIntrinsics.Operators.And,
+                        Instruction.CreateBinaryArithmeticIntrinsic(Operators.And,
                             false,
                             valueType,
                             value,
@@ -517,14 +469,87 @@ namespace Flame.Compiler.Transforms
         }
 
         /// <summary>
+        /// A switch flow lowering that redirects flow to a particular branch.
+        /// </summary>
+        private sealed class JumpLowering : SwitchFlowLowering
+        {
+            public JumpLowering(Branch branch)
+            {
+                this.Branch = branch;
+            }
+
+            /// <summary>
+            /// Gets the branch performed by this switch flow lowering.
+            /// </summary>
+            /// <value>A branch.</value>
+            public Branch Branch { get; private set; }
+
+            /// <inheritdoc/>
+            public override BlockFlow Emit(
+                FlowGraphBuilder graph,
+                ValueTag value)
+            {
+                return new JumpFlow(Branch);
+            }
+        }
+
+        /// <summary>
+        /// An integer switch lowering that builds jump tables.
+        /// </summary>
+        private sealed class JumpTableLowering : SwitchFlowLowering
+        {
+            private SwitchFlow flow;
+
+            public JumpTableLowering(SwitchFlow flow)
+            {
+                this.flow = flow;
+            }
+
+            public override BlockFlow Emit(FlowGraphBuilder graph, ValueTag value)
+            {
+                var cases = new List<SwitchCase>();
+                int thunkCount = 0;
+                foreach (var switchCase in flow.Cases)
+                {
+                    if (switchCase.Branch.Arguments.Count > 0)
+                    {
+                        // Jump tables can't have branch arguments. Work
+                        // around that limitation by jumping to a thunk
+                        // block.
+                        var thunk = graph.AddBasicBlock("jumptable.thunk" + thunkCount);
+                        thunkCount++;
+                        cases.Add(new SwitchCase(switchCase.Values, new Branch(thunk)));
+                        thunk.Flow = new JumpFlow(switchCase.Branch);
+                    }
+                    else
+                    {
+                        cases.Add(switchCase);
+                    }
+                }
+                return new SwitchFlow(
+                    Instruction.CreateCopy(graph.GetValueType(value), value),
+                    cases,
+                    flow.DefaultBranch);
+            }
+        }
+
+        /// <summary>
         /// A switch lowering that defers to one of two switch
         /// lowerings depending on whether the switch value is
         /// greater than a pivot value or not.
         /// </summary>
         private sealed class SearchTreeLowering : SwitchFlowLowering
         {
+            private SwitchFlowLowering leftTree;
+
+            private Constant pivot;
+
+            private SwitchFlowLowering rightTree;
+
+            private TypeEnvironment typeEnvironment;
+
             public SearchTreeLowering(
-                Constant pivot,
+                                                                Constant pivot,
                 SwitchFlowLowering leftTree,
                 SwitchFlowLowering rightTree,
                 TypeEnvironment typeEnvironment)
@@ -534,11 +559,6 @@ namespace Flame.Compiler.Transforms
                 this.rightTree = rightTree;
                 this.typeEnvironment = typeEnvironment;
             }
-
-            private Constant pivot;
-            private SwitchFlowLowering leftTree;
-            private SwitchFlowLowering rightTree;
-            private TypeEnvironment typeEnvironment;
 
             /// <inheritdoc/>
             public override BlockFlow Emit(FlowGraphBuilder graph, ValueTag value)
@@ -550,8 +570,7 @@ namespace Flame.Compiler.Transforms
                 var valueType = graph.GetValueType(value);
 
                 headerBlock.Flow = SwitchFlow.CreateIfElse(
-                    Instruction.CreateRelationalIntrinsic(
-                        ArithmeticIntrinsics.Operators.IsGreaterThan,
+                    Instruction.CreateRelationalIntrinsic(Operators.IsGreaterThan,
                         typeEnvironment.Boolean,
                         valueType,
                         value,
@@ -568,17 +587,36 @@ namespace Flame.Compiler.Transforms
         }
 
         /// <summary>
+        /// A particular way to lower a switch flow.
+        /// </summary>
+        private abstract class SwitchFlowLowering
+        {
+            /// <summary>
+            /// Turns this switch flow lowering into an
+            /// actual block flow.
+            /// </summary>
+            /// <param name="graph">A flow graph builder.</param>
+            /// <param name="value">
+            /// The value being switched on.
+            /// </param>
+            /// <returns>Block flow.</returns>
+            public abstract BlockFlow Emit(
+                FlowGraphBuilder graph,
+                ValueTag value);
+        }
+
+        /// <summary>
         /// A switch lowering that implements a switch as a cascade of
         /// if-else tests.
         /// </summary>
         private class TestCascadeLowering : SwitchFlowLowering
         {
+            private SwitchFlow flow;
+
             public TestCascadeLowering(SwitchFlow flow)
             {
                 this.flow = flow;
             }
-
-            private SwitchFlow flow;
 
             /// <inheritdoc/>
             public override BlockFlow Emit(FlowGraphBuilder graph, ValueTag value)
@@ -619,46 +657,6 @@ namespace Flame.Compiler.Transforms
                 }
 
                 return result;
-            }
-        }
-
-        /// <summary>
-        /// An integer switch lowering that builds jump tables.
-        /// </summary>
-        private sealed class JumpTableLowering : SwitchFlowLowering
-        {
-            public JumpTableLowering(SwitchFlow flow)
-            {
-                this.flow = flow;
-            }
-
-            private SwitchFlow flow;
-
-            public override BlockFlow Emit(FlowGraphBuilder graph, ValueTag value)
-            {
-                var cases = new List<SwitchCase>();
-                int thunkCount = 0;
-                foreach (var switchCase in flow.Cases)
-                {
-                    if (switchCase.Branch.Arguments.Count > 0)
-                    {
-                        // Jump tables can't have branch arguments. Work
-                        // around that limitation by jumping to a thunk
-                        // block.
-                        var thunk = graph.AddBasicBlock("jumptable.thunk" + thunkCount);
-                        thunkCount++;
-                        cases.Add(new SwitchCase(switchCase.Values, new Branch(thunk)));
-                        thunk.Flow = new JumpFlow(switchCase.Branch);
-                    }
-                    else
-                    {
-                        cases.Add(switchCase);
-                    }
-                }
-                return new SwitchFlow(
-                    Instruction.CreateCopy(graph.GetValueType(value), value),
-                    cases,
-                    flow.DefaultBranch);
             }
         }
     }

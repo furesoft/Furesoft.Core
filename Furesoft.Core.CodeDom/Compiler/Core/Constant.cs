@@ -1,6 +1,7 @@
 using System;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// A constant value.

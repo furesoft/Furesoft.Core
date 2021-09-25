@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using Flame.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// Defines a mutable attribute map.

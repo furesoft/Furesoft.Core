@@ -1,4 +1,4 @@
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// Exposes an empty array.

@@ -1,7 +1,8 @@
 using System;
 using System.Text;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core.Names
 {
     /// <summary>
     /// Defines a simple name: a name and the number of type parameters it takes.

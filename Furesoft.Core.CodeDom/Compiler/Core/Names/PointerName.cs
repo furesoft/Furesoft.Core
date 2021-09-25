@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core.Names
 {
     /// <summary>
     /// Defines a poiner name: a qualified name that is turned into a pointer.

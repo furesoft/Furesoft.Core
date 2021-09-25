@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using Flame.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// An optimization that replaces redundant computations by copies

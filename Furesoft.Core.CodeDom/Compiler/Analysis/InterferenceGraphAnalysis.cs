@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using Flame.Collections;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// A symmetric relation that tells if there is some point at which

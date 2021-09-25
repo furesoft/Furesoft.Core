@@ -1,4 +1,4 @@
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// Defines a common interface for members

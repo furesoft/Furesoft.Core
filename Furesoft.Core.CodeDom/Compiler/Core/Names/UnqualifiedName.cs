@@ -1,6 +1,7 @@
 using System;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core.Names
 {
     /// <summary>
     /// A base class for unqualified names: names that can be assigned

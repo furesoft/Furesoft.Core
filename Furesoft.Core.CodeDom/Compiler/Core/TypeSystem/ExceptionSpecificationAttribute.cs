@@ -1,4 +1,4 @@
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// An attribute that attaches an exception specification to a method.

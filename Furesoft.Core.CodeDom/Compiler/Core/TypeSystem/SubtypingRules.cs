@@ -1,4 +1,4 @@
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
     /// A three-valued "Boolean" type that allows Boolean

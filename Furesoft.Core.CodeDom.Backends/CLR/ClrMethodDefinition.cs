@@ -1,13 +1,15 @@
-using Flame;
-using Flame.Collections;
-using Flame.Compiler;
-using Flame.Compiler.Analysis;
-using Flame.TypeSystem;
 using Furesoft.Core.CodeDom.Backends.CLR.Analysis;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR
 {

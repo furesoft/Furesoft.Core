@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// A cache that interns values: it maps each input value to

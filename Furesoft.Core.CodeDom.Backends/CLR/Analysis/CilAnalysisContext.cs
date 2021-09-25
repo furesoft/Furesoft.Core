@@ -1,11 +1,11 @@
-using Flame;
-using Flame.Compiler;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
-using Flame.TypeSystem;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
 {

@@ -1,6 +1,7 @@
+using Furesoft.Core.CodeDom.Compiler.Core;
 using System.Collections.Generic;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// An allocation of values to registers.
@@ -53,91 +54,6 @@ namespace Flame.Compiler.Analysis
     /// </typeparam>
     public abstract class GreedyRegisterAllocator<TRegister> : IFlowGraphAnalysis<RegisterAllocation<TRegister>>
     {
-        /// <summary>
-        /// Creates a brand new register for a value of a particular type.
-        /// </summary>
-        /// <param name="type">
-        /// The type of value to create a register for.
-        /// </param>
-        /// <returns>A register suitable for the value.</returns>
-        protected abstract TRegister CreateRegister(IType type);
-
-        /// <summary>
-        /// Tries to recycle a register from a set of registers.
-        /// </summary>
-        /// <param name="type">
-        /// The type of value to store in the recycled register.
-        /// </param>
-        /// <param name="registers">
-        /// A set of registers that are eligible for recycling.
-        /// </param>
-        /// <param name="result">
-        /// A register to recycle, if any.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if a register has been selected for recyling;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        protected abstract bool TryRecycleRegister(
-            IType type,
-            IEnumerable<TRegister> registers,
-            out TRegister result);
-
-        /// <summary>
-        /// Tells if a register should be allocated for a
-        /// particular value.
-        /// </summary>
-        /// <param name="value">
-        /// The value for which register allocation may or may
-        /// not be necessary.
-        /// </param>
-        /// <param name="graph">
-        /// The control flow graph that defines <paramref name="value"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if a register must be allocated to
-        /// <paramref name="value"/>; otherwise, <c>false</c>.
-        /// </returns>
-        /// <remarks>
-        /// Implementations may override this method to suppress
-        /// register allocation for values that are, e.g., stored
-        /// on an evaluation stack.
-        /// </remarks>
-        protected virtual bool RequiresRegister(
-            ValueTag value,
-            FlowGraph graph)
-        {
-            return true;
-        }
-
-        /// <summary>
-        /// Tries to get a preallocated register for a particular value.
-        /// If it exists, then the preallocated register will be used
-        /// for the value, no questions asked. The preallocated register
-        /// may be reused.
-        /// </summary>
-        /// <param name="value">
-        /// The value that may have a preallocated register.
-        /// </param>
-        /// <param name="graph">
-        /// The graph that defines the value.
-        /// </param>
-        /// <param name="register">
-        /// A preallocated register, if any.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if there is a preallocated register for
-        /// <paramref name="value"/>; otherwise, <c>false</c>.
-        /// </returns>
-        protected virtual bool TryGetPreallocatedRegister(
-            ValueTag value,
-            FlowGraph graph,
-            out TRegister register)
-        {
-            register = default(TRegister);
-            return false;
-        }
-
         /// <inheritdoc/>
         public RegisterAllocation<TRegister> Analyze(
             FlowGraph graph)
@@ -240,5 +156,90 @@ namespace Flame.Compiler.Analysis
         {
             return Analyze(graph);
         }
+
+        /// <summary>
+        /// Creates a brand new register for a value of a particular type.
+        /// </summary>
+        /// <param name="type">
+        /// The type of value to create a register for.
+        /// </param>
+        /// <returns>A register suitable for the value.</returns>
+        protected abstract TRegister CreateRegister(IType type);
+
+        /// <summary>
+        /// Tells if a register should be allocated for a
+        /// particular value.
+        /// </summary>
+        /// <param name="value">
+        /// The value for which register allocation may or may
+        /// not be necessary.
+        /// </param>
+        /// <param name="graph">
+        /// The control flow graph that defines <paramref name="value"/>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if a register must be allocated to
+        /// <paramref name="value"/>; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// Implementations may override this method to suppress
+        /// register allocation for values that are, e.g., stored
+        /// on an evaluation stack.
+        /// </remarks>
+        protected virtual bool RequiresRegister(
+            ValueTag value,
+            FlowGraph graph)
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Tries to get a preallocated register for a particular value.
+        /// If it exists, then the preallocated register will be used
+        /// for the value, no questions asked. The preallocated register
+        /// may be reused.
+        /// </summary>
+        /// <param name="value">
+        /// The value that may have a preallocated register.
+        /// </param>
+        /// <param name="graph">
+        /// The graph that defines the value.
+        /// </param>
+        /// <param name="register">
+        /// A preallocated register, if any.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if there is a preallocated register for
+        /// <paramref name="value"/>; otherwise, <c>false</c>.
+        /// </returns>
+        protected virtual bool TryGetPreallocatedRegister(
+            ValueTag value,
+            FlowGraph graph,
+            out TRegister register)
+        {
+            register = default(TRegister);
+            return false;
+        }
+
+        /// <summary>
+        /// Tries to recycle a register from a set of registers.
+        /// </summary>
+        /// <param name="type">
+        /// The type of value to store in the recycled register.
+        /// </param>
+        /// <param name="registers">
+        /// A set of registers that are eligible for recycling.
+        /// </param>
+        /// <param name="result">
+        /// A register to recycle, if any.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if a register has been selected for recyling;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        protected abstract bool TryRecycleRegister(
+            IType type,
+            IEnumerable<TRegister> registers,
+            out TRegister result);
     }
 }

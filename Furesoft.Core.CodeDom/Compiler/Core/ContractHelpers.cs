@@ -1,7 +1,8 @@
 using System;
 using System.Runtime.Serialization;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// A collection of functions that help enforce contracts.

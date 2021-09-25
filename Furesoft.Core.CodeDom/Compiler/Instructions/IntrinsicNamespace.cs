@@ -1,6 +1,7 @@
 using System;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 
-namespace Flame.Compiler.Instructions
+namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
     /// <summary>
     /// Represents a namespace of intrinsics.

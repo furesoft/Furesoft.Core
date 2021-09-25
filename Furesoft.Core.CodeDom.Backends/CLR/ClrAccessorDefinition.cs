@@ -1,5 +1,5 @@
-using Flame;
 using Mono.Cecil;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR
 {

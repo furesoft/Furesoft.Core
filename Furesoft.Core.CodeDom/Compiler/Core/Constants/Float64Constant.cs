@@ -1,4 +1,4 @@
-namespace Flame.Constants
+namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
     /// <summary>
     /// A 64-bit floating point constant.

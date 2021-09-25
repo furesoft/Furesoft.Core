@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// Describes a property: a collection of accessors that

@@ -1,7 +1,8 @@
-using Flame;
-using Flame.Collections;
-using Flame.TypeSystem;
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR
 {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// Describes a symmetric relation between values:

@@ -1,4 +1,6 @@
-namespace Flame
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// The root interface for members: constructs that
@@ -7,9 +9,9 @@ namespace Flame
     public interface IMember
     {
         /// <summary>
-        /// Gets the member's unqualified name.
+        /// Gets the member's attributes.
         /// </summary>
-        UnqualifiedName Name { get; }
+        AttributeMap Attributes { get; }
 
         /// <summary>
         /// Gets the member's full name.
@@ -17,8 +19,8 @@ namespace Flame
         QualifiedName FullName { get; }
 
         /// <summary>
-        /// Gets the member's attributes.
+        /// Gets the member's unqualified name.
         /// </summary>
-        AttributeMap Attributes { get; }
+        UnqualifiedName Name { get; }
     }
 }

@@ -1,25 +1,16 @@
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System;
 using System.Collections.Generic;
-using Flame.Compiler.Instructions;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
-    /// <summary>
-    /// Maps instruction prototypes to exception specifications.
-    /// </summary>
-    public abstract class PrototypeExceptionSpecs
-    {
-        /// <summary>
-        /// Gets the exception specification for a particular instruction
-        /// prototype.
-        /// </summary>
-        /// <param name="prototype">The prototype to examine.</param>
-        /// <returns>An exception specification for <paramref name="prototype"/>.</returns>
-        public abstract ExceptionSpecification GetExceptionSpecification(InstructionPrototype prototype);
-    }
-
     internal struct RuleBasedSpecStore<TSpec>
     {
+        private Dictionary<Type, Func<InstructionPrototype, TSpec>> instructionSpecs;
+
+        private Dictionary<string, Func<IntrinsicPrototype, TSpec>> intrinsicSpecs;
+
         public RuleBasedSpecStore(TSpec defaultSpec)
         {
             this.DefaultSpec = defaultSpec;
@@ -41,8 +32,26 @@ namespace Flame.Compiler.Analysis
 
         public TSpec DefaultSpec { get; private set; }
 
-        private Dictionary<Type, Func<InstructionPrototype, TSpec>> instructionSpecs;
-        private Dictionary<string, Func<IntrinsicPrototype, TSpec>> intrinsicSpecs;
+        public TSpec GetSpecification(InstructionPrototype prototype)
+        {
+            if (prototype is IntrinsicPrototype)
+            {
+                var intrinsic = (IntrinsicPrototype)prototype;
+                Func<IntrinsicPrototype, TSpec> getIntrinsicSpec;
+                if (intrinsicSpecs.TryGetValue(intrinsic.Name, out getIntrinsicSpec))
+                {
+                    return getIntrinsicSpec(intrinsic);
+                }
+            }
+
+            Func<InstructionPrototype, TSpec> getInstructionSpec;
+            if (instructionSpecs.TryGetValue(prototype.GetType(), out getInstructionSpec))
+            {
+                return getInstructionSpec(prototype);
+            }
+
+            return DefaultSpec;
+        }
 
         /// <summary>
         /// Registers a function that computes specifications
@@ -111,27 +120,82 @@ namespace Flame.Compiler.Analysis
         {
             Register(intrinsicName, proto => spec);
         }
+    }
 
-        public TSpec GetSpecification(InstructionPrototype prototype)
+    /// <summary>
+    /// An exception specification for an instruction parameter null check.
+    /// </summary>
+    public sealed class NullCheckExceptionSpecification : ExceptionSpecification
+    {
+        /// <summary>
+        /// Creates a null-check exception specification.
+        /// </summary>
+        /// <param name="parameterIndex">
+        /// The index of the instruction parameter that is null checked.
+        /// </param>
+        /// <param name="nullCheckSpec">
+        /// The exception specification of the exception thrown
+        /// if and when a null check fails.
+        /// </param>
+        public NullCheckExceptionSpecification(
+            int parameterIndex,
+            ExceptionSpecification nullCheckSpec)
         {
-            if (prototype is IntrinsicPrototype)
-            {
-                var intrinsic = (IntrinsicPrototype)prototype;
-                Func<IntrinsicPrototype, TSpec> getIntrinsicSpec;
-                if (intrinsicSpecs.TryGetValue(intrinsic.Name, out getIntrinsicSpec))
-                {
-                    return getIntrinsicSpec(intrinsic);
-                }
-            }
-
-            Func<InstructionPrototype, TSpec> getInstructionSpec;
-            if (instructionSpecs.TryGetValue(prototype.GetType(), out getInstructionSpec))
-            {
-                return getInstructionSpec(prototype);
-            }
-
-            return DefaultSpec;
+            this.ParameterIndex = parameterIndex;
+            this.NullCheckSpec = nullCheckSpec;
         }
+
+        /// <summary>
+        /// Creates a null-check exception specification.
+        /// </summary>
+        /// <param name="parameterIndex">
+        /// The index of the instruction parameter that is null checked.
+        /// </param>
+        /// <param name="exceptionType">
+        /// The type of exception that is thrown if and when
+        /// a null check fails.
+        /// </param>
+        public NullCheckExceptionSpecification(
+            int parameterIndex,
+            IType exceptionType)
+            : this(parameterIndex, Exact.Create(exceptionType))
+        { }
+
+        /// <inheritdoc/>
+        public override bool CanThrowSomething => NullCheckSpec.CanThrowSomething;
+
+        /// <summary>
+        /// Gets the exception specification of the exception thrown
+        /// if and when a null check fails.
+        /// </summary>
+        /// <value>An exception specification.</value>
+        public ExceptionSpecification NullCheckSpec { get; private set; }
+
+        /// <summary>
+        /// Gets the index of the null-checked parameter,
+        /// </summary>
+        /// <value>The index of the null-checked parameter.</value>
+        public int ParameterIndex { get; private set; }
+
+        /// <inheritdoc/>
+        public override bool CanThrow(IType exceptionType)
+        {
+            return NullCheckSpec.CanThrow(exceptionType);
+        }
+    }
+
+    /// <summary>
+    /// Maps instruction prototypes to exception specifications.
+    /// </summary>
+    public abstract class PrototypeExceptionSpecs
+    {
+        /// <summary>
+        /// Gets the exception specification for a particular instruction
+        /// prototype.
+        /// </summary>
+        /// <param name="prototype">The prototype to examine.</param>
+        /// <returns>An exception specification for <paramref name="prototype"/>.</returns>
+        public abstract ExceptionSpecification GetExceptionSpecification(InstructionPrototype prototype);
     }
 
     /// <summary>
@@ -141,104 +205,12 @@ namespace Flame.Compiler.Analysis
     public sealed class RuleBasedPrototypeExceptionSpecs : PrototypeExceptionSpecs
     {
         /// <summary>
-        /// Creates an empty set of prototype exception spec rules.
-        /// </summary>
-        public RuleBasedPrototypeExceptionSpecs()
-        {
-            this.store = new RuleBasedSpecStore<ExceptionSpecification>(ExceptionSpecification.ThrowAny);
-        }
-
-        /// <summary>
-        /// Creates a copy of another set of prototype exception spec rules.
-        /// </summary>
-        public RuleBasedPrototypeExceptionSpecs(RuleBasedPrototypeExceptionSpecs other)
-        {
-            this.store = new RuleBasedSpecStore<ExceptionSpecification>(other.store);
-        }
-
-        private RuleBasedSpecStore<ExceptionSpecification> store;
-
-        /// <summary>
-        /// Registers a function that computes exception specifications
-        /// for a particular type of instruction prototype.
-        /// </summary>
-        /// <param name="getExceptionSpec">
-        /// A function that computes exception specifications for all
-        /// instruction prototypes of type T.
-        /// </param>
-        /// <typeparam name="T">
-        /// The type of instruction prototypes to which
-        /// <paramref name="getExceptionSpec"/> is applicable.
-        /// </typeparam>
-        public void Register<T>(Func<T, ExceptionSpecification> getExceptionSpec)
-            where T : InstructionPrototype
-        {
-            store.Register<T>(getExceptionSpec);
-        }
-
-        /// <summary>
-        /// Maps a particular type of instruction prototype
-        /// to an exception specification.
-        /// </summary>
-        /// <param name="exceptionSpec">
-        /// The exception specification to register.
-        /// </param>
-        /// <typeparam name="T">
-        /// The type of instruction prototypes to which
-        /// <paramref name="exceptionSpec"/> is applicable.
-        /// </typeparam>
-        public void Register<T>(ExceptionSpecification exceptionSpec)
-            where T : InstructionPrototype
-        {
-            store.Register<T>(exceptionSpec);
-        }
-
-        /// <summary>
-        /// Registers a function that computes exception specifications
-        /// for a particular type of intrinsic.
-        /// </summary>
-        /// <param name="intrinsicName">
-        /// The name of the intrinsic to compute exception
-        /// specifications for.
-        /// </param>
-        /// <param name="getExceptionSpec">
-        /// A function that takes an intrinsic prototype with
-        /// name <paramref name="intrinsicName"/> and computes
-        /// the exception specification for that prototype.
-        /// </param>
-        public void Register(string intrinsicName, Func<IntrinsicPrototype, ExceptionSpecification> getExceptionSpec)
-        {
-            store.Register(intrinsicName, getExceptionSpec);
-        }
-
-        /// <summary>
-        /// Registers a function that assigns a fixed exception specification
-        /// to a particular type of intrinsic.
-        /// </summary>
-        /// <param name="intrinsicName">
-        /// The name of the intrinsic to assign the exception
-        /// specifications to.
-        /// </param>
-        /// <param name="exceptionSpec">
-        /// The exception specification for all intrinsic prototypes with
-        /// name <paramref name="intrinsicName"/>.
-        /// </param>
-        public void Register(string intrinsicName, ExceptionSpecification exceptionSpec)
-        {
-            store.Register(intrinsicName, exceptionSpec);
-        }
-
-        /// <inheritdoc/>
-        public override ExceptionSpecification GetExceptionSpecification(InstructionPrototype prototype)
-        {
-            return store.GetSpecification(prototype);
-        }
-
-        /// <summary>
         /// Gets the default prototype exception spec rules.
         /// </summary>
         /// <value>The default prototype exception spec rules.</value>
         public static readonly RuleBasedPrototypeExceptionSpecs Default;
+
+        private RuleBasedSpecStore<ExceptionSpecification> store;
 
         static RuleBasedPrototypeExceptionSpecs()
         {
@@ -326,67 +298,97 @@ namespace Flame.Compiler.Analysis
                 MemoryIntrinsics.Namespace.GetIntrinsicName(MemoryIntrinsics.Operators.AllocaPinned),
                 ExceptionSpecification.NoThrow);
         }
-    }
 
-    /// <summary>
-    /// An exception specification for an instruction parameter null check.
-    /// </summary>
-    public sealed class NullCheckExceptionSpecification : ExceptionSpecification
-    {
         /// <summary>
-        /// Creates a null-check exception specification.
+        /// Creates an empty set of prototype exception spec rules.
         /// </summary>
-        /// <param name="parameterIndex">
-        /// The index of the instruction parameter that is null checked.
-        /// </param>
-        /// <param name="nullCheckSpec">
-        /// The exception specification of the exception thrown
-        /// if and when a null check fails.
-        /// </param>
-        public NullCheckExceptionSpecification(
-            int parameterIndex,
-            ExceptionSpecification nullCheckSpec)
+        public RuleBasedPrototypeExceptionSpecs()
         {
-            this.ParameterIndex = parameterIndex;
-            this.NullCheckSpec = nullCheckSpec;
+            this.store = new RuleBasedSpecStore<ExceptionSpecification>(ExceptionSpecification.ThrowAny);
         }
 
         /// <summary>
-        /// Creates a null-check exception specification.
+        /// Creates a copy of another set of prototype exception spec rules.
         /// </summary>
-        /// <param name="parameterIndex">
-        /// The index of the instruction parameter that is null checked.
-        /// </param>
-        /// <param name="exceptionType">
-        /// The type of exception that is thrown if and when
-        /// a null check fails.
-        /// </param>
-        public NullCheckExceptionSpecification(
-            int parameterIndex,
-            IType exceptionType)
-            : this(parameterIndex, ExceptionSpecification.Exact.Create(exceptionType))
-        { }
-
-        /// <summary>
-        /// Gets the index of the null-checked parameter,
-        /// </summary>
-        /// <value>The index of the null-checked parameter.</value>
-        public int ParameterIndex { get; private set; }
-
-        /// <summary>
-        /// Gets the exception specification of the exception thrown
-        /// if and when a null check fails.
-        /// </summary>
-        /// <value>An exception specification.</value>
-        public ExceptionSpecification NullCheckSpec { get; private set; }
-
-        /// <inheritdoc/>
-        public override bool CanThrowSomething => NullCheckSpec.CanThrowSomething;
-
-        /// <inheritdoc/>
-        public override bool CanThrow(IType exceptionType)
+        public RuleBasedPrototypeExceptionSpecs(RuleBasedPrototypeExceptionSpecs other)
         {
-            return NullCheckSpec.CanThrow(exceptionType);
+            this.store = new RuleBasedSpecStore<ExceptionSpecification>(other.store);
+        }
+
+        /// <inheritdoc/>
+        public override ExceptionSpecification GetExceptionSpecification(InstructionPrototype prototype)
+        {
+            return store.GetSpecification(prototype);
+        }
+
+        /// <summary>
+        /// Registers a function that computes exception specifications
+        /// for a particular type of instruction prototype.
+        /// </summary>
+        /// <param name="getExceptionSpec">
+        /// A function that computes exception specifications for all
+        /// instruction prototypes of type T.
+        /// </param>
+        /// <typeparam name="T">
+        /// The type of instruction prototypes to which
+        /// <paramref name="getExceptionSpec"/> is applicable.
+        /// </typeparam>
+        public void Register<T>(Func<T, ExceptionSpecification> getExceptionSpec)
+            where T : InstructionPrototype
+        {
+            store.Register<T>(getExceptionSpec);
+        }
+
+        /// <summary>
+        /// Maps a particular type of instruction prototype
+        /// to an exception specification.
+        /// </summary>
+        /// <param name="exceptionSpec">
+        /// The exception specification to register.
+        /// </param>
+        /// <typeparam name="T">
+        /// The type of instruction prototypes to which
+        /// <paramref name="exceptionSpec"/> is applicable.
+        /// </typeparam>
+        public void Register<T>(ExceptionSpecification exceptionSpec)
+            where T : InstructionPrototype
+        {
+            store.Register<T>(exceptionSpec);
+        }
+
+        /// <summary>
+        /// Registers a function that computes exception specifications
+        /// for a particular type of intrinsic.
+        /// </summary>
+        /// <param name="intrinsicName">
+        /// The name of the intrinsic to compute exception
+        /// specifications for.
+        /// </param>
+        /// <param name="getExceptionSpec">
+        /// A function that takes an intrinsic prototype with
+        /// name <paramref name="intrinsicName"/> and computes
+        /// the exception specification for that prototype.
+        /// </param>
+        public void Register(string intrinsicName, Func<IntrinsicPrototype, ExceptionSpecification> getExceptionSpec)
+        {
+            store.Register(intrinsicName, getExceptionSpec);
+        }
+
+        /// <summary>
+        /// Registers a function that assigns a fixed exception specification
+        /// to a particular type of intrinsic.
+        /// </summary>
+        /// <param name="intrinsicName">
+        /// The name of the intrinsic to assign the exception
+        /// specifications to.
+        /// </param>
+        /// <param name="exceptionSpec">
+        /// The exception specification for all intrinsic prototypes with
+        /// name <paramref name="intrinsicName"/>.
+        /// </param>
+        public void Register(string intrinsicName, ExceptionSpecification exceptionSpec)
+        {
+            store.Register(intrinsicName, exceptionSpec);
         }
     }
 }

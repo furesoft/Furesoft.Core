@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Target;
 
-namespace Flame.Compiler.Target
+namespace Furesoft.Core.CodeDom.Compiler.Target
 {
     /// <summary>
     /// A base class for instruction selection algorithms.

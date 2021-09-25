@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// Specifies the exception throwing behavior of a method or instruction.

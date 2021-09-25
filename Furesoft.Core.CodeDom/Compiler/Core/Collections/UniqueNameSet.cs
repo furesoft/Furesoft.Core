@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// A name generator class that generates unique names by

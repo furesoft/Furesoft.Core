@@ -1,8 +1,10 @@
-using Flame.Collections;
 using System;
 using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Flow;
 
-namespace Flame.Compiler.Flow
+namespace Furesoft.Core.CodeDom.Compiler.Flow
 {
     /// <summary>
     /// Control flow that unconditionally jumps to a particular branch.

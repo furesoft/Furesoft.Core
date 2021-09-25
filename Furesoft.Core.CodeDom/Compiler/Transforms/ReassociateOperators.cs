@@ -1,24 +1,46 @@
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Instructions;
-using Flame.TypeSystem;
+using static Furesoft.Core.CodeDom.Compiler.Instructions.ArithmeticIntrinsics;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// An optimization that reassociates operators to simplify computations.
     /// </summary>
     public sealed class ReassociateOperators : IntraproceduralOptimization
     {
-        private ReassociateOperators()
-        { }
-
         /// <summary>
         /// An instance of the operator reassociation pass.
         /// </summary>
         public static readonly ReassociateOperators Instance
             = new ReassociateOperators();
+
+        // A set of integer arithmetic operators `op` for which
+        // `(a op b) op c == a op (b op c)` holds.
+        private static readonly HashSet<string> assocIntArith =
+            new HashSet<string>()
+        {
+Operators.Add,
+Operators.Multiply,
+Operators.And,
+Operators.Or,
+Operators.Xor        };
+
+        // A set of `(op1, op2)` pairs for which `(a op1 b) op1 c == a op1 (b op2 c)` holds,
+        // where both `op1` and `op2` are integer arithmetic operators.
+        private static readonly Dictionary<string, string> intArithLeftToRight =
+            new Dictionary<string, string>()
+        {
+            { Operators.Subtract, Operators.Add},
+            { Operators.Divide, Operators.Multiply}
+        };
+
+        private ReassociateOperators()
+        { }
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)
@@ -46,6 +68,108 @@ namespace Flame.Compiler.Transforms
             }
 
             return builder.ToImmutable();
+        }
+
+        private static NamedInstructionBuilder ConstantFold(
+            ValueTag first,
+            ValueTag second,
+            InstructionPrototype prototype,
+            NamedInstructionBuilder insertionPoint)
+        {
+            var graph = insertionPoint.Graph;
+            Constant firstConstant;
+            Constant secondConstant;
+            if (IsConstant(first, insertionPoint.Graph.ToImmutable(), out firstConstant)
+                && IsConstant(second, insertionPoint.Graph.ToImmutable(), out secondConstant))
+            {
+                var newConstant = ConstantPropagation.EvaluateDefault(
+                    prototype,
+                    new[] { firstConstant, secondConstant });
+                if (newConstant != null)
+                {
+                    return insertionPoint.InsertBefore(
+                        Instruction.CreateConstant(newConstant, prototype.ResultType));
+                }
+            }
+            return null;
+        }
+
+        private static bool IsAssociative(IntrinsicPrototype prototype)
+        {
+            string op;
+            bool isChecked;
+            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out op, out isChecked)
+                && !isChecked
+                && assocIntArith.Contains(op))
+            {
+                return prototype.ParameterTypes.All(x => x.IsIntegerType());
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool IsConstant(ValueTag tag, FlowGraph graph, out Constant constant)
+        {
+            NamedInstruction instruction;
+            if (graph.TryGetInstruction(tag, out instruction)
+                && instruction.Prototype is ConstantPrototype)
+            {
+                constant = ((ConstantPrototype)instruction.Prototype).Value; ;
+                return true;
+            }
+            else
+            {
+                constant = null;
+                return false;
+            }
+        }
+
+        private static bool IsLeftToRightReassociable(
+            IntrinsicPrototype prototype,
+            out IntrinsicPrototype rightPrototype)
+        {
+            string op;
+            string rightOp;
+            bool isChecked;
+            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out op, out isChecked)
+                && !isChecked
+                && intArithLeftToRight.TryGetValue(op, out rightOp)
+                && prototype.ParameterTypes.All(x => x.IsIntegerType()))
+            {
+                rightPrototype = ArithmeticIntrinsics.CreatePrototype(
+                    rightOp,
+                    isChecked,
+                    prototype.ResultType,
+                    prototype.ParameterTypes);
+                return true;
+            }
+            else
+            {
+                rightPrototype = null;
+                return false;
+            }
+        }
+
+        private static void MaterializeReduction(
+            IReadOnlyList<ValueTag> args,
+            InstructionPrototype prototype,
+            NamedInstructionBuilder result)
+        {
+            if (args.Count == 1)
+            {
+                result.Instruction = Instruction.CreateCopy(result.ResultType, args[0]);
+                return;
+            }
+
+            var accumulator = args[0];
+            for (int i = 1; i < args.Count - 1; i++)
+            {
+                accumulator = result.InsertBefore(
+                    prototype.Instantiate(new[] { accumulator, args[i] }));
+            }
+            result.Instruction = prototype.Instantiate(new[] { accumulator, args[args.Count - 1] });
         }
 
         private static void ReassociateNonAssociative(NamedInstructionBuilder instruction)
@@ -201,128 +325,5 @@ namespace Flame.Compiler.Transforms
             args = newArgs;
             return changed;
         }
-
-        private static NamedInstructionBuilder ConstantFold(
-            ValueTag first,
-            ValueTag second,
-            InstructionPrototype prototype,
-            NamedInstructionBuilder insertionPoint)
-        {
-            var graph = insertionPoint.Graph;
-            Constant firstConstant;
-            Constant secondConstant;
-            if (IsConstant(first, insertionPoint.Graph.ToImmutable(), out firstConstant)
-                && IsConstant(second, insertionPoint.Graph.ToImmutable(), out secondConstant))
-            {
-                var newConstant = ConstantPropagation.EvaluateDefault(
-                    prototype,
-                    new[] { firstConstant, secondConstant });
-                if (newConstant != null)
-                {
-                    return insertionPoint.InsertBefore(
-                        Instruction.CreateConstant(newConstant, prototype.ResultType));
-                }
-            }
-            return null;
-        }
-
-        private static bool IsConstant(ValueTag tag, FlowGraph graph, out Constant constant)
-        {
-            NamedInstruction instruction;
-            if (graph.TryGetInstruction(tag, out instruction)
-                && instruction.Prototype is ConstantPrototype)
-            {
-                constant = ((ConstantPrototype)instruction.Prototype).Value;;
-                return true;
-            }
-            else
-            {
-                constant = null;
-                return false;
-            }
-        }
-
-        private static void MaterializeReduction(
-            IReadOnlyList<ValueTag> args,
-            InstructionPrototype prototype,
-            NamedInstructionBuilder result)
-        {
-            if (args.Count == 1)
-            {
-                result.Instruction = Instruction.CreateCopy(result.ResultType, args[0]);
-                return;
-            }
-
-            var accumulator = args[0];
-            for (int i = 1; i < args.Count - 1; i++)
-            {
-                accumulator = result.InsertBefore(
-                    prototype.Instantiate(new[] { accumulator, args[i] }));
-            }
-            result.Instruction = prototype.Instantiate(new[] { accumulator, args[args.Count - 1] });
-        }
-
-        private static bool IsAssociative(IntrinsicPrototype prototype)
-        {
-            string op;
-            bool isChecked;
-            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out op, out isChecked)
-                && !isChecked
-                && assocIntArith.Contains(op))
-            {
-                return prototype.ParameterTypes.All(x => x.IsIntegerType());
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private static bool IsLeftToRightReassociable(
-            IntrinsicPrototype prototype,
-            out IntrinsicPrototype rightPrototype)
-        {
-            string op;
-            string rightOp;
-            bool isChecked;
-            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out op, out isChecked)
-                && !isChecked
-                && intArithLeftToRight.TryGetValue(op, out rightOp)
-                && prototype.ParameterTypes.All(x => x.IsIntegerType()))
-            {
-                rightPrototype = ArithmeticIntrinsics.CreatePrototype(
-                    rightOp,
-                    isChecked,
-                    prototype.ResultType,
-                    prototype.ParameterTypes);
-                return true;
-            }
-            else
-            {
-                rightPrototype = null;
-                return false;
-            }
-        }
-
-        // A set of integer arithmetic operators `op` for which
-        // `(a op b) op c == a op (b op c)` holds.
-        private static readonly HashSet<string> assocIntArith =
-            new HashSet<string>()
-        {
-            ArithmeticIntrinsics.Operators.Add,
-            ArithmeticIntrinsics.Operators.Multiply,
-            ArithmeticIntrinsics.Operators.And,
-            ArithmeticIntrinsics.Operators.Or,
-            ArithmeticIntrinsics.Operators.Xor
-        };
-
-        // A set of `(op1, op2)` pairs for which `(a op1 b) op1 c == a op1 (b op2 c)` holds,
-        // where both `op1` and `op2` are integer arithmetic operators.
-        private static readonly Dictionary<string, string> intArithLeftToRight =
-            new Dictionary<string, string>()
-        {
-            { ArithmeticIntrinsics.Operators.Subtract, ArithmeticIntrinsics.Operators.Add },
-            { ArithmeticIntrinsics.Operators.Divide, ArithmeticIntrinsics.Operators.Multiply }
-        };
     }
 }

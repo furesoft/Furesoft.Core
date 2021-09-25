@@ -1,6 +1,6 @@
-using Flame;
 using System.Globalization;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR
 {

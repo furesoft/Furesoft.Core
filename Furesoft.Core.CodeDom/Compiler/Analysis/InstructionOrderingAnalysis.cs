@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// Captures the must-run-before relation between instructions.
@@ -159,9 +159,9 @@ namespace Flame.Compiler.Analysis
                         // Rule #2.a: Value-reading instructions depend on value-writing
                         // instructions that refer to the same address.
                         insnDependencies.UnionWith(unknownWrites);
-                        if (memSpec is MemorySpecification.ArgumentRead)
+                        if (memSpec is Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentRead)
                         {
-                            var argReadSpec = (MemorySpecification.ArgumentRead)memSpec;
+                            var argReadSpec = (Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentRead)memSpec;
                             var readAddress = instruction.Arguments[argReadSpec.ParameterIndex];
                             foreach (var pair in knownWrites)
                             {
@@ -192,9 +192,9 @@ namespace Flame.Compiler.Analysis
                         // instructions that refer to the same address.
                         insnDependencies.UnionWith(unknownWrites);
                         insnDependencies.UnionWith(unknownReads);
-                        if (memSpec is MemorySpecification.ArgumentWrite)
+                        if (memSpec is Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentWrite)
                         {
-                            var argWriteSpec = (MemorySpecification.ArgumentWrite)memSpec;
+                            var argWriteSpec = (Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentWrite)memSpec;
                             var writeAddress = instruction.Arguments[argWriteSpec.ParameterIndex];
                             foreach (var pair in knownWrites.Concat(knownReads))
                             {

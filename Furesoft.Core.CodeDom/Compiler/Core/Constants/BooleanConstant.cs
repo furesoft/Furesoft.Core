@@ -1,4 +1,5 @@
-﻿namespace Flame.Constants
+﻿using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
     /// <summary>
     /// Helpers for Boolean constants.

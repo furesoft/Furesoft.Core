@@ -1,4 +1,4 @@
-namespace Flame.Compiler
+namespace Furesoft.Core.CodeDom.Compiler
 {
     /// <summary>
     /// A base class for unique tags: identifiers for values

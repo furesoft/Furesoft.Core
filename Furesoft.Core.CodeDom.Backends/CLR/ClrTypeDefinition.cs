@@ -1,7 +1,8 @@
-using Flame;
-using Flame.Collections;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;

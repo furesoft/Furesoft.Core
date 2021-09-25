@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// A base class for algorithms that search trees.

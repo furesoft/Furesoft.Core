@@ -1,12 +1,13 @@
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
+using static Furesoft.Core.CodeDom.Compiler.Instructions.ExceptionIntrinsics;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// An optimization that tries to eliminate repeated
@@ -65,6 +66,164 @@ namespace Flame.Compiler.Transforms
             graphBuilder.Transform(CopyPropagation.Instance, DeadValueElimination.Instance, DeadBlockElimination.Instance);
 
             return graphBuilder.ToImmutable();
+        }
+
+        /// <summary>
+        /// Fuses two fusible basic blocks.
+        /// </summary>
+        /// <param name="head">The 'head' block.</param>
+        /// <param name="tail">The 'tail' block.</param>
+        private static void FuseBlocks(BasicBlockBuilder head, BasicBlockTag tail)
+        {
+            var jump = (JumpFlow)head.Flow;
+
+            // Replace branch parameters by their respective arguments.
+            var replacements = new Dictionary<ValueTag, ValueTag>();
+            foreach (var pair in jump.Branch.ZipArgumentsWithParameters(head.Graph))
+            {
+                replacements.Add(pair.Key, pair.Value.ValueOrNull);
+            }
+            head.Graph.ReplaceUses(replacements);
+
+            // Move instructions around.
+            var tailBlock = head.Graph.GetBasicBlock(tail);
+            foreach (var instruction in tailBlock.NamedInstructions)
+            {
+                instruction.MoveTo(head);
+            }
+
+            // Update the block's flow.
+            head.Flow = tailBlock.Flow;
+
+            // Delete the 'tail' block.
+            head.Graph.RemoveBasicBlock(tail);
+        }
+
+        /// <summary>
+        /// Tells if an instruction is a 'rethrow' intrinsic.
+        /// </summary>
+        /// <param name="instruction">The instruction to examine.</param>
+        /// <returns>
+        /// <c>true</c> if <paramref name="instruction"/> is a 'rethrow' intrinsic; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsRethrowIntrinsic(Instruction instruction)
+        {
+            return ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(
+                instruction.Prototype, Operators.Rethrow);
+        }
+
+        /// <summary>
+        /// Tells if an instruction is a 'throw' intrinsic.
+        /// </summary>
+        /// <param name="instruction">The instruction to examine.</param>
+        /// <returns>
+        /// <c>true</c> if <paramref name="instruction"/> is a 'throw' intrinsic; otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsThrowIntrinsic(Instruction instruction)
+        {
+            return ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(
+                instruction.Prototype, Operators.Throw);
+        }
+
+        /// <summary>
+        /// Replaces a block's flow with an unconditional jump to an exception
+        /// branch. Replaces 'try' flow exception arguments in that exception
+        /// branch with a captured exception value.
+        /// </summary>
+        /// <param name="block">The block to rewrite.</param>
+        /// <param name="exceptionBranch">The exception branch to jump to unconditionally.</param>
+        /// <param name="capturedException">
+        /// The captured exception to pass instead of a 'try' flow exception argument.
+        /// </param>
+        private static void JumpToExceptionBranch(
+            BasicBlockBuilder block,
+            Branch exceptionBranch,
+            ValueTag capturedException)
+        {
+            var branch = exceptionBranch.WithArguments(
+                exceptionBranch.Arguments
+                    .Select(arg => arg.IsTryException ? BranchArgument.FromValue(capturedException) : arg)
+                    .ToArray());
+
+            block.Flow = new JumpFlow(branch);
+        }
+
+        private BlockFlow AsThreadableFlow(Branch branch, FlowGraphBuilder graph, HashSet<BasicBlockTag> processedBlocks)
+        {
+            ThreadJumps(graph.GetBasicBlock(branch.Target), processedBlocks);
+
+            // Block arguments are a bit of an obstacle for jump threading.
+            //
+            //   * We can easily thread jumps to blocks that have block parameters
+            //     if those parameters are never used outside of the block: in that case,
+            //     we just substitute arguments for parameters.
+            //
+            //   * Jumps to blocks that have block parameters that are used outside
+            //     of the block that defines them are trickier to handle. We'll just bail
+            //     when we encounter them, because these don't occur when the control-flow
+            //     graph is in register forwarding form.
+
+            var target = graph.GetBasicBlock(branch.Target);
+            var uses = graph.GetAnalysisResult<ValueUses>();
+
+            // Only jump and switch flow are threadable. We don't jump-thread through
+            // instructions.
+            // TODO: consider copying instructions to enable more aggressive jump threading.
+            if ((!(target.Flow is JumpFlow) && !(target.Flow is SwitchFlow))
+                || target.InstructionTags.Count > 0
+                || target.ParameterTags.Any(
+                    tag => uses.GetInstructionUses(tag).Count > 0
+                        || uses.GetFlowUses(tag).Any(block => block != target.Tag)))
+            {
+                return null;
+            }
+
+            var valueSubstitutionMap = new Dictionary<ValueTag, ValueTag>();
+            var argSubstitutionMap = new Dictionary<BranchArgument, BranchArgument>();
+            foreach (var kvPair in branch.ZipArgumentsWithParameters(graph))
+            {
+                if (kvPair.Value.IsValue)
+                {
+                    valueSubstitutionMap[kvPair.Key] = kvPair.Value.ValueOrNull;
+                }
+                argSubstitutionMap[BranchArgument.FromValue(kvPair.Key)] = kvPair.Value;
+            }
+            return target.Flow
+                .MapArguments(argSubstitutionMap)
+                .MapValues(valueSubstitutionMap);
+        }
+
+        private bool IsRethrowBranch(Branch exceptionBranch, FlowGraphBuilder graph, HashSet<BasicBlockTag> processedBlocks)
+        {
+            // Jump-thread the exception branch's target so we will have more
+            // information to act on.
+            var target = graph.GetBasicBlock(exceptionBranch.Target);
+            ThreadJumps(target, processedBlocks);
+
+            // Now walk the exception branch's instructions. If the first effectful
+            // instruction is a 'rethrow' intrinsic, then we are dealing with a
+            // rethrow branch.
+            var effectfulness = graph.GetAnalysisResult<EffectfulInstructions>();
+            foreach (var instruction in target.NamedInstructions)
+            {
+                if (effectfulness.Instructions.Contains(instruction))
+                {
+                    if (IsRethrowIntrinsic(instruction.Instruction))
+                    {
+                        return exceptionBranch
+                            .ZipArgumentsWithParameters(graph)
+                            .Where(pair => pair.Value.IsTryException)
+                            .Select(pair => pair.Key)
+                            .Any(instruction.Arguments.Contains);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return false;
         }
 
         private void ThreadJumps(BasicBlockBuilder block, HashSet<BasicBlockTag> processedBlocks)
@@ -299,166 +458,6 @@ namespace Flame.Compiler.Transforms
                     ThreadJumps(block, processedBlocks);
                 }
             }
-        }
-
-        /// <summary>
-        /// Replaces a block's flow with an unconditional jump to an exception
-        /// branch. Replaces 'try' flow exception arguments in that exception
-        /// branch with a captured exception value.
-        /// </summary>
-        /// <param name="block">The block to rewrite.</param>
-        /// <param name="exceptionBranch">The exception branch to jump to unconditionally.</param>
-        /// <param name="capturedException">
-        /// The captured exception to pass instead of a 'try' flow exception argument.
-        /// </param>
-        private static void JumpToExceptionBranch(
-            BasicBlockBuilder block,
-            Branch exceptionBranch,
-            ValueTag capturedException)
-        {
-            var branch = exceptionBranch.WithArguments(
-                exceptionBranch.Arguments
-                    .Select(arg => arg.IsTryException ? BranchArgument.FromValue(capturedException) : arg)
-                    .ToArray());
-
-            block.Flow = new JumpFlow(branch);
-        }
-
-        private bool IsRethrowBranch(Branch exceptionBranch, FlowGraphBuilder graph, HashSet<BasicBlockTag> processedBlocks)
-        {
-            // Jump-thread the exception branch's target so we will have more
-            // information to act on.
-            var target = graph.GetBasicBlock(exceptionBranch.Target);
-            ThreadJumps(target, processedBlocks);
-
-            // Now walk the exception branch's instructions. If the first effectful
-            // instruction is a 'rethrow' intrinsic, then we are dealing with a
-            // rethrow branch.
-            var effectfulness = graph.GetAnalysisResult<EffectfulInstructions>();
-            foreach (var instruction in target.NamedInstructions)
-            {
-                if (effectfulness.Instructions.Contains(instruction))
-                {
-                    if (IsRethrowIntrinsic(instruction.Instruction))
-                    {
-                        return exceptionBranch
-                            .ZipArgumentsWithParameters(graph)
-                            .Where(pair => pair.Value.IsTryException)
-                            .Select(pair => pair.Key)
-                            .Any(instruction.Arguments.Contains);
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return false;
-        }
-
-        private BlockFlow AsThreadableFlow(Branch branch, FlowGraphBuilder graph, HashSet<BasicBlockTag> processedBlocks)
-        {
-            ThreadJumps(graph.GetBasicBlock(branch.Target), processedBlocks);
-
-            // Block arguments are a bit of an obstacle for jump threading.
-            //
-            //   * We can easily thread jumps to blocks that have block parameters
-            //     if those parameters are never used outside of the block: in that case,
-            //     we just substitute arguments for parameters.
-            //
-            //   * Jumps to blocks that have block parameters that are used outside
-            //     of the block that defines them are trickier to handle. We'll just bail
-            //     when we encounter them, because these don't occur when the control-flow
-            //     graph is in register forwarding form.
-
-            var target = graph.GetBasicBlock(branch.Target);
-            var uses = graph.GetAnalysisResult<ValueUses>();
-
-            // Only jump and switch flow are threadable. We don't jump-thread through
-            // instructions.
-            // TODO: consider copying instructions to enable more aggressive jump threading.
-            if ((!(target.Flow is JumpFlow) && !(target.Flow is SwitchFlow))
-                || target.InstructionTags.Count > 0
-                || target.ParameterTags.Any(
-                    tag => uses.GetInstructionUses(tag).Count > 0
-                        || uses.GetFlowUses(tag).Any(block => block != target.Tag)))
-            {
-                return null;
-            }
-
-            var valueSubstitutionMap = new Dictionary<ValueTag, ValueTag>();
-            var argSubstitutionMap = new Dictionary<BranchArgument, BranchArgument>();
-            foreach (var kvPair in branch.ZipArgumentsWithParameters(graph))
-            {
-                if (kvPair.Value.IsValue)
-                {
-                    valueSubstitutionMap[kvPair.Key] = kvPair.Value.ValueOrNull;
-                }
-                argSubstitutionMap[BranchArgument.FromValue(kvPair.Key)] = kvPair.Value;
-            }
-            return target.Flow
-                .MapArguments(argSubstitutionMap)
-                .MapValues(valueSubstitutionMap);
-        }
-
-        /// <summary>
-        /// Fuses two fusible basic blocks.
-        /// </summary>
-        /// <param name="head">The 'head' block.</param>
-        /// <param name="tail">The 'tail' block.</param>
-        private static void FuseBlocks(BasicBlockBuilder head, BasicBlockTag tail)
-        {
-            var jump = (JumpFlow)head.Flow;
-
-            // Replace branch parameters by their respective arguments.
-            var replacements = new Dictionary<ValueTag, ValueTag>();
-            foreach (var pair in jump.Branch.ZipArgumentsWithParameters(head.Graph))
-            {
-                replacements.Add(pair.Key, pair.Value.ValueOrNull);
-            }
-            head.Graph.ReplaceUses(replacements);
-
-            // Move instructions around.
-            var tailBlock = head.Graph.GetBasicBlock(tail);
-            foreach (var instruction in tailBlock.NamedInstructions)
-            {
-                instruction.MoveTo(head);
-            }
-
-            // Update the block's flow.
-            head.Flow = tailBlock.Flow;
-
-            // Delete the 'tail' block.
-            head.Graph.RemoveBasicBlock(tail);
-        }
-
-        /// <summary>
-        /// Tells if an instruction is a 'throw' intrinsic.
-        /// </summary>
-        /// <param name="instruction">The instruction to examine.</param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="instruction"/> is a 'throw' intrinsic; otherwise, <c>false</c>.
-        /// </returns>
-        private static bool IsThrowIntrinsic(Instruction instruction)
-        {
-            return ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(
-                instruction.Prototype,
-                ExceptionIntrinsics.Operators.Throw);
-        }
-
-        /// <summary>
-        /// Tells if an instruction is a 'rethrow' intrinsic.
-        /// </summary>
-        /// <param name="instruction">The instruction to examine.</param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="instruction"/> is a 'rethrow' intrinsic; otherwise, <c>false</c>.
-        /// </returns>
-        private static bool IsRethrowIntrinsic(Instruction instruction)
-        {
-            return ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(
-                instruction.Prototype,
-                ExceptionIntrinsics.Operators.Rethrow);
         }
     }
 }

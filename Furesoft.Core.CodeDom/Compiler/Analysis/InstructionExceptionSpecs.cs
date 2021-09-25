@@ -1,53 +1,9 @@
-using System;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
-    /// <summary>
-    /// Maps instructions to their exception specifications.
-    /// </summary>
-    public abstract class InstructionExceptionSpecs
-    {
-        /// <summary>
-        /// Gets the exception specification for a particular instruction.
-        /// </summary>
-        /// <param name="instruction">The instruction to examine.</param>
-        /// <returns>An exception specification for <paramref name="instruction"/>.</returns>
-        public abstract ExceptionSpecification GetExceptionSpecification(Instruction instruction);
-    }
-
-    /// <summary>
-    /// An instruction exception specification mapping that trivially copies
-    /// prototype exception specifications.
-    /// </summary>
-    public sealed class TrivialInstructionExceptionSpecs : InstructionExceptionSpecs
-    {
-        /// <summary>
-        /// Creates instruction exception specification rules that
-        /// simply copy instruction prototype exception specifications.
-        /// </summary>
-        /// <param name="exceptionSpecs">
-        /// Prototype exception specification rules.
-        /// </param>
-        public TrivialInstructionExceptionSpecs(PrototypeExceptionSpecs exceptionSpecs)
-        {
-            this.ExceptionSpecs = exceptionSpecs;
-        }
-
-        /// <summary>
-        /// Exception specification rules for instruction prototypes.
-        /// </summary>
-        /// <value>Exception specification rules.</value>
-        public PrototypeExceptionSpecs ExceptionSpecs { get; private set; }
-
-        /// <inheritdoc/>
-        public override ExceptionSpecification GetExceptionSpecification(Instruction instruction)
-        {
-            return ExceptionSpecs.GetExceptionSpecification(instruction.Prototype);
-        }
-    }
-
     /// <summary>
     /// An explicit mapping of instructions to their exception specifications.
     /// </summary>
@@ -79,20 +35,33 @@ namespace Flame.Compiler.Analysis
     }
 
     /// <summary>
+    /// Maps instructions to their exception specifications.
+    /// </summary>
+    public abstract class InstructionExceptionSpecs
+    {
+        /// <summary>
+        /// Gets the exception specification for a particular instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to examine.</param>
+        /// <returns>An exception specification for <paramref name="instruction"/>.</returns>
+        public abstract ExceptionSpecification GetExceptionSpecification(Instruction instruction);
+    }
+
+    /// <summary>
     /// An analysis that infers instruction specification specifications by refining
     /// the exception specifications for their prototypes.
     /// </summary>
     public sealed class ReifiedInstructionExceptionAnalysis : IFlowGraphAnalysis<InstructionExceptionSpecs>
     {
-        private ReifiedInstructionExceptionAnalysis()
-        { }
-
         /// <summary>
         /// An instance of the reified instruction exception specification analysis.
         /// </summary>
         /// <value>An instruction specification analysis.</value>
         public static readonly ReifiedInstructionExceptionAnalysis Instance
             = new ReifiedInstructionExceptionAnalysis();
+
+        private ReifiedInstructionExceptionAnalysis()
+        { }
 
         /// <inheritdoc/>
         public InstructionExceptionSpecs Analyze(FlowGraph graph)
@@ -117,8 +86,17 @@ namespace Flame.Compiler.Analysis
             return new ExplicitInstructionExceptionSpecs(results);
         }
 
+        /// <inheritdoc/>
+        public InstructionExceptionSpecs AnalyzeWithUpdates(
+            FlowGraph graph,
+            InstructionExceptionSpecs previousResult,
+            IReadOnlyList<FlowGraphUpdate> updates)
+        {
+            return Analyze(graph);
+        }
+
         private ExceptionSpecification Reify(
-            ExceptionSpecification prototypeSpec,
+                    ExceptionSpecification prototypeSpec,
             Instruction instruction,
             FlowGraph graph)
         {
@@ -167,14 +145,36 @@ namespace Flame.Compiler.Analysis
                 return prototypeSpec;
             }
         }
+    }
+
+    /// <summary>
+    /// An instruction exception specification mapping that trivially copies
+    /// prototype exception specifications.
+    /// </summary>
+    public sealed class TrivialInstructionExceptionSpecs : InstructionExceptionSpecs
+    {
+        /// <summary>
+        /// Creates instruction exception specification rules that
+        /// simply copy instruction prototype exception specifications.
+        /// </summary>
+        /// <param name="exceptionSpecs">
+        /// Prototype exception specification rules.
+        /// </param>
+        public TrivialInstructionExceptionSpecs(PrototypeExceptionSpecs exceptionSpecs)
+        {
+            this.ExceptionSpecs = exceptionSpecs;
+        }
+
+        /// <summary>
+        /// Exception specification rules for instruction prototypes.
+        /// </summary>
+        /// <value>Exception specification rules.</value>
+        public PrototypeExceptionSpecs ExceptionSpecs { get; private set; }
 
         /// <inheritdoc/>
-        public InstructionExceptionSpecs AnalyzeWithUpdates(
-            FlowGraph graph,
-            InstructionExceptionSpecs previousResult,
-            IReadOnlyList<FlowGraphUpdate> updates)
+        public override ExceptionSpecification GetExceptionSpecification(Instruction instruction)
         {
-            return Analyze(graph);
+            return ExceptionSpecs.GetExceptionSpecification(instruction.Prototype);
         }
     }
 }

@@ -1,4 +1,5 @@
-namespace Flame
+using Furesoft.Core.CodeDom.Compiler.Core;
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// Defines a generic parameter.

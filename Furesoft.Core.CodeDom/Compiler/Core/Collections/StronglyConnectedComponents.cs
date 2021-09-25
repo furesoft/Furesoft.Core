@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 {
     /// <summary>
     /// Defines algorithms that compute strongly connected components.

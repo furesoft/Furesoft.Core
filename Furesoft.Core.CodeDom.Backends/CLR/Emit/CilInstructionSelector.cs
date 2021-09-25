@@ -1,13 +1,13 @@
-using Flame;
-using Flame.Collections;
-using Flame.Compiler;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
-using Flame.Compiler.Instructions.Fused;
-using Flame.Compiler.Target;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Instructions.Fused;
+using Furesoft.Core.CodeDom.Compiler.Target;
 using Mono.Cecil;
 using System;
 using System.Collections.Generic;
@@ -15,7 +15,7 @@ using System.Linq;
 using CilInstruction = Mono.Cecil.Cil.Instruction;
 using OpCode = Mono.Cecil.Cil.OpCode;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
-using PointerType = Flame.TypeSystem.PointerType;
+using PointerType = Furesoft.Core.CodeDom.Compiler.Core.TypeSystem.PointerType;
 using VariableDefinition = Mono.Cecil.Cil.VariableDefinition;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
@@ -276,7 +276,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 && !(prototype is StoreFieldPrototype)
                 && !ArrayIntrinsics.Namespace.IsIntrinsicPrototype(
                     prototype,
-                    ArrayIntrinsics.Operators.StoreElement);
+ArrayIntrinsics.Operators.StoreElement);
         }
 
         /// <inheritdoc/>
@@ -1111,8 +1111,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 prototype.Name,
                 out opName))
             {
-                if (opName == ExceptionIntrinsics.Operators.Throw
-                    && prototype.ParameterCount == 1)
+                if (opName == ExceptionIntrinsics.Operators.Throw && prototype.ParameterCount == 1)
                 {
                     // HACK: emit 'throw; dup' because the 'exception.throw' intrinsic
                     // "returns" a non-void value. This value cannot ever be used because
@@ -1131,8 +1130,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                         },
                         arguments);
                 }
-                else if (opName == ExceptionIntrinsics.Operators.Rethrow
-                    && prototype.ParameterCount == 1)
+                else if (opName == ExceptionIntrinsics.Operators.Rethrow && prototype.ParameterCount == 1)
                 {
                     // HACK: same as for 'throw'.
                     var capturedExceptionType = TypeHelpers.UnboxIfPossible(
@@ -1151,8 +1149,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                         },
                         arguments);
                 }
-                else if (opName == ExceptionIntrinsics.Operators.GetCapturedException
-                    && prototype.ParameterCount == 1)
+                else if (opName == ExceptionIntrinsics.Operators.GetCapturedException && prototype.ParameterCount == 1)
                 {
                     var capturedExceptionType = TypeHelpers.UnboxIfPossible(
                         prototype.ParameterTypes[0]);
@@ -1167,8 +1164,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                         CilInstruction.Create(OpCodes.Call, getSourceExceptionMethod),
                         arguments);
                 }
-                else if (opName == ExceptionIntrinsics.Operators.Capture
-                    && prototype.ParameterCount == 1)
+                else if (opName == ExceptionIntrinsics.Operators.Capture && prototype.ParameterCount == 1)
                 {
                     var capturedExceptionType = TypeHelpers.UnboxIfPossible(prototype.ResultType);
 
@@ -1187,8 +1183,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 prototype.Name,
                 out opName))
             {
-                if (opName == ObjectIntrinsics.Operators.UnboxAny
-                    && prototype.ParameterCount == 1)
+                if (opName == ObjectIntrinsics.Operators.UnboxAny && prototype.ParameterCount == 1)
                 {
                     var resultType = prototype.ResultType as PointerType;
 
@@ -1218,13 +1213,11 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 prototype.Name,
                 out opName))
             {
-                if (opName == ArrayIntrinsics.Operators.GetLength
-                    && prototype.ParameterCount == 1)
+                if (opName == ArrayIntrinsics.Operators.GetLength && prototype.ParameterCount == 1)
                 {
                     return CreateSelection(OpCodes.Ldlen, arguments);
                 }
-                else if (opName == ArrayIntrinsics.Operators.NewArray
-                    && prototype.ParameterCount == 1)
+                else if (opName == ArrayIntrinsics.Operators.NewArray && prototype.ParameterCount == 1)
                 {
                     IType elementType;
                     if (!ClrArrayType.TryGetArrayElementType(
@@ -1242,8 +1235,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                             Method.Module.ImportReference(elementType)),
                         arguments);
                 }
-                else if (opName == ArrayIntrinsics.Operators.GetElementPointer
-                    && prototype.ParameterCount == 2)
+                else if (opName == ArrayIntrinsics.Operators.GetElementPointer && prototype.ParameterCount == 2)
                 {
                     var resultPointerType = prototype.ResultType as PointerType;
                     return CreateSelection(
@@ -1252,8 +1244,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                             Method.Module.ImportReference(resultPointerType.ElementType)),
                         arguments);
                 }
-                else if (opName == ArrayIntrinsics.Operators.LoadElement
-                    && prototype.ParameterCount == 2)
+                else if (opName == ArrayIntrinsics.Operators.LoadElement && prototype.ParameterCount == 2)
                 {
                     var resultPointerType = prototype.ResultType as PointerType;
                     if (resultPointerType != null)
@@ -1285,8 +1276,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                             arguments);
                     }
                 }
-                else if (opName == ArrayIntrinsics.Operators.StoreElement
-                    && prototype.ParameterCount == 3)
+                else if (opName == ArrayIntrinsics.Operators.StoreElement && prototype.ParameterCount == 3)
                 {
                     var elementType = prototype.ParameterTypes[0];
 

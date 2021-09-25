@@ -1,6 +1,7 @@
 using System;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 
-namespace Flame.Constants
+namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
     /// <summary>
     /// A character string constant.

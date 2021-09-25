@@ -1,4 +1,5 @@
-namespace Flame.Compiler.Pipeline
+using Furesoft.Core.CodeDom.Compiler.Pipeline;
+namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
     /// <summary>
     /// A common interface for interacting with back-ends.

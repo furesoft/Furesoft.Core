@@ -1,7 +1,8 @@
 using System;
 using System.Numerics;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 
-namespace Flame.Constants
+namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
     /// <summary>
     /// Describes the size and signedness of an integer. Signed integers are

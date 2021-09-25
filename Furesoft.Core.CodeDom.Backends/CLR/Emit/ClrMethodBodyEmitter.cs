@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Flame.Compiler;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Instructions;
-using Flame.TypeSystem;
 using Mono.Cecil.Rocks;
 using CilInstruction = Mono.Cecil.Cil.Instruction;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
 {
@@ -210,7 +210,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 }
                 else if (MemoryIntrinsics.Namespace.IsIntrinsicPrototype(
                     proto,
-                    MemoryIntrinsics.Operators.AllocaPinned))
+Furesoft.Core.CodeDom.Compiler.Instructions.Operators.AllocaPinned))
                 {
                     results[insn.Tag] = new Mono.Cecil.Cil.VariableDefinition(
                         Method.Module.ImportReference(

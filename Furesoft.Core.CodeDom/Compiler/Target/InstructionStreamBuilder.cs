@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Flame.Collections;
-using Flame.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Target;
 
-namespace Flame.Compiler.Target
+namespace Furesoft.Core.CodeDom.Compiler.Target
 {
     /// <summary>
     /// Translates flow graphs to linear sequences of target-specific instructions.

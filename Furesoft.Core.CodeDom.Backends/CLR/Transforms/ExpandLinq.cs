@@ -1,10 +1,11 @@
-using Flame;
-using Flame.Compiler;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
-using Flame.Compiler.Transforms;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -570,7 +571,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
                 // Increment it.
                 var newInductionVal = moveNextGraph.EntryPoint.AppendInstruction(
                     Instruction.CreateBinaryArithmeticIntrinsic(
-                        ArithmeticIntrinsics.Operators.Add,
+ArithmeticIntrinsics.Operators.Add,
                         false,
                         InductionVariableType,
                         oldInductionVal,
@@ -589,7 +590,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
                 // Check that the induction variable is still in range.
                 var inRange = moveNextGraph.EntryPoint.AppendInstruction(
                     Instruction.CreateRelationalIntrinsic(
-                        ArithmeticIntrinsics.Operators.IsLessThan,
+ArithmeticIntrinsics.Operators.IsLessThan,
                         BooleanType,
                         InductionVariableType,
                         newInductionVal,
@@ -771,7 +772,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
 
                 var newInductionVal = successBlock.AppendInstruction(
                     Instruction.CreateBinaryArithmeticIntrinsic(
-                        ArithmeticIntrinsics.Operators.Add,
+ArithmeticIntrinsics.Operators.Add,
                         false,
                         InductionVariableType,
                         oldInductionVal,
@@ -925,7 +926,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
 
             var nextInductionVar = loopBlock.AppendInstruction(
                 Instruction.CreateBinaryArithmeticIntrinsic(
-                    ArithmeticIntrinsics.Operators.Add,
+ArithmeticIntrinsics.Operators.Add,
                     false,
                     inductionVar.Type,
                     inductionVar,
@@ -933,7 +934,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
 
             loopBlock.Flow = SwitchFlow.CreateIfElse(
                 Instruction.CreateRelationalIntrinsic(
-                    ArithmeticIntrinsics.Operators.IsEqualTo,
+ArithmeticIntrinsics.Operators.IsEqualTo,
                     BooleanType,
                     inductionVar.Type,
                     nextInductionVar,

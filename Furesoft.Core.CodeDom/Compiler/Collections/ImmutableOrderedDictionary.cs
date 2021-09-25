@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Collections;
 
-namespace Flame.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Collections
 {
     /// <summary>
     /// An immutable dictionary that iterates over elements in the

@@ -1,4 +1,5 @@
-namespace Flame
+using Furesoft.Core.CodeDom.Compiler.Core;
+namespace Furesoft.Core.CodeDom.Compiler.Core
 {
     /// <summary>
     /// Describes a field: a type member that stores some data.

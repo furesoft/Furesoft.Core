@@ -1,13 +1,14 @@
-using System;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Flow;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Flame.Compiler.Flow;
-using Flame.Compiler.Instructions;
-using Flame.Constants;
-using Flame.TypeSystem;
+using static Furesoft.Core.CodeDom.Compiler.Instructions.ArithmeticIntrinsics;
 
-namespace Flame.Compiler.Transforms
+namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
     /// <summary>
     /// An optimization that transforms switch flows in a way that
@@ -16,28 +17,13 @@ namespace Flame.Compiler.Transforms
     /// </summary>
     public sealed class SwitchSimplification : IntraproceduralOptimization
     {
-        private SwitchSimplification()
-        { }
-
         /// <summary>
         /// An instance of the switch simplification optimization.
         /// </summary>
         public static readonly SwitchSimplification Instance = new SwitchSimplification();
 
-        /// <summary>
-        /// Simplifies switches in a particular flow graph.
-        /// </summary>
-        /// <param name="graph">The graph to transform.</param>
-        /// <returns>A transformed graph.</returns>
-        public override FlowGraph Apply(FlowGraph graph)
-        {
-            var graphBuilder = graph.ToBuilder();
-            foreach (var block in graphBuilder.BasicBlocks)
-            {
-                TrySimplifySwitchFlow(block);
-            }
-            return graphBuilder.ToImmutable();
-        }
+        private SwitchSimplification()
+        { }
 
         /// <summary>
         /// Tries to simplify a basic block's switch flow, provided that the
@@ -69,6 +55,60 @@ namespace Flame.Compiler.Transforms
             return false;
         }
 
+        /// <summary>
+        /// Simplifies switches in a particular flow graph.
+        /// </summary>
+        /// <param name="graph">The graph to transform.</param>
+        /// <returns>A transformed graph.</returns>
+        public override FlowGraph Apply(FlowGraph graph)
+        {
+            var graphBuilder = graph.ToBuilder();
+            foreach (var block in graphBuilder.BasicBlocks)
+            {
+                TrySimplifySwitchFlow(block);
+            }
+            return graphBuilder.ToImmutable();
+        }
+
+        /// <summary>
+        /// Looks for an instruction that is semantically
+        /// equivalent to a given instruction but minimizes
+        /// the number of layers of indirection erected by
+        /// copies.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction to simplify.
+        /// </param>
+        /// <param name="graph">
+        /// The graph that defines the instruction.
+        /// </param>
+        /// <returns>
+        /// A semantically equivalent instruction.</returns>
+        private static Instruction SimplifyInstruction(
+            Instruction instruction,
+            FlowGraph graph)
+        {
+            if (instruction.Prototype is CopyPrototype)
+            {
+                var copyProto = (CopyPrototype)instruction.Prototype;
+                var copiedVal = copyProto.GetCopiedValue(instruction);
+                if (graph.ContainsInstruction(copiedVal))
+                {
+                    var copiedInsn = graph.GetInstruction(copiedVal).Instruction;
+                    // Only simplify copies of arithmetic intriniscs and constants.
+                    // Those are the only instructions we're actually
+                    // interested in and they don't have any "funny" behavior.
+                    if (copiedInsn.Prototype is ConstantPrototype
+                        || copiedInsn.Prototype is CopyPrototype
+                        || ArithmeticIntrinsics.IsArithmeticIntrinsicPrototype(copiedInsn.Prototype))
+                    {
+                        return SimplifyInstruction(copiedInsn, graph);
+                    }
+                }
+            }
+            return instruction;
+        }
+
         private static BlockFlow SimplifySwitchFlow(SwitchFlow flow, FlowGraph graph)
         {
             var value = SimplifyInstruction(flow.SwitchValue, graph);
@@ -86,7 +126,7 @@ namespace Flame.Compiler.Transforms
             {
                 var proto = (IntrinsicPrototype)value.Prototype;
                 var intrinsicName = ArithmeticIntrinsics.ParseArithmeticIntrinsicName(proto.Name);
-                if (intrinsicName == ArithmeticIntrinsics.Operators.Convert
+                if (intrinsicName == Operators.Convert
                     && proto.ParameterCount == 1
                     && flow.IsIntegerSwitch)
                 {
@@ -142,7 +182,7 @@ namespace Flame.Compiler.Transforms
                             flow.DefaultBranch),
                         graph);
                 }
-                else if (intrinsicName == ArithmeticIntrinsics.Operators.IsEqualTo
+                else if (intrinsicName == Operators.IsEqualTo
                     && proto.ParameterCount == 2
                     && proto.ResultType.IsIntegerType())
                 {
@@ -232,45 +272,6 @@ namespace Flame.Compiler.Transforms
                 value = null;
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Looks for an instruction that is semantically
-        /// equivalent to a given instruction but minimizes
-        /// the number of layers of indirection erected by
-        /// copies.
-        /// </summary>
-        /// <param name="instruction">
-        /// The instruction to simplify.
-        /// </param>
-        /// <param name="graph">
-        /// The graph that defines the instruction.
-        /// </param>
-        /// <returns>
-        /// A semantically equivalent instruction.</returns>
-        private static Instruction SimplifyInstruction(
-            Instruction instruction,
-            FlowGraph graph)
-        {
-            if (instruction.Prototype is CopyPrototype)
-            {
-                var copyProto = (CopyPrototype)instruction.Prototype;
-                var copiedVal = copyProto.GetCopiedValue(instruction);
-                if (graph.ContainsInstruction(copiedVal))
-                {
-                    var copiedInsn = graph.GetInstruction(copiedVal).Instruction;
-                    // Only simplify copies of arithmetic intriniscs and constants.
-                    // Those are the only instructions we're actually
-                    // interested in and they don't have any "funny" behavior.
-                    if (copiedInsn.Prototype is ConstantPrototype
-                        || copiedInsn.Prototype is CopyPrototype
-                        || ArithmeticIntrinsics.IsArithmeticIntrinsicPrototype(copiedInsn.Prototype))
-                    {
-                        return SimplifyInstruction(copiedInsn, graph);
-                    }
-                }
-            }
-            return instruction;
         }
     }
 }

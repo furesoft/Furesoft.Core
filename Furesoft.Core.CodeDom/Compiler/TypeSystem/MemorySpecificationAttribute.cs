@@ -1,6 +1,9 @@
-using Flame.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Flame.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 {
     /// <summary>
     /// An attribute that attaches a memory specification to a method.

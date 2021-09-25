@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Flame.Constants;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 
-namespace Flame.Compiler.Instructions
+namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
     /// <summary>
     /// Supports creating, recognizing and parsing exception handling intrinsics.

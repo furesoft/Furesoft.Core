@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Flame.Compiler.Instructions;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
 
-namespace Flame.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
     /// <summary>
     /// The set of instructions in a graph that may have side-effects.

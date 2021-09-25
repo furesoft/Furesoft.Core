@@ -1,11 +1,12 @@
-using Flame;
-using Flame.Compiler;
-using Flame.Compiler.Instructions;
-using Flame.Compiler.Transforms;
-using Flame.Constants;
-using Flame.TypeSystem;
 using System;
 using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core.Constants;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
+using Furesoft.Core.CodeDom.Compiler.Transforms;
+using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
 {

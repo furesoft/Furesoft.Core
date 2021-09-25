@@ -1,4 +1,4 @@
-namespace Flame.Constants
+namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
     /// <summary>
     /// A method token constant: a constant that wraps a runtime handle

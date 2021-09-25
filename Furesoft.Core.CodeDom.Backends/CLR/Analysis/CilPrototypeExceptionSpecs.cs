@@ -1,9 +1,12 @@
-using Flame;
-using Flame.Compiler.Analysis;
-using Flame.Compiler.Instructions;
-using Flame.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using Furesoft.Core.CodeDom.Compiler.Instructions;
 using System;
 using System.Linq;
+using static Furesoft.Core.CodeDom.Compiler.Core.ExceptionSpecification;
+using static Furesoft.Core.CodeDom.Compiler.Instructions.ArrayIntrinsics;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
 {
@@ -57,24 +60,24 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
 
             // Array intrinsics are worth refining, too.
             result.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetElementPointer),
-                ExceptionSpecification.Union.Create(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Operators.GetElementPointer),
+Union.Create(
                     new NullCheckExceptionSpecification(0, nullRefException),
-                    ExceptionSpecification.Exact.Create(outOfRangeException),
-                    ExceptionSpecification.Exact.Create(arrayTypeMismatchException)));
+Exact.Create(outOfRangeException),
+Exact.Create(arrayTypeMismatchException)));
             result.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.LoadElement),
-                ExceptionSpecification.Union.Create(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Operators.LoadElement),
+Union.Create(
                     new NullCheckExceptionSpecification(0, nullRefException),
-                    ExceptionSpecification.Exact.Create(outOfRangeException)));
+Exact.Create(outOfRangeException)));
             result.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.StoreElement),
-                ExceptionSpecification.Union.Create(
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Operators.StoreElement),
+Union.Create(
                     new NullCheckExceptionSpecification(0, nullRefException),
-                    ExceptionSpecification.Exact.Create(outOfRangeException),
-                    ExceptionSpecification.Exact.Create(arrayTypeMismatchException)));
+Exact.Create(outOfRangeException),
+Exact.Create(arrayTypeMismatchException)));
             result.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetLength),
+                ArrayIntrinsics.Namespace.GetIntrinsicName(Operators.GetLength),
                 new NullCheckExceptionSpecification(0, nullRefException));
 
             return result;
