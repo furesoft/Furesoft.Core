@@ -37,18 +37,7 @@ namespace TestApp
 
     public class RegisterRef : SymbolicRef
     {
-        public RegisterRef(int addr) : base(addr)
-        {
-        }
-
-        public override bool IsConst => true;
-    }
-
-    internal static class Program
-    {
-        private static Dictionary<string, Label> _labels = new();
-
-        private static Dictionary<string, int> _registers = new()
+        public static Dictionary<string, int> _registers = new()
         {
             ["A"] = 0,
             ["B"] = 4,
@@ -58,9 +47,81 @@ namespace TestApp
             ["F"] = 20,
         };
 
+        private readonly string Register;
+
+        public RegisterRef(Parser parser, CodeObject parent, string register) : base(register)
+        {
+            this.Parent = parent;
+            Register = register;
+
+            SetField(ref this._reference, _registers[register], false);
+        }
+
+        public override bool IsConst => true;
+        public override string Name => Register;
+
+        public static new void AddParsePoints()
+        {
+            Parser.AddMultipleParsePoints(_registers.Keys.ToArray(), Parse);
+        }
+
+        private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        {
+            var result = new RegisterRef(parser, parent, parser.TokenText);
+
+            parser.NextToken();
+
+            return result;
+        }
+    }
+
+    internal static class Program
+    {
+        private static Dictionary<string, Label> _labels = new();
+
+        private static byte[] ram = new byte[50];
+
+        public static void Evaluate(CodeObject obj)
+        {
+            if (obj is Block blk)
+            {
+                foreach (var cn in blk)
+                {
+                    Evaluate(cn);
+                }
+            }
+            else if (obj is Instruction instr)
+            {
+                if (instr.Mnemnonic == "mov")
+                {
+                    var first = instr.Arguments.First();
+                    var last = instr.Arguments.Last();
+
+                    if (first is Literal val && last is SquaredExpression mem)
+                    {
+                        //mov val in to ram
+                        ram[EvaluateExpression(mem)] = (byte)EvaluateExpression(val);
+                    }
+                    else if (first is SquaredExpression from && last is SquaredExpression to)
+                    {
+                        //mov ram from to
+                        ram[EvaluateExpression(to)] = ram[EvaluateExpression(from)];
+                    }
+                }
+                else if (instr.Mnemnonic == "add")
+                {
+                    var result = instr.Arguments[0];
+                    var first = instr.Arguments[1];
+                    var second = instr.Arguments[2];
+
+                    ram[EvaluateExpression(result)] = (byte)(ram[EvaluateExpression(first)] + ram[EvaluateExpression(second)]);
+                }
+            }
+        }
+
         public static int Main(string[] args)
         {
-            var src = "var k = 12; sizeof(int); loop: \n\tmov 0x12, [A + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
+            var src = "mov 12, [B];mov [B],[D];add [A],[B],[D]";
 
             Parser.AddParsePoint("[", ParseSquared);
 
@@ -69,7 +130,7 @@ namespace TestApp
             Divide.AddParsePoints();
             Subtract.AddParsePoints();
 
-            Parser.AddMultipleParsePoints(new[] { "mov", "load", "add", "sub", "inc" }, (parser, parent, flags) =>
+            Parser.AddMultipleParsePoints(new[] { "mov", "add", "sub", "inc" }, (parser, parent, flags) =>
             {
                 return new Instruction(parser, parent);
             });
@@ -79,17 +140,19 @@ namespace TestApp
             TypeRef.AddParsePoints();
             SizeOf.AddParsePoints();
             LocalDecl.AddParsePoints();
+            RegisterRef.AddParsePoints();
 
             // CodeUnit.LoadDefaultParsePoints();
 
             var expr = Expression.Parse("sizeof(int) * 4 + 2", out var root);
             //Parser.Clear();
 
-            var result = Evaluate(expr);
+            var result = EvaluateExpression(expr);
 
             Block body = CodeUnit.LoadFragment(src, "d").Body;
 
             Bind(body);
+            Evaluate(body);
 
             var instr = body.First();
 
@@ -116,18 +179,8 @@ namespace TestApp
                 for (int i = 0; i < instr.Arguments.Count; i++)
                 {
                     Expression arg = instr.Arguments[i];
-                    if (arg is UnresolvedRef uref)
-                    {
-                        if (_registers.ContainsKey(uref.Reference.ToString()))
-                        {
-                            instr.Arguments[i] = new RegisterRef(_registers[uref.Reference.ToString()]);
-                        }
-                        else
-                        {
-                            instr.AttachMessage($"Reference '{uref.Reference}' cannot be bind", MessageSeverity.Error, MessageSource.Resolve);
-                        }
-                    }
-                    else if (arg is SquaredExpression squared)
+
+                    if (arg is SquaredExpression squared)
                     {
                         Bind(squared.Body);
                     }
@@ -135,25 +188,8 @@ namespace TestApp
             }
             else if (obj is BinaryOperator binary)
             {
-                if (binary.Left is UnresolvedRef ul)
-                {
-                    if (_registers.ContainsKey(ul.Reference.ToString()))
-                    {
-                        binary.Left = new RegisterRef(_registers[ul.Reference.ToString()]);
-                    }
-                }
-                else if (binary.Right is UnresolvedRef ur)
-                {
-                    if (_registers.ContainsKey(ur.Reference.ToString()))
-                    {
-                        binary.Right = new RegisterRef(_registers[ur.Reference.ToString()]);
-                    }
-                }
-                else
-                {
-                    Bind(binary.Left);
-                    Bind(binary.Right);
-                }
+                Bind(binary.Left);
+                Bind(binary.Right);
             }
             else if (obj is Goto gt)
             {
@@ -175,23 +211,23 @@ namespace TestApp
             }
         }
 
-        private static int Evaluate(Expression expr)
+        private static int EvaluateExpression(Expression expr)
         {
             if (expr is Add add)
             {
-                return Evaluate(add.Left) + Evaluate(add.Right);
+                return EvaluateExpression(add.Left) + EvaluateExpression(add.Right);
             }
             else if (expr is Multiply mul)
             {
-                return Evaluate(mul.Left) * Evaluate(mul.Right);
+                return EvaluateExpression(mul.Left) * EvaluateExpression(mul.Right);
             }
             else if (expr is Subtract sub)
             {
-                return Evaluate(sub.Left) - Evaluate(sub.Right);
+                return EvaluateExpression(sub.Left) - EvaluateExpression(sub.Right);
             }
             else if (expr is Divide div)
             {
-                return Evaluate(div.Left) / Evaluate(div.Right);
+                return EvaluateExpression(div.Left) / EvaluateExpression(div.Right);
             }
             else if (expr is Literal lit)
             {
@@ -202,6 +238,14 @@ namespace TestApp
                 var typeSize = Marshal.SizeOf((Type)tr.Reference);
 
                 return typeSize;
+            }
+            else if (expr is RegisterRef regRef)
+            {
+                return (int)regRef.Reference;
+            }
+            else if (expr is SquaredExpression squared)
+            {
+                return EvaluateExpression(squared.Body);
             }
             else
             {
