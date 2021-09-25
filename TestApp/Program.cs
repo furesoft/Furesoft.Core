@@ -3,7 +3,7 @@ using Furesoft.Core.CodeDom.CodeDOM;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
@@ -61,11 +61,13 @@ namespace TestApp
         public static int Main(string[] args)
         {
             var src = "var k = 12; sizeof(int); loop: \n\tmov 0x12, [A + 4];\ngoto loop;mov [hello + 4], B;mov B, A;";
-            CodeObject.AutoDetectTabs = true;
 
-            Parser.AddOperatorParsePoint("+", 2, true, false, parse);
-            Parser.AddOperatorParsePoint("*", 1, true, false, parse2);
             Parser.AddParsePoint("[", ParseSquared);
+
+            Add.AddParsePoints();
+            Multiply.AddParsePoints();
+            Divide.AddParsePoints();
+            Subtract.AddParsePoints();
 
             Parser.AddMultipleParsePoints(new[] { "mov", "load", "add", "sub", "inc" }, (parser, parent, flags) =>
             {
@@ -81,7 +83,7 @@ namespace TestApp
             // CodeUnit.LoadDefaultParsePoints();
 
             var expr = Expression.Parse("sizeof(int) * 4 + 2", out var root);
-            
+
             var result = Evaluate(expr);
 
             Block body = CodeUnit.LoadFragment(src, "d").Body;
@@ -174,13 +176,21 @@ namespace TestApp
 
         private static int Evaluate(Expression expr)
         {
-            if (expr is AddOp add)
+            if (expr is Add add)
             {
                 return Evaluate(add.Left) + Evaluate(add.Right);
             }
-            else if (expr is MulOp mul)
+            else if (expr is Multiply mul)
             {
                 return Evaluate(mul.Left) * Evaluate(mul.Right);
+            }
+            else if (expr is Subtract sub)
+            {
+                return Evaluate(sub.Left) - Evaluate(sub.Right);
+            }
+            else if (expr is Divide div)
+            {
+                return Evaluate(div.Left) / Evaluate(div.Right);
             }
             else if (expr is Literal lit)
             {
@@ -198,16 +208,6 @@ namespace TestApp
             }
         }
 
-        private static CodeObject parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new AddOp(parser, parent);
-        }
-
-        private static CodeObject parse2(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new MulOp(parser, parent);
-        }
-
         private static CodeObject ParseSquared(Parser parser, CodeObject parent, ParseFlags flags)
         {
             var obj = new SquaredExpression();
@@ -219,56 +219,6 @@ namespace TestApp
             parser.NextToken();
 
             return obj;
-        }
-    }
-
-    internal class AddOp : BinaryArithmeticOperator
-    {
-        public AddOp(Parser parser, CodeObject parent) : base(parser, parent)
-        {
-        }
-
-        public AddOp(Expression left, Expression right) : base(left, right)
-        {
-        }
-
-        public override string Symbol => "+";
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            Left.AsTextExpression(writer, flags);
-            AsTextOperator(writer, flags);
-            Right.AsTextExpression(writer, flags);
-        }
-
-        public override int GetPrecedence()
-        {
-            return 2;
-        }
-    }
-
-    internal class MulOp : BinaryArithmeticOperator
-    {
-        public MulOp(Parser parser, CodeObject parent) : base(parser, parent)
-        {
-        }
-
-        public MulOp(Expression left, Expression right) : base(left, right)
-        {
-        }
-
-        public override string Symbol => "*";
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            Left.AsTextExpression(writer, flags);
-            AsTextOperator(writer, flags);
-            Right.AsTextExpression(writer, flags);
-        }
-
-        public override int GetPrecedence()
-        {
-            return 1;
         }
     }
 
