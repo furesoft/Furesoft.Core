@@ -83,6 +83,7 @@ namespace TestApp
             // CodeUnit.LoadDefaultParsePoints();
 
             var expr = Expression.Parse("sizeof(int) * 4 + 2", out var root);
+            //Parser.Clear();
 
             var result = Evaluate(expr);
 
