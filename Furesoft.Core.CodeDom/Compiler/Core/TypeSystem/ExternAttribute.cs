@@ -1,3 +1,5 @@
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
@@ -6,6 +8,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     /// </summary>
     public sealed class ExternAttribute : IAttribute
     {
+        /// <summary>
+        /// The attribute type of extern attributes.
+        /// </summary>
+        /// <value>An attribute type.</value>
+        public static readonly IType AttributeType = new DescribedType(
+            new SimpleName("Extern").Qualify(), null);
+
         /// <summary>
         /// Creates a new extern attribute.
         /// </summary>
@@ -24,19 +33,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             this.ImportNameOrNull = importName;
         }
 
+        IType IAttribute.AttributeType => AttributeType;
+
         /// <summary>
         /// Gets the name of the imported function, if any.
         /// </summary>
         /// <value>The imported name.</value>
         public string ImportNameOrNull { get; private set; }
-
-        /// <summary>
-        /// The attribute type of extern attributes.
-        /// </summary>
-        /// <value>An attribute type.</value>
-        public static readonly IType AttributeType = new DescribedType(
-            new SimpleName("Extern").Qualify(), null);
-
-        IType IAttribute.AttributeType => AttributeType;
     }
 }

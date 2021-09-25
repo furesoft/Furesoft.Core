@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
@@ -12,21 +11,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     /// </summary>
     public abstract class ValueNumbering
     {
-        /// <summary>
-        /// Gets a value's "number," i.e., another value that
-        /// is representative of the set of all values that are
-        /// equivalent with the value.
-        /// </summary>
-        /// <param name="value">A value tag to examine.</param>
-        /// <returns>
-        /// The set representative for the set of all values equivalent
-        /// with <paramref name="value"/>. Requesting the set
-        /// representative of another value that is equivalent with
-        /// <paramref name="value"/> will produce the same set
-        /// representative.
-        /// </returns>
-        public abstract ValueTag GetNumber(ValueTag value);
-
         /// <summary>
         /// Tests if two values are equivalent. Values 'a', 'b' are considered
         /// to be equivalent iff 'a' dominates 'b' implies that 'b' can be
@@ -41,22 +25,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         {
             return GetNumber(first) == GetNumber(second);
         }
-
-        /// <summary>
-        /// Tries to compute the value number of an instruction.
-        /// </summary>
-        /// <param name="instruction">
-        /// The instruction to number.
-        /// </param>
-        /// <param name="number">
-        /// A value number if a value is found that is equivalent
-        /// to <paramref name="instruction"/>; otherwise, <c>null</c>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if a value is found that is equivalent
-        /// to <paramref name="instruction"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public abstract bool TryGetNumber(Instruction instruction, out ValueTag number);
 
         /// <summary>
         /// Tests if an instruction is equivalent to a value.
@@ -92,7 +60,56 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         }
 
         /// <summary>
-        /// Tells if syntactically equivalent instances of a particular prototype 
+        /// Gets a value's "number," i.e., another value that
+        /// is representative of the set of all values that are
+        /// equivalent with the value.
+        /// </summary>
+        /// <param name="value">A value tag to examine.</param>
+        /// <returns>
+        /// The set representative for the set of all values equivalent
+        /// with <paramref name="value"/>. Requesting the set
+        /// representative of another value that is equivalent with
+        /// <paramref name="value"/> will produce the same set
+        /// representative.
+        /// </returns>
+        public abstract ValueTag GetNumber(ValueTag value);
+
+        /// <summary>
+        /// Tries to compute the value number of an instruction.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction to number.
+        /// </param>
+        /// <param name="number">
+        /// A value number if a value is found that is equivalent
+        /// to <paramref name="instruction"/>; otherwise, <c>null</c>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if a value is found that is equivalent
+        /// to <paramref name="instruction"/>; otherwise, <c>false</c>.
+        /// </returns>
+        public abstract bool TryGetNumber(Instruction instruction, out ValueTag number);
+
+        /// <summary>
+        /// Tells if syntactically equivalent instances of a particular intrinsic
+        /// are semantically equivalent.
+        /// </summary>
+        /// <param name="intrinsic">An intrinsic to consider.</param>
+        /// <returns>
+        /// <c>true</c> if syntactically equivalent instances of
+        /// <paramref name="intrinsic"/> are semantically equivalent;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        private static bool IsCopyableIntrinsic(IntrinsicPrototype intrinsic)
+        {
+            return ArithmeticIntrinsics.IsArithmeticIntrinsicPrototype(intrinsic)
+                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, ArrayIntrinsics.Operators.GetLength)
+                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, ArrayIntrinsics.Operators.GetElementPointer)
+                || ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, ExceptionIntrinsics.Operators.GetCapturedException);
+        }
+
+        /// <summary>
+        /// Tells if syntactically equivalent instances of a particular prototype
         /// are semantically equivalent.
         /// </summary>
         /// <param name="prototype">A prototype to consider.</param>
@@ -119,90 +136,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                     || prototype is UnboxPrototype;
             }
         }
-
-        /// <summary>
-        /// Tells if syntactically equivalent instances of a particular intrinsic
-        /// are semantically equivalent.
-        /// </summary>
-        /// <param name="intrinsic">An intrinsic to consider.</param>
-        /// <returns>
-        /// <c>true</c> if syntactically equivalent instances of
-        /// <paramref name="intrinsic"/> are semantically equivalent;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        private static bool IsCopyableIntrinsic(IntrinsicPrototype intrinsic)
-        {
-            return ArithmeticIntrinsics.IsArithmeticIntrinsicPrototype(intrinsic)
-                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetLength)
-                || ArrayIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetElementPointer)
-                || ExceptionIntrinsics.Namespace.IsIntrinsicPrototype(intrinsic, Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetCapturedException);
-        }
-    }
-
-    /// <summary>
-    /// A specialized instruction comparer for instructions that uses value
-    /// numbers to more accurately compare instructions. Assumes that all
-    /// instructions being compared are defined by the same graph. The
-    /// equality relation that arises from this comparer is that of
-    /// semantic instruction equivalence, not of syntactic equality.
-    /// </summary>
-    public sealed class ValueNumberingInstructionComparer : IEqualityComparer<Instruction>
-    {
-        /// <summary>
-        /// Creates an instruction comparer that uses a value numbering
-        /// to decide if two instructions are equivalent.
-        /// </summary>
-        /// <param name="numbering">
-        /// The value numbering to use for deciding if instructions are equivalent.
-        /// </param>
-        public ValueNumberingInstructionComparer(ValueNumbering numbering)
-        {
-            this.numbering = numbering;
-        }
-
-        private ValueNumbering numbering;
-
-        /// <summary>
-        /// Tests if two instructions are equivalent in a value
-        /// numbering sense.
-        /// Instructions 'a', 'b' are considered
-        /// to be equivalent iff 'a' dominates 'b' implies that 'b' can be
-        /// replaced with a copy of the result computed by 'a'.
-        /// </summary>
-        /// <param name="a">The first instruction to compare.</param>
-        /// <param name="b">The second instruction to compare.</param>
-        /// <returns>
-        /// <c>true</c> if the instructions are equivalent; otherwise, <c>false</c>.
-        /// </returns>
-        public bool Equals(Instruction a, Instruction b)
-        {
-            return numbering.AreEquivalent(a, b);
-        }
-
-        /// <summary>
-        /// Computes a hash code for an instruction.
-        /// </summary>
-        /// <param name="obj">The instruction to hash.</param>
-        /// <returns>A hash code.</returns>
-        public int GetHashCode(Instruction obj)
-        {
-            // Compute a hash code for the instruction based on its
-            // prototype and the value numbers of its arguments.
-            // TODO: this implementation of GetHashCode will always produce
-            // a collision for non-copyable instructions (e.g., calls).
-            // Is there something we can do about this?
-
-            int hashCode = EnumerableComparer.EmptyHash;
-            int argCount = obj.Arguments.Count;
-            for (int i = 0; i < argCount; i++)
-            {
-                hashCode = EnumerableComparer.FoldIntoHashCode(
-                    hashCode,
-                    numbering.GetNumber(obj.Arguments[i]));
-            }
-            hashCode = EnumerableComparer.FoldIntoHashCode(hashCode, obj.Prototype);
-            return hashCode;
-        }
     }
 
     /// <summary>
@@ -210,14 +143,14 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     /// </summary>
     public sealed class ValueNumberingAnalysis : IFlowGraphAnalysis<ValueNumbering>
     {
-        private ValueNumberingAnalysis()
-        { }
-
         /// <summary>
         /// Gets an instance of the value numbering analysis.
         /// </summary>
         /// <returns>An instance of the value numbering analysis.</returns>
         public static readonly ValueNumberingAnalysis Instance = new ValueNumberingAnalysis();
+
+        private ValueNumberingAnalysis()
+        { }
 
         /// <inheritdoc/>
         public ValueNumbering Analyze(FlowGraph graph)
@@ -248,6 +181,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         private sealed class ValueNumberingImpl : ValueNumbering
         {
+            private Dictionary<Instruction, ValueTag> instructionNumbers;
+
+            private Dictionary<ValueTag, ValueTag> valueNumbers;
+
             public ValueNumberingImpl()
             {
                 this.valueNumbers = new Dictionary<ValueTag, ValueTag>();
@@ -255,8 +192,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                     new ValueNumberingInstructionComparer(this));
             }
 
-            private Dictionary<ValueTag, ValueTag> valueNumbers;
-            private Dictionary<Instruction, ValueTag> instructionNumbers;
+            public void AddBlockParameter(ValueTag parameterTag)
+            {
+                valueNumbers[parameterTag] = parameterTag;
+            }
 
             /// <summary>
             /// Adds an instruction to this value numbering.
@@ -304,11 +243,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 instructionNumbers[instruction.Instruction] = number;
             }
 
-            public void AddBlockParameter(ValueTag parameterTag)
-            {
-                valueNumbers[parameterTag] = parameterTag;
-            }
-
             public override ValueTag GetNumber(ValueTag value)
             {
                 return valueNumbers[value];
@@ -318,6 +252,72 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             {
                 return instructionNumbers.TryGetValue(instruction, out number);
             }
+        }
+    }
+
+    /// <summary>
+    /// A specialized instruction comparer for instructions that uses value
+    /// numbers to more accurately compare instructions. Assumes that all
+    /// instructions being compared are defined by the same graph. The
+    /// equality relation that arises from this comparer is that of
+    /// semantic instruction equivalence, not of syntactic equality.
+    /// </summary>
+    public sealed class ValueNumberingInstructionComparer : IEqualityComparer<Instruction>
+    {
+        private ValueNumbering numbering;
+
+        /// <summary>
+        /// Creates an instruction comparer that uses a value numbering
+        /// to decide if two instructions are equivalent.
+        /// </summary>
+        /// <param name="numbering">
+        /// The value numbering to use for deciding if instructions are equivalent.
+        /// </param>
+        public ValueNumberingInstructionComparer(ValueNumbering numbering)
+        {
+            this.numbering = numbering;
+        }
+
+        /// <summary>
+        /// Tests if two instructions are equivalent in a value
+        /// numbering sense.
+        /// Instructions 'a', 'b' are considered
+        /// to be equivalent iff 'a' dominates 'b' implies that 'b' can be
+        /// replaced with a copy of the result computed by 'a'.
+        /// </summary>
+        /// <param name="a">The first instruction to compare.</param>
+        /// <param name="b">The second instruction to compare.</param>
+        /// <returns>
+        /// <c>true</c> if the instructions are equivalent; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Equals(Instruction a, Instruction b)
+        {
+            return numbering.AreEquivalent(a, b);
+        }
+
+        /// <summary>
+        /// Computes a hash code for an instruction.
+        /// </summary>
+        /// <param name="obj">The instruction to hash.</param>
+        /// <returns>A hash code.</returns>
+        public int GetHashCode(Instruction obj)
+        {
+            // Compute a hash code for the instruction based on its
+            // prototype and the value numbers of its arguments.
+            // TODO: this implementation of GetHashCode will always produce
+            // a collision for non-copyable instructions (e.g., calls).
+            // Is there something we can do about this?
+
+            int hashCode = EnumerableComparer.EmptyHash;
+            int argCount = obj.Arguments.Count;
+            for (int i = 0; i < argCount; i++)
+            {
+                hashCode = EnumerableComparer.FoldIntoHashCode(
+                    hashCode,
+                    numbering.GetNumber(obj.Arguments[i]));
+            }
+            hashCode = EnumerableComparer.FoldIntoHashCode(hashCode, obj.Prototype);
+            return hashCode;
         }
     }
 }

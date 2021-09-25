@@ -1,63 +1,9 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
+using static Furesoft.Core.CodeDom.Compiler.Analysis.MemorySpecification;
 
 namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
-    /// <summary>
-    /// Captures the must-run-before relation between instructions.
-    /// All instruction orderings that respect this relation are
-    /// legal and computationally equivalent.
-    /// </summary>
-    public abstract class InstructionOrdering
-    {
-        /// <summary>
-        /// Tells if the first instruction must run before the second
-        /// instruction, assuming that both instructions are defined
-        /// by the same basic block.
-        /// </summary>
-        /// <param name="first">
-        /// The value tag of the first instruction to inspect.
-        /// </param>
-        /// <param name="second">
-        /// The value tag of the second instruction to inspect.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if the first instruction must run before the second
-        /// instruction runs; otherwise, <c>false</c>.
-        /// </returns>
-        public abstract bool MustRunBefore(ValueTag first, ValueTag second);
-    }
-
-    /// <summary>
-    /// An instruction ordering implementation based on an explicit mapping
-    /// of instructions to the closure of the instruction's dependent instructions.
-    /// </summary>
-    internal sealed class DependencyBasedInstructionOrdering : InstructionOrdering
-    {
-        /// <summary>
-        /// Creates an instruction ordering based on an explicit dictionary
-        /// specifying dependencies.
-        /// </summary>
-        /// <param name="dependencies">
-        /// A mapping of values to their (recursive) dependencies.
-        /// </param>
-        public DependencyBasedInstructionOrdering(
-            Dictionary<ValueTag, HashSet<ValueTag>> dependencies)
-        {
-            this.dependencies = dependencies;
-        }
-
-        private Dictionary<ValueTag, HashSet<ValueTag>> dependencies;
-
-        /// <inheritdoc/>
-        public override bool MustRunBefore(ValueTag first, ValueTag second)
-        {
-            return dependencies[second].Contains(first);
-        }
-    }
-
     /// <summary>
     /// A conservative analysis that determines the must-run-before
     /// relation between instructions. The must-run-before relation
@@ -66,15 +12,15 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     /// </summary>
     public sealed class ConservativeInstructionOrderingAnalysis : IFlowGraphAnalysis<InstructionOrdering>
     {
-        private ConservativeInstructionOrderingAnalysis()
-        { }
-
         /// <summary>
         /// An instance of the conservative instruction ordering analysis.
         /// </summary>
         /// <value>A conservative instruction ordering analysis.</value>
         public static readonly ConservativeInstructionOrderingAnalysis Instance =
             new ConservativeInstructionOrderingAnalysis();
+
+        private ConservativeInstructionOrderingAnalysis()
+        { }
 
         /// <inheritdoc/>
         public InstructionOrdering Analyze(FlowGraph graph)
@@ -159,9 +105,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                         // Rule #2.a: Value-reading instructions depend on value-writing
                         // instructions that refer to the same address.
                         insnDependencies.UnionWith(unknownWrites);
-                        if (memSpec is Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentRead)
+                        if (memSpec is ArgumentRead)
                         {
-                            var argReadSpec = (Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentRead)memSpec;
+                            var argReadSpec = (ArgumentRead)memSpec;
                             var readAddress = instruction.Arguments[argReadSpec.ParameterIndex];
                             foreach (var pair in knownWrites)
                             {
@@ -192,9 +138,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                         // instructions that refer to the same address.
                         insnDependencies.UnionWith(unknownWrites);
                         insnDependencies.UnionWith(unknownReads);
-                        if (memSpec is Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentWrite)
+                        if (memSpec is ArgumentWrite)
                         {
-                            var argWriteSpec = (Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentWrite)memSpec;
+                            var argWriteSpec = (ArgumentWrite)memSpec;
                             var writeAddress = instruction.Arguments[argWriteSpec.ParameterIndex];
                             foreach (var pair in knownWrites.Concat(knownReads))
                             {
@@ -271,6 +217,59 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             // TODO: some transformations don't invalidate the analysis.
             // Take them into account.
             return Analyze(graph);
+        }
+    }
+
+    /// <summary>
+    /// Captures the must-run-before relation between instructions.
+    /// All instruction orderings that respect this relation are
+    /// legal and computationally equivalent.
+    /// </summary>
+    public abstract class InstructionOrdering
+    {
+        /// <summary>
+        /// Tells if the first instruction must run before the second
+        /// instruction, assuming that both instructions are defined
+        /// by the same basic block.
+        /// </summary>
+        /// <param name="first">
+        /// The value tag of the first instruction to inspect.
+        /// </param>
+        /// <param name="second">
+        /// The value tag of the second instruction to inspect.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the first instruction must run before the second
+        /// instruction runs; otherwise, <c>false</c>.
+        /// </returns>
+        public abstract bool MustRunBefore(ValueTag first, ValueTag second);
+    }
+
+    /// <summary>
+    /// An instruction ordering implementation based on an explicit mapping
+    /// of instructions to the closure of the instruction's dependent instructions.
+    /// </summary>
+    internal sealed class DependencyBasedInstructionOrdering : InstructionOrdering
+    {
+        private Dictionary<ValueTag, HashSet<ValueTag>> dependencies;
+
+        /// <summary>
+        /// Creates an instruction ordering based on an explicit dictionary
+        /// specifying dependencies.
+        /// </summary>
+        /// <param name="dependencies">
+        /// A mapping of values to their (recursive) dependencies.
+        /// </param>
+        public DependencyBasedInstructionOrdering(
+            Dictionary<ValueTag, HashSet<ValueTag>> dependencies)
+        {
+            this.dependencies = dependencies;
+        }
+
+        /// <inheritdoc/>
+        public override bool MustRunBefore(ValueTag first, ValueTag second)
+        {
+            return dependencies[second].Contains(first);
         }
     }
 }

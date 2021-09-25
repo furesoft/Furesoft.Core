@@ -4,6 +4,7 @@ using Furesoft.Core.CodeDom.Compiler.TypeSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Furesoft.Core.CodeDom.Compiler.Analysis.MemorySpecification;
 
 namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
@@ -29,7 +30,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             }
             else
             {
-                return MemorySpecification.Unknown;
+                return Unknown;
             }
         }
     }
@@ -245,77 +246,77 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         {
             Default = new RuleBasedPrototypeMemorySpecs();
 
-            Default.Register<AllocaArrayPrototype>(MemorySpecification.Nothing);
-            Default.Register<AllocaPrototype>(MemorySpecification.Nothing);
-            Default.Register<BoxPrototype>(MemorySpecification.Nothing);
-            Default.Register<ConstantPrototype>(MemorySpecification.Nothing);
-            Default.Register<CopyPrototype>(MemorySpecification.Nothing);
-            Default.Register<DynamicCastPrototype>(MemorySpecification.Nothing);
-            Default.Register<GetStaticFieldPointerPrototype>(MemorySpecification.Nothing);
-            Default.Register<ReinterpretCastPrototype>(MemorySpecification.Nothing);
-            Default.Register<GetFieldPointerPrototype>(MemorySpecification.Nothing);
-            Default.Register<NewDelegatePrototype>(MemorySpecification.Nothing);
-            Default.Register<UnboxPrototype>(MemorySpecification.Nothing);
+            Default.Register<AllocaArrayPrototype>(Nothing);
+            Default.Register<AllocaPrototype>(Nothing);
+            Default.Register<BoxPrototype>(Nothing);
+            Default.Register<ConstantPrototype>(Nothing);
+            Default.Register<CopyPrototype>(Nothing);
+            Default.Register<DynamicCastPrototype>(Nothing);
+            Default.Register<GetStaticFieldPointerPrototype>(Nothing);
+            Default.Register<ReinterpretCastPrototype>(Nothing);
+            Default.Register<GetFieldPointerPrototype>(Nothing);
+            Default.Register<NewDelegatePrototype>(Nothing);
+            Default.Register<UnboxPrototype>(Nothing);
 
             // Mark volatile loads and stores as unknown to ensure that they are never reordered
             // with regard to other memory operations.
             // TODO: is this really how we should represent volatility?
             Default.Register<LoadPrototype>(proto =>
-                proto.IsVolatile ? MemorySpecification.Unknown : Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentRead.Create(0));
+                proto.IsVolatile ? Unknown : ArgumentRead.Create(0));
             Default.Register<StorePrototype>(proto =>
-                proto.IsVolatile ? MemorySpecification.Unknown : Furesoft.Core.CodeDom.Compiler.Analysis.ArgumentWrite.Create(0));
+                proto.IsVolatile ? Unknown : ArgumentWrite.Create(0));
 
             // Call-like instruction prototypes.
             Default.Register<CallPrototype>(
                 proto => proto.Lookup == MethodLookup.Static
                     ? proto.Callee.GetMemorySpecification()
-                    : MemorySpecification.Unknown);
+                    : Unknown);
             Default.Register<NewObjectPrototype>(
                 proto => proto.Constructor.GetMemorySpecification());
-            Default.Register<IndirectCallPrototype>(MemorySpecification.Unknown);
+            Default.Register<IndirectCallPrototype>(Unknown);
 
             // Arithmetic intrinsics never read or write.
-            foreach (var name in Furesoft.Core.CodeDom.Compiler.Instructions.Operators.All)
+            foreach (var name in ArithmeticIntrinsics.Operators.All)
             {
                 Default.Register(
                     ArithmeticIntrinsics.GetArithmeticIntrinsicName(name, false),
-                    MemorySpecification.Nothing);
+                    Nothing);
                 Default.Register(
                     ArithmeticIntrinsics.GetArithmeticIntrinsicName(name, true),
-                    MemorySpecification.Nothing);
+                    Nothing);
             }
 
             // Array intrinsics.
             Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetElementPointer),
-                MemorySpecification.Nothing);
+                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetElementPointer),
+                Nothing);
             Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.LoadElement),
-                MemorySpecification.UnknownRead);
+                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.LoadElement),
+                UnknownRead);
             Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.StoreElement),
-                MemorySpecification.UnknownWrite);
+                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.StoreElement),
+                UnknownWrite);
             Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetLength),
-                MemorySpecification.Nothing);
+                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetLength),
+                Nothing);
             Default.Register(
-                ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.NewArray),
-                MemorySpecification.Nothing);
+                ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.NewArray),
+                Nothing);
 
             // Exception intrinsics.
             Default.Register(
-                ExceptionIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetCapturedException),
-                MemorySpecification.UnknownRead);
+                ExceptionIntrinsics.Namespace.GetIntrinsicName(ExceptionIntrinsics.Operators.GetCapturedException),
+                UnknownRead);
 
             // Object intrinsics.
             Default.Register(
-                ObjectIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.UnboxAny),
-                MemorySpecification.UnknownRead);
+                ObjectIntrinsics.Namespace.GetIntrinsicName(ObjectIntrinsics.Operators.UnboxAny),
+                UnknownRead);
 
             // Memory intrinsics.
             Default.Register(
-                MemoryIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.AllocaPinned),
-                MemorySpecification.Nothing);
+                MemoryIntrinsics.Namespace.GetIntrinsicName(MemoryIntrinsics.Operators.AllocaPinned),
+                Nothing);
         }
 
         /// <summary>
@@ -323,7 +324,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         public RuleBasedPrototypeMemorySpecs()
         {
-            this.store = new RuleBasedSpecStore<MemorySpecification>(MemorySpecification.Unknown);
+            this.store = new RuleBasedSpecStore<MemorySpecification>(Unknown);
         }
 
         /// <summary>

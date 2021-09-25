@@ -1,9 +1,69 @@
-using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.Compiler.Analysis
 {
+    /// <summary>
+    /// Defines extension methods related to exception delayability.
+    /// </summary>
+    public static class ExceptionDelayabilityExtensions
+    {
+        /// <summary>
+        /// Tells if it is permissible to delay exceptions thrown by a
+        /// particular instruction until the instruction's result is used
+        /// by an effectful instruction.
+        /// If the instruction's result is never used that way,
+        /// the exception may even be deleted altogether.
+        /// </summary>
+        /// <param name="graph">
+        /// The flow graph that defines the instruction.
+        /// </param>
+        /// <param name="instruction">
+        /// An instruction tag to examine.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if exceptions thrown by <paramref name="instruction"/>
+        /// may be delayed until its value is used by an effectful instruction;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        public static bool CanDelayExceptions(this FlowGraph graph, ValueTag instruction)
+        {
+            ExceptionDelayability delayability;
+            if (graph.TryGetAnalysisResult(out delayability))
+            {
+                return delayability.CanDelayExceptions(
+                    graph.GetInstruction(instruction).Prototype);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Tells if it is permissible to delay exceptions thrown by a
+        /// particular instruction until the instruction's result is used
+        /// by an effectful instruction.
+        /// If the instruction's result is never used that way,
+        /// the exception may even be deleted altogether.
+        /// </summary>
+        /// <param name="graph">
+        /// The flow graph that defines the instruction.
+        /// </param>
+        /// <param name="instruction">
+        /// An instruction tag to examine.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if exceptions thrown by <paramref name="instruction"/>
+        /// may be delayed until its value is used by an effectful instruction;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        public static bool CanDelayExceptions(this FlowGraphBuilder graph, ValueTag instruction)
+        {
+            return graph.ImmutableGraph.CanDelayExceptions(instruction);
+        }
+    }
+
     /// <summary>
     /// A base class for rules about whether or not exceptions
     /// thrown by particular types of instructions may be delayed
@@ -74,102 +134,25 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     }
 
     /// <summary>
-    /// Defines extension methods related to exception delayability.
-    /// </summary>
-    public static class ExceptionDelayabilityExtensions
-    {
-        /// <summary>
-        /// Tells if it is permissible to delay exceptions thrown by a
-        /// particular instruction until the instruction's result is used
-        /// by an effectful instruction.
-        /// If the instruction's result is never used that way,
-        /// the exception may even be deleted altogether.
-        /// </summary>
-        /// <param name="graph">
-        /// The flow graph that defines the instruction.
-        /// </param>
-        /// <param name="instruction">
-        /// An instruction tag to examine.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if exceptions thrown by <paramref name="instruction"/>
-        /// may be delayed until its value is used by an effectful instruction;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        public static bool CanDelayExceptions(this FlowGraph graph, ValueTag instruction)
-        {
-            ExceptionDelayability delayability;
-            if (graph.TryGetAnalysisResult(out delayability))
-            {
-                return delayability.CanDelayExceptions(
-                    graph.GetInstruction(instruction).Prototype);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Tells if it is permissible to delay exceptions thrown by a
-        /// particular instruction until the instruction's result is used
-        /// by an effectful instruction.
-        /// If the instruction's result is never used that way,
-        /// the exception may even be deleted altogether.
-        /// </summary>
-        /// <param name="graph">
-        /// The flow graph that defines the instruction.
-        /// </param>
-        /// <param name="instruction">
-        /// An instruction tag to examine.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if exceptions thrown by <paramref name="instruction"/>
-        /// may be delayed until its value is used by an effectful instruction;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        public static bool CanDelayExceptions(this FlowGraphBuilder graph, ValueTag instruction)
-        {
-            return graph.ImmutableGraph.CanDelayExceptions(instruction);
-        }
-    }
-
-    /// <summary>
-    /// Exception delayability rules that disallow delaying exceptions in
-    /// all cases.
-    /// </summary>
-    public sealed class StrictExceptionDelayability : ExceptionDelayability
-    {
-        private StrictExceptionDelayability()
-        { }
-
-        /// <summary>
-        /// An instance of the strict exception delayability policy.
-        /// </summary>
-        public static readonly StrictExceptionDelayability Instance =
-            new StrictExceptionDelayability();
-
-        /// <inheritdoc/>
-        public override bool CanDelayExceptions(InstructionPrototype prototype)
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Exception delayability rules that allow delaying exceptions for
     /// implicit checks when computing pointers.
     /// </summary>
     public sealed class PermissiveExceptionDelayability : ExceptionDelayability
     {
-        private PermissiveExceptionDelayability()
-        { }
-
         /// <summary>
         /// An instance of the permissive exception delayability policy.
         /// </summary>
         public static readonly PermissiveExceptionDelayability Instance =
             new PermissiveExceptionDelayability();
+
+        private static readonly HashSet<string> delayableIntrinsics =
+            new HashSet<string>()
+        {
+            ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetElementPointer)
+        };
+
+        private PermissiveExceptionDelayability()
+        { }
 
         /// <inheritdoc/>
         public override bool CanDelayExceptions(InstructionPrototype prototype)
@@ -190,11 +173,27 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 return false;
             }
         }
+    }
 
-        private static readonly HashSet<string> delayableIntrinsics =
-            new HashSet<string>()
+    /// <summary>
+    /// Exception delayability rules that disallow delaying exceptions in
+    /// all cases.
+    /// </summary>
+    public sealed class StrictExceptionDelayability : ExceptionDelayability
+    {
+        /// <summary>
+        /// An instance of the strict exception delayability policy.
+        /// </summary>
+        public static readonly StrictExceptionDelayability Instance =
+            new StrictExceptionDelayability();
+
+        private StrictExceptionDelayability()
+        { }
+
+        /// <inheritdoc/>
+        public override bool CanDelayExceptions(InstructionPrototype prototype)
         {
-            ArrayIntrinsics.Namespace.GetIntrinsicName(Furesoft.Core.CodeDom.Compiler.Instructions.Operators.GetElementPointer)
-        };
+            return false;
+        }
     }
 }

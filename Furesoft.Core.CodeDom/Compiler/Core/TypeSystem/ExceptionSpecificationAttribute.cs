@@ -1,3 +1,5 @@
+using Furesoft.Core.CodeDom.Compiler.Core.Names;
+
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
@@ -5,6 +7,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     /// </summary>
     public sealed class ExceptionSpecificationAttribute : IAttribute
     {
+        /// <summary>
+        /// The attribute type of exception specification attributes.
+        /// </summary>
+        /// <value>An attribute type.</value>
+        public static readonly IType AttributeType = new DescribedType(
+            new SimpleName("ExceptionSpecification").Qualify(), null);
+
         /// <summary>
         /// Creates an exception specification attribute.
         /// </summary>
@@ -14,12 +23,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             this.Specification = specification;
         }
 
-        /// <summary>
-        /// The attribute type of exception specification attributes.
-        /// </summary>
-        /// <value>An attribute type.</value>
-        public static readonly IType AttributeType = new DescribedType(
-            new SimpleName("ExceptionSpecification").Qualify(), null);
+        IType IAttribute.AttributeType => AttributeType;
 
         /// <summary>
         /// Gets the exception specification wrapped by this exception specification
@@ -27,7 +31,5 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         /// <value>An exception specification.</value>
         public ExceptionSpecification Specification { get; private set; }
-
-        IType IAttribute.AttributeType => AttributeType;
     }
 }
