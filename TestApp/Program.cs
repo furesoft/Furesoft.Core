@@ -92,36 +92,45 @@ namespace TestApp
             }
             else if (obj is Instruction instr)
             {
+                var first = instr.Arguments[0];
+                var second = instr.Arguments[1];
+                var third = instr.Arguments[2];
+
+                var firstValue = EvaluateExpression(first);
+                var secondValue = EvaluateExpression(second);
+                var thirdValue = EvaluateExpression(third);
+
                 if (instr.Mnemnonic == "mov")
                 {
-                    var first = instr.Arguments.First();
-                    var last = instr.Arguments.Last();
-
-                    if (first is Literal val && last is SquaredExpression mem)
+                    if (first is Literal val && second is SquaredExpression mem)
                     {
                         //mov val in to ram
-                        ram[EvaluateExpression(mem)] = (byte)EvaluateExpression(val);
+                        ram[secondValue] = (byte)firstValue;
                     }
-                    else if (first is SquaredExpression from && last is SquaredExpression to)
+                    else if (first is Literal val1 && second is RegisterRef r0)
                     {
-                        //mov ram from to
-                        ram[EvaluateExpression(to)] = ram[EvaluateExpression(from)];
+                        //mov lit in to ram
+                        ram[secondValue] = (byte)firstValue;
+                    }
+                    else
+                    {
+                        ram[secondValue] = ram[firstValue];
                     }
                 }
                 else if (instr.Mnemnonic == "add")
                 {
-                    var result = instr.Arguments[0];
-                    var first = instr.Arguments[1];
-                    var second = instr.Arguments[2];
-
-                    ram[EvaluateExpression(result)] = (byte)(ram[EvaluateExpression(first)] + ram[EvaluateExpression(second)]);
+                    ram[firstValue] = (byte)(ram[secondValue] + ram[thirdValue]);
+                }
+                else if (instr.Mnemnonic == "clear")
+                {
+                    ram[firstValue] = 0;
                 }
             }
         }
 
         public static int Main(string[] args)
         {
-            var src = "mov 12, [B];mov [B],[D];add [A],[B],[D]";
+            var src = "mov 12, B;mov B, D;add A,B,D;mov 42, [B + D];mov 1, [(A+C+D+E)*8];";
 
             Parser.AddParsePoint("[", ParseSquared);
 
@@ -130,7 +139,7 @@ namespace TestApp
             Divide.AddParsePoints();
             Subtract.AddParsePoints();
 
-            Parser.AddMultipleParsePoints(new[] { "mov", "add", "sub", "inc" }, (parser, parent, flags) =>
+            Parser.AddMultipleParsePoints(new[] { "mov", "add", "sub", "inc", "clear" }, (parser, parent, flags) =>
             {
                 return new Instruction(parser, parent);
             });
@@ -141,6 +150,7 @@ namespace TestApp
             SizeOf.AddParsePoints();
             LocalDecl.AddParsePoints();
             RegisterRef.AddParsePoints();
+            Expression.AddParsePoints();
 
             // CodeUnit.LoadDefaultParsePoints();
 
@@ -215,6 +225,24 @@ namespace TestApp
         {
             if (expr is Add add)
             {
+                if (add.Left is RegisterRef rl)
+                {
+                    add.Left = new Literal(ram[(int)rl.Reference]);
+                }
+                else
+                {
+                    add.Left = EvaluateExpression(add.Left);
+                }
+
+                if (add.Right is RegisterRef rr)
+                {
+                    add.Right = new Literal(ram[(int)rr.Reference]);
+                }
+                else
+                {
+                    add.Right = EvaluateExpression(add.Right);
+                }
+
                 return EvaluateExpression(add.Left) + EvaluateExpression(add.Right);
             }
             else if (expr is Multiply mul)
