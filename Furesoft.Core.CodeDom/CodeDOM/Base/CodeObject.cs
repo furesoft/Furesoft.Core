@@ -1097,7 +1097,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// Parse the specified expected token, attaching a parse error to the current object if it doesn't exist.
         /// </summary>
         /// <returns>True if the token was successfully parse, otherwise false.</returns>
-        protected internal bool ParseExpectedToken(Parser parser, string token)
+        public bool ParseExpectedToken(Parser parser, string token)
         {
             if (parser.TokenText == token)
             {

@@ -2,16 +2,11 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections;
-using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
+using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
@@ -19,15 +14,19 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
 {
@@ -37,16 +36,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
     /// </summary>
     public abstract class TypeDecl : BlockStatement, ITypeDecl, ITypeParameters, IModifiers
     {
-        #region /* FIELDS */
-
+        protected ChildList<ConstraintClause> _constraintClauses;
         protected Modifiers _modifiers;
         protected string _name;
         protected ChildList<TypeParameter> _typeParameters;        // Not used for EnumDecls
-        protected ChildList<ConstraintClause> _constraintClauses;  // Not used for EnumDecls
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
+                                                                   // Not used for EnumDecls
 
         protected TypeDecl(string name, Modifiers modifiers, CodeObject body)
             : base(body, false)
@@ -72,17 +66,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             CreateTypeParameters().AddRange(typeParameters);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The name of the <see cref="TypeDecl"/>.
-        /// </summary>
-        public string Name
+        protected TypeDecl(Parser parser, CodeObject parent)
+                    : base(parser, parent)
         {
-            get { return _name; }
-            set { _name = value; }
+            // Force all type declarations to start on a new line by default
+            IsFirstOnLine = true;
         }
 
         /// <summary>
@@ -94,106 +82,43 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// Optional <see cref="Modifiers"/> for the type.
+        /// A collection of optional <see cref="ConstraintClause"/>s (for generic types).
         /// </summary>
-        public Modifiers Modifiers
+        public ChildList<ConstraintClause> ConstraintClauses
         {
-            get { return _modifiers; }
-            set { _modifiers = value; }
+            get { return _constraintClauses; }
         }
 
         /// <summary>
-        /// True if the type is abstract.
+        /// Get the declaring <see cref="TypeDecl"/>.
         /// </summary>
-        public bool IsAbstract
+        public TypeDecl DeclaringType
         {
-            get { return _modifiers.HasFlag(Modifiers.Abstract); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Abstract : _modifiers & ~Modifiers.Abstract); }
+            get { return (_parent as TypeDecl); }
         }
 
         /// <summary>
-        /// True if the type is a partial type.
+        /// True if the <see cref="Statement"/> has an argument.
         /// </summary>
-        public bool IsPartial
+        public override bool HasArgument
         {
-            get { return _modifiers.HasFlag(Modifiers.Partial); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Partial : _modifiers & ~Modifiers.Partial); }
+            get { return true; }
         }
 
         /// <summary>
-        /// True if the type has public access.
+        /// True if the <see cref="Statement"/> has parens around its argument.
         /// </summary>
-        public bool IsPublic
-        {
-            get { return _modifiers.HasFlag(Modifiers.Public); }
-            // Force other flags off if setting to Public
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
-        }
-
-        /// <summary>
-        /// True if the type has private access.
-        /// </summary>
-        public bool IsPrivate
-        {
-            // Should only be true for nested types, and defaults to true if nested and nothing else is set
-            get { return (_modifiers.HasFlag(Modifiers.Private) || (IsNested && (_modifiers & (Modifiers.Protected | Modifiers.Internal | Modifiers.Public)) == 0)); }
-            // Force other flags off if setting to Private
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Protected | Modifiers.Internal | Modifiers.Public) | Modifiers.Private : _modifiers & ~Modifiers.Private); }
-        }
-
-        /// <summary>
-        /// True if the type has protected access.
-        /// </summary>
-        public bool IsProtected
-        {
-            // Should only be true for nested types
-            get { return _modifiers.HasFlag(Modifiers.Protected); }
-            // Force certain other flags off if setting to Protected
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Protected : _modifiers & ~Modifiers.Protected); }
-        }
-
-        /// <summary>
-        /// True if the type has internal access.
-        /// </summary>
-        public bool IsInternal
-        {
-            // Defaults to true if nothing else is set
-            get { return (_modifiers.HasFlag(Modifiers.Internal) || ((_modifiers & (Modifiers.Private | Modifiers.Protected | Modifiers.Public)) == 0)); }
-            // Force certain other flags off if setting to Protected
-            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
-        }
-
-        /// <summary>
-        /// True if the type is a nested type.
-        /// </summary>
-        public bool IsNested
-        {
-            get { return (_parent is TypeDecl); }
-        }
-
-        /// <summary>
-        /// True if the type is a nullable type.
-        /// </summary>
-        public bool IsNullableType
+        public override bool HasArgumentParens
         {
             get { return false; }
         }
 
         /// <summary>
-        /// True if the type is static.
+        /// True if there are any <see cref="ConstraintClause"/>s.
         /// </summary>
-        public virtual bool IsStatic
+        public bool HasConstraintClauses
         {
-            get { return _modifiers.HasFlag(Modifiers.Static); }
-            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
-        }
-
-        /// <summary>
-        /// A collection of optional <see cref="TypeParameter"/>s (for generic types).
-        /// </summary>
-        public ChildList<TypeParameter> TypeParameters
-        {
-            get { return _typeParameters; }
+            get { return (_constraintClauses != null && _constraintClauses.Count > 0); }
         }
 
         /// <summary>
@@ -205,27 +130,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// The number of <see cref="TypeParameter"/>s the type has.
+        /// True if the type is abstract.
         /// </summary>
-        public int TypeParameterCount
+        public bool IsAbstract
         {
-            get { return (_typeParameters != null ? _typeParameters.Count : 0); }
-        }
-
-        /// <summary>
-        /// A collection of optional <see cref="ConstraintClause"/>s (for generic types).
-        /// </summary>
-        public ChildList<ConstraintClause> ConstraintClauses
-        {
-            get { return _constraintClauses; }
-        }
-
-        /// <summary>
-        /// True if there are any <see cref="ConstraintClause"/>s.
-        /// </summary>
-        public bool HasConstraintClauses
-        {
-            get { return (_constraintClauses != null && _constraintClauses.Count > 0); }
+            get { return _modifiers.HasFlag(Modifiers.Abstract); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Abstract : _modifiers & ~Modifiers.Abstract); }
         }
 
         /// <summary>
@@ -278,6 +188,112 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
+        /// True if the type has internal access.
+        /// </summary>
+        public bool IsInternal
+        {
+            // Defaults to true if nothing else is set
+            get { return (_modifiers.HasFlag(Modifiers.Internal) || ((_modifiers & (Modifiers.Private | Modifiers.Protected | Modifiers.Public)) == 0)); }
+            // Force certain other flags off if setting to Protected
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Internal : _modifiers & ~Modifiers.Internal); }
+        }
+
+        /// <summary>
+        /// True if the type is a nested type.
+        /// </summary>
+        public bool IsNested
+        {
+            get { return (_parent is TypeDecl); }
+        }
+
+        /// <summary>
+        /// True if the type is a nullable type.
+        /// </summary>
+        public bool IsNullableType
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// True if the type is a partial type.
+        /// </summary>
+        public bool IsPartial
+        {
+            get { return _modifiers.HasFlag(Modifiers.Partial); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Partial : _modifiers & ~Modifiers.Partial); }
+        }
+
+        /// <summary>
+        /// True if the type has private access.
+        /// </summary>
+        public bool IsPrivate
+        {
+            // Should only be true for nested types, and defaults to true if nested and nothing else is set
+            get { return (_modifiers.HasFlag(Modifiers.Private) || (IsNested && (_modifiers & (Modifiers.Protected | Modifiers.Internal | Modifiers.Public)) == 0)); }
+            // Force other flags off if setting to Private
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Protected | Modifiers.Internal | Modifiers.Public) | Modifiers.Private : _modifiers & ~Modifiers.Private); }
+        }
+
+        /// <summary>
+        /// True if the type has protected access.
+        /// </summary>
+        public bool IsProtected
+        {
+            // Should only be true for nested types
+            get { return _modifiers.HasFlag(Modifiers.Protected); }
+            // Force certain other flags off if setting to Protected
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Public) | Modifiers.Protected : _modifiers & ~Modifiers.Protected); }
+        }
+
+        /// <summary>
+        /// True if the type has public access.
+        /// </summary>
+        public bool IsPublic
+        {
+            get { return _modifiers.HasFlag(Modifiers.Public); }
+            // Force other flags off if setting to Public
+            set { _modifiers = (value ? _modifiers & ~(Modifiers.Private | Modifiers.Protected | Modifiers.Internal) | Modifiers.Public : _modifiers & ~Modifiers.Public); }
+        }
+
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get
+            {
+                return (base.IsSingleLine && (_typeParameters == null || _typeParameters.Count == 0 || (!_typeParameters[0].IsFirstOnLine && _typeParameters.IsSingleLine))
+                    && (_constraintClauses == null || _constraintClauses.Count == 0 || (!_constraintClauses[0].IsFirstOnLine && _constraintClauses.IsSingleLine)));
+            }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value)
+                {
+                    if (_typeParameters != null && _typeParameters.Count > 0)
+                    {
+                        _typeParameters[0].IsFirstOnLine = false;
+                        _typeParameters.IsSingleLine = true;
+                    }
+                    if (_constraintClauses != null && _constraintClauses.Count > 0)
+                    {
+                        _constraintClauses[0].IsFirstOnLine = false;
+                        _constraintClauses.IsSingleLine = true;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// True if the type is static.
+        /// </summary>
+        public virtual bool IsStatic
+        {
+            get { return _modifiers.HasFlag(Modifiers.Static); }
+            set { _modifiers = (value ? _modifiers | Modifiers.Static : _modifiers & ~Modifiers.Static); }
+        }
+
+        /// <summary>
         /// True if the type is a struct.
         /// </summary>
         public virtual bool IsStruct
@@ -294,25 +310,76 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// Get the declaring <see cref="TypeDecl"/>.
+        /// Optional <see cref="Modifiers"/> for the type.
         /// </summary>
-        public TypeDecl DeclaringType
+        public Modifiers Modifiers
         {
-            get { return (_parent as TypeDecl); }
+            get { return _modifiers; }
+            set { _modifiers = value; }
         }
 
-        #endregion
-
-        #region /* METHODS */
+        /// <summary>
+        /// The name of the <see cref="TypeDecl"/>.
+        /// </summary>
+        public string Name
+        {
+            get { return _name; }
+            set { _name = value; }
+        }
 
         /// <summary>
-        /// Create the list of <see cref="TypeParameter"/>s, or return the existing one.
+        /// The number of newlines preceeding the object (0 to N).
         /// </summary>
-        public ChildList<TypeParameter> CreateTypeParameters()
+        public override int NewLines
         {
-            if (_typeParameters == null)
-                _typeParameters = new ChildList<TypeParameter>(this);
-            return _typeParameters;
+            get { return base.NewLines; }
+            set
+            {
+                // If we're changing to or from zero, also change any prefix attributes
+                bool isFirstOnLine = (value != 0);
+                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
+                {
+                    foreach (Annotation annotation in _annotations)
+                    {
+                        if (annotation is Attribute)
+                            annotation.IsFirstOnLine = isFirstOnLine;
+                    }
+                }
+
+                base.NewLines = value;
+            }
+        }
+
+        /// <summary>
+        /// The number of <see cref="TypeParameter"/>s the type has.
+        /// </summary>
+        public int TypeParameterCount
+        {
+            get { return (_typeParameters != null ? _typeParameters.Count : 0); }
+        }
+
+        /// <summary>
+        /// A collection of optional <see cref="TypeParameter"/>s (for generic types).
+        /// </summary>
+        public ChildList<TypeParameter> TypeParameters
+        {
+            get { return _typeParameters; }
+        }
+
+        /// <summary>
+        /// Add one or more <see cref="ConstraintClause"/>s.
+        /// </summary>
+        public void AddConstraintClauses(params ConstraintClause[] constraintClauses)
+        {
+            CreateConstraintClauses().AddRange(constraintClauses);
+        }
+
+        /// <summary>
+        /// Add the <see cref="CodeObject"/> to the specified dictionary.
+        /// </summary>
+        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Add(_name, this);
         }
 
         /// <summary>
@@ -321,6 +388,55 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         public void AddTypeParameters(params TypeParameter[] typeParameters)
         {
             CreateTypeParameters().AddRange(typeParameters);
+        }
+
+        /// <summary>
+        /// Determine if the specified comment should be associated with the current code object during parsing.
+        /// </summary>
+        public override bool AssociateCommentWhenParsing(CommentBase comment)
+        {
+            return true;
+        }
+
+        public void AsTextName(CodeWriter writer, RenderFlags flags)
+        {
+            if (flags.HasFlag(RenderFlags.Description) && _parent is TypeDecl)
+            {
+                ((TypeDecl)_parent).AsTextName(writer, flags);
+                Dot.AsTextDot(writer);
+            }
+
+            writer.WriteIdentifier(_name, flags);
+            if (HasTypeParameters)
+                TypeParameter.AsTextTypeParameters(writer, _typeParameters, flags);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            TypeDecl clone = (TypeDecl)base.Clone();
+            clone._typeParameters = ChildListHelpers.Clone(_typeParameters, clone);
+            clone._constraintClauses = ChildListHelpers.Clone(_constraintClauses, clone);
+            return clone;
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="TypeDecl"/>.
+        /// </summary>
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
+        {
+            return new TypeRef(this, isFirstOnLine, ranks);
+        }
+
+        /// <summary>
+        /// Create an array reference to this <see cref="TypeDecl"/>.
+        /// </summary>
+        public TypeRef CreateArrayRef(params int[] ranks)
+        {
+            return new TypeRef(this, false, ranks);
         }
 
         /// <summary>
@@ -334,46 +450,21 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// Add one or more <see cref="ConstraintClause"/>s.
+        /// Create a nullable reference to this <see cref="TypeDecl"/>.
         /// </summary>
-        public void AddConstraintClauses(params ConstraintClause[] constraintClauses)
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef(bool isFirstOnLine)
         {
-            CreateConstraintClauses().AddRange(constraintClauses);
+            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
         }
 
         /// <summary>
-        /// Get any constraints for the specified <see cref="TypeParameter"/> on this type.
+        /// Create a nullable reference to this <see cref="TypeDecl"/>.
         /// </summary>
-        public List<TypeParameterConstraint> GetTypeParameterConstraints(TypeParameter typeParameter)
+        /// <returns>A <see cref="TypeRef"/>.</returns>
+        public TypeRef CreateNullableRef()
         {
-            if (_constraintClauses != null)
-            {
-                foreach (ConstraintClause constraintClause in _constraintClauses)
-                {
-                    if (constraintClause.TypeParameter.Reference == typeParameter)
-                        return constraintClause.Constraints;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// Get the base type.
-        /// </summary>
-        public virtual TypeRef GetBaseType()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            TypeDecl clone = (TypeDecl)base.Clone();
-            clone._typeParameters = ChildListHelpers.Clone(_typeParameters, clone);
-            clone._constraintClauses = ChildListHelpers.Clone(_constraintClauses, clone);
-            return clone;
+            return TypeRef.CreateNullable(CreateRef(), false);
         }
 
         /// <summary>
@@ -441,38 +532,150 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// Create an array reference to this <see cref="TypeDecl"/>.
+        /// Create the list of <see cref="TypeParameter"/>s, or return the existing one.
         /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateArrayRef(bool isFirstOnLine, params int[] ranks)
+        public ChildList<TypeParameter> CreateTypeParameters()
         {
-            return new TypeRef(this, isFirstOnLine, ranks);
+            if (_typeParameters == null)
+                _typeParameters = new ChildList<TypeParameter>(this);
+            return _typeParameters;
         }
 
         /// <summary>
-        /// Create an array reference to this <see cref="TypeDecl"/>.
+        /// Find the index of the specified <see cref="TypeParameter"/> in the declaration of the <see cref="TypeDecl"/> or
+        /// an enclosing <see cref="TypeDecl"/> if this one is nested.  Also handles partial types.
         /// </summary>
-        public TypeRef CreateArrayRef(params int[] ranks)
+        /// <returns>The index of the <see cref="TypeParameter"/>, or -1 if not found.</returns>
+        public int FindTypeParameterIndex(TypeParameter typeParameter)
         {
-            return new TypeRef(this, false, ranks);
+            int index;
+            if (FindTypeParameterIndex(typeParameter, out index))
+                return index;
+            return -1;
         }
 
         /// <summary>
-        /// Create a nullable reference to this <see cref="TypeDecl"/>.
+        /// Get the IsPrivate access right for the specified usage, and if not private then also get the IsProtected and IsInternal rights.
         /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef(bool isFirstOnLine)
+        /// <param name="isTargetOfAssignment">Usage - true if the target of an assignment ('lvalue'), otherwise false.</param>
+        /// <param name="isPrivate">True if the access is private.</param>
+        /// <param name="isProtected">True if the access is protected.</param>
+        /// <param name="isInternal">True if the access is internal.</param>
+        public void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal)
         {
-            return TypeRef.CreateNullable(CreateRef(), isFirstOnLine);
+            // The isTargetOfAssignment flag is needed only for properties/indexers/events, not types
+            isPrivate = IsPrivate;
+            if (!isPrivate)
+            {
+                isProtected = IsProtected;
+                isInternal = IsInternal;
+            }
+            else
+                isProtected = isInternal = false;
         }
 
         /// <summary>
-        /// Create a nullable reference to this <see cref="TypeDecl"/>.
+        /// Get the base type.
         /// </summary>
-        /// <returns>A <see cref="TypeRef"/>.</returns>
-        public TypeRef CreateNullableRef()
+        public virtual TypeRef GetBaseType()
         {
-            return TypeRef.CreateNullable(CreateRef(), false);
+            return null;
+        }
+
+        /// <summary>
+        /// Get the non-static constructor with the specified parameters.
+        /// </summary>
+        public virtual ConstructorRef GetConstructor(params TypeRefBase[] parameterTypes)
+        {
+            ConstructorDecl found = GetMethod<ConstructorDecl>(_name, parameterTypes);
+            if (found != null)
+                return (ConstructorRef)found.CreateRef();
+            TypeRef baseRef = GetBaseType();
+            return (baseRef != null ? baseRef.GetConstructor(parameterTypes) : null);
+        }
+
+        /// <summary>
+        /// Get all non-static constructors for this type.
+        /// </summary>
+        public virtual NamedCodeObjectGroup GetConstructors(bool currentPartOnly)
+        {
+            NamedCodeObjectGroup constructors = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            if (currentPartOnly && _body != null)
+                _body.FindChildren<ConstructorDecl>(_name, found);
+            else
+                FindInAllParts<ConstructorDecl>(_name, found);
+            foreach (INamedCodeObject namedCodeObject in found)
+            {
+                if (!((ConstructorDecl)namedCodeObject).IsStatic)
+                    constructors.Add(namedCodeObject);
+            }
+            return constructors;
+        }
+
+        /// <summary>
+        /// Get all non-static constructors for this type.
+        /// </summary>
+        public virtual NamedCodeObjectGroup GetConstructors()
+        {
+            return GetConstructors(false);
+        }
+
+        /// <summary>
+        /// Get the delegate parameters of the type (if any).
+        /// </summary>
+        public virtual ICollection GetDelegateParameters()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get the delegate return type of the type (if any).
+        /// </summary>
+        public virtual TypeRefBase GetDelegateReturnType()
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Get the field with the specified name.
+        /// </summary>
+        public virtual FieldRef GetField(string name)
+        {
+            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            FindInAllParts<FieldDecl>(name, found);
+            if (found.Count > 0)
+                return (FieldRef)((FieldDecl)found[0]).CreateRef();
+            TypeRef baseRef = GetBaseType();
+            return (baseRef != null ? baseRef.GetField(name) : null);
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
+        public string GetFullName(bool descriptive)
+        {
+            string name = _name;
+            if (_typeParameters != null && _typeParameters.Count > 0)
+            {
+                if (descriptive)
+                    name += GetTypeParametersAsString(_typeParameters);
+                else
+                    name += "`" + TypeParameterCount;
+            }
+            if (Parent is TypeDecl)
+                return ((TypeDecl)Parent).GetFullName(descriptive) + (descriptive ? "." : "+") + name;
+            Namespace @namespace = GetNamespace();
+            return (@namespace != null && !@namespace.IsGlobal ? @namespace.FullName + "." : "") + name;
+        }
+
+        /// <summary>
+        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
+        /// </summary>
+        public string GetFullName()
+        {
+            return GetFullName(false);
         }
 
         /// <summary>
@@ -521,6 +724,81 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         public IEnumerable<INamedCodeObject> GetMemberDecls()
         {
             return GetMemberDecls(false);
+        }
+
+        /// <summary>
+        /// Get the method with the specified name and parameter types.
+        /// </summary>
+        public virtual MethodRef GetMethod(string name, params TypeRefBase[] parameterTypes)
+        {
+            MethodDeclBase found = GetMethod<MethodDeclBase>(name, parameterTypes);
+            if (found != null)
+                return (MethodRef)found.CreateRef();
+            TypeRef baseRef = GetBaseType();
+            return (baseRef != null ? baseRef.GetMethod(name, parameterTypes) : null);
+        }
+
+        /// <summary>
+        /// Get the method with the specified name and parameters, and of type T.
+        /// </summary>
+        public T GetMethod<T>(string name, params TypeRefBase[] parameterTypes) where T : MethodDeclBase
+        {
+            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            FindInAllParts<T>(name, found);
+            foreach (T methodDecl in found)
+            {
+                if (methodDecl.MatchParameters(parameterTypes))
+                    return methodDecl;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Get all methods with the specified name, adding them to the provided NamedCodeObjectGroup.
+        /// </summary>
+        public virtual void GetMethods(string name, bool searchBaseClasses, NamedCodeObjectGroup results)
+        {
+            FindInAllParts<MethodDeclBase>(name, results);
+            if (searchBaseClasses)
+            {
+                TypeRef baseRef = GetBaseType();
+                if (baseRef != null)
+                    baseRef.GetMethods(name, true, results);
+            }
+        }
+
+        /// <summary>
+        /// Get all methods with the specified name.
+        /// </summary>
+        /// <param name="name">The method name.</param>
+        /// <param name="searchBaseClasses">Pass <c>false</c> to NOT search base classes.</param>
+        public List<MethodRef> GetMethods(string name, bool searchBaseClasses)
+        {
+            NamedCodeObjectGroup results = new NamedCodeObjectGroup();
+            GetMethods(name, searchBaseClasses, results);
+            return MethodRef.MethodRefsFromGroup(results);
+        }
+
+        /// <summary>
+        /// Get all methods with the specified name.
+        /// </summary>
+        /// <param name="name">The method name.</param>
+        public List<MethodRef> GetMethods(string name)
+        {
+            return GetMethods(name, false);
+        }
+
+        /// <summary>
+        /// Get the nested type with the specified name.
+        /// </summary>
+        public TypeRef GetNestedType(string name)
+        {
+            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            FindInAllParts<TypeDecl>(name, found);
+            if (found.Count > 0)
+                return ((TypeDecl)found[0]).CreateRef();
+            TypeRef baseRef = GetBaseType();
+            return (baseRef != null ? baseRef.GetNestedType(name) : null);
         }
 
         /// <summary>
@@ -590,89 +868,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// Get the non-static constructor with the specified parameters.
+        /// Get any other parts of this <see cref="TypeDecl"/>.
         /// </summary>
-        public virtual ConstructorRef GetConstructor(params TypeRefBase[] parameterTypes)
+        /// <returns></returns>
+        public List<TypeDecl> GetOtherParts()
         {
-            ConstructorDecl found = GetMethod<ConstructorDecl>(_name, parameterTypes);
-            if (found != null)
-                return (ConstructorRef)found.CreateRef();
-            TypeRef baseRef = GetBaseType();
-            return (baseRef != null ? baseRef.GetConstructor(parameterTypes) : null);
-        }
-
-        /// <summary>
-        /// Get all non-static constructors for this type.
-        /// </summary>
-        public virtual NamedCodeObjectGroup GetConstructors(bool currentPartOnly)
-        {
-            NamedCodeObjectGroup constructors = new NamedCodeObjectGroup();
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
-            if (currentPartOnly && _body != null)
-                _body.FindChildren<ConstructorDecl>(_name, found);
-            else
-                FindInAllParts<ConstructorDecl>(_name, found);
-            foreach (INamedCodeObject namedCodeObject in found)
-            {
-                if (!((ConstructorDecl)namedCodeObject).IsStatic)
-                    constructors.Add(namedCodeObject);
-            }
-            return constructors;
-        }
-
-        /// <summary>
-        /// Get all non-static constructors for this type.
-        /// </summary>
-        public virtual NamedCodeObjectGroup GetConstructors()
-        {
-            return GetConstructors(false);
-        }
-
-        /// <summary>
-        /// Get the method with the specified name and parameter types.
-        /// </summary>
-        public virtual MethodRef GetMethod(string name, params TypeRefBase[] parameterTypes)
-        {
-            MethodDeclBase found = GetMethod<MethodDeclBase>(name, parameterTypes);
-            if (found != null)
-                return (MethodRef)found.CreateRef();
-            TypeRef baseRef = GetBaseType();
-            return (baseRef != null ? baseRef.GetMethod(name, parameterTypes) : null);
-        }
-
-        /// <summary>
-        /// Get all methods with the specified name, adding them to the provided NamedCodeObjectGroup.
-        /// </summary>
-        public virtual void GetMethods(string name, bool searchBaseClasses, NamedCodeObjectGroup results)
-        {
-            FindInAllParts<MethodDeclBase>(name, results);
-            if (searchBaseClasses)
-            {
-                TypeRef baseRef = GetBaseType();
-                if (baseRef != null)
-                    baseRef.GetMethods(name, true, results);
-            }
-        }
-
-        /// <summary>
-        /// Get all methods with the specified name.
-        /// </summary>
-        /// <param name="name">The method name.</param>
-        /// <param name="searchBaseClasses">Pass <c>false</c> to NOT search base classes.</param>
-        public List<MethodRef> GetMethods(string name, bool searchBaseClasses)
-        {
-            NamedCodeObjectGroup results = new NamedCodeObjectGroup();
-            GetMethods(name, searchBaseClasses, results);
-            return MethodRef.MethodRefsFromGroup(results);
-        }
-
-        /// <summary>
-        /// Get all methods with the specified name.
-        /// </summary>
-        /// <param name="name">The method name.</param>
-        public List<MethodRef> GetMethods(string name)
-        {
-            return GetMethods(name, false);
+            List<TypeDecl> otherParts = new List<TypeDecl>();
+            GetOtherParts(otherParts, null);
+            return otherParts;
         }
 
         /// <summary>
@@ -689,44 +892,101 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// Get the field with the specified name.
+        /// Get any constraints for the specified <see cref="TypeParameter"/> on this type.
         /// </summary>
-        public virtual FieldRef GetField(string name)
+        public List<TypeParameterConstraint> GetTypeParameterConstraints(TypeParameter typeParameter)
         {
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
-            FindInAllParts<FieldDecl>(name, found);
-            if (found.Count > 0)
-                return (FieldRef)((FieldDecl)found[0]).CreateRef();
-            TypeRef baseRef = GetBaseType();
-            return (baseRef != null ? baseRef.GetField(name) : null);
-        }
-
-        /// <summary>
-        /// Get the nested type with the specified name.
-        /// </summary>
-        public TypeRef GetNestedType(string name)
-        {
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
-            FindInAllParts<TypeDecl>(name, found);
-            if (found.Count > 0)
-                return ((TypeDecl)found[0]).CreateRef();
-            TypeRef baseRef = GetBaseType();
-            return (baseRef != null ? baseRef.GetNestedType(name) : null);
-        }
-
-        /// <summary>
-        /// Get the method with the specified name and parameters, and of type T.
-        /// </summary>
-        public T GetMethod<T>(string name, params TypeRefBase[] parameterTypes) where T : MethodDeclBase
-        {
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
-            FindInAllParts<T>(name, found);
-            foreach (T methodDecl in found)
+            if (_constraintClauses != null)
             {
-                if (methodDecl.MatchParameters(parameterTypes))
-                    return methodDecl;
+                foreach (ConstraintClause constraintClause in _constraintClauses)
+                {
+                    if (constraintClause.TypeParameter.Reference == typeParameter)
+                        return constraintClause.Constraints;
+                }
             }
             return null;
+        }
+
+        /// <summary>
+        /// Determine if the type is assignable from the specified type.
+        /// </summary>
+        public virtual bool IsAssignableFrom(TypeRef typeRef)
+        {
+            if (typeRef == null)
+                return false;
+
+            TypeRef thisTypeRef = CreateRef();
+            return (typeRef.IsSameRef(thisTypeRef) || typeRef.IsSubclassOf(thisTypeRef));
+        }
+
+        /// <summary>
+        /// Determine if the type implements the specified interface type.
+        /// </summary>
+        public virtual bool IsImplementationOf(TypeRef interfaceTypeRef)
+        {
+            return false;
+        }
+
+        /// <summary>
+        /// Check if the specified TypeDecl is identical to OR has the same name/namespace as the current one (could be different parts).
+        /// </summary>
+        public bool IsSameAs(TypeDecl typeDecl)
+        {
+            return (this == typeDecl || (_name == typeDecl.Name && (_typeParameters != null ? _typeParameters.Count : 0) == typeDecl.TypeParameterCount && GetNamespace() == typeDecl.GetNamespace()));
+        }
+
+        /// <summary>
+        /// Determine if the type is a subclass of the specified type.
+        /// </summary>
+        public virtual bool IsSubclassOf(TypeRef classTypeRef)
+        {
+            return classTypeRef.IsSameRef(GetBaseType());
+        }
+
+        /// <summary>
+        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
+        /// </summary>
+        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
+        {
+            dictionary.Remove(_name, this);
+        }
+
+        /// <summary>
+        /// Get the specified type parameters as a descriptive string.
+        /// </summary>
+        internal static string GetTypeParametersAsString(ChildList<TypeParameter> typeParameters)
+        {
+            string result = TypeParameter.ParseTokenStart;
+            bool isFirst = true;
+            foreach (TypeParameter typeParameter in typeParameters)
+            {
+                result += (isFirst ? "" : ", ") + typeParameter.Name;
+                isFirst = false;
+            }
+            result += TypeParameter.ParseTokenEnd;
+            return result;
+        }
+
+        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
+        {
+            ConstraintClause.AsTextConstraints(writer, _constraintClauses, flags | RenderFlags.HasTerminator);
+            base.AsTextAfter(writer, flags);
+        }
+
+        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
+        {
+            AsTextName(writer, flags);
+        }
+
+        protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
+        {
+            ModifiersHelpers.AsText(_modifiers, writer);
+        }
+
+        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
+        {
+            if (!HasConstraintClauses)
+                base.AsTextSuffix(writer, flags);
         }
 
         /// <summary>
@@ -744,19 +1004,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                         otherPart.Body.FindChildren<T>(name, results);
                 }
             }
-        }
-
-        /// <summary>
-        /// Find the index of the specified <see cref="TypeParameter"/> in the declaration of the <see cref="TypeDecl"/> or
-        /// an enclosing <see cref="TypeDecl"/> if this one is nested.  Also handles partial types.
-        /// </summary>
-        /// <returns>The index of the <see cref="TypeParameter"/>, or -1 if not found.</returns>
-        public int FindTypeParameterIndex(TypeParameter typeParameter)
-        {
-            int index;
-            if (FindTypeParameterIndex(typeParameter, out index))
-                return index;
-            return -1;
         }
 
         /// <summary>
@@ -796,69 +1043,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             return false;
         }
 
-        private bool FindTypeParameterIndexLocal(TypeParameter typeParameter, ref int index)
-        {
-            if (_typeParameters != null)
-            {
-                foreach (TypeParameter localTypeParameter in _typeParameters)
-                {
-                    if (localTypeParameter == typeParameter)
-                        return true;
-                    ++index;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
-        /// Add the <see cref="CodeObject"/> to the specified dictionary.
-        /// </summary>
-        public virtual void AddToDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Add(_name, this);
-        }
-
-        /// <summary>
-        /// Remove the <see cref="CodeObject"/> from the specified dictionary.
-        /// </summary>
-        public virtual void RemoveFromDictionary(NamedCodeObjectDictionary dictionary)
-        {
-            dictionary.Remove(_name, this);
-        }
-
-        /// <summary>
-        /// Get the IsPrivate access right for the specified usage, and if not private then also get the IsProtected and IsInternal rights.
-        /// </summary>
-        /// <param name="isTargetOfAssignment">Usage - true if the target of an assignment ('lvalue'), otherwise false.</param>
-        /// <param name="isPrivate">True if the access is private.</param>
-        /// <param name="isProtected">True if the access is protected.</param>
-        /// <param name="isInternal">True if the access is internal.</param>
-        public void GetAccessRights(bool isTargetOfAssignment, out bool isPrivate, out bool isProtected, out bool isInternal)
-        {
-            // The isTargetOfAssignment flag is needed only for properties/indexers/events, not types
-            isPrivate = IsPrivate;
-            if (!isPrivate)
-            {
-                isProtected = IsProtected;
-                isInternal = IsInternal;
-            }
-            else
-                isProtected = isInternal = false;
-        }
-
-        #region /* PARTIAL TYPES */
-
-        /// <summary>
-        /// Get any other parts of this <see cref="TypeDecl"/>.
-        /// </summary>
-        /// <returns></returns>
-        public List<TypeDecl> GetOtherParts()
-        {
-            List<TypeDecl> otherParts = new List<TypeDecl>();
-            GetOtherParts(otherParts, null);
-            return otherParts;
-        }
-
         protected void GetOtherParts(List<TypeDecl> otherParts, List<string> parentTypes)
         {
             // Find any other parts of the type
@@ -881,6 +1065,40 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                     parentTypeDecl.GetOtherParts(otherParts, parentTypes);
                 }
             }
+        }
+
+        protected void ParseConstraintClauses(Parser parser)
+        {
+            _constraintClauses = ConstraintClause.ParseList(parser, this);  // Parse any constraint clauses
+        }
+
+        protected void ParseModifiersAndAnnotations(Parser parser)
+        {
+            _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
+            ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
+        }
+
+        protected void ParseNameTypeParameters(Parser parser)
+        {
+            MoveComments(parser.LastToken);
+            _name = parser.GetIdentifierText();                       // Parse the name
+            MoveEOLComment(parser.LastToken);                         // Associate any skipped EOL comment
+            _typeParameters = TypeParameter.ParseList(parser, this);  // Parse any type parameters
+            MoveEOLComment(parser.LastToken);                         // Associate any skipped EOL comment
+        }
+
+        private bool FindTypeParameterIndexLocal(TypeParameter typeParameter, ref int index)
+        {
+            if (_typeParameters != null)
+            {
+                foreach (TypeParameter localTypeParameter in _typeParameters)
+                {
+                    if (localTypeParameter == typeParameter)
+                        return true;
+                    ++index;
+                }
+            }
+            return false;
         }
 
         private void GetOtherParts(object obj, List<TypeDecl> otherParts, List<string> parentTypes)
@@ -920,255 +1138,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                 }
             }
         }
-
-        #endregion
-
-        /// <summary>
-        /// Get the delegate parameters of the type (if any).
-        /// </summary>
-        public virtual ICollection GetDelegateParameters()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Get the delegate return type of the type (if any).
-        /// </summary>
-        public virtual TypeRefBase GetDelegateReturnType()
-        {
-            return null;
-        }
-
-        /// <summary>
-        /// Determine if the type is assignable from the specified type.
-        /// </summary>
-        public virtual bool IsAssignableFrom(TypeRef typeRef)
-        {
-            if (typeRef == null)
-                return false;
-
-            TypeRef thisTypeRef = CreateRef();
-            return (typeRef.IsSameRef(thisTypeRef) || typeRef.IsSubclassOf(thisTypeRef));
-        }
-
-        /// <summary>
-        /// Determine if the type is a subclass of the specified type.
-        /// </summary>
-        public virtual bool IsSubclassOf(TypeRef classTypeRef)
-        {
-            return classTypeRef.IsSameRef(GetBaseType());
-        }
-
-        /// <summary>
-        /// Determine if the type implements the specified interface type.
-        /// </summary>
-        public virtual bool IsImplementationOf(TypeRef interfaceTypeRef)
-        {
-            return false;
-        }
-
-        /// <summary>
-        /// Check if the specified TypeDecl is identical to OR has the same name/namespace as the current one (could be different parts).
-        /// </summary>
-        public bool IsSameAs(TypeDecl typeDecl)
-        {
-            return (this == typeDecl || (_name == typeDecl.Name && (_typeParameters != null ? _typeParameters.Count : 0) == typeDecl.TypeParameterCount && GetNamespace() == typeDecl.GetNamespace()));
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        /// <param name="descriptive">True to display type parameters and method parameters, otherwise false.</param>
-        public string GetFullName(bool descriptive)
-        {
-            string name = _name;
-            if (_typeParameters != null && _typeParameters.Count > 0)
-            {
-                if (descriptive)
-                    name += GetTypeParametersAsString(_typeParameters);
-                else
-                    name += "`" + TypeParameterCount;
-            }
-            if (Parent is TypeDecl)
-                return ((TypeDecl)Parent).GetFullName(descriptive) + (descriptive ? "." : "+") + name;
-            Namespace @namespace = GetNamespace();
-            return (@namespace != null && !@namespace.IsGlobal ? @namespace.FullName + "." : "") + name;
-        }
-
-        /// <summary>
-        /// Get the full name of the <see cref="INamedCodeObject"/>, including any namespace name.
-        /// </summary>
-        public string GetFullName()
-        {
-            return GetFullName(false);
-        }
-
-        /// <summary>
-        /// Get the specified type parameters as a descriptive string.
-        /// </summary>
-        internal static string GetTypeParametersAsString(ChildList<TypeParameter> typeParameters)
-        {
-            string result = TypeParameter.ParseTokenStart;
-            bool isFirst = true;
-            foreach (TypeParameter typeParameter in typeParameters)
-            {
-                result += (isFirst ? "" : ", ") + typeParameter.Name;
-                isFirst = false;
-            }
-            result += TypeParameter.ParseTokenEnd;
-            return result;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        protected TypeDecl(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            // Force all type declarations to start on a new line by default
-            IsFirstOnLine = true;
-        }
-
-        protected void ParseModifiersAndAnnotations(Parser parser)
-        {
-            _modifiers = ModifiersHelpers.Parse(parser, this);  // Parse any modifiers in reverse from the Unused list
-            ParseUnusedAnnotations(parser, this, false);        // Parse attributes and/or doc comments from the Unused list
-        }
-
-        protected void ParseNameTypeParameters(Parser parser)
-        {
-            MoveComments(parser.LastToken);
-            _name = parser.GetIdentifierText();                       // Parse the name
-            MoveEOLComment(parser.LastToken);                         // Associate any skipped EOL comment
-            _typeParameters = TypeParameter.ParseList(parser, this);  // Parse any type parameters
-            MoveEOLComment(parser.LastToken);                         // Associate any skipped EOL comment
-        }
-
-        protected void ParseConstraintClauses(Parser parser)
-        {
-            _constraintClauses = ConstraintClause.ParseList(parser, this);  // Parse any constraint clauses
-        }
-
-        /// <summary>
-        /// Determine if the specified comment should be associated with the current code object during parsing.
-        /// </summary>
-        public override bool AssociateCommentWhenParsing(CommentBase comment)
-        {
-            return true;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has an argument.
-        /// </summary>
-        public override bool HasArgument
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has parens around its argument.
-        /// </summary>
-        public override bool HasArgumentParens
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the object (0 to N).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return base.NewLines; }
-            set
-            {
-                // If we're changing to or from zero, also change any prefix attributes
-                bool isFirstOnLine = (value != 0);
-                if (_annotations != null && ((!isFirstOnLine && IsFirstOnLine) || (isFirstOnLine && !IsFirstOnLine)))
-                {
-                    foreach (Annotation annotation in _annotations)
-                    {
-                        if (annotation is Attribute)
-                            annotation.IsFirstOnLine = isFirstOnLine;
-                    }
-                }
-
-                base.NewLines = value;
-            }
-        }
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get
-            {
-                return (base.IsSingleLine && (_typeParameters == null || _typeParameters.Count == 0 || (!_typeParameters[0].IsFirstOnLine && _typeParameters.IsSingleLine))
-                    && (_constraintClauses == null || _constraintClauses.Count == 0 || (!_constraintClauses[0].IsFirstOnLine && _constraintClauses.IsSingleLine)));
-            }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value)
-                {
-                    if (_typeParameters != null && _typeParameters.Count > 0)
-                    {
-                        _typeParameters[0].IsFirstOnLine = false;
-                        _typeParameters.IsSingleLine = true;
-                    }
-                    if (_constraintClauses != null && _constraintClauses.Count > 0)
-                    {
-                        _constraintClauses[0].IsFirstOnLine = false;
-                        _constraintClauses.IsSingleLine = true;
-                    }
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextPrefix(CodeWriter writer, RenderFlags flags)
-        {
-            ModifiersHelpers.AsText(_modifiers, writer);
-        }
-
-        protected override void AsTextArgument(CodeWriter writer, RenderFlags flags)
-        {
-            AsTextName(writer, flags);
-        }
-
-        public void AsTextName(CodeWriter writer, RenderFlags flags)
-        {
-            if (flags.HasFlag(RenderFlags.Description) && _parent is TypeDecl)
-            {
-                ((TypeDecl)_parent).AsTextName(writer, flags);
-                Dot.AsTextDot(writer);
-            }
-
-            writer.WriteIdentifier(_name, flags);
-            if (HasTypeParameters)
-                TypeParameter.AsTextTypeParameters(writer, _typeParameters, flags);
-        }
-
-        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
-        {
-            if (!HasConstraintClauses)
-                base.AsTextSuffix(writer, flags);
-        }
-
-        protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
-        {
-            ConstraintClause.AsTextConstraints(writer, _constraintClauses, flags | RenderFlags.HasTerminator);
-            base.AsTextAfter(writer, flags);
-        }
-
-        #endregion
     }
 }

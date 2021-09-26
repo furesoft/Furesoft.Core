@@ -1,7 +1,5 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
@@ -9,7 +7,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 {
@@ -23,13 +22,42 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
     /// </remarks>
     public class ParameterDecl : VariableDecl
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the end of a parameter list.
+        /// </summary>
+        public const string ParseTokenEnd = Expression.ParseTokenEndGroup;
+
+        /// <summary>
+        /// The token used to parse 'out' parameters.
+        /// </summary>
+        public const string ParseTokenOut = "out";
+
+        /// <summary>
+        /// The token used to parse 'params' parameters.
+        /// </summary>
+        public const string ParseTokenParams = "params";
+
+        /// <summary>
+        /// The token used to parse 'ref' parameters.
+        /// </summary>
+        public const string ParseTokenRef = "ref";
+
+        /// <summary>
+        /// The token used to parse between parameters.
+        /// </summary>
+        public const string ParseTokenSeparator = Expression.ParseTokenSeparator;
+
+        /// <summary>
+        /// The token used to parse the start of a parameter list.
+        /// </summary>
+        public const string ParseTokenStart = Expression.ParseTokenStartGroup;
+
+        /// <summary>
+        /// The token used to parse 'this' parameters.
+        /// </summary>
+        public const string ParseTokenThis = "this";
 
         protected ParameterModifier _modifier;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         /// <summary>
         /// Create a <see cref="ParameterDecl"/>.
@@ -75,142 +103,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             _modifier = modifier;
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
-
-        /// <summary>
-        /// The descriptive category of the code object.
-        /// </summary>
-        public override string Category
-        {
-            get { return "parameter"; }
-        }
-
-        /// <summary>
-        /// The <see cref="ParameterModifier"/> for the parameter, if any.
-        /// </summary>
-        public ParameterModifier Modifier
-        {
-            get { return _modifier; }
-        }
-
-        /// <summary>
-        /// Determines if the parameter is a 'params' parameter.
-        /// </summary>
-        public bool IsParams
-        {
-            get { return (_modifier == ParameterModifier.Params); }
-            set { _modifier = (value ? ParameterModifier.Params : (IsParams ? ParameterModifier.None : _modifier)); }
-        }
-
-        /// <summary>
-        /// Determines if the parameter is being passed by reference.
-        /// </summary>
-        public bool IsRef
-        {
-            get { return (_modifier == ParameterModifier.Ref); }
-            set { _modifier = (value ? ParameterModifier.Ref : (IsRef ? ParameterModifier.None : _modifier)); }
-        }
-
-        /// <summary>
-        /// Determines if the parameter is being passed out only.
-        /// </summary>
-        public bool IsOut
-        {
-            get { return (_modifier == ParameterModifier.Out); }
-            set { _modifier = (value ? ParameterModifier.Out : (IsOut ? ParameterModifier.None : _modifier)); }
-        }
-
-        /// <summary>
-        /// Always <c>false</c> for a parameter.
-        /// </summary>
-        public override bool IsConst
-        {
-            get { return false; }
-            set { }
-        }
-
-        /// <summary>
-        /// Always <c>false</c> for a parameter.
-        /// </summary>
-        public override bool IsStatic
-        {
-            get { return false; }
-            set { }
-        }
-
-        #endregion
-
-        #region /* METHODS */
-
-        /// <summary>
-        /// Attach an <see cref="Annotation"/> (<see cref="Comment"/>, <see cref="DocComment"/>, <see cref="Attribute"/>, <see cref="CompilerDirective"/>, or <see cref="Message"/>) to the <see cref="CodeObject"/>.
-        /// </summary>
-        /// <param name="annotation">The <see cref="Annotation"/>.</param>
-        /// <param name="atFront">Inserts at the front if true, otherwise adds at the end.</param>
-        public override void AttachAnnotation(Annotation annotation, bool atFront)
-        {
-            // Force attached annotations to same-line for parameters
-            annotation.IsFirstOnLine = false;
-            base.AttachAnnotation(annotation, atFront);
-        }
-
-        /// <summary>
-        /// Create a reference to the <see cref="ParameterDecl"/>.
-        /// </summary>
-        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
-        /// <returns>A <see cref="ParameterRef"/>.</returns>
-        public override SymbolicRef CreateRef(bool isFirstOnLine)
-        {
-            return new ParameterRef(this, isFirstOnLine);
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the start of a parameter list.
-        /// </summary>
-        public const string ParseTokenStart = Expression.ParseTokenStartGroup;
-
-        /// <summary>
-        /// The token used to parse the end of a parameter list.
-        /// </summary>
-        public const string ParseTokenEnd = Expression.ParseTokenEndGroup;
-
-        /// <summary>
-        /// The token used to parse between parameters.
-        /// </summary>
-        public const string ParseTokenSeparator = Expression.ParseTokenSeparator;
-
-        /// <summary>
-        /// The token used to parse 'ref' parameters.
-        /// </summary>
-        public const string ParseTokenRef = "ref";
-
-        /// <summary>
-        /// The token used to parse 'out' parameters.
-        /// </summary>
-        public const string ParseTokenOut = "out";
-
-        /// <summary>
-        /// The token used to parse 'params' parameters.
-        /// </summary>
-        public const string ParseTokenParams = "params";
-
-        /// <summary>
-        /// The token used to parse 'this' parameters.
-        /// </summary>
-        public const string ParseTokenThis = "this";
-
         protected ParameterDecl(Parser parser, CodeObject parent)
-            : base(parser, parent)
+                    : base(parser, parent)
         { }
 
         protected ParameterDecl(Parser parser, CodeObject parent, string parseTokenEnd)
-            : base(parser, parent)
+                    : base(parser, parent)
         {
             // Get any comments after the '('
             if (parser.LastToken.Text == ParseTokenStart)
@@ -236,6 +134,121 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             ParseInitialization(parser, parent);  // Parse the initialization (if any)
 
             MoveEOLComment(parser.LastToken);  // Associate any skipped EOL comment
+        }
+
+        /// <summary>
+        /// The descriptive category of the code object.
+        /// </summary>
+        public override string Category
+        {
+            get { return "parameter"; }
+        }
+
+        /// <summary>
+        /// True if the <see cref="Statement"/> has a terminator character by default.
+        /// </summary>
+        public override bool HasTerminatorDefault
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Always <c>false</c> for a parameter.
+        /// </summary>
+        public override bool IsConst
+        {
+            get { return false; }
+            set { }
+        }
+
+        /// <summary>
+        /// True if the code object defaults to starting on a new line.
+        /// </summary>
+        public override bool IsFirstOnLineDefault
+        {
+            get { return false; }
+        }
+
+        /// <summary>
+        /// Determines if the parameter is being passed out only.
+        /// </summary>
+        public bool IsOut
+        {
+            get { return (_modifier == ParameterModifier.Out); }
+            set { _modifier = (value ? ParameterModifier.Out : (IsOut ? ParameterModifier.None : _modifier)); }
+        }
+
+        /// <summary>
+        /// Determines if the parameter is a 'params' parameter.
+        /// </summary>
+        public bool IsParams
+        {
+            get { return (_modifier == ParameterModifier.Params); }
+            set { _modifier = (value ? ParameterModifier.Params : (IsParams ? ParameterModifier.None : _modifier)); }
+        }
+
+        /// <summary>
+        /// Determines if the parameter is being passed by reference.
+        /// </summary>
+        public bool IsRef
+        {
+            get { return (_modifier == ParameterModifier.Ref); }
+            set { _modifier = (value ? ParameterModifier.Ref : (IsRef ? ParameterModifier.None : _modifier)); }
+        }
+
+        /// <summary>
+        /// Always <c>false</c> for a parameter.
+        /// </summary>
+        public override bool IsStatic
+        {
+            get { return false; }
+            set { }
+        }
+
+        /// <summary>
+        /// The <see cref="ParameterModifier"/> for the parameter, if any.
+        /// </summary>
+        public ParameterModifier Modifier
+        {
+            get { return _modifier; }
+        }
+
+        /// <summary>
+        /// The number of newlines preceeding the object (0 to N).
+        /// </summary>
+        public override int NewLines
+        {
+            get { return base.NewLines; }
+            set
+            {
+                // If we're changing to zero, also change all prefix attributes to zero
+                bool isFirstOnLine = (value != 0);
+                if (_annotations != null && !isFirstOnLine && IsFirstOnLine)
+                {
+                    foreach (Annotation annotation in _annotations)
+                    {
+                        if (annotation is Attribute)
+                            annotation.IsFirstOnLine = false;
+                    }
+                }
+
+                base.NewLines = value;
+            }
+        }
+
+        /// <summary>
+        /// Format a <see cref="ParameterModifier"/> as a string.
+        /// </summary>
+        public static string ParameterModifierToString(ParameterModifier modifier)
+        {
+            switch (modifier)
+            {
+                case ParameterModifier.Ref: return ParseTokenRef;
+                case ParameterModifier.Out: return ParseTokenOut;
+                case ParameterModifier.Params: return ParseTokenParams;
+                case ParameterModifier.This: return ParseTokenThis;
+            }
+            return "";
         }
 
         /// <summary>
@@ -294,80 +307,40 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             return parameterDecls;
         }
 
+        /// <summary>
+        /// Attach an <see cref="Annotation"/> (<see cref="Comment"/>, <see cref="DocComment"/>, <see cref="Attribute"/>, <see cref="CompilerDirective"/>, or <see cref="Message"/>) to the <see cref="CodeObject"/>.
+        /// </summary>
+        /// <param name="annotation">The <see cref="Annotation"/>.</param>
+        /// <param name="atFront">Inserts at the front if true, otherwise adds at the end.</param>
+        public override void AttachAnnotation(Annotation annotation, bool atFront)
+        {
+            // Force attached annotations to same-line for parameters
+            annotation.IsFirstOnLine = false;
+            base.AttachAnnotation(annotation, atFront);
+        }
+
+        /// <summary>
+        /// Create a reference to the <see cref="ParameterDecl"/>.
+        /// </summary>
+        /// <param name="isFirstOnLine">True if the reference should be displayed on a new line.</param>
+        /// <returns>A <see cref="ParameterRef"/>.</returns>
+        public override SymbolicRef CreateRef(bool isFirstOnLine)
+        {
+            return new ParameterRef(this, isFirstOnLine);
+        }
+
         protected static ParameterModifier ParseParameterModifier(string modifierName)
         {
             ParameterModifier modifier;
             switch (modifierName)
             {
-                case ParseTokenRef:    modifier = ParameterModifier.Ref; break;
-                case ParseTokenOut:    modifier = ParameterModifier.Out; break;
+                case ParseTokenRef: modifier = ParameterModifier.Ref; break;
+                case ParseTokenOut: modifier = ParameterModifier.Out; break;
                 case ParseTokenParams: modifier = ParameterModifier.Params; break;
-                case ParseTokenThis:   modifier = ParameterModifier.This; break;
-                default:               modifier = ParameterModifier.None; break;
+                case ParseTokenThis: modifier = ParameterModifier.This; break;
+                default: modifier = ParameterModifier.None; break;
             }
             return modifier;
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// True if the code object defaults to starting on a new line.
-        /// </summary>
-        public override bool IsFirstOnLineDefault
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// True if the <see cref="Statement"/> has a terminator character by default.
-        /// </summary>
-        public override bool HasTerminatorDefault
-        {
-            get { return false; }
-        }
-
-        /// <summary>
-        /// The number of newlines preceeding the object (0 to N).
-        /// </summary>
-        public override int NewLines
-        {
-            get { return base.NewLines; }
-            set
-            {
-                // If we're changing to zero, also change all prefix attributes to zero
-                bool isFirstOnLine = (value != 0);
-                if (_annotations != null && !isFirstOnLine && IsFirstOnLine)
-                {
-                    foreach (Annotation annotation in _annotations)
-                    {
-                        if (annotation is Attribute)
-                            annotation.IsFirstOnLine = false;
-                    }
-                }
-
-                base.NewLines = value;
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        /// <summary>
-        /// Format a <see cref="ParameterModifier"/> as a string.
-        /// </summary>
-        public static string ParameterModifierToString(ParameterModifier modifier)
-        {
-            switch (modifier)
-            {
-                case ParameterModifier.Ref:    return ParseTokenRef;
-                case ParameterModifier.Out:    return ParseTokenOut;
-                case ParameterModifier.Params: return ParseTokenParams;
-                case ParameterModifier.This:   return ParseTokenThis;
-            }
-            return "";
         }
 
         protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
@@ -378,7 +351,5 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             UpdateLineCol(writer, flags);
             writer.WriteIdentifier(_name, flags);
         }
-
-        #endregion
     }
 }

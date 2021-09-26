@@ -2,9 +2,6 @@
 // Copyright (C) 2007-2012 Inevitable Software, all rights reserved.
 // Released under the Common Development and Distribution License, CDDL-1.0: http://opensource.org/licenses/cddl1.php
 
-using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
@@ -15,7 +12,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Properties;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
 {
@@ -25,16 +24,15 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
     /// </summary>
     public abstract class BaseListTypeDecl : TypeDecl
     {
-        #region /* FIELDS */
+        /// <summary>
+        /// The token used to parse the code object.
+        /// </summary>
+        public const string ParseToken = ":";
 
         /// <summary>
         /// List of base types, each of which is an <see cref="Expression"/> that must evaluate to a <see cref="TypeRef"/> in valid code.
         /// </summary>
         protected ChildList<Expression> _baseTypes;
-
-        #endregion
-
-        #region /* CONSTRUCTORS */
 
         protected BaseListTypeDecl(string name, Modifiers modifiers)
             : base(name, modifiers)
@@ -50,9 +48,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             CreateBaseTypes().AddRange(baseTypes);
         }
 
-        #endregion
-
-        #region /* PROPERTIES */
+        protected BaseListTypeDecl(Parser parser, CodeObject parent)
+                    : base(parser, parent)
+        { }
 
         /// <summary>
         /// The list of base types.
@@ -70,9 +68,40 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             get { return (_baseTypes != null && _baseTypes.Count > 0); }
         }
 
-        #endregion
+        /// <summary>
+        /// Determines if the code object only requires a single line for display.
+        /// </summary>
+        public override bool IsSingleLine
+        {
+            get { return (base.IsSingleLine && (_baseTypes == null || _baseTypes.Count == 0 || (!_baseTypes[0].IsFirstOnLine && _baseTypes.IsSingleLine))); }
+            set
+            {
+                base.IsSingleLine = value;
+                if (value && _baseTypes != null && _baseTypes.Count > 0)
+                {
+                    _baseTypes[0].IsFirstOnLine = false;
+                    _baseTypes.IsSingleLine = true;
+                }
+            }
+        }
 
-        #region /* METHODS */
+        /// <summary>
+        /// Add one or more base type <see cref="Expression"/>s.
+        /// </summary>
+        public void AddBaseTypes(params Expression[] baseTypes)
+        {
+            CreateBaseTypes().AddRange(baseTypes);
+        }
+
+        /// <summary>
+        /// Deep-clone the code object.
+        /// </summary>
+        public override CodeObject Clone()
+        {
+            BaseListTypeDecl clone = (BaseListTypeDecl)base.Clone();
+            clone._baseTypes = ChildListHelpers.Clone(_baseTypes, clone);
+            return clone;
+        }
 
         /// <summary>
         /// Create the list of base type <see cref="Expression"/>s, or return the existing one.
@@ -82,14 +111,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             if (_baseTypes == null)
                 _baseTypes = new ChildList<Expression>(this);
             return _baseTypes;
-        }
-
-        /// <summary>
-        /// Add one or more base type <see cref="Expression"/>s.
-        /// </summary>
-        public void AddBaseTypes(params Expression[] baseTypes)
-        {
-            CreateBaseTypes().AddRange(baseTypes);
         }
 
         /// <summary>
@@ -242,51 +263,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         }
 
         /// <summary>
-        /// Deep-clone the code object.
-        /// </summary>
-        public override CodeObject Clone()
-        {
-            BaseListTypeDecl clone = (BaseListTypeDecl)base.Clone();
-            clone._baseTypes = ChildListHelpers.Clone(_baseTypes, clone);
-            return clone;
-        }
-
-        #endregion
-
-        #region /* PARSING */
-
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = ":";
-
-        protected BaseListTypeDecl(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        protected void ParseBaseTypeList(Parser parser)
-        {
-            // Check for compiler directives, storing them as infix annotations on the parent
-            Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsInfix1);
-
-            // Parse the base-type list (if any)
-            if (parser.TokenText == ParseToken)
-            {
-                Token lastHeaderToken = parser.LastToken;
-                parser.NextToken();  // Move past the ':'
-                bool isFirstOnLine = parser.LastToken.IsFirstOnLine;
-
-                _baseTypes = Expression.ParseList(parser, this, null);
-                if (_baseTypes != null && _baseTypes.Count > 0)
-                {
-                    _baseTypes[0].IsFirstOnLine = isFirstOnLine;
-                    // Move any regular comments from before the ':' to the first object in the list
-                    _baseTypes[0].MoveComments(lastHeaderToken);
-                }
-            }
-        }
-
-        /// <summary>
         /// Move any trailing post annotations on the last base type to the first constraint (if any) as prefix annotations.
         /// </summary>
         protected void AdjustBaseTypePostComments()
@@ -315,37 +291,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                         _baseTypes[baseTypes - 1].Annotations = null;
                 }
             }
-        }
-
-        #endregion
-
-        #region /* FORMATTING */
-
-        /// <summary>
-        /// Determines if the code object only requires a single line for display.
-        /// </summary>
-        public override bool IsSingleLine
-        {
-            get { return (base.IsSingleLine && (_baseTypes == null || _baseTypes.Count == 0 || (!_baseTypes[0].IsFirstOnLine && _baseTypes.IsSingleLine))); }
-            set
-            {
-                base.IsSingleLine = value;
-                if (value && _baseTypes != null && _baseTypes.Count > 0)
-                {
-                    _baseTypes[0].IsFirstOnLine = false;
-                    _baseTypes.IsSingleLine = true;
-                }
-            }
-        }
-
-        #endregion
-
-        #region /* RENDERING */
-
-        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
-        {
-            if (!HasBaseTypes)
-                base.AsTextSuffix(writer, flags);
         }
 
         protected override void AsTextAfter(CodeWriter writer, RenderFlags flags)
@@ -382,6 +327,32 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             base.AsTextAfter(writer, flags);
         }
 
-        #endregion
+        protected override void AsTextSuffix(CodeWriter writer, RenderFlags flags)
+        {
+            if (!HasBaseTypes)
+                base.AsTextSuffix(writer, flags);
+        }
+
+        protected void ParseBaseTypeList(Parser parser)
+        {
+            // Check for compiler directives, storing them as infix annotations on the parent
+            Block.ParseCompilerDirectives(parser, this, AnnotationFlags.IsInfix1);
+
+            // Parse the base-type list (if any)
+            if (parser.TokenText == ParseToken)
+            {
+                Token lastHeaderToken = parser.LastToken;
+                parser.NextToken();  // Move past the ':'
+                bool isFirstOnLine = parser.LastToken.IsFirstOnLine;
+
+                _baseTypes = Expression.ParseList(parser, this, null);
+                if (_baseTypes != null && _baseTypes.Count > 0)
+                {
+                    _baseTypes[0].IsFirstOnLine = isFirstOnLine;
+                    // Move any regular comments from before the ':' to the first object in the list
+                    _baseTypes[0].MoveComments(lastHeaderToken);
+                }
+            }
+        }
     }
 }
