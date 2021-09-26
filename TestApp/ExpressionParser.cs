@@ -5,7 +5,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
@@ -88,6 +90,72 @@ namespace TestApp
             }
         }
 
+        private static Expression BindConstainCondition(RelationalOperator condition)
+        {
+            if (condition.Left is RelationalOperator l && condition.Right is Literal r)
+            {
+                if (condition.Symbol == "<")
+                {
+                    if (l.Left is UnresolvedRef)
+                    {
+                        condition.Right = new LessThan(l.Left, condition.Right);
+                    }
+                    else if (l.Right is UnresolvedRef)
+                    {
+                        condition.Right = new LessThan(l.Right, condition.Right);
+                    }
+                }
+                else if (condition.Symbol == ">")
+                {
+                    if (l.Left is UnresolvedRef)
+                    {
+                        condition.Right = new GreaterThan(l.Left, condition.Right);
+                    }
+                    else if (l.Right is UnresolvedRef)
+                    {
+                        condition.Right = new GreaterThan(l.Right, condition.Right);
+                    }
+                }
+                else if (condition.Symbol == "<=")
+                {
+                    if (l.Left is UnresolvedRef)
+                    {
+                        condition.Right = new LessThanEqual(l.Left, condition.Right);
+                    }
+                    else if (l.Right is UnresolvedRef)
+                    {
+                        condition.Right = new LessThanEqual(l.Right, condition.Right);
+                    }
+                }
+                else if (condition.Symbol == ">=")
+                {
+                    if (l.Left is UnresolvedRef)
+                    {
+                        condition.Right = new GreaterThanEqual(l.Left, condition.Right);
+                    }
+                    else if (l.Right is UnresolvedRef)
+                    {
+                        condition.Right = new GreaterThanEqual(l.Right, condition.Right);
+                    }
+                }
+                else if (condition.Symbol == "!=")
+                {
+                    if (l.Left is UnresolvedRef)
+                    {
+                        condition.Right = new NotEqual(l.Left, condition.Right);
+                    }
+                    else if (l.Right is UnresolvedRef)
+                    {
+                        condition.Right = new NotEqual(l.Right, condition.Right);
+                    }
+                }
+
+                return new And(condition.Left, condition.Right);
+            }
+
+            return condition;
+        }
+
         private static Expression BindExpression(Expression expr, Scope scope)
         {
             if (expr is BinaryOperator op)
@@ -141,6 +209,8 @@ namespace TestApp
             }
             else if (fdef is FunctionArgumentConditionDefinition facd)
             {
+                facd.Condition = BindConstainCondition((RelationalOperator)facd.Condition);
+
                 if (_argumentConstrains.ContainsKey(facd.Function))
                 {
                     _argumentConstrains[facd.Function].Add(facd);
@@ -207,6 +277,8 @@ namespace TestApp
 
         private static bool EvaluateCondition(BinaryBooleanOperator expr)
         {
+            //ToDo: capsulate more than one condition on param to (&& Expression) then evaluate here
+
             var left = EvaluateExpression(expr.Left, RootScope);
             var right = EvaluateExpression(expr.Right, RootScope);
 
