@@ -322,6 +322,10 @@ namespace TestApp
             {
                 return double.Parse(lit.Text.Replace("d", ""));
             }
+            else if (expr is Negative neg)
+            {
+                return -EvaluateExpression(neg.Expression, scope);
+            }
             else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
             {
                 if (RootScope.Functions.TryGetValue(nameRef.Reference.ToString(), out var fn))

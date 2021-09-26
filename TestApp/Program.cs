@@ -8,9 +8,9 @@ namespace TestApp
         {
             ExpressionParser.Init();
             ExpressionParser.AddVariable("x", 42);
-            //ExpressionParser.Evaluate("g(x) = x*x");
+            ExpressionParser.Evaluate("g(x) = x*x");
 
-            var result = ExpressionParser.Evaluate("f: x in N  2 < x < 20; f(x) = 2*x; f(5)");
+            var result = ExpressionParser.Evaluate("f: x in N 2 < x < 20; f(x) = 2*x; -f(5)");
             //f: x is N {2,10};
 
             //ToDo: implement constraint for interval
@@ -19,7 +19,12 @@ namespace TestApp
             //ToDo: if a function has 2 arguments but called with 1 attach error
             //ToDo: add value expression: |-12|
             //ToDo: implement tests
-            //
+            //ToDo: add simplification mode instead of evaluation?
+            //ToDo: compiler?
+            //ToDo: add negation
+            //ToDo: add module for functionparameterconstrain f: x in N x % 2 == 0
+            //ToDo: add boolean operators == !=
+            //ToDo: add constrain for return value?
 
             return App.Current.Run();
         }
