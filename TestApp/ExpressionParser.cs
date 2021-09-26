@@ -275,22 +275,29 @@ namespace TestApp
             return 0;
         }
 
-        private static bool EvaluateCondition(BinaryBooleanOperator expr)
+        private static bool EvaluateCondition(BinaryOperator expr)
         {
             //ToDo: capsulate more than one condition on param to (&& Expression) then evaluate here
 
-            var left = EvaluateExpression(expr.Left, RootScope);
-            var right = EvaluateExpression(expr.Right, RootScope);
-
-            return expr switch
+            if (expr is And rel)
             {
-                LessThan lt => left < right,
-                GreaterThan gt => left > right,
-                LessThanEqual gt => left <= right,
-                GreaterThanEqual gt => left >= right,
-                NotEqual ne => left != right,
-                _ => false,
-            };
+                return EvaluateCondition((BinaryOperator)rel.Left) && EvaluateCondition((BinaryOperator)rel.Right);
+            }
+            else
+            {
+                var left = EvaluateExpression(expr.Left, RootScope);
+                var right = EvaluateExpression(expr.Right, RootScope);
+
+                return expr switch
+                {
+                    LessThan lt => left < right,
+                    GreaterThan gt => left > right,
+                    LessThanEqual gt => left <= right,
+                    GreaterThanEqual gt => left >= right,
+                    NotEqual ne => left != right,
+                    _ => false,
+                };
+            }
         }
 
         private static double EvaluateExpression(Expression expr, Scope scope)
