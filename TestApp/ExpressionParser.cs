@@ -340,7 +340,8 @@ namespace TestApp
             }
             else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
             {
-                if (RootScope.Functions.TryGetValue(nameRef.Reference.ToString(), out var fn))
+                string fnName = nameRef.Reference.ToString();
+                if (RootScope.Functions.TryGetValue(fnName, out var fn))
                 {
                     Scope fnScope = Scope.CreateScope(RootScope);
 
@@ -384,6 +385,10 @@ namespace TestApp
                     }
 
                     return EvaluateExpression((Expression)fn.Body.First(), fnScope);
+                }
+                else if (RootScope.ImportedFunctions.TryGetValue(fnName, out var importedFn))
+                {
+                    return (double)importedFn.Invoke(scope.Variables.Values.ToArray());
                 }
 
                 return 0;
@@ -429,6 +434,7 @@ namespace TestApp
         public class Scope
         {
             public Dictionary<string, FunctionDefinition> Functions = new();
+            public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
             public Dictionary<string, double> Variables = new();
             public Scope Parent { get; set; }
 
@@ -452,6 +458,11 @@ namespace TestApp
                 }
 
                 return 0;
+            }
+
+            public void ImportFunction(string name, Func<double[], double> func)
+            {
+                ImportedFunctions.Add(name, func);
             }
         }
     }

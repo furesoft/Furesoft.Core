@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CLI;
+using System;
 
 namespace TestApp
 {
@@ -9,8 +10,9 @@ namespace TestApp
             ExpressionParser.Init();
             ExpressionParser.AddVariable("x", 42);
             ExpressionParser.Evaluate("g(x) = x*x");
+            ExpressionParser.RootScope.ImportedFunctions.Add("display", new Func<double[], double>((x) => { Console.WriteLine(x[0]); return 0; }));
 
-            var result = ExpressionParser.Evaluate("f: x in N 2 < x < 20; f(x) = 2*x; -f(5);|-4**2|");
+            var result = ExpressionParser.Evaluate("f: x in N 2 < x < 20; f(x) = 2*x; display(-f(5));|-4**2|");
             //f: x is N {2,10};
 
             //ToDo: implement constraint for interval
