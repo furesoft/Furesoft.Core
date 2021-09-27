@@ -167,10 +167,10 @@ namespace TestApp
                 op.Left = BindExpression(op.Left, scope);
                 op.Right = BindExpression(op.Right, scope);
             }
-            else if (expr is UnresolvedRef uref)
+            /*else if (expr is UnresolvedRef uref)
             {
                 return scope.GetVariable(uref.Reference.ToString());
-            }
+            }*/
 
             return expr;
         }
@@ -279,18 +279,18 @@ namespace TestApp
             return 0;
         }
 
-        private static bool EvaluateCondition(BinaryOperator expr)
+        private static bool EvaluateCondition(BinaryOperator expr, Scope scope)
         {
             //ToDo: capsulate more than one condition on param to (&& Expression) then evaluate here
 
             if (expr is And rel)
             {
-                return EvaluateCondition((BinaryOperator)rel.Left) && EvaluateCondition((BinaryOperator)rel.Right);
+                return EvaluateCondition((BinaryOperator)rel.Left, scope) && EvaluateCondition((BinaryOperator)rel.Right, scope);
             }
             else
             {
-                var left = EvaluateExpression(expr.Left, RootScope);
-                var right = EvaluateExpression(expr.Right, RootScope);
+                var left = EvaluateExpression(expr.Left, scope);
+                var right = EvaluateExpression(expr.Right, scope);
 
                 return expr switch
                 {
@@ -363,7 +363,7 @@ namespace TestApp
                             {
                                 if (EvaluateNumberRoom(c, arg.Value))
                                 {
-                                    if (EvaluateCondition((BinaryBooleanOperator)constrain.condition))
+                                    if (EvaluateCondition((BinaryBooleanOperator)constrain.condition, fnScope))
                                     {
                                         continue;
                                     }
@@ -388,7 +388,8 @@ namespace TestApp
                 }
                 else if (RootScope.ImportedFunctions.TryGetValue(fnName, out var importedFn))
                 {
-                    return (double)importedFn.Invoke(scope.Variables.Values.ToArray());
+                    double[] arg = call.Arguments.Select(_ => EvaluateExpression(_, scope)).ToArray();
+                    return (double)importedFn.Invoke(arg);
                 }
 
                 return 0;
