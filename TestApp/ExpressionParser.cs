@@ -17,6 +17,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace TestApp
 {
@@ -251,6 +252,11 @@ namespace TestApp
                 }
             }
 
+            foreach (var funcs in boundTree)
+            {
+                errors.AddRange(GetMessagesOfCall(funcs));
+            }
+
             return new() { Value = returnValue, Errors = errors };
         }
 
@@ -345,6 +351,14 @@ namespace TestApp
                 {
                     Scope fnScope = Scope.CreateScope(RootScope);
 
+                    if (fn.ParameterCount != call.ArgumentCount)
+                    {
+                        call.AttachMessage($"Argument Count Mismatch. Expected {fn.ParameterCount} but given {call.ArgumentCount} on {fnName}",
+                            MessageSeverity.Error, MessageSource.Resolve);
+
+                        return 0;
+                    }
+
                     for (int i = 0; i < fn.ParameterCount; i++)
                     {
                         fnScope.Variables.Add(fn.Parameters[i].Name, EvaluateExpression(call.Arguments[i], scope));
@@ -388,8 +402,19 @@ namespace TestApp
                 }
                 else if (RootScope.ImportedFunctions.TryGetValue(fnName, out var importedFn))
                 {
-                    double[] arg = call.Arguments.Select(_ => EvaluateExpression(_, scope)).ToArray();
-                    return (double)importedFn.Invoke(arg);
+                    double[] args = call.Arguments.Select(_ => EvaluateExpression(_, scope)).ToArray();
+
+                    if (MatchesArguments(importedFn.Method, args))
+                    {
+                        return (double)importedFn.Invoke(args);
+                    }
+                    else
+                    {
+                        call.AttachMessage($"Argument Count Mismatch. Expected {importedFn.Method.GetParameters().Count()} given {args.Length} on {fnName}",
+                            MessageSeverity.Error, MessageSource.Resolve);
+
+                        return 0;
+                    }
                 }
 
                 return 0;
@@ -415,6 +440,30 @@ namespace TestApp
             };
         }
 
+        private static IEnumerable<Message> GetMessagesOfCall(CodeObject obj)
+        {
+            var result = new List<Message>();
+
+            if (obj.HasAnnotations)
+            {
+                result.AddRange(obj.Annotations.OfType<Message>());
+            }
+
+            if (obj is Call call)
+            {
+                foreach (var arg in call.Arguments)
+                {
+                    result.AddRange(GetMessagesOfCall(arg));
+                }
+            }
+            else if (obj is Negative neg)
+            {
+                result.AddRange(GetMessagesOfCall(neg.Expression));
+            }
+
+            return result;
+        }
+
         private static string GetParameterName(Expression condition)
         {
             if (condition is UnresolvedRef uref)
@@ -430,6 +479,11 @@ namespace TestApp
             }
 
             return null;
+        }
+
+        private static bool MatchesArguments(MethodInfo mi, double[] parameters)
+        {
+            return mi.GetParameters().Count() == parameters.Length;
         }
 
         public class Scope
