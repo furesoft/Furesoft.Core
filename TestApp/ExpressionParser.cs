@@ -79,6 +79,7 @@ namespace TestApp
             InfinityRef.AddParsePoints();
 
             PowerOperator.AddParsePoints();
+            ValueExpression.AddParsePoints();
         }
 
         private static CodeObject BindAssignment(Assignment a)
@@ -324,6 +325,10 @@ namespace TestApp
             else if (expr is PowerOperator pow)
             {
                 return Math.Pow(EvaluateExpression(pow.Left, scope), EvaluateExpression(pow.Right, scope));
+            }
+            else if (expr is ValueExpression val)
+            {
+                return Math.Abs(EvaluateExpression(val.Expression, scope));
             }
             else if (expr is Literal lit)
             {
