@@ -25,6 +25,9 @@ namespace TestApp
             //ToDo: add module for functionparameterconstrain f: x in N x % 2 == 0
             //ToDo: add boolean operators == !=
             //ToDo: add constrain for return value?
+            //ToDo: add measurements for parameters and variables and resolve or specify is return value is in correct measurement: f: x is [m]
+            //y is [m/s]
+            //measure for f(x) is [m/s*s]
 
             return App.Current.Run();
         }
