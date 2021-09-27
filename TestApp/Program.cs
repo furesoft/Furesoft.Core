@@ -12,11 +12,10 @@ namespace TestApp
             ExpressionParser.Evaluate("g(x) = x*x");
             ExpressionParser.RootScope.ImportedFunctions.Add("display", new Func<double[], double>((x) => { Console.WriteLine(x[0]); return 0; }));
 
-            var result = ExpressionParser.Evaluate("f: x in N 2 < x < 20; f(x) = 2*x; display(-f(5, 2));|-4**2|");
+            var result = ExpressionParser.Evaluate("f: x in N 2 <= x < 20; f(x) = 2*x; f(2); f(3); f(4);  display(-f(5, 2));|-4**2|");
             //f: x is N {2,10};
 
             //ToDo: implement constraint for interval
-            //ToDo: if a function has 2 arguments but called with 1 attach error
             //ToDo: implement tests
             //ToDo: add simplification mode instead of evaluation?
             //ToDo: compiler?
@@ -28,7 +27,6 @@ namespace TestApp
             //y is [m/s]
             //measure for f(x) is [m/s*s]
             //ToDo: move to new assembly
-            //ToDo: add all return values as tuple
             //ToDo: add position to error messages if possible
 
             return App.Current.Run();

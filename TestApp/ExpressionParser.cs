@@ -24,7 +24,7 @@ namespace TestApp
     public class EvaluationResult
     {
         public List<Message> Errors { get; set; }
-        public double Value { get; set; }
+        public List<double> Values { get; set; } = new();
     }
 
     public class ExpressionParser
@@ -75,6 +75,7 @@ namespace TestApp
             NotEqual.AddParsePoints();
 
             Negative.AddParsePoints();
+            Mod.AddParsePoints();
 
             IntervalExpression.AddParsePoints();
             InfinityRef.AddParsePoints();
@@ -236,12 +237,12 @@ namespace TestApp
 
         private static EvaluationResult Evaluate(List<CodeObject> boundTree)
         {
-            double returnValue = 0;
+            var returnValues = new List<double>();
             var errors = new List<Message>();
 
             foreach (var node in boundTree)
             {
-                returnValue = Evaluate(node);
+                returnValues.Add(Evaluate(node));
             }
 
             foreach (var funcs in RootScope.Functions)
@@ -257,7 +258,7 @@ namespace TestApp
                 errors.AddRange(GetMessagesOfCall(funcs));
             }
 
-            return new() { Value = returnValue, Errors = errors };
+            return new() { Values = returnValues, Errors = errors };
         }
 
         private static double Evaluate(CodeObject obj)
@@ -331,6 +332,10 @@ namespace TestApp
             else if (expr is PowerOperator pow)
             {
                 return Math.Pow(EvaluateExpression(pow.Left, scope), EvaluateExpression(pow.Right, scope));
+            }
+            else if (expr is Mod mod)
+            {
+                return EvaluateExpression(mod.Left, scope) % EvaluateExpression(mod.Right, scope);
             }
             else if (expr is ValueExpression val)
             {
