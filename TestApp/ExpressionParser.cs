@@ -14,6 +14,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -76,6 +77,8 @@ namespace TestApp
 
             IntervalExpression.AddParsePoints();
             InfinityRef.AddParsePoints();
+
+            PowerOperator.AddParsePoints();
         }
 
         private static CodeObject BindAssignment(Assignment a)
@@ -317,6 +320,10 @@ namespace TestApp
             else if (expr is Divide div)
             {
                 return EvaluateExpression(div.Left, scope) / EvaluateExpression(div.Right, scope);
+            }
+            else if (expr is PowerOperator pow)
+            {
+                return Math.Pow(EvaluateExpression(pow.Left, scope), EvaluateExpression(pow.Right, scope));
             }
             else if (expr is Literal lit)
             {
