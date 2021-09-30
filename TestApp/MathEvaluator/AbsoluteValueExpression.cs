@@ -5,9 +5,9 @@ using Furesoft.Core.CodeDom.Rendering;
 
 namespace TestApp
 {
-    public class ValueExpression : Expression
+    public class AbsoluteValueExpression : Expression
     {
-        public ValueExpression(Parser parser, CodeObject parent) : base(parser, parent)
+        public AbsoluteValueExpression(Parser parser, CodeObject parent) : base(parser, parent)
         {
         }
 
@@ -22,7 +22,7 @@ namespace TestApp
         {
             parser.NextToken();
 
-            var result = new ValueExpression(parser, parent);
+            var result = new AbsoluteValueExpression(parser, parent);
 
             result.Expression = Expression.Parse(parser, parent);
 
