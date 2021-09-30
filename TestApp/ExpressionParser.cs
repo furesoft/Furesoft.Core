@@ -33,7 +33,7 @@ namespace TestApp
 
         private static Dictionary<string, List<FunctionArgumentConditionDefinition>> _argumentConstrains = new();
 
-        public static void AddVariable(string name, int value, Scope scope = null)
+        public static void AddVariable(string name, double value, Scope scope = null)
         {
             if (scope == null)
             {
@@ -73,6 +73,10 @@ namespace TestApp
             GreaterThanEqual.AddParsePoints();
             LessThanEqual.AddParsePoints();
             NotEqual.AddParsePoints();
+            Equal.AddParsePoints();
+
+            And.AddParsePoints();
+            Or.AddParsePoints();
 
             Negative.AddParsePoints();
             Mod.AddParsePoints();
@@ -215,7 +219,14 @@ namespace TestApp
             }
             else if (fdef is FunctionArgumentConditionDefinition facd)
             {
-                facd.Condition = BindConstainCondition((RelationalOperator)facd.Condition);
+                if (facd.Condition is RelationalOperator rel)
+                {
+                    facd.Condition = BindConstainCondition(rel);
+                }
+                else if (facd.Condition is And an)
+                {
+                    an.Left = BindExpression(an.Left, scope);
+                }
 
                 if (_argumentConstrains.ContainsKey(facd.Function))
                 {
@@ -496,6 +507,7 @@ namespace TestApp
             public Dictionary<string, FunctionDefinition> Functions = new();
             public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
             public Dictionary<string, double> Variables = new();
+
             public Scope Parent { get; set; }
 
             public static Scope CreateScope(Scope parent = null)
@@ -518,6 +530,31 @@ namespace TestApp
                 }
 
                 return 0;
+            }
+
+            public void Import(Type t)
+            {
+                foreach (var mi in t.GetMethods())
+                {
+                    if (mi.IsStatic && !mi.GetParameters().Select(_ => _.ParameterType).Any(_ => _ != typeof(double)))
+                    {
+                        if (!ImportedFunctions.ContainsKey(mi.Name.ToLower()))
+                        {
+                            ImportedFunctions.Add(mi.Name.ToLower(), new Func<double[], double>(args =>
+                            {
+                                return (double)mi.Invoke(null, args.Cast<object>().ToArray());
+                            }));
+                        }
+                    }
+                }
+
+                foreach (var field in t.GetFields())
+                {
+                    if (field.IsStatic)
+                    {
+                        Variables.Add(field.Name.ToUpper(), (double)field.GetValue(null));
+                    }
+                }
             }
 
             public void ImportFunction(string name, Func<double[], double> func)

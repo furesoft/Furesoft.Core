@@ -8,11 +8,16 @@ namespace TestApp
         public static int Main(string[] args)
         {
             ExpressionParser.Init();
+
             ExpressionParser.AddVariable("x", 42);
+            ExpressionParser.RootScope.Import(typeof(Math));
+
+            var floorPi = ExpressionParser.Evaluate("floor(PI);");
             ExpressionParser.Evaluate("g(x) = x*x");
+
             ExpressionParser.RootScope.ImportedFunctions.Add("display", new Func<double[], double>((x) => { Console.WriteLine(x[0]); return 0; }));
 
-            var result = ExpressionParser.Evaluate("f: x in N 2 <= x < 20; f(x) = 2*x; f(2); f(3); f(4);  display(-f(5, 2));|-4**2|");
+            var result = ExpressionParser.Evaluate("f: x in N 2 <= x < 20 && x % 2 == 0; f(x) = 2*x; f(2); f(3); f(4);  display(-f(5));|-4**2|");
             //f: x is N {2,10};
 
             //ToDo: implement constraint for interval
