@@ -34,6 +34,10 @@ namespace TestApp
             //measure for f(x) is [m/s*s]
             //ToDo: move to new assembly
             //ToDo: add position to error messages if possible
+            //ToDo: add module system
+            //ToDo: add module definion parsing: module geometry; identifier or string as argument
+            //ToDo: add importing module to global scope: use geometry; identifier or string as argument
+            //ToDo: add loading module from file: use "./geometry.math"; automatic import all things to scope
 
             return App.Current.Run();
         }
