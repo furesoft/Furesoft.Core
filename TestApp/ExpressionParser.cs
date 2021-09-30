@@ -225,7 +225,14 @@ namespace TestApp
                 }
                 else if (facd.Condition is And an)
                 {
-                    an.Left = BindExpression(an.Left, scope);
+                    if (an.Left is RelationalOperator l)
+                    {
+                        an.Left = BindConstainCondition(l);
+                    }
+                    if (an.Right is RelationalOperator r)
+                    {
+                        an.Right = BindConstainCondition(r);
+                    }
                 }
 
                 if (_argumentConstrains.ContainsKey(facd.Function))
@@ -299,11 +306,13 @@ namespace TestApp
 
         private static bool EvaluateCondition(BinaryOperator expr, Scope scope)
         {
-            //ToDo: capsulate more than one condition on param to (&& Expression) then evaluate here
-
             if (expr is And rel)
             {
                 return EvaluateCondition((BinaryOperator)rel.Left, scope) && EvaluateCondition((BinaryOperator)rel.Right, scope);
+            }
+            else if (expr is Or o)
+            {
+                return EvaluateCondition((BinaryOperator)o.Left, scope) || EvaluateCondition((BinaryOperator)o.Right, scope);
             }
             else
             {
@@ -317,6 +326,7 @@ namespace TestApp
                     LessThanEqual gt => left <= right,
                     GreaterThanEqual gt => left >= right,
                     NotEqual ne => left != right,
+                    Equal ne => left == right,
                     _ => false,
                 };
             }
@@ -399,7 +409,7 @@ namespace TestApp
                                     }
                                     else
                                     {
-                                        fn.AttachMessage($"'{arg.Key}' is not in range '{constrain.condition}'", MessageSeverity.Error, MessageSource.Resolve);
+                                        fn.AttachMessage($"'{arg.Key}={fnScope.Variables[arg.Key]}' is not in range '{constrain.condition}'", MessageSeverity.Error, MessageSource.Resolve);
 
                                         return 0;
                                     }
