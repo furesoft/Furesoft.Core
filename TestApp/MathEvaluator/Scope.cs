@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TestApp.MathEvaluator;
+using TestApp;
 
-namespace TestApp
+namespace TestApp.MathEvaluator
 {
     public class Scope
     {

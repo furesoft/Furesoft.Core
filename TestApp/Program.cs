@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CLI;
 using System;
+using TestApp.MathEvaluator;
 
 namespace TestApp
 {

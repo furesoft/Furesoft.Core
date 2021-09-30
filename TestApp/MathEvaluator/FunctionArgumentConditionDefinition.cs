@@ -2,8 +2,10 @@
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.Parsing;
+using TestApp.MathEvaluator;
+using TestApp;
 
-namespace TestApp
+namespace TestApp.MathEvaluator
 {
     //f: x is N {2,10}
     //f: x is N x > 10

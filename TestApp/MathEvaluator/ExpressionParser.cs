@@ -16,7 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace TestApp
+namespace TestApp.MathEvaluator
 {
     public class ExpressionParser
     {

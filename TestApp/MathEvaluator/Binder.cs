@@ -12,8 +12,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 using System.Collections.Generic;
 using System.Linq;
+using TestApp;
+using TestApp.MathEvaluator;
 
-namespace TestApp
+namespace TestApp.MathEvaluator
 {
     public class Binder
     {

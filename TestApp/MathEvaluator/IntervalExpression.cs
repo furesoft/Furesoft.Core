@@ -2,8 +2,10 @@
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
+using TestApp.MathEvaluator;
+using TestApp;
 
-namespace TestApp
+namespace TestApp.MathEvaluator
 {
     public class IntervalExpression : Expression
     {

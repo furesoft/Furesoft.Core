@@ -1,8 +1,10 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.Parsing;
+using TestApp.MathEvaluator;
+using TestApp;
 
-namespace TestApp
+namespace TestApp.MathEvaluator
 {
     public class InfinityRef : SymbolicRef
     {
