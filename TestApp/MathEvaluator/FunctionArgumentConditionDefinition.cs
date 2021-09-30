@@ -1,9 +1,8 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.Parsing;
-using TestApp.MathEvaluator;
-using TestApp;
 
 namespace TestApp.MathEvaluator
 {
@@ -21,6 +20,7 @@ namespace TestApp.MathEvaluator
         public string Function { get; set; }
 
         public string NumberRoom { get; set; }
+        public Expression Parameter { get; private set; }
 
         public static void AddParsePoints()
         {
@@ -36,7 +36,7 @@ namespace TestApp.MathEvaluator
 
             parser.NextToken();
 
-            var parameter = parser.GetIdentifierText();
+            result.Parameter = SymbolicRef.Parse(parser, result);
 
             if (!result.ParseExpectedToken(parser, "in"))
             {
@@ -44,7 +44,7 @@ namespace TestApp.MathEvaluator
             }
 
             result.NumberRoom = parser.GetIdentifierText();
-            result.Condition = Expression.Parse(parser, result, false, ";");
+            result.Condition = Expression.Parse(parser, result);
 
             return result;
         }

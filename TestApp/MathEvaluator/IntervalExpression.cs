@@ -21,12 +21,12 @@ namespace TestApp.MathEvaluator
         public static new void AddParsePoints()
         {
             Parser.AddParsePoint("[", Parse, typeof(FunctionArgumentConditionDefinition));
+            Parser.AddParsePoint("]", Parse, typeof(FunctionArgumentConditionDefinition));
         }
 
         public static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             var result = new IntervalExpression(parser, parent);
-            //ToDo: Make Props to intervalexpression and check if left or right is inclusive or exclusive
 
             result.Left = parser.Token;
 

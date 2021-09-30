@@ -230,7 +230,7 @@ namespace TestApp.MathEvaluator
                                     }
                                     else
                                     {
-                                        fn.AttachMessage($"Parameter Constraint Failed On {call._AsString}: {arg.Key} Does Not Match Condition: {constrain.condition._AsString}", MessageSeverity.Error, MessageSource.Resolve);
+                                        call.AttachMessage($"Parameter Constraint Failed On {call._AsString}: {arg.Key} Does Not Match Condition: {constrain.condition._AsString}", MessageSeverity.Error, MessageSource.Resolve);
 
                                         return 0;
                                     }

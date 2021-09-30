@@ -135,6 +135,35 @@ namespace TestApp.MathEvaluator
             return md;
         }
 
+        private static Expression BindInterval(IntervalExpression interval, Expression variable)
+        {
+            return new And(BindMinimum(interval, variable), BindMaximum(interval, variable));
+        }
+
+        private static Expression BindMaximum(IntervalExpression interval, Expression variable)
+        {
+            if (interval.IsMaximumInclusive)
+            {
+                return new LessThanEqual(variable, interval.Maximum);
+            }
+            else
+            {
+                return new LessThan(variable, interval.Maximum);
+            }
+        }
+
+        private static Expression BindMinimum(IntervalExpression interval, Expression variable)
+        {
+            if (interval.IsMinimumInclusive)
+            {
+                return new GreaterThanEqual(variable, interval.Minimum);
+            }
+            else
+            {
+                return new GreaterThan(variable, interval.Minimum);
+            }
+        }
+
         private static CodeObject BindUnrecognized(CodeObject fdef, Scope scope)
         {
             if (fdef is Unrecognized u)
@@ -178,6 +207,7 @@ namespace TestApp.MathEvaluator
                 }
                 else if (facd.Condition is IntervalExpression interval)
                 {
+                    facd.Condition = BindInterval(interval, facd.Parameter);
                 }
 
                 if (_argumentConstrains.ContainsKey(facd.Function))
