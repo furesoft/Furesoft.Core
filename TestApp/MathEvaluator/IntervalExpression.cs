@@ -2,8 +2,6 @@
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
-using TestApp.MathEvaluator;
-using TestApp;
 
 namespace TestApp.MathEvaluator
 {
@@ -13,20 +11,27 @@ namespace TestApp.MathEvaluator
         {
         }
 
+        public bool IsMaximumInclusive { get; set; }
+        public bool IsMinimumInclusive { get; set; }
+        public Token Left { get; set; }
         public Expression Maximum { get; set; }
-
         public Expression Minimum { get; set; }
+        public Token Right { get; set; }
 
         public static new void AddParsePoints()
         {
-            Parser.AddParsePoint("{", Parse);
+            Parser.AddParsePoint("[", Parse, typeof(FunctionArgumentConditionDefinition));
         }
 
         public static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             var result = new IntervalExpression(parser, parent);
+            //ToDo: Make Props to intervalexpression and check if left or right is inclusive or exclusive
 
-            parser.NextToken(); //push after {
+            result.Left = parser.Token;
+
+            parser.NextToken();
+
             result.Minimum = Expression.Parse(parser, result);
 
             if (!result.ParseExpectedToken(parser, ","))
@@ -36,7 +41,9 @@ namespace TestApp.MathEvaluator
 
             result.Maximum = Expression.Parse(parser, result);
 
-            parser.NextToken(); //push after }
+            result.Right = parser.Token; //push after
+
+            parser.NextToken();
 
             return result;
         }

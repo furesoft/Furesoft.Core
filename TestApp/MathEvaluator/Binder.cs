@@ -12,8 +12,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 using System.Collections.Generic;
 using System.Linq;
-using TestApp;
-using TestApp.MathEvaluator;
 
 namespace TestApp.MathEvaluator
 {
@@ -177,6 +175,11 @@ namespace TestApp.MathEvaluator
                     {
                         an.Right = BindConstainCondition(r);
                     }
+                }
+                else if (facd.Condition is IntervalExpression interval)
+                {
+                    interval.IsMinimumInclusive = interval.Left.Text == "[";
+                    interval.IsMaximumInclusive = interval.Right.Text == "]";
                 }
 
                 if (_argumentConstrains.ContainsKey(facd.Function))
