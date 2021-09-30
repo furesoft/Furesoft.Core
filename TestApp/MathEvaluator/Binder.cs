@@ -178,8 +178,6 @@ namespace TestApp.MathEvaluator
                 }
                 else if (facd.Condition is IntervalExpression interval)
                 {
-                    interval.IsMinimumInclusive = interval.Left.Text == "[";
-                    interval.IsMaximumInclusive = interval.Right.Text == "]";
                 }
 
                 if (_argumentConstrains.ContainsKey(facd.Function))

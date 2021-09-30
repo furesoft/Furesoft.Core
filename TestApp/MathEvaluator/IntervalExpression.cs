@@ -33,6 +33,7 @@ namespace TestApp.MathEvaluator
             parser.NextToken();
 
             result.Minimum = Expression.Parse(parser, result);
+            result.IsMinimumInclusive = result.Left.Text == "[";
 
             if (!result.ParseExpectedToken(parser, ","))
             {
@@ -42,6 +43,7 @@ namespace TestApp.MathEvaluator
             result.Maximum = Expression.Parse(parser, result);
 
             result.Right = parser.Token; //push after
+            result.IsMaximumInclusive = result.Right.Text == "]";
 
             parser.NextToken();
 
