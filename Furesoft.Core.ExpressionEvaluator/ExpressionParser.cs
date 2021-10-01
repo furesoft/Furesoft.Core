@@ -2,6 +2,7 @@
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
@@ -11,12 +12,12 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.ExpressionEvaluator.AST;
+using Furesoft.Core.ExpressionEvaluator.Symbols;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Furesoft.Core.ExpressionEvaluator.AST;
-using Furesoft.Core.ExpressionEvaluator.Symbols;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
@@ -55,6 +56,8 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             PowerOperator.AddParsePoints();
             AbsoluteValueExpression.AddParsePoints();
+
+            Dot.AddParsePoints();
 
             UseStatement.AddParsePoints();
         }
