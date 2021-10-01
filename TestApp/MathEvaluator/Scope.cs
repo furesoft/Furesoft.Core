@@ -63,5 +63,21 @@ namespace TestApp.MathEvaluator
         {
             ImportedFunctions.Add(name, func);
         }
+
+        public void ImportScope(Scope scope)
+        {
+            foreach (var item in scope.Variables)
+            {
+                Variables.Add(item.Key, item.Value);
+            }
+            foreach (var item in scope.Functions)
+            {
+                Functions.Add(item.Key, item.Value);
+            }
+            foreach (var item in scope.ImportedFunctions)
+            {
+                ImportedFunctions.Add(item.Key, item.Value);
+            }
+        }
     }
 }

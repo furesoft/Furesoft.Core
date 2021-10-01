@@ -20,41 +20,9 @@ namespace TestApp.MathEvaluator
 {
     public class ExpressionParser
     {
-        public static Dictionary<string, Module> Modules = new();
-        public static Scope RootScope = Scope.CreateScope();
-        private static Binder Binder = new();
-
-        public static void AddModule(string name, Scope scope)
-        {
-            var module = new Module();
-            module.Name = name;
-            module.Scope = scope;
-
-            if (!Modules.ContainsKey(name))
-            {
-                Modules.Add(name, module);
-            }
-        }
-
-        public static void AddVariable(string name, double value, Scope scope = null)
-        {
-            if (scope == null)
-            {
-                RootScope.Variables.Add(name, value);
-            }
-            else
-            {
-                scope.Variables.Add(name, value);
-            }
-        }
-
-        public static EvaluationResult Evaluate(string src)
-        {
-            var tree = CodeUnit.LoadFragment(src, "expr").Body;
-            var boundTree = Binder.BindTree(tree);
-
-            return Evaluate(boundTree);
-        }
+        public Dictionary<string, Module> Modules = new();
+        public Scope RootScope = Scope.CreateScope();
+        private Binder Binder = new();
 
         public static void Init()
         {
@@ -89,7 +57,91 @@ namespace TestApp.MathEvaluator
             UseStatement.AddParsePoints();
         }
 
-        private static EvaluationResult Evaluate(List<CodeObject> boundTree)
+        public void AddModule(string name, Scope scope)
+        {
+            var module = new Module();
+            module.Name = name;
+            module.Scope = scope;
+
+            if (!Modules.ContainsKey(name))
+            {
+                Modules.Add(name, module);
+            }
+        }
+
+        public void AddVariable(string name, double value, Scope scope = null)
+        {
+            if (scope == null)
+            {
+                RootScope.Variables.Add(name, value);
+            }
+            else
+            {
+                scope.Variables.Add(name, value);
+            }
+        }
+
+        public EvaluationResult Evaluate(string src)
+        {
+            var tree = CodeUnit.LoadFragment(src, "expr").Body;
+            var boundTree = Binder.BindTree(tree, this);
+
+            return Evaluate(boundTree);
+        }
+
+        private static bool EvaluateNumberRoom(FunctionArgumentConditionDefinition cond, double value)
+        {
+            return cond.NumberRoom switch
+            {
+                "N" => value is > 0 and < uint.MaxValue,
+                "Z" => value is > int.MinValue and < int.MaxValue,
+                "R" => value is > double.MinValue and < double.MaxValue,
+                _ => false,
+            };
+        }
+
+        private static IEnumerable<Message> GetMessagesOfCall(CodeObject obj)
+        {
+            var result = new List<Message>();
+
+            if (obj.HasAnnotations)
+            {
+                result.AddRange(obj.Annotations.OfType<Message>());
+            }
+
+            if (obj is Call call)
+            {
+                foreach (var arg in call.Arguments)
+                {
+                    result.AddRange(GetMessagesOfCall(arg));
+                }
+            }
+            else if (obj is Negative neg)
+            {
+                result.AddRange(GetMessagesOfCall(neg.Expression));
+            }
+
+            return result;
+        }
+
+        private static string GetParameterName(Expression condition)
+        {
+            if (condition is UnresolvedRef uref)
+            {
+                return uref.Reference.ToString();
+            }
+            else if (condition is BinaryBooleanOperator bbool)
+            {
+                var left = GetParameterName(bbool.Left);
+                var right = GetParameterName(bbool.Right);
+
+                return left ?? right;
+            }
+
+            return null;
+        }
+
+        private EvaluationResult Evaluate(List<CodeObject> boundTree)
         {
             var returnValues = new List<double>();
             var errors = new List<Message>();
@@ -115,7 +167,7 @@ namespace TestApp.MathEvaluator
             return new() { Values = returnValues, Errors = errors };
         }
 
-        private static double Evaluate(CodeObject obj)
+        private double Evaluate(CodeObject obj)
         {
             if (obj is Block blk)
             {
@@ -144,7 +196,7 @@ namespace TestApp.MathEvaluator
             return 0;
         }
 
-        private static bool EvaluateCondition(BinaryOperator expr, Scope scope)
+        private bool EvaluateCondition(BinaryOperator expr, Scope scope)
         {
             if (expr is And rel)
             {
@@ -172,7 +224,7 @@ namespace TestApp.MathEvaluator
             }
         }
 
-        private static double EvaluateExpression(Expression expr, Scope scope)
+        private double EvaluateExpression(Expression expr, Scope scope)
         {
             if (expr is Add add)
             {
@@ -295,77 +347,21 @@ namespace TestApp.MathEvaluator
             }
         }
 
-        private static bool EvaluateNumberRoom(FunctionArgumentConditionDefinition cond, double value)
+        private double EvaluateUseStatement(UseStatement useStmt)
         {
-            return cond.NumberRoom switch
+            if (useStmt.Module is ModuleRef modRef)
             {
-                "N" => value is > 0 and < uint.MaxValue,
-                "Z" => value is > int.MinValue and < int.MaxValue,
-                "R" => value is > double.MinValue and < double.MaxValue,
-                _ => false,
-            };
-        }
-
-        private static double EvaluateUseStatement(UseStatement useStmt)
-        {
-            if (useStmt.Module is ModuleRef modRef && modRef.Reference is Module mod)
-            {
-                foreach (var item in mod.Scope.Variables)
+                if (modRef.Reference is Module mod)
                 {
-                    RootScope.Variables.Add(item.Key, item.Value);
+                    RootScope.ImportScope(mod.Scope);
                 }
-                foreach (var item in mod.Scope.Functions)
+                else if (modRef.Reference is Scope scope)
                 {
-                    RootScope.Functions.Add(item.Key, item.Value);
-                }
-                foreach (var item in mod.Scope.ImportedFunctions)
-                {
-                    RootScope.ImportedFunctions.Add(item.Key, item.Value);
+                    RootScope.ImportScope(scope);
                 }
             }
 
             return 0;
-        }
-
-        private static IEnumerable<Message> GetMessagesOfCall(CodeObject obj)
-        {
-            var result = new List<Message>();
-
-            if (obj.HasAnnotations)
-            {
-                result.AddRange(obj.Annotations.OfType<Message>());
-            }
-
-            if (obj is Call call)
-            {
-                foreach (var arg in call.Arguments)
-                {
-                    result.AddRange(GetMessagesOfCall(arg));
-                }
-            }
-            else if (obj is Negative neg)
-            {
-                result.AddRange(GetMessagesOfCall(neg.Expression));
-            }
-
-            return result;
-        }
-
-        private static string GetParameterName(Expression condition)
-        {
-            if (condition is UnresolvedRef uref)
-            {
-                return uref.Reference.ToString();
-            }
-            else if (condition is BinaryBooleanOperator bbool)
-            {
-                var left = GetParameterName(bbool.Left);
-                var right = GetParameterName(bbool.Right);
-
-                return left ?? right;
-            }
-
-            return null;
         }
     }
 }

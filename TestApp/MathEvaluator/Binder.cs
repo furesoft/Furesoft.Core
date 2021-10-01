@@ -13,6 +13,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace TestApp.MathEvaluator
@@ -20,6 +21,8 @@ namespace TestApp.MathEvaluator
     public class Binder
     {
         public static Dictionary<string, List<FunctionArgumentConditionDefinition>> _argumentConstrains = new();
+
+        public static ExpressionParser ExpressionParser { get; set; }
 
         public static Expression BindExpression(Expression expr, Scope scope)
         {
@@ -36,12 +39,15 @@ namespace TestApp.MathEvaluator
             return expr;
         }
 
-        public static List<CodeObject> BindTree(Block tree)
+        public static List<CodeObject> BindTree(Block tree, ExpressionParser expressionParser)
         {
             var boundTree = new List<CodeObject>();
+
+            ExpressionParser = ExpressionParser;
+
             foreach (var node in tree)
             {
-                boundTree.Add(BindUnrecognized(node, ExpressionParser.RootScope));
+                boundTree.Add(BindUnrecognized(node, expressionParser.RootScope));
             }
 
             return boundTree;
@@ -281,6 +287,31 @@ namespace TestApp.MathEvaluator
             else if (useStmt.Module is Literal lit)
             {
                 //ToDo: implement module loading from string path
+                var filename = useStmt.Module._AsString.ToString().Replace("\"", "");
+
+                if (File.Exists(filename))
+                {
+                    var content = File.ReadAllText(filename);
+
+                    var ep = new ExpressionParser();
+                    var contentResult = ep.Evaluate(content);
+
+                    if (contentResult.Errors.Count > 0)
+                    {
+                        foreach (var msg in contentResult.Errors)
+                        {
+                            useStmt.AttachMessage(msg.Text, msg.Severity, msg.Source);
+                        }
+                    }
+                    else
+                    {
+                        useStmt.Module = new ModuleRef(ep.RootScope);
+                    }
+                }
+                else
+                {
+                    useStmt.AttachMessage($"File {useStmt.Module._AsString} does not exist", MessageSeverity.Error, MessageSource.Resolve);
+                }
             }
             else
             {

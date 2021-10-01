@@ -7,5 +7,9 @@ namespace TestApp.MathEvaluator
         public ModuleRef(Module module) : base(module)
         {
         }
+
+        public ModuleRef(Scope module) : base(module)
+        {
+        }
     }
 }
