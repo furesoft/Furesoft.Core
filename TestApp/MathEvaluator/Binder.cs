@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
@@ -220,6 +221,10 @@ namespace TestApp.MathEvaluator
             {
                 return BindExpression(expr, scope);
             }
+            else if (fdef is UseStatement useStmt)
+            {
+                return BindUseStatement(useStmt);
+            }
             else if (fdef is FunctionArgumentConditionDefinition facd)
             {
                 if (facd.Condition is RelationalOperator rel)
@@ -258,6 +263,31 @@ namespace TestApp.MathEvaluator
             }
 
             return fdef;
+        }
+
+        private static CodeObject BindUseStatement(UseStatement useStmt)
+        {
+            if (useStmt.Module is UnresolvedRef uref)
+            {
+                if (ExpressionParser.Modules.ContainsKey(uref.Reference.ToString()))
+                {
+                    useStmt.Module = new ModuleRef(ExpressionParser.Modules[uref.Reference.ToString()]);
+                }
+                else
+                {
+                    useStmt.AttachMessage($"'{useStmt.Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
+                }
+            }
+            else if (useStmt.Module is Literal lit)
+            {
+                //ToDo: implement module loading from string path
+            }
+            else
+            {
+                useStmt.AttachMessage($"'{useStmt.Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
+            }
+
+            return useStmt;
         }
     }
 }

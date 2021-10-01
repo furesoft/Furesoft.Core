@@ -20,8 +20,21 @@ namespace TestApp.MathEvaluator
 {
     public class ExpressionParser
     {
+        public static Dictionary<string, Module> Modules = new();
         public static Scope RootScope = Scope.CreateScope();
         private static Binder Binder = new();
+
+        public static void AddModule(string name, Scope scope)
+        {
+            var module = new Module();
+            module.Name = name;
+            module.Scope = scope;
+
+            if (!Modules.ContainsKey(name))
+            {
+                Modules.Add(name, module);
+            }
+        }
 
         public static void AddVariable(string name, double value, Scope scope = null)
         {
@@ -72,6 +85,8 @@ namespace TestApp.MathEvaluator
 
             PowerOperator.AddParsePoints();
             AbsoluteValueExpression.AddParsePoints();
+
+            UseStatement.AddParsePoints();
         }
 
         private static EvaluationResult Evaluate(List<CodeObject> boundTree)
@@ -112,6 +127,10 @@ namespace TestApp.MathEvaluator
             else if (obj is Expression expr)
             {
                 return EvaluateExpression(expr, RootScope);
+            }
+            else if (obj is UseStatement useStmt)
+            {
+                return EvaluateUseStatement(useStmt);
             }
             else if (obj is FunctionDefinition funcDef)
             {
@@ -251,11 +270,11 @@ namespace TestApp.MathEvaluator
                 {
                     double[] args = call.Arguments.Select(_ => EvaluateExpression(_, scope)).ToArray();
 
-                    if (MatchesArguments(importedFn.Method, args))
+                    try
                     {
                         return (double)importedFn.Invoke(args);
                     }
-                    else
+                    catch (TargetParameterCountException ex)
                     {
                         call.AttachMessage($"Argument Count Mismatch. Expected {importedFn.Method.GetParameters().Count()} given {args.Length} on {fnName}",
                             MessageSeverity.Error, MessageSource.Resolve);
@@ -285,6 +304,27 @@ namespace TestApp.MathEvaluator
                 "R" => value is > double.MinValue and < double.MaxValue,
                 _ => false,
             };
+        }
+
+        private static double EvaluateUseStatement(UseStatement useStmt)
+        {
+            if (useStmt.Module is ModuleRef modRef && modRef.Reference is Module mod)
+            {
+                foreach (var item in mod.Scope.Variables)
+                {
+                    RootScope.Variables.Add(item.Key, item.Value);
+                }
+                foreach (var item in mod.Scope.Functions)
+                {
+                    RootScope.Functions.Add(item.Key, item.Value);
+                }
+                foreach (var item in mod.Scope.ImportedFunctions)
+                {
+                    RootScope.ImportedFunctions.Add(item.Key, item.Value);
+                }
+            }
+
+            return 0;
         }
 
         private static IEnumerable<Message> GetMessagesOfCall(CodeObject obj)
@@ -326,11 +366,6 @@ namespace TestApp.MathEvaluator
             }
 
             return null;
-        }
-
-        private static bool MatchesArguments(MethodInfo mi, double[] parameters)
-        {
-            return mi.GetParameters().Length == parameters.Length;
         }
     }
 }

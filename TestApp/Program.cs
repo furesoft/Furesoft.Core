@@ -13,6 +13,13 @@ namespace TestApp
             ExpressionParser.AddVariable("x", 42);
             ExpressionParser.RootScope.Import(typeof(Math));
 
+            var geometryScope = new Scope();
+            geometryScope.ImportedFunctions.Add("areaRectangle", new Func<double[], double>((x) => { return x[0] * x[1]; }));
+
+            ExpressionParser.AddModule("geometry", geometryScope);
+
+            var module = ExpressionParser.Evaluate("use geometry; areaRectangle(5, 3);");
+
             var floorPi = ExpressionParser.Evaluate("floor(PI);");
             ExpressionParser.Evaluate("g(x) = x*x");
             //[1, 5]
@@ -22,15 +29,11 @@ namespace TestApp
             ExpressionParser.RootScope.ImportedFunctions.Add("display", new Func<double[], double>((x) => { Console.WriteLine(x[0]); return 0; }));
 
             var result = ExpressionParser.Evaluate("f: x in N 2 <= x < 20 && x % 2 == 0; f(x) = 2*x; f(2); f(3); f(4);  display(-f(6));|-4**2|");
-            //ToDo: is Infinity Binding implemented?
 
-            //ToDo: implement constraint for interval
             //ToDo: implement tests
             //ToDo: add simplification mode instead of evaluation?
             //ToDo: compiler?
 
-            //ToDo: add module for functionparameterconstrain f: x in N x % 2 == 0
-            //ToDo: add boolean operators == !=
             //ToDo: add constrain for return value?
             //ToDo: add measurements for parameters and variables and resolve or specify is return value is in correct measurement: f: x is [m]
             //y is [m/s]
