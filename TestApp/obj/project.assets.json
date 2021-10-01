@@ -192,6 +192,19 @@
         "runtime": {
           "bin/placeholder/Furesoft.Core.CodeDom.dll": {}
         }
+      },
+      "Furesoft.Core.ExpressionEvaluator/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v5.0",
+        "dependencies": {
+          "Furesoft.Core.CodeDom": "1.0.1"
+        },
+        "compile": {
+          "bin/placeholder/Furesoft.Core.ExpressionEvaluator.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Furesoft.Core.ExpressionEvaluator.dll": {}
+        }
       }
     }
   },
@@ -619,12 +632,18 @@
       "type": "project",
       "path": "../Furesoft.Core.CodeDom/Furesoft.Core.CodeDom.csproj",
       "msbuildProject": "../Furesoft.Core.CodeDom/Furesoft.Core.CodeDom.csproj"
+    },
+    "Furesoft.Core.ExpressionEvaluator/1.0.0": {
+      "type": "project",
+      "path": "../Furesoft.Core.ExpressionEvaluator/Furesoft.Core.ExpressionEvaluator.csproj",
+      "msbuildProject": "../Furesoft.Core.ExpressionEvaluator/Furesoft.Core.ExpressionEvaluator.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net5.0": [
       "Furesoft.Core >= 1.0.5",
-      "Furesoft.Core.CodeDom >= 1.0.1"
+      "Furesoft.Core.CodeDom >= 1.0.1",
+      "Furesoft.Core.ExpressionEvaluator >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -662,6 +681,9 @@
           "projectReferences": {
             "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core.CodeDom\\Furesoft.Core.CodeDom.csproj": {
               "projectPath": "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core.CodeDom\\Furesoft.Core.CodeDom.csproj"
+            },
+            "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core.ExpressionEvaluator\\Furesoft.Core.ExpressionEvaluator.csproj": {
+              "projectPath": "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core.ExpressionEvaluator\\Furesoft.Core.ExpressionEvaluator.csproj"
             },
             "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core\\Furesoft.Core.csproj": {
               "projectPath": "C:\\Users\\chris\\Documents\\Projekte\\Furesoft.Core\\Furesoft.Core\\Furesoft.Core.csproj"

@@ -3,7 +3,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.Parsing;
 
-namespace TestApp.MathEvaluator
+namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     public class UseStatement : Statement
     {

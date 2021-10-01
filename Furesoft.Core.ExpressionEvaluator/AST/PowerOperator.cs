@@ -1,10 +1,8 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
 using Furesoft.Core.CodeDom.Parsing;
-using TestApp.MathEvaluator;
-using TestApp;
 
-namespace TestApp.MathEvaluator
+namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     internal class PowerOperator : BinaryArithmeticOperator
     {

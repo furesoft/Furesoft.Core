@@ -2,9 +2,8 @@
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
-using TestApp;
 
-namespace TestApp.MathEvaluator
+namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     public class FunctionDefinition : BlockStatement, IParameters
     {

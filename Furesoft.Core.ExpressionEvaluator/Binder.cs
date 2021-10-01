@@ -15,8 +15,10 @@ using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Furesoft.Core.ExpressionEvaluator.AST;
+using Furesoft.Core.ExpressionEvaluator.Symbols;
 
-namespace TestApp.MathEvaluator
+namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Binder
     {

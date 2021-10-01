@@ -1,6 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 
-namespace TestApp.MathEvaluator
+namespace Furesoft.Core.ExpressionEvaluator.Symbols
 {
     public class ModuleRef : SymbolicRef
     {

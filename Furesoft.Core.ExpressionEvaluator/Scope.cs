@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Furesoft.Core.ExpressionEvaluator.AST;
 
-namespace TestApp.MathEvaluator
+namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Scope
     {

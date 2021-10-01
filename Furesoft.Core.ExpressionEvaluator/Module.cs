@@ -1,4 +1,4 @@
-﻿namespace TestApp.MathEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Module
     {

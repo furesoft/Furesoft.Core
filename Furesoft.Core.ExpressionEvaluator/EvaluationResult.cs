@@ -1,8 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using System.Collections.Generic;
-using TestApp;
 
-namespace TestApp.MathEvaluator
+namespace Furesoft.Core.ExpressionEvaluator
 {
     public class EvaluationResult
     {
