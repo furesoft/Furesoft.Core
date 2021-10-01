@@ -16,7 +16,7 @@ namespace TestApp
             var floorPi = ExpressionParser.Evaluate("floor(PI);");
             ExpressionParser.Evaluate("g(x) = x*x");
             //[1, 5]
-            var gres = ExpressionParser.Evaluate("g: x in N [1, 5];g(4);");
+            var gres = ExpressionParser.Evaluate("g: x in N [5, INFINITY];g(4);");
             //ToDo: fix ]1, 5] condition null
 
             ExpressionParser.RootScope.ImportedFunctions.Add("display", new Func<double[], double>((x) => { Console.WriteLine(x[0]); return 0; }));

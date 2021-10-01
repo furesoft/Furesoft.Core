@@ -6,6 +6,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
@@ -156,12 +157,43 @@ namespace TestApp.MathEvaluator
         {
             if (interval.IsMinimumInclusive)
             {
+                if (interval.Minimum is Negative neg && neg.Expression is InfinityRef infinity)
+                {
+                    interval.Minimum = BindNegInfinity((FunctionArgumentConditionDefinition)interval.Parent);
+                }
+                if (interval.Maximum is InfinityRef)
+                {
+                    interval.Maximum = BindPosInfinity((FunctionArgumentConditionDefinition)interval.Parent);
+                }
+
                 return new GreaterThanEqual(variable, interval.Minimum);
             }
             else
             {
                 return new GreaterThan(variable, interval.Minimum);
             }
+        }
+
+        private static Expression BindNegInfinity(FunctionArgumentConditionDefinition facd)
+        {
+            return facd.NumberRoom switch
+            {
+                "N" => uint.MinValue,
+                "Z" => int.MinValue,
+                "R" => double.MinValue,
+                _ => false,
+            };
+        }
+
+        private static Expression BindPosInfinity(FunctionArgumentConditionDefinition facd)
+        {
+            return facd.NumberRoom switch
+            {
+                "N" => uint.MaxValue,
+                "Z" => int.MaxValue,
+                "R" => double.MaxValue,
+                _ => false,
+            };
         }
 
         private static CodeObject BindUnrecognized(CodeObject fdef, Scope scope)
