@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Mono.Cecil.Rocks;
-using CilInstruction = Mono.Cecil.Cil.Instruction;
-using OpCodes = Mono.Cecil.Cil.OpCodes;
+using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler;
+using Mono.Cecil.Rocks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using CilInstruction = Mono.Cecil.Cil.Instruction;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
 {
@@ -16,26 +16,10 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
     /// </summary>
     public sealed class ClrMethodBodyEmitter
     {
-        /// <summary>
-        /// Compiles Flame IR to CIL.
-        /// </summary>
-        /// <returns>A CIL method body.</returns>
-        /// <param name="sourceBody">A Flame IR method body to compile to a CIL method body.</param>
-        /// <param name="method">The method to which the CIL method body can be assigned.</param>
-        /// <param name="typeEnvironment">A type environment.</param>
-        public static Mono.Cecil.Cil.MethodBody Compile(
-            MethodBody sourceBody,
-            Mono.Cecil.MethodDefinition method,
-            TypeEnvironment typeEnvironment)
-        {
-            var instance = new ClrMethodBodyEmitter(method, sourceBody, typeEnvironment);
-            return instance.Compile();
-        }
-
         private ClrMethodBodyEmitter(
-            Mono.Cecil.MethodDefinition method,
-            MethodBody sourceBody,
-            TypeEnvironment typeEnvironment)
+                    Mono.Cecil.MethodDefinition method,
+                    MethodBody sourceBody,
+                    TypeEnvironment typeEnvironment)
         {
             this.Method = method;
             this.SourceBody = sourceBody;
@@ -59,6 +43,64 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
         /// </summary>
         /// <value>A type environment.</value>
         private TypeEnvironment TypeEnvironment { get; set; }
+
+        /// <summary>
+        /// Compiles Flame IR to CIL.
+        /// </summary>
+        /// <returns>A CIL method body.</returns>
+        /// <param name="sourceBody">A Flame IR method body to compile to a CIL method body.</param>
+        /// <param name="method">The method to which the CIL method body can be assigned.</param>
+        /// <param name="typeEnvironment">A type environment.</param>
+        public static Mono.Cecil.Cil.MethodBody Compile(
+            MethodBody sourceBody,
+            Mono.Cecil.MethodDefinition method,
+            TypeEnvironment typeEnvironment)
+        {
+            var instance = new ClrMethodBodyEmitter(method, sourceBody, typeEnvironment);
+            return instance.Compile();
+        }
+
+        /// <summary>
+        /// Creates a mapping of 'alloca' values to local variables.
+        /// This mapping contains only 'alloca' values that can safely be
+        /// replaced by references to local variables.
+        /// </summary>
+        /// <param name="graph">
+        /// The graph to analyze.
+        /// </param>
+        /// <returns>
+        /// A mapping of 'alloca' values to local variables.
+        /// </returns>
+        private Dictionary<ValueTag, Mono.Cecil.Cil.VariableDefinition> AllocasToVariables(
+            FlowGraph graph)
+        {
+            var reachability = graph.GetAnalysisResult<BlockReachability>();
+            var results = new Dictionary<ValueTag, Mono.Cecil.Cil.VariableDefinition>();
+
+            foreach (var insn in graph.NamedInstructions)
+            {
+                var proto = insn.Prototype;
+                if (proto is AllocaPrototype
+                    && !reachability.IsStrictlyReachableFrom(insn.Block.Tag, insn.Block.Tag))
+                {
+                    // 'alloca' instructions that are not stricly reachable from themselves
+                    // will never be executed twice. Hence, they can be safely replaced
+                    // by a local variable reference.
+                    results[insn.Tag] = new Mono.Cecil.Cil.VariableDefinition(
+                        Method.Module.ImportReference(((AllocaPrototype)proto).ElementType));
+                }
+                else if (MemoryIntrinsics.Namespace.IsIntrinsicPrototype(
+                    proto, MemoryIntrinsics.Operators.AllocaPinned))
+                {
+                    results[insn.Tag] = new Mono.Cecil.Cil.VariableDefinition(
+                        Method.Module.ImportReference(
+                            new Mono.Cecil.PinnedType(
+                                Method.Module.ImportReference(((PointerType)proto.ResultType).ElementType))));
+                }
+            }
+
+            return results;
+        }
 
         /// <summary>
         /// Compiles the source body to a CIL method body.
@@ -130,8 +172,23 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
             return result;
         }
 
+        private Dictionary<ValueTag, Mono.Cecil.ParameterDefinition> GetPreallocatedRegisters(
+            FlowGraph graph)
+        {
+            var entryPoint = graph.GetBasicBlock(graph.EntryPointTag);
+            var extendedParams = TypeHelpers.GetExtendedParameters(Method);
+            int regCount = Math.Min(extendedParams.Count, entryPoint.Parameters.Count);
+
+            var preallocRegisters = new Dictionary<ValueTag, Mono.Cecil.ParameterDefinition>();
+            for (int i = 0; i < regCount; i++)
+            {
+                preallocRegisters[entryPoint.Parameters[i].Tag] = extendedParams[i];
+            }
+            return preallocRegisters;
+        }
+
         private IReadOnlyList<CilCodegenInstruction> OptimizeRegisterAccesses(
-            IReadOnlyList<CilCodegenInstruction> codegenInsns)
+                    IReadOnlyList<CilCodegenInstruction> codegenInsns)
         {
             int count = codegenInsns.Count;
             var newInsns = new List<CilCodegenInstruction>();
@@ -164,72 +221,26 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
             return newInsns;
         }
 
-        private Dictionary<ValueTag, Mono.Cecil.ParameterDefinition> GetPreallocatedRegisters(
-            FlowGraph graph)
-        {
-            var entryPoint = graph.GetBasicBlock(graph.EntryPointTag);
-            var extendedParams = TypeHelpers.GetExtendedParameters(Method);
-            int regCount = Math.Min(extendedParams.Count, entryPoint.Parameters.Count);
-
-            var preallocRegisters = new Dictionary<ValueTag, Mono.Cecil.ParameterDefinition>();
-            for (int i = 0; i < regCount; i++)
-            {
-                preallocRegisters[entryPoint.Parameters[i].Tag] = extendedParams[i];
-            }
-            return preallocRegisters;
-        }
-
-        /// <summary>
-        /// Creates a mapping of 'alloca' values to local variables.
-        /// This mapping contains only 'alloca' values that can safely be
-        /// replaced by references to local variables.
-        /// </summary>
-        /// <param name="graph">
-        /// The graph to analyze.
-        /// </param>
-        /// <returns>
-        /// A mapping of 'alloca' values to local variables.
-        /// </returns>
-        private Dictionary<ValueTag, Mono.Cecil.Cil.VariableDefinition> AllocasToVariables(
-            FlowGraph graph)
-        {
-            var reachability = graph.GetAnalysisResult<BlockReachability>();
-            var results = new Dictionary<ValueTag, Mono.Cecil.Cil.VariableDefinition>();
-
-            foreach (var insn in graph.NamedInstructions)
-            {
-                var proto = insn.Prototype;
-                if (proto is AllocaPrototype
-                    && !reachability.IsStrictlyReachableFrom(insn.Block.Tag, insn.Block.Tag))
-                {
-                    // 'alloca' instructions that are not stricly reachable from themselves
-                    // will never be executed twice. Hence, they can be safely replaced
-                    // by a local variable reference.
-                    results[insn.Tag] = new Mono.Cecil.Cil.VariableDefinition(
-                        Method.Module.ImportReference(((AllocaPrototype)proto).ElementType));
-                }
-                else if (MemoryIntrinsics.Namespace.IsIntrinsicPrototype(
-                    proto,
-Furesoft.Core.CodeDom.Compiler.Instructions.Operators.AllocaPinned))
-                {
-                    results[insn.Tag] = new Mono.Cecil.Cil.VariableDefinition(
-                        Method.Module.ImportReference(
-                            new Mono.Cecil.PinnedType(
-                                Method.Module.ImportReference(((PointerType)proto.ResultType).ElementType))));
-                }
-            }
-
-            return results;
-        }
-
         /// <summary>
         /// A data structure that turns CIL codegen instructions into a stream of
         /// actual CIL instructions.
         /// </summary>
         private struct CodegenEmitter
         {
+            private Dictionary<BasicBlockTag, CilInstruction> branchTargets;
+
+            private List<CilOpInstruction> patches;
+
+            private Stack<Tuple<BasicBlockTag, BasicBlockTag, Mono.Cecil.Cil.ExceptionHandler>> pendingHandlers;
+
+            private List<BasicBlockTag> pendingTargets;
+
+            private Stack<BasicBlockTag> pendingTryHandlers;
+
+            private Dictionary<Mono.Cecil.Cil.VariableDefinition, int> registerUseCounters;
+
             public CodegenEmitter(
-                Mono.Cecil.Cil.ILProcessor processor,
+                                                                                        Mono.Cecil.Cil.ILProcessor processor,
                 RegisterAllocation<CilCodegenRegister> registerAllocation)
             {
                 this.Processor = processor;
@@ -246,14 +257,6 @@ Furesoft.Core.CodeDom.Compiler.Instructions.Operators.AllocaPinned))
             public Mono.Cecil.Cil.ILProcessor Processor { get; private set; }
             public RegisterAllocation<CilCodegenRegister> RegisterAllocation { get; private set; }
             public IReadOnlyDictionary<Mono.Cecil.Cil.VariableDefinition, int> RegisterUseCounts => registerUseCounters;
-
-            private Dictionary<BasicBlockTag, CilInstruction> branchTargets;
-            private List<BasicBlockTag> pendingTargets;
-            private List<CilOpInstruction> patches;
-            private Dictionary<Mono.Cecil.Cil.VariableDefinition, int> registerUseCounters;
-
-            private Stack<BasicBlockTag> pendingTryHandlers;
-            private Stack<Tuple<BasicBlockTag, BasicBlockTag, Mono.Cecil.Cil.ExceptionHandler>> pendingHandlers;
 
             public void Emit(IReadOnlyList<CilCodegenInstruction> instructions)
             {
