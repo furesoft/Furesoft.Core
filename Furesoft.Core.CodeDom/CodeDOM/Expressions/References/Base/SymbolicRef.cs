@@ -123,7 +123,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
         /// </summary>
         public static string GetDescription(MemberInfo memberInfo)
         {
-            using (CodeWriter writer = new CodeWriter())
+            using (CodeWriter writer = new())
             {
                 try
                 {

@@ -751,7 +751,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// </summary>
         public void AttachComment(string comment, AnnotationFlags annotationFlags, CommentFlags commentFlags)
         {
-            Comment commentObj = new Comment(comment, commentFlags);
+            Comment commentObj = new(comment, commentFlags);
             // Default any infix comments to NOT first-on-line
             if ((annotationFlags & AnnotationFlags.InfixMask) != 0)
                 commentObj.IsFirstOnLine = false;
@@ -1034,9 +1034,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             {
                 for (int i = _annotations.Count - 1; i >= 0; --i)
                 {
-                    if (_annotations[i] is Attribute)
+                    if (_annotations[i] is Attribute attribute)
                     {
-                        Attribute attribute = (Attribute)_annotations[i];
                         if (attribute.RemoveAttributeExpression(attributeName))
                         {
                             // If the attribute has no more expressions, remove it
@@ -1062,9 +1061,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             {
                 foreach (Annotation annotation in _annotations)
                 {
-                    if (annotation is Message)
+                    if (annotation is Message message)
                     {
-                        Message message = (Message)annotation;
                         if (type == MessageSeverity.Unspecified && message.Severity != MessageSeverity.Unspecified)
                             type = message.Severity;
                         else if (message.Severity != MessageSeverity.Unspecified && message.Severity < type)
@@ -1346,10 +1344,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             {
                 for (int i = 0; i < annotations.Count; ++i)
                 {
-                    if (annotations[i] is Comment)
+                    // Move the first EOL comment
+                    if (annotations[i] is Comment comment)
                     {
-                        // Move the first EOL comment
-                        Comment comment = (Comment)annotations[i];
                         if (comment.IsEOL)
                         {
                             comment.IsInfix = false;
@@ -1419,9 +1416,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         {
             // If the comment was "outdented", remove spaces from the left of the comment text to
             // compensate for the indentation level.
-            if (commentBase is Comment)
+            if (commentBase is Comment comment)
             {
-                Comment comment = (Comment)commentBase;
                 int removeSpaceCount = comment.GetIndentSpaceCount() - comment.PrefixSpaceCount - (comment.IsBlock ? 0 : Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Comment.ParseToken.Length);
                 if (removeSpaceCount > 0)
                 {
@@ -2043,7 +2039,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// </summary>
         public string AsText(RenderFlags flags, bool isFileFormat, Stack<AlignmentState> alignmentStateStack)
         {
-            using (CodeWriter writer = new CodeWriter(false, IsGenerated))
+            using (CodeWriter writer = new(false, IsGenerated))
             {
                 if (alignmentStateStack != null)
                     writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);
@@ -2095,7 +2091,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// </summary>
         public int AsTextLength(RenderFlags flags, Stack<AlignmentState> alignmentStateStack)
         {
-            using (CodeWriter writer = new CodeWriter(true))
+            using (CodeWriter writer = new(true))
             {
                 if (alignmentStateStack != null)
                     writer.AlignmentStateStack = new Stack<AlignmentState>(alignmentStateStack);

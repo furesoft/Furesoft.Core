@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the return duplication transform.
         /// </summary>
-        public static readonly DuplicateReturns Instance = new DuplicateReturns();
+        public static readonly DuplicateReturns Instance = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)
@@ -52,9 +52,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 foreach (var block in builder.BasicBlocks)
                 {
                     var flow = block.Flow as JumpFlow;
-                    ValueTag retValue;
                     if (flow != null
-                        && candidatesToValues.TryGetValue(flow.Branch.Target, out retValue))
+                        && candidatesToValues.TryGetValue(flow.Branch.Target, out ValueTag retValue))
                     {
                         foreach (var pair in flow.Branch.ZipArgumentsWithParameters(builder.ToImmutable()))
                         {

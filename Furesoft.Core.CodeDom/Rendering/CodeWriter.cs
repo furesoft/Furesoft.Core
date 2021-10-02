@@ -32,8 +32,8 @@ namespace Furesoft.Core.CodeDom.Rendering
         /// <summary>
         /// C# keywords.
         /// </summary>
-        public static HashSet<string> Keywords = new HashSet<string>
-            {
+        public static HashSet<string> Keywords = new()
+        {
                 "abstract", "as",       "base",       "bool",      "break",
                 "byte",     "case",     "catch",      "char",      "checked",
                 "class",    "const",    "continue",   "decimal",   "default",
@@ -69,15 +69,15 @@ namespace Furesoft.Core.CodeDom.Rendering
         /// </summary>
         public bool UseTabs;
 
-        protected Stack<AlignmentState> _alignmentStateStack = new Stack<AlignmentState>(16);
+        protected Stack<AlignmentState> _alignmentStateStack = new(16);
         protected int _columnNumber = 1;
         protected bool _flushingEOLComments;
-        protected Stack<IndentState> _indentStateStack = new Stack<IndentState>(32);
+        protected Stack<IndentState> _indentStateStack = new(32);
         protected bool _isEmptyLine = true;
         protected bool _isGenerated;
         protected IndentState _lastPoppedIndentState;
         protected int _lineNumber = 1;
-        protected List<EOLComment> _pendingEOLComments = new List<EOLComment>();
+        protected List<EOLComment> _pendingEOLComments = new();
         protected TextWriter _textWriter;
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Furesoft.Core.CodeDom.Rendering
                 Directory.CreateDirectory(directory);
 
             // Specify the encoding for the output, with special logic to omit the UTF8 BOM if it wasn't there originally
-            FileStream fileStream = new FileStream(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+            FileStream fileStream = new(fileName, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
             if (encoding == Encoding.UTF8 && !hasUTF8BOM)
                 encoding = new UTF8Encoding(false);
             _textWriter = new StreamWriter(fileStream, encoding);
@@ -486,8 +486,7 @@ namespace Furesoft.Core.CodeDom.Rendering
             // Set any new indentation for the new line
             IndentOffset = _indentStateStack.Peek().IndentOffsetOnNewLine;
 
-            if (AfterNewLine != null)
-                AfterNewLine(this);
+            AfterNewLine?.Invoke(this);
         }
 
         /// <summary>

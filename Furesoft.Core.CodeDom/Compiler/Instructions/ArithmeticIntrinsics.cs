@@ -18,13 +18,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// The namespace for unchecked arithmetic intrinsics.
         /// </summary>
         public static readonly IntrinsicNamespace UncheckedNamespace =
-            new IntrinsicNamespace("arith");
+            new("arith");
 
         /// <summary>
         /// The namespace for checked arithmetic intrinsics.
         /// </summary>
         public static readonly IntrinsicNamespace CheckedNamespace =
-            new IntrinsicNamespace("arith.checked");
+            new("arith.checked");
 
         /// <summary>
         /// Tries to parse an intrinsic name as an arithmetic
@@ -82,9 +82,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         public static string ParseArithmeticIntrinsicName(
             string intrinsicName)
         {
-            string result;
-            bool isChecked;
-            if (TryParseArithmeticIntrinsicName(intrinsicName, out result, out isChecked))
+            if (TryParseArithmeticIntrinsicName(intrinsicName, out string result, out bool isChecked))
             {
                 return result;
             }
@@ -107,9 +105,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// </returns>
         public static bool IsArithmeticIntrinsicName(string intrinsicName)
         {
-            string opName;
-            bool isChecked;
-            return TryParseArithmeticIntrinsicName(intrinsicName, out opName, out isChecked);
+            return TryParseArithmeticIntrinsicName(intrinsicName, out string opName, out bool isChecked);
         }
 
         /// <summary>
@@ -239,9 +235,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
             IReadOnlyList<Constant> arguments,
             out Constant result)
         {
-            string operatorName;
-            bool isChecked;
-            if (!TryParseArithmeticIntrinsicName(prototype.Name, out operatorName, out isChecked))
+            if (!TryParseArithmeticIntrinsicName(prototype.Name, out string operatorName, out bool isChecked))
             {
                 throw new InvalidOperationException($"Cannot evaluate non-arithmetic intrinsic '{prototype.Name}'.");
             }
@@ -285,8 +279,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
                         intLhs.Spec,
                         intRhs.Spec);
 
-                    Func<IntegerConstant, IntegerConstant, IntegerConstant> impl;
-                    if (intBinaryOps.TryGetValue(operatorName, out impl))
+                    if (intBinaryOps.TryGetValue(operatorName, out Func<IntegerConstant, IntegerConstant, IntegerConstant> impl))
                     {
                         result = impl(
                             intLhs.Cast(maxIntSpec),
@@ -298,8 +291,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
                     && lhs is Float64Constant
                     && rhs is Float64Constant)
                 {
-                    Func<double, double, double?> impl;
-                    if (doubleBinaryOps.TryGetValue(operatorName, out impl))
+                    if (doubleBinaryOps.TryGetValue(operatorName, out Func<double, double, double?> impl))
                     {
                         var maybeResult = impl(
                             ((Float64Constant)lhs).Value,
@@ -316,8 +308,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
                     && lhs is Float32Constant
                     && rhs is Float32Constant)
                 {
-                    Func<float, float, float?> impl;
-                    if (floatBinaryOps.TryGetValue(operatorName, out impl))
+                    if (floatBinaryOps.TryGetValue(operatorName, out Func<float, float, float?> impl))
                     {
                         var maybeResult = impl(
                             ((Float32Constant)lhs).Value,
@@ -348,7 +339,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static Dictionary<string, Func<float, float, float?>> floatBinaryOps =
-            new Dictionary<string, Func<float, float, float?>>()
+            new()
         {
             { Operators.Add, (x, y) => x + y },
             { Operators.Subtract, (x, y) => x - y },
@@ -357,7 +348,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         };
 
         private static Dictionary<string, Func<double, double, double?>> doubleBinaryOps =
-            new Dictionary<string, Func<double, double, double?>>()
+            new()
         {
             { Operators.Add, (x, y) => x + y },
             { Operators.Subtract, (x, y) => x - y },
@@ -366,7 +357,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         };
 
         private static Dictionary<string, Func<IntegerConstant, IntegerConstant, IntegerConstant>> intBinaryOps =
-            new Dictionary<string, Func<IntegerConstant, IntegerConstant, IntegerConstant>>()
+            new()
         {
             { Operators.Add, (x, y) => x.Add(y) },
             { Operators.Subtract, (x, y) => x.Subtract(y) },
@@ -432,9 +423,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
             var spec = initialSpec;
             foreach (var arg in arguments)
             {
-                if (arg is IntegerConstant)
+                if (arg is IntegerConstant constant)
                 {
-                    var constant = (IntegerConstant)arg;
                     if (spec == null)
                     {
                         spec = constant.Spec;

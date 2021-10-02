@@ -81,7 +81,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<AllocaArrayPrototype> instanceCache
-            = new InterningCache<AllocaArrayPrototype>(
+            = new(
                 new StructuralAllocaArrayPrototypeComparer());
 
         /// <summary>

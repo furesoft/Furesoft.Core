@@ -273,6 +273,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// An empty attribute map.
         /// </summary>
         /// <value>An attribute map.</value>
-        public static readonly AttributeMap Empty = new AttributeMap(new IAttribute[] { });
+        public static readonly AttributeMap Empty = new(new IAttribute[] { });
     }
 }

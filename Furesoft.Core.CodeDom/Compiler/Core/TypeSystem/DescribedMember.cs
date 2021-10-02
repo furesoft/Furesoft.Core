@@ -29,7 +29,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public UnqualifiedName Name => FullName.FullyUnqualifiedName;
 
         /// <inheritdoc/>
-        public AttributeMap Attributes => new AttributeMap(attributeBuilder);
+        public AttributeMap Attributes => new(attributeBuilder);
 
         /// <summary>
         /// Adds an attribute to this member's attribute map.

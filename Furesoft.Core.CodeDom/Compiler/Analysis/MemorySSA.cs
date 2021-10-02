@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// An instance of the local memory SSA analysis.
         /// </summary>
         public static readonly LocalMemorySSAAnalysis Instance =
-            new LocalMemorySSAAnalysis();
+            new();
 
         private LocalMemorySSAAnalysis()
         { }
@@ -61,10 +61,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             var graph = instruction.Block.Graph;
 
             var proto = instruction.Prototype;
-            if (proto is StorePrototype)
+            // Stores are special. They map directly to a memory SSA store.
+            if (proto is StorePrototype storeProto)
             {
-                // Stores are special. They map directly to a memory SSA store.
-                var storeProto = (StorePrototype)proto;
                 var pointer = storeProto.GetPointer(instruction.Instruction);
                 var value = storeProto.GetValue(instruction.Instruction);
                 return Store.WithStore(state, pointer, value, graph);
@@ -277,8 +276,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 ValueTag value,
                 FlowGraph graph)
             {
-                ValueTag prevValue;
-                if (state.TryGetValueAt(address, graph, out prevValue))
+                if (state.TryGetValueAt(address, graph, out ValueTag prevValue))
                 {
                     var numbering = graph.GetAnalysisResult<ValueNumbering>();
                     if (numbering.AreEquivalent(address, value))
@@ -301,7 +299,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             /// An instance of the unknown state.
             /// </summary>
             /// <returns>The unknown state.</returns>
-            public static readonly Unknown Instance = new Unknown();
+            public static readonly Unknown Instance = new();
 
             private Unknown()
             { }
@@ -333,9 +331,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 FlowGraph graph,
                 out ValueTag value)
             {
-                if (this is Store)
+                if (this is Store storeState)
                 {
-                    var storeState = (Store)this;
 
                     // Try a cheap check before we move on to alias analysis.
                     if (address == storeState.Address)

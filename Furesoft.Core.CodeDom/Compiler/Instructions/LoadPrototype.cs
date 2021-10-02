@@ -46,13 +46,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// An alignment that represents natural alignment.
         /// </summary>
         public static readonly Alignment NaturallyAligned =
-            new Alignment(0);
+            new(0);
 
         /// <summary>
         /// An alignment that represents byte-alignment.
         /// </summary>
         public static readonly Alignment Unaligned =
-            new Alignment(1);
+            new(1);
 
         /// <inheritdoc/>
         public override int GetHashCode()
@@ -249,7 +249,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<LoadPrototype> instanceCache
-            = new InterningCache<LoadPrototype>(
+            = new(
                 new StructuralLoadPrototypeComparer());
 
         /// <summary>

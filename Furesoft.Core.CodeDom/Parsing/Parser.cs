@@ -115,18 +115,18 @@ namespace Furesoft.Core.CodeDom.Parsing
         public List<ParsedObject> PostUnused;
 
         // Stack of unused object lists (one for each active scope)
-        protected readonly Stack<List<ParsedObject>> _unusedListStack = new Stack<List<ParsedObject>>();
+        protected readonly Stack<List<ParsedObject>> _unusedListStack = new();
 
         // List of tokens pre-fetched by the peek-ahead logic
-        protected readonly List<Token> _peekAheadTokens = new List<Token>();
+        protected readonly List<Token> _peekAheadTokens = new();
 
         protected int _peekAheadIndex;
 
         // Stack of objects at which bubble-up normalization of EOL comments should stop
-        protected readonly Stack<CodeObject> NormalizationBlockerStack = new Stack<CodeObject>();
+        protected readonly Stack<CodeObject> NormalizationBlockerStack = new();
 
         // Stack of Conditional expression nesting level counts
-        protected readonly Stack<int> ConditionalNestingLevelStack = new Stack<int>();
+        protected readonly Stack<int> ConditionalNestingLevelStack = new();
 
         protected TextReader _textReader;  // The text stream being parsed
         protected string _line;            // The current line of text
@@ -152,13 +152,13 @@ namespace Furesoft.Core.CodeDom.Parsing
             IsGenerated = isGenerated;
             if (codeUnit.IsFile)
             {
-                FileStream fileStream = new FileStream(codeUnit.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                FileStream fileStream = new(codeUnit.FileName, FileMode.Open, FileAccess.Read, FileShare.Read);
                 byte[] bom = new byte[3];
                 fileStream.Read(bom, 0, 3);
                 if (bom[0] == 0xEF && bom[1] == 0xBB && bom[2] == 0xBF)
                     codeUnit.FileHasUTF8BOM = true;
                 fileStream.Position = 0;
-                StreamReader streamReader = new StreamReader(fileStream, true);
+                StreamReader streamReader = new(fileStream, true);
                 streamReader.Peek();  // Peek at the first char so that the encoding is determined
                 codeUnit.FileEncoding = streamReader.CurrentEncoding;
                 _textReader = streamReader;
@@ -527,8 +527,7 @@ namespace Furesoft.Core.CodeDom.Parsing
                         // If it's a DocComment open-tag, look for a parse-point
                         if (LastToken.Text == DocComment.ParseTokenTagOpen)
                         {
-                            ParseDelegate @delegate;
-                            if (_docCommentTagMap.TryGetValue(TokenText, out @delegate))
+                            if (_docCommentTagMap.TryGetValue(TokenText, out ParseDelegate @delegate))
                                 obj = @delegate(this, parent, flags);
                             else
                                 obj = new DocTag(TokenText, this, parent);
@@ -542,8 +541,7 @@ namespace Furesoft.Core.CodeDom.Parsing
                     case TokenType.Symbol:
                         {
                             // If it's an Identifier or Symbol, look for a parse-point
-                            List<ParsePoint> list;
-                            if (_tokenMap.TryGetValue(TokenText, out list))
+                            if (_tokenMap.TryGetValue(TokenText, out List<ParsePoint> list))
                             {
                                 // Check each parse-point in priority order until one parses successfully
                                 foreach (ParsePoint parsePoint in list)
@@ -610,8 +608,7 @@ namespace Furesoft.Core.CodeDom.Parsing
                             Token next = PeekNextToken();
                             if (next != null && !next.IsFirstOnLine && next.TokenType == TokenType.Identifier)
                             {
-                                ParseDelegate @delegate;
-                                if (_compilerDirectiveMap.TryGetValue(next.Text, out @delegate))
+                                if (_compilerDirectiveMap.TryGetValue(next.Text, out ParseDelegate @delegate))
                                     obj = @delegate(this, parent, flags);
                             }
                             // If we didn't recognize the compiler directive, save the '#' in the Unused list and move ahead to the next token
@@ -965,8 +962,7 @@ namespace Furesoft.Core.CodeDom.Parsing
             string token = Token.Text;
             if (!HasUnusedExpression)
                 token += "U";  // Differentiate unary operators
-            OperatorInfo operatorInfo;
-            _operatorInfoMap.TryGetValue(token, out operatorInfo);
+            _operatorInfoMap.TryGetValue(token, out OperatorInfo operatorInfo);
             return operatorInfo;
         }
 
@@ -1275,8 +1271,7 @@ namespace Furesoft.Core.CodeDom.Parsing
                 // Handle symbols
                 else
                 {
-                    CharMap map;
-                    _symbolMap.TryGetValue(_ch, out map);
+                    _symbolMap.TryGetValue(_ch, out CharMap map);
                     NextChar();
 
                     // For tokens starting with a symbol, extract the longest possible token
@@ -1369,7 +1364,7 @@ namespace Furesoft.Core.CodeDom.Parsing
 
                         // Expand any tabs used for indentation into spaces.  Tabs between tokens can be left alone, and should
                         // be stripped away during parsing.  Tabs in comments are left alone on purpose, in case they're wanted.
-                        StringBuilder expanded = new StringBuilder(_line.Length * 2);
+                        StringBuilder expanded = new(_line.Length * 2);
                         for (int i = 0; i < _line.Length; ++i)
                         {
                             if (_line[i] == '\t')
@@ -1600,7 +1595,7 @@ namespace Furesoft.Core.CodeDom.Parsing
         public bool InDirectiveExpression;
 
         // Stores the current state of nested conditional directives
-        private readonly Stack<bool> _conditionalDirectiveStack = new Stack<bool>();
+        private readonly Stack<bool> _conditionalDirectiveStack = new();
 
         /// <summary>
         /// Get the current conditional directive state.
@@ -1632,7 +1627,7 @@ namespace Furesoft.Core.CodeDom.Parsing
         }
 
         // Map of CompilerDirective tokens to ParseDelegate callbacks
-        private static readonly Dictionary<string, ParseDelegate> _compilerDirectiveMap = new Dictionary<string, ParseDelegate>();
+        private static readonly Dictionary<string, ParseDelegate> _compilerDirectiveMap = new();
 
         /// <summary>
         /// Add a parse-point for a compiler directive - triggers the callback when the specified token appears after the '#'.
@@ -1688,7 +1683,7 @@ namespace Furesoft.Core.CodeDom.Parsing
                 else
                 {
                     string badText = Token.LeadingWhitespace + TokenText + GetToDelimiter(delimiter[0]);
-                    Unrecognized unrecognized = new Unrecognized(false, _inDocComment, expression, new UnresolvedRef(badText, Token));
+                    Unrecognized unrecognized = new(false, _inDocComment, expression, new UnresolvedRef(badText, Token));
                     unrecognized.UpdateMessage();
                     expression = unrecognized;
                 }
@@ -1722,8 +1717,7 @@ namespace Furesoft.Core.CodeDom.Parsing
                 // Parse the embedded code block, or single identifier
                 if (!_docCommentCodeContentTerminationDetected)
                 {
-                    Block body;
-                    new Block(out body, this, parent, false, delimiter);
+                    new Block(out Block body, this, parent, false, delimiter);
                     result = body;
 
                     // Flush any remaining unused objects (just in case)
@@ -1751,7 +1745,7 @@ namespace Furesoft.Core.CodeDom.Parsing
         }
 
         // Map of DocComment tags to ParseDelegate callbacks
-        private static readonly Dictionary<string, ParseDelegate> _docCommentTagMap = new Dictionary<string, ParseDelegate>();
+        private static readonly Dictionary<string, ParseDelegate> _docCommentTagMap = new();
 
         /// <summary>
         /// Add a documentation comment tag for callback during parsing.
@@ -1767,16 +1761,15 @@ namespace Furesoft.Core.CodeDom.Parsing
         public delegate CodeObject ParseDelegate(Parser parser, CodeObject parent, ParseFlags flags);
 
         // Map of tokens to parse-point information
-        private static readonly Dictionary<string, List<ParsePoint>> _tokenMap = new Dictionary<string, List<ParsePoint>>();
+        private static readonly Dictionary<string, List<ParsePoint>> _tokenMap = new();
 
         /// <summary>
         /// Add a parse-point to the parser - the callback is triggered when the token appears in the specified context.
         /// </summary>
         public static void AddParsePoint(string token, int priority, ParseDelegate callback, params Type[] contextTypes)
         {
-            ParsePoint parsePoint = new ParsePoint { ContextTypes = contextTypes, Priority = priority, Callback = callback };
-            List<ParsePoint> list;
-            if (_tokenMap.TryGetValue(token, out list))
+            ParsePoint parsePoint = new() { ContextTypes = contextTypes, Priority = priority, Callback = callback };
+            if (_tokenMap.TryGetValue(token, out List<ParsePoint> list))
             {
                 // Add the parse-point to the existing list, sorted by priority
                 for (int i = 0; i < list.Count; ++i)
@@ -1900,15 +1893,14 @@ namespace Furesoft.Core.CodeDom.Parsing
         }
 
         // Nested maps of symbols used to tokenize the longest possible tokens
-        private static readonly CharMap _symbolMap = new CharMap();
+        private static readonly CharMap _symbolMap = new();
 
         private class CharMap : Dictionary<char, CharMap>
         {
             public void AddSymbolMap(string token)
             {
                 char ch = token[0];
-                CharMap map;
-                if (!TryGetValue(ch, out map))
+                if (!TryGetValue(ch, out CharMap map))
                 {
                     map = new CharMap();
                     Add(ch, map);
@@ -1919,7 +1911,7 @@ namespace Furesoft.Core.CodeDom.Parsing
         }
 
         // Map of operators to operator information
-        private static readonly Dictionary<string, OperatorInfo> _operatorInfoMap = new Dictionary<string, OperatorInfo>();
+        private static readonly Dictionary<string, OperatorInfo> _operatorInfoMap = new();
 
         /// <summary>
         /// Contains information about an operator.

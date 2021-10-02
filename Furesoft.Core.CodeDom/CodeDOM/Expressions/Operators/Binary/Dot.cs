@@ -83,7 +83,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary
         /// </summary>
         public static Dot Create(Expression left, params SymbolicRef[] symbolicRefs)
         {
-            Dot dot = new Dot(left is SymbolicRef ? (SymbolicRef)left.Clone() : left, (SymbolicRef)symbolicRefs[0].Clone());
+            Dot dot = new(left is SymbolicRef ? (SymbolicRef)left.Clone() : left, (SymbolicRef)symbolicRefs[0].Clone());
             for (int i = 1; i < symbolicRefs.Length; ++i)
                 dot = new Dot(dot, (SymbolicRef)symbolicRefs[i].Clone());
             return dot;

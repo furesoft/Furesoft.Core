@@ -20,7 +20,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
     /// </remarks>
     public class NamedCodeObjectDictionary : ICollection
     {
-        protected Dictionary<string, INamedCodeObject> _dictionary = new Dictionary<string, INamedCodeObject>();
+        protected Dictionary<string, INamedCodeObject> _dictionary = new();
 
         /// <summary>
         /// The number of items in the dictionary.
@@ -56,8 +56,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             // Protect against null names - shouldn't occur, but might in rare cases for code with parsing errors
             if (name != null)
             {
-                INamedCodeObject existingObj;
-                if (_dictionary.TryGetValue(name, out existingObj))
+                if (_dictionary.TryGetValue(name, out INamedCodeObject existingObj))
                 {
                     // If we had a name collision, add to any existing group, or create a new one
                     if (existingObj is NamedCodeObjectGroup)
@@ -107,8 +106,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         {
             if (name == null)
                 return null;
-            INamedCodeObject found;
-            _dictionary.TryGetValue(name, out found);
+            _dictionary.TryGetValue(name, out INamedCodeObject found);
             return found;
         }
 
@@ -119,8 +117,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// (or <see cref="NamedCodeObjectGroup"/> if there are multiple matches).</returns>
         public INamedCodeObject FindGotoTarget(string name)
         {
-            INamedCodeObject found;
-            _dictionary.TryGetValue(Label.ParseToken + name, out found);
+            _dictionary.TryGetValue(Label.ParseToken + name, out INamedCodeObject found);
             return found;
         }
 
@@ -140,13 +137,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// <param name="namedCodeObject">The named code object.</param>
         public void Remove(string name, INamedCodeObject namedCodeObject)
         {
-            INamedCodeObject existingObj;
-            if (_dictionary.TryGetValue(name, out existingObj))
+            if (_dictionary.TryGetValue(name, out INamedCodeObject existingObj))
             {
-                if (existingObj is NamedCodeObjectGroup)
+                // If there's a group with the given name, remove the object from the group
+                if (existingObj is NamedCodeObjectGroup group)
                 {
-                    // If there's a group with the given name, remove the object from the group
-                    NamedCodeObjectGroup group = (NamedCodeObjectGroup)existingObj;
                     group.Remove(namedCodeObject);
                     if (group.Count == 1)
                     {

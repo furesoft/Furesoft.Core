@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the global value numbering transform.
         /// </summary>
-        public static readonly GlobalValueNumbering Instance = new GlobalValueNumbering();
+        public static readonly GlobalValueNumbering Instance = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)
@@ -30,8 +30,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 new ValueNumberingInstructionComparer(numbering));
             foreach (var insn in graph.NamedInstructions)
             {
-                HashSet<ValueTag> valueSet;
-                if (!equivValues.TryGetValue(insn.Instruction, out valueSet))
+                if (!equivValues.TryGetValue(insn.Instruction, out HashSet<ValueTag> valueSet))
                 {
                     equivValues[insn.Instruction] = valueSet = new HashSet<ValueTag>();
                 }
@@ -48,8 +47,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 // An instruction can be replaced with another instruction
                 // if it is equivalent to that instruction and it is strictly
                 // dominated by the other instruction.
-                HashSet<ValueTag> valueSet;
-                if (!equivValues.TryGetValue(insn.Instruction, out valueSet))
+                if (!equivValues.TryGetValue(insn.Instruction, out HashSet<ValueTag> valueSet))
                 {
                     continue;
                 }

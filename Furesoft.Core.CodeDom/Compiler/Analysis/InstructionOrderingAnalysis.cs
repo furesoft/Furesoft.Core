@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         /// <value>A conservative instruction ordering analysis.</value>
         public static readonly ConservativeInstructionOrderingAnalysis Instance =
-            new ConservativeInstructionOrderingAnalysis();
+            new();
 
         private ConservativeInstructionOrderingAnalysis()
         { }
@@ -105,9 +105,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                         // Rule #2.a: Value-reading instructions depend on value-writing
                         // instructions that refer to the same address.
                         insnDependencies.UnionWith(unknownWrites);
-                        if (memSpec is ArgumentRead)
+                        if (memSpec is ArgumentRead argReadSpec)
                         {
-                            var argReadSpec = (ArgumentRead)memSpec;
                             var readAddress = instruction.Arguments[argReadSpec.ParameterIndex];
                             foreach (var pair in knownWrites)
                             {
@@ -138,9 +137,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                         // instructions that refer to the same address.
                         insnDependencies.UnionWith(unknownWrites);
                         insnDependencies.UnionWith(unknownReads);
-                        if (memSpec is ArgumentWrite)
+                        if (memSpec is ArgumentWrite argWriteSpec)
                         {
-                            var argWriteSpec = (ArgumentWrite)memSpec;
                             var writeAddress = instruction.Arguments[argWriteSpec.ParameterIndex];
                             foreach (var pair in knownWrites.Concat(knownReads))
                             {
@@ -179,8 +177,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                     // same basic block.
                     foreach (var arg in instruction.Arguments)
                     {
-                        NamedInstruction argInstruction;
-                        if (graph.TryGetInstruction(arg, out argInstruction)
+                        if (graph.TryGetInstruction(arg, out NamedInstruction argInstruction)
                             && argInstruction.Block.Tag == block.Tag)
                         {
                             insnDependencies.Add(arg);

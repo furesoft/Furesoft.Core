@@ -151,10 +151,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
                 while (!oldBucket.IsEmpty)
                 {
                     var kvPair = oldBucket.keyValuePair;
-                    TKey entryKey;
-                    TValue entryValue;
-                    if (kvPair.Key.TryGetTarget(out entryKey)
-                        && kvPair.Value.TryGetTarget(out entryValue))
+                    if (kvPair.Key.TryGetTarget(out TKey entryKey)
+                        && kvPair.Value.TryGetTarget(out TValue entryValue))
                     {
                         // This entry is still alive. Add it to the right
                         // bucket in the new bucket array.
@@ -422,8 +420,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <inheritdoc/>
         public override TValue Get(TKey key, Func<TKey, TValue> createValue)
         {
-            TValue result;
-            if (TryGet(key, out result))
+            if (TryGet(key, out TValue result))
             {
                 return result;
             }
@@ -508,9 +505,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
             TKey key,
             out TValue value)
         {
-            TKey kvPairKey;
-            TValue kvPairValue;
-            if (!TryIsolateFirstLiveEntry(out kvPairKey, out kvPairValue))
+            if (!TryIsolateFirstLiveEntry(out TKey kvPairKey, out TValue kvPairValue))
             {
                 value = default(TValue);
                 return false;
@@ -580,9 +575,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
             TKey key,
             TValue value)
         {
-            TKey kvPairKey;
-            TValue kvPairValue;
-            if (!TryIsolateFirstLiveEntry(out kvPairKey, out kvPairValue))
+            if (!TryIsolateFirstLiveEntry(out TKey kvPairKey, out TValue kvPairValue))
             {
                 return false;
             }
@@ -675,9 +668,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </summary>
         public void Cleanup()
         {
-            TKey kvPairKey;
-            TValue kvPairValue;
-            if (!TryIsolateFirstLiveEntry(out kvPairKey, out kvPairValue))
+            if (!TryIsolateFirstLiveEntry(out TKey kvPairKey, out TValue kvPairValue))
             {
                 return;
             }
@@ -711,11 +702,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
                 return;
             }
 
-            TKey key;
-            TValue value;
 
-            if (keyValuePair.Key.TryGetTarget(out key)
-                && keyValuePair.Value.TryGetTarget(out value))
+            if (keyValuePair.Key.TryGetTarget(out TKey key)
+                && keyValuePair.Value.TryGetTarget(out TValue value))
             {
                 keys.Add(key);
             }

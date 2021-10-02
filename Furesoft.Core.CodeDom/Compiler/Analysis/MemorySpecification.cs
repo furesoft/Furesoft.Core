@@ -23,8 +23,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </returns>
         public static MemorySpecification GetMemorySpecification(this IMethod method)
         {
-            IAttribute attr;
-            if (method.Attributes.TryGet(MemorySpecificationAttribute.AttributeType, out attr))
+            if (method.Attributes.TryGet(MemorySpecificationAttribute.AttributeType, out IAttribute attr))
             {
                 return ((MemorySpecificationAttribute)attr).Specification;
             }

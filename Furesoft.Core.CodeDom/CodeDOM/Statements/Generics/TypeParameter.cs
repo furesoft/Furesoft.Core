@@ -270,7 +270,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
 
                 while (parser.Token != null && (parser.TokenText.Length != 1 || terminators.IndexOf(parser.TokenText[0]) < 0))
                 {
-                    TypeParameter typeParameter = new TypeParameter(parser, parent);
+                    TypeParameter typeParameter = new(parser, parent);
                     if (typeParameter.Name != null)
                     {
                         if (parameters == null)

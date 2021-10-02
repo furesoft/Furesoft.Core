@@ -300,7 +300,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         protected int[] CalculateColumnWidths(CodeWriter writer)
         {
             // Check for alignment of Initializer members into columns
-            List<int> columnWidths = new List<int> { 0 };
+            List<int> columnWidths = new() { 0 };
             if (_expressions != null && _expressions.Count > 1)
             {
                 int column = 0;
@@ -360,9 +360,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             {
                 foreach (Expression expression in _expressions)
                 {
-                    if (expression is Initializer)
+                    if (expression is Initializer initializer)
                     {
-                        Initializer initializer = (Initializer)expression;
                         if (!initializer.IsEndFirstOnLine)
                         {
                             ChildList<Expression> expressions = initializer.Expressions;

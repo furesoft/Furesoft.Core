@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the block fusion transform.
         /// </summary>
-        public static readonly BlockFusion Instance = new BlockFusion();
+        public static readonly BlockFusion Instance = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)
@@ -31,8 +31,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             var fusible = new HashSet<BasicBlockTag>();
             foreach (var block in graph.BasicBlockTags)
             {
-                BasicBlockTag tail;
-                if (TryGetFusibleTail(block, graph, predecessors, out tail))
+                if (TryGetFusibleTail(block, graph, predecessors, out BasicBlockTag tail))
                 {
                     fusible.Add(block);
                 }

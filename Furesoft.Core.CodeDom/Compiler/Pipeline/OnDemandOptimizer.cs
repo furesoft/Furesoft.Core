@@ -277,8 +277,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
                 return;
             }
 
-            HashSet<IMethod> depends;
-            if (dependencies.TryGetValue(method, out depends))
+            if (dependencies.TryGetValue(method, out HashSet<IMethod> depends))
             {
                 foreach (var item in depends)
                 {
@@ -294,8 +293,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
         /// <returns>A task that produces the method's body.</returns>
         private Task<MethodBody> Start(IMethod method)
         {
-            TaskCompletionSource<MethodBody> source;
-            if (!results.TryGetValue(method, out source))
+            if (!results.TryGetValue(method, out TaskCompletionSource<MethodBody> source))
             {
                 source = new TaskCompletionSource<MethodBody>();
                 results[method] = source;

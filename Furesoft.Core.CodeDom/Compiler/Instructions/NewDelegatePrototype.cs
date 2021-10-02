@@ -151,7 +151,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<NewDelegatePrototype> instanceCache
-            = new InterningCache<NewDelegatePrototype>(
+            = new(
                 new StructuralNewDelegatePrototypeComparer());
 
         /// <summary>

@@ -210,7 +210,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         // (in the wild, not in this private set-up logic) have equal declaration
         // types and type arguments, then they are *referentially* equal.
         private static InterningCache<DirectTypeSpecialization> GenericTypeCache
-            = new InterningCache<DirectTypeSpecialization>(
+            = new(
                 new StructuralDirectTypeSpecializationComparer(),
                 InitializeInstance);
 
@@ -301,7 +301,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public TypeSpecialization ParentType { get; private set; }
 
         /// <inheritdoc/>
-        public override TypeParent Parent => new TypeParent(ParentType);
+        public override TypeParent Parent => new(ParentType);
 
         private QualifiedName qualName;
 
@@ -320,7 +320,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         }
 
         private static InterningCache<IndirectTypeSpecialization> instanceCache =
-            new InterningCache<IndirectTypeSpecialization>(
+            new(
                 new StructuralIndirectTypeSpecializationComparer(),
                 InitializeInstance);
 

@@ -189,7 +189,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<CallPrototype> instanceCache
-            = new InterningCache<CallPrototype>(
+            = new(
                 new StructuralCallPrototypeComparer());
 
         /// <summary>

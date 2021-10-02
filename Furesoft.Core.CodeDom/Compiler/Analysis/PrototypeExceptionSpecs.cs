@@ -34,18 +34,15 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
 
         public TSpec GetSpecification(InstructionPrototype prototype)
         {
-            if (prototype is IntrinsicPrototype)
+            if (prototype is IntrinsicPrototype intrinsic)
             {
-                var intrinsic = (IntrinsicPrototype)prototype;
-                Func<IntrinsicPrototype, TSpec> getIntrinsicSpec;
-                if (intrinsicSpecs.TryGetValue(intrinsic.Name, out getIntrinsicSpec))
+                if (intrinsicSpecs.TryGetValue(intrinsic.Name, out Func<IntrinsicPrototype, TSpec> getIntrinsicSpec))
                 {
                     return getIntrinsicSpec(intrinsic);
                 }
             }
 
-            Func<InstructionPrototype, TSpec> getInstructionSpec;
-            if (instructionSpecs.TryGetValue(prototype.GetType(), out getInstructionSpec))
+            if (instructionSpecs.TryGetValue(prototype.GetType(), out Func<InstructionPrototype, TSpec> getInstructionSpec))
             {
                 return getInstructionSpec(prototype);
             }

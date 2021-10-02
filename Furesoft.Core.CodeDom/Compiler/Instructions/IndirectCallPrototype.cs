@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     public sealed class IndirectCallPrototype : InstructionPrototype
     {
         private static readonly InterningCache<IndirectCallPrototype> instanceCache
-            = new InterningCache<IndirectCallPrototype>(
+            = new(
                 new StructuralIndirectCallPrototypeComparer());
 
         private IType returnType;

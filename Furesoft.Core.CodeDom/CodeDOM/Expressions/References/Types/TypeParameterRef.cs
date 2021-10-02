@@ -233,20 +233,17 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
             if (reference is TypeParameter)
             {
                 CodeObject parent = ((TypeParameter)reference).Parent;
-                if (parent is GenericMethodDecl)
+                if (parent is GenericMethodDecl methodDecl)
                 {
-                    GenericMethodDecl methodDecl = (GenericMethodDecl)parent;
                     return methodDecl.CreateRef(ChildList<Expression>.CreateListOfNulls(methodDecl.TypeParameterCount));
                 }
-                if (parent is ITypeDecl)
+                if (parent is ITypeDecl typeDecl)
                 {
-                    ITypeDecl typeDecl = (ITypeDecl)parent;
                     return typeDecl.CreateRef(ChildList<Expression>.CreateListOfNulls(typeDecl.TypeParameterCount));
                 }
             }
-            else if (reference is Type)
+            else if (reference is Type typeParameter)
             {
-                Type typeParameter = (Type)reference;
                 if (typeParameter.DeclaringMethod != null)
                     return MethodRef.Create(typeParameter.DeclaringMethod);
                 Type declaringType = ((Type)reference).DeclaringType;
@@ -374,9 +371,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
                 if (parent is INamedCodeObject)
                     return ((INamedCodeObject)parent).Name;
             }
-            else if (reference is Type)
+            else if (reference is Type typeParameter)
             {
-                Type typeParameter = (Type)reference;
                 if (typeParameter.DeclaringMethod != null)
                     return typeParameter.DeclaringMethod.Name;
                 if (typeParameter.DeclaringType != null)

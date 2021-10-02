@@ -218,8 +218,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </summary>
         public TValue PeekOrDefault(TKey Key)
         {
-            TValue result;
-            TryPeek(Key, out result);
+            TryPeek(Key, out TValue result);
             return result;
         }
     }

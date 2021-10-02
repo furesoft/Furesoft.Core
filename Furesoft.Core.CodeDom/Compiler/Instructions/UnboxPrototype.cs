@@ -83,7 +83,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<UnboxPrototype> instanceCache
-            = new InterningCache<UnboxPrototype>(
+            = new(
                 new StructuralUnboxPrototypeComparer());
 
         /// <summary>

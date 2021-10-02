@@ -52,7 +52,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         // (in the wild, not in this private set-up logic) have equal element
         // types and kinds, then they are *referentially* equal.
         private static InterningCache<PointerType> instanceCache
-            = new InterningCache<PointerType>(
+            = new(
                 new StructuralPointerTypeComparer(),
                 InitializeInstance);
 

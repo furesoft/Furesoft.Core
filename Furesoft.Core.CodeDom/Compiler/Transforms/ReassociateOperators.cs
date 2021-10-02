@@ -17,12 +17,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// An instance of the operator reassociation pass.
         /// </summary>
         public static readonly ReassociateOperators Instance
-            = new ReassociateOperators();
+            = new();
 
         // A set of integer arithmetic operators `op` for which
         // `(a op b) op c == a op (b op c)` holds.
         private static readonly HashSet<string> assocIntArith =
-            new HashSet<string>()
+            new()
         {
 Operators.Add,
 Operators.Multiply,
@@ -33,7 +33,7 @@ Operators.Xor        };
         // A set of `(op1, op2)` pairs for which `(a op1 b) op1 c == a op1 (b op2 c)` holds,
         // where both `op1` and `op2` are integer arithmetic operators.
         private static readonly Dictionary<string, string> intArithLeftToRight =
-            new Dictionary<string, string>()
+            new()
         {
             { Operators.Subtract, Operators.Add},
             { Operators.Divide, Operators.Multiply}
@@ -77,10 +77,8 @@ Operators.Xor        };
             NamedInstructionBuilder insertionPoint)
         {
             var graph = insertionPoint.Graph;
-            Constant firstConstant;
-            Constant secondConstant;
-            if (IsConstant(first, insertionPoint.Graph.ToImmutable(), out firstConstant)
-                && IsConstant(second, insertionPoint.Graph.ToImmutable(), out secondConstant))
+            if (IsConstant(first, insertionPoint.Graph.ToImmutable(), out Constant firstConstant)
+                && IsConstant(second, insertionPoint.Graph.ToImmutable(), out Constant secondConstant))
             {
                 var newConstant = ConstantPropagation.EvaluateDefault(
                     prototype,
@@ -96,9 +94,7 @@ Operators.Xor        };
 
         private static bool IsAssociative(IntrinsicPrototype prototype)
         {
-            string op;
-            bool isChecked;
-            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out op, out isChecked)
+            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out string op, out bool isChecked)
                 && !isChecked
                 && assocIntArith.Contains(op))
             {
@@ -112,8 +108,7 @@ Operators.Xor        };
 
         private static bool IsConstant(ValueTag tag, FlowGraph graph, out Constant constant)
         {
-            NamedInstruction instruction;
-            if (graph.TryGetInstruction(tag, out instruction)
+            if (graph.TryGetInstruction(tag, out NamedInstruction instruction)
                 && instruction.Prototype is ConstantPrototype)
             {
                 constant = ((ConstantPrototype)instruction.Prototype).Value; ;
@@ -130,12 +125,9 @@ Operators.Xor        };
             IntrinsicPrototype prototype,
             out IntrinsicPrototype rightPrototype)
         {
-            string op;
-            string rightOp;
-            bool isChecked;
-            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out op, out isChecked)
+            if (ArithmeticIntrinsics.TryParseArithmeticIntrinsicName(prototype.Name, out string op, out bool isChecked)
                 && !isChecked
-                && intArithLeftToRight.TryGetValue(op, out rightOp)
+                && intArithLeftToRight.TryGetValue(op, out string rightOp)
                 && prototype.ParameterTypes.All(x => x.IsIntegerType()))
             {
                 rightPrototype = ArithmeticIntrinsics.CreatePrototype(
@@ -187,14 +179,12 @@ Operators.Xor        };
             // reduction-based reassocation to the RHS.
 
             var proto = instruction.Prototype as IntrinsicPrototype;
-            IntrinsicPrototype rightPrototype;
-            if (proto == null || !IsLeftToRightReassociable(proto, out rightPrototype))
+            if (proto == null || !IsLeftToRightReassociable(proto, out IntrinsicPrototype rightPrototype))
             {
                 return;
             }
 
-            NamedInstructionBuilder left;
-            if (instruction.Graph.TryGetInstruction(instruction.Instruction.Arguments[0], out left)
+            if (instruction.Graph.TryGetInstruction(instruction.Instruction.Arguments[0], out NamedInstructionBuilder left)
                 && left.Prototype == proto)
             {
                 var uses = instruction.Graph.GetAnalysisResult<ValueUses>();
@@ -277,8 +267,7 @@ Operators.Xor        };
         {
             foreach (var arg in arguments)
             {
-                NamedInstruction insn;
-                if (graph.TryGetInstruction(arg, out insn))
+                if (graph.TryGetInstruction(arg, out NamedInstruction insn))
                 {
                     ToReductionList(
                         insn,

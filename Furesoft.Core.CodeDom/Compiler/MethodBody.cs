@@ -149,9 +149,8 @@ namespace Furesoft.Core.CodeDom.Compiler
                     ValidateInstruction(innerInsn, errors);
                 }
 
-                if (flow is TryFlow)
+                if (flow is TryFlow tryFlow)
                 {
-                    var tryFlow = (TryFlow)flow;
                     ValidateBranch(
                         tryFlow.SuccessBranch,
                         BranchArgumentKind.TryResult,

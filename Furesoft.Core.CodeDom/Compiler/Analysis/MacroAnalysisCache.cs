@@ -134,8 +134,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 // analysis caches to a list of dangling caches.
                 foreach (var type in resultTypes)
                 {
-                    int cacheIndex;
-                    if (cacheIndices.TryGetValue(type, out cacheIndex))
+                    if (cacheIndices.TryGetValue(type, out int cacheIndex))
                     {
                         int refCount = cacheRefCountsBuilder[cacheIndex];
                         refCount--;
@@ -259,8 +258,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             updateLock.EnterReadLock();
             try
             {
-                int cacheIndex;
-                if (cacheIndices.TryGetValue(t, out cacheIndex))
+                if (cacheIndices.TryGetValue(t, out int cacheIndex))
                 {
                     cache = distinctCaches[cacheIndex];
                 }
@@ -295,8 +293,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// <returns>An analysis result.</returns>
         public T GetResultAs<T>(FlowGraph graph)
         {
-            T result;
-            if (TryGetResultAs(graph, out result))
+            if (TryGetResultAs(graph, out T result))
             {
                 return result;
             }
@@ -346,8 +343,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         {
             if (!HasAnalysisFor<T>())
             {
-                FlowGraphAnalysisCache cache;
-                if (TryRegisterDefaultAnalysis(typeof(T), graph, out cache))
+                if (TryRegisterDefaultAnalysis(typeof(T), graph, out FlowGraphAnalysisCache cache))
                 {
                     return cache.GetAnalysis<T>();
                 }

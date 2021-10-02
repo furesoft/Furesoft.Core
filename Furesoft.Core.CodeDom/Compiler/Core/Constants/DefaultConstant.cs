@@ -19,7 +19,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// An instance of the default-value constant.
         /// </summary>
         /// <returns>The default-value constant.</returns>
-        public static readonly DefaultConstant Instance = new DefaultConstant();
+        public static readonly DefaultConstant Instance = new();
 
         /// <inheritdoc/>
         public override bool Equals(Constant other)

@@ -42,7 +42,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Collections
         /// An empty immutable ordered dictionary.
         /// </summary>
         public static readonly ImmutableOrderedDictionary<TKey, TValue> Empty =
-            new ImmutableOrderedDictionary<TKey, TValue>(
+            new(
                 ImmutableDictionary<TKey, TValue>.Empty,
                 ImmutableList<TKey>.Empty);
 

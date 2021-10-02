@@ -331,8 +331,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// <returns>A named instruction.</returns>
         public NamedInstructionBuilder GetInstruction(ValueTag tag)
         {
-            NamedInstructionBuilder result;
-            if (TryGetInstruction(tag, out result))
+            if (TryGetInstruction(tag, out NamedInstructionBuilder result))
             {
                 return result;
             }
@@ -598,9 +597,8 @@ namespace Furesoft.Core.CodeDom.Compiler
 
                 // If the block ends in 'return' flow, then we want to
                 // turn that return into a jump to the continuation.
-                if (block.Flow is ReturnFlow)
+                if (block.Flow is ReturnFlow returnFlow)
                 {
-                    var returnFlow = (ReturnFlow)block.Flow;
                     newBlock.Flow = rewriteReturnFlow(
                         new ReturnFlow(
                             returnFlow.ReturnValue.MapArguments(valueRenameMap)),

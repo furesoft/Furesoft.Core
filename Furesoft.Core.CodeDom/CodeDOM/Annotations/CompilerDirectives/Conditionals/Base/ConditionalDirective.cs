@@ -114,7 +114,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Condition
                             _skippedText += new string('\n', comment.NewLines - 1);
 
                         // Emit the comment, adding back any removed prefix spaces
-                        string prefixSpaces = new string(' ', comment.PrefixSpaceCount);
+                        string prefixSpaces = new(' ', comment.PrefixSpaceCount);
                         _skippedText += prefixSpaces + comment.AsString().Replace("\n", "\n" + prefixSpaces) + '\n';
 
                         if (comment.PrefixSpaceCount < minimumPrefixedSpaces)

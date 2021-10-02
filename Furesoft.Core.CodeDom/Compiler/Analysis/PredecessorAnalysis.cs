@@ -58,7 +58,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// <summary>
         /// An instance of the basic block predecessor analysis.
         /// </summary>
-        public static readonly PredecessorAnalysis Instance = new PredecessorAnalysis();
+        public static readonly PredecessorAnalysis Instance = new();
 
         /// <inheritdoc/>
         public BasicBlockPredecessors Analyze(FlowGraph graph)

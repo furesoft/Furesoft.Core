@@ -191,8 +191,7 @@ namespace Furesoft.Core.CodeDom.Utilities
         /// <returns>The parsed int value.</returns>
         public static int ParseInt(string thisStr, int defaultValue)
         {
-            int val;
-            return (int.TryParse(thisStr, out val) ? val : defaultValue);
+            return (int.TryParse(thisStr, out int val) ? val : defaultValue);
         }
 
         /// <summary>
@@ -242,8 +241,7 @@ namespace Furesoft.Core.CodeDom.Utilities
         /// <returns>The parsed double value.</returns>
         public static double ParseDouble(string thisStr, double defaultValue)
         {
-            double val;
-            return (double.TryParse(thisStr, out val) ? val : defaultValue);
+            return (double.TryParse(thisStr, out double val) ? val : defaultValue);
         }
 
         /// <summary>
@@ -264,8 +262,7 @@ namespace Furesoft.Core.CodeDom.Utilities
         /// <returns>The parsed DateTime value.</returns>
         public static DateTime ParseDateTime(string thisStr, DateTime defaultValue)
         {
-            DateTime val;
-            return (DateTime.TryParse(thisStr, out val) ? val : defaultValue);
+            return (DateTime.TryParse(thisStr, out DateTime val) ? val : defaultValue);
         }
 
         /// <summary>
@@ -288,8 +285,7 @@ namespace Furesoft.Core.CodeDom.Utilities
         public static T ParseEnum<T>(string thisStr, T defaultValue) where T : struct
         {
 #if !TARGET_FRAMEWORK_3_5
-            T result;
-            return (Enum.TryParse(thisStr, out result) ? result : defaultValue);
+            return (Enum.TryParse(thisStr, out T result) ? result : defaultValue);
 #else
             T result = defaultValue;
             if (thisStr != null && thisStr.Count > 0)

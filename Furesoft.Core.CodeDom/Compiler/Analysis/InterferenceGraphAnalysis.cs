@@ -63,7 +63,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// Gets an instance of the interference graph analysis.
         /// </summary>
         /// <returns>An instance of the interference graph analysis.</returns>
-        public static readonly InterferenceGraphAnalysis Instance = new InterferenceGraphAnalysis();
+        public static readonly InterferenceGraphAnalysis Instance = new();
 
         /// <inheritdoc/>
         public InterferenceGraph Analyze(FlowGraph graph)

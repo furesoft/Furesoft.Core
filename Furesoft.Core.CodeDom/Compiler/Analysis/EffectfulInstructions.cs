@@ -97,9 +97,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                     // so we can just ignore them.
                     continue;
                 }
-                else if (item is RemoveInstructionUpdate)
+                else if (item is RemoveInstructionUpdate removeUpdate)
                 {
-                    var removeUpdate = (RemoveInstructionUpdate)item;
                     effectfulSet.Remove(removeUpdate.Tag);
                 }
                 else

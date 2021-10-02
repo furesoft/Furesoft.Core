@@ -58,7 +58,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         /// <summary>
         /// The global namespace.
         /// </summary>
-        protected static RootNamespace _globalNamespace = new RootNamespace(ExternAlias.GlobalName, null);  // Setup the 'global' namespace;
+        protected static RootNamespace _globalNamespace = new(ExternAlias.GlobalName, null);  // Setup the 'global' namespace;
 
         #endregion
 
@@ -75,7 +75,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         /// <summary>
         /// Compiler directive symbols defined in the current file.
         /// </summary>
-        protected HashSet<string> _compilerDirectiveSymbols = new HashSet<string>();
+        protected HashSet<string> _compilerDirectiveSymbols = new();
 
         /// <summary>
         /// Generated 'extern alias global' statement.
@@ -85,7 +85,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         /// <summary>
         /// All 'listed' code annotations (<see cref="Message"/>s and special <see cref="Comment"/>s) for this <see cref="CodeUnit"/>.
         /// </summary>
-        protected List<Annotation> _listedAnnotations = new List<Annotation>();
+        protected List<Annotation> _listedAnnotations = new();
 
         #endregion
 
@@ -289,8 +289,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
                     return null;
                 }
 
-                if (statusCallback != null)
-                    statusCallback(LoadStatus.ObjectCreated, null);
+                statusCallback?.Invoke(LoadStatus.ObjectCreated, null);
 
                 // Create and parse the code unit, and log statistics
                 codeUnit = new CodeUnit(fileName);
@@ -403,13 +402,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         public void ParseLog(LoadOptions loadOptions, Action<LoadStatus, CodeObject> statusCallback)
         {
             // Parse the code unit
-            if (statusCallback != null)
-                statusCallback(LoadStatus.Parsing, null);
+            statusCallback?.Invoke(LoadStatus.Parsing, null);
             Unrecognized.Count = 0;
             Parse(loadOptions.HasFlag(LoadOptions.DoNotParseBodies) ? ParseFlags.SkipMethodBodies : ParseFlags.None);
-            
-            if (statusCallback != null)
-                statusCallback(LoadStatus.LoggingResults, null);
+
+            statusCallback?.Invoke(LoadStatus.LoggingResults, null);
             LogMessageCounts(loadOptions.HasFlag(LoadOptions.LogMessages));
         }
 
@@ -422,9 +419,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM
             errorCount = warningCount = commentCount = 0;
             foreach (Annotation annotation in _listedAnnotations)
             {
-                if (annotation is Message)
+                if (annotation is Message message)
                 {
-                    Message message = (Message)annotation;
                     if (message.Severity == MessageSeverity.Error)
                         ++errorCount;
                     else if (message.Severity == MessageSeverity.Warning)
@@ -441,8 +437,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         public void LogMessageCounts(bool logMessages)
         {
             // Calculate and log message counts
-            int errorCount, warningCount, commentCount;
-            GetMessageCounts(out errorCount, out warningCount, out commentCount);
+            GetMessageCounts(out int errorCount, out int warningCount, out int commentCount);
             Log.WriteLine(string.Format("{0}{1:N0} messages ({2:N0} errors; {3:N0} warnings; {4:N0} comments)",
                 (!string.IsNullOrEmpty(Name) ? Name + ": " : ""), _listedAnnotations.Count, errorCount, warningCount, commentCount));
 
@@ -464,7 +459,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         /// <summary>
         /// Parse the specified name into a <see cref="NamespaceRef"/> or <see cref="TypeRef"/>, or a <see cref="Dot"/> or <see cref="Lookup"/> expression that evaluates to one.
         /// </summary>
-        public Expression ParseName(string fullName)
+        public static Expression ParseName(string fullName)
         {
             return _globalNamespace.ParseName(fullName);
         }
@@ -488,7 +483,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
             try
             {
                 // Save as text, suppressing the implied leading newline, and adding one at the end
-                using (CodeWriter writer = new CodeWriter(fileName, FileEncoding, FileHasUTF8BOM, FileUsingTabs, IsGenerated))
+                using (CodeWriter writer = new(fileName, FileEncoding, FileHasUTF8BOM, FileUsingTabs, IsGenerated))
                 {
                     AsText(writer, RenderFlags.SuppressNewLine);
                     writer.WriteLine();
@@ -579,7 +574,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         public void LogMessage(string message, MessageSeverity severity, string toolTip)
         {
             string prefix = (severity == MessageSeverity.Error ? "ERROR: " : (severity == MessageSeverity.Warning ? "Warning: " : ""));
-            Log.WriteLine(prefix + "File '" + _name + "': " + message, toolTip != null ? toolTip.TrimEnd() : null);
+            Log.WriteLine(prefix + "File '" + _name + "': " + message, toolTip?.TrimEnd());
         }
 
         /// <summary>
@@ -720,7 +715,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM
             try
             {
                 // Create a parser instance and parse the file
-                using (Parser parser = new Parser(this, flags, IsGenerated))
+                using (Parser parser = new(this, flags, IsGenerated))
                 {
                     // Parse the body until we hit EOF, and add types to the namespace
                     new Block(out _body, parser, this, false, null);
@@ -733,14 +728,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM
                 if (Body != null && Body.Count > 0)
                 {
                     CodeObject firstCodeObject = Body[0];
-                    if (firstCodeObject is CommentBase)
-                        CheckIfGenerated((CommentBase)firstCodeObject);
+                    if (firstCodeObject is CommentBase @base)
+                        CheckIfGenerated(@base);
                     else if (firstCodeObject.Annotations != null)
                     {
                         foreach (Annotation annotation in firstCodeObject.Annotations)
                         {
-                            if (annotation is CommentBase)
-                                CheckIfGenerated((CommentBase)annotation);
+                            if (annotation is CommentBase base1)
+                                CheckIfGenerated(base1);
                         }
                     }
                 }
@@ -839,8 +834,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM
                 // Don't render if not C#, or if there are any Load or Parse errors (other than lost comments)
                 return ((_annotations == null || !Enumerable.Any(_annotations, delegate(Annotation annotation)
                     {
-                        return annotation is Message && ((Message)annotation).Severity == MessageSeverity.Error
-                               && ((Message)annotation).Source == MessageSource.Load || (((Message)annotation).Source == MessageSource.Parse && !annotation.Text.StartsWith("Line#"));
+                        return annotation is Message message && message.Severity == MessageSeverity.Error
+                               && message.Source == MessageSource.Load || (((Message)annotation).Source == MessageSource.Parse && !annotation.Text.StartsWith("Line#"));
                     })));
             }
         }

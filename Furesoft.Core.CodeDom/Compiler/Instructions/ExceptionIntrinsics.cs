@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// The namespace for exception handling intrinsics.
         /// </summary>
         public static readonly IntrinsicNamespace Namespace =
-            new IntrinsicNamespace("exception");
+            new("exception");
 
         /// <summary>
         /// Creates an exception handling intrinsic prototype.

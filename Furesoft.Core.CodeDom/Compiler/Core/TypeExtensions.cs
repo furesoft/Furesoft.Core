@@ -496,9 +496,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             {
                 AddIndirectSpecializationToGenericArgumentMapping(type, mapping);
             }
-            else if (type is DirectTypeSpecialization)
+            else if (type is DirectTypeSpecialization genericType)
             {
-                var genericType = (DirectTypeSpecialization)type;
                 var originalParams = genericType.GetRecursiveGenericDeclaration().GenericParameters;
                 var args = genericType.GenericArguments;
                 var paramCount = originalParams.Count;
@@ -557,9 +556,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         private static void AddToRecursiveGenericArgumentMapping(
             IMethod method, Dictionary<IType, IType> mapping)
         {
-            if (method is IndirectMethodSpecialization)
+            if (method is IndirectMethodSpecialization specialization)
             {
-                var specialization = (IndirectMethodSpecialization)method;
                 var originalParams = specialization.Declaration.GenericParameters;
                 var newParams = specialization.GenericParameters;
                 var paramCount = newParams.Count;
@@ -569,9 +567,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
                 }
                 AddToRecursiveGenericArgumentMapping(specialization.ParentType, mapping);
             }
-            else if (method is DirectMethodSpecialization)
+            else if (method is DirectMethodSpecialization genericInst)
             {
-                var genericInst = (DirectMethodSpecialization)method;
                 var originalParams = genericInst.Declaration.GenericParameters;
                 var args = genericInst.GenericArguments;
                 var paramCount = originalParams.Count;

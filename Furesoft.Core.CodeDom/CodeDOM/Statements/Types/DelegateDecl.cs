@@ -222,12 +222,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             Body = new Block { IsGenerated = true };
 
             // The Invoke method has the same parameters as the delegate, and the same return type
-            MethodDecl invokeDecl = new MethodDecl("Invoke", (Expression)_returnType.Clone(), Modifiers.Public) { IsGenerated = true };
+            MethodDecl invokeDecl = new("Invoke", (Expression)_returnType.Clone(), Modifiers.Public) { IsGenerated = true };
             invokeDecl.Parameters = (_parameters != null ? ChildListHelpers.Clone(_parameters, invokeDecl) : null);
             Add(invokeDecl);
 
             // The BeginInvoke method has the same parameters as the delegate, plus 2 extra ones, and a return type of IAsyncResult
-            MethodDecl beginInvokeDecl = new MethodDecl("BeginInvoke", (TypeRef)TypeRef.IAsyncResultRef.Clone(), Modifiers.Public) { IsGenerated = true };
+            MethodDecl beginInvokeDecl = new("BeginInvoke", (TypeRef)TypeRef.IAsyncResultRef.Clone(), Modifiers.Public) { IsGenerated = true };
             ChildList<ParameterDecl> parameters = (_parameters != null ? ChildListHelpers.Clone(_parameters, beginInvokeDecl) : new ChildList<ParameterDecl>(beginInvokeDecl));
             parameters.Add(new ParameterDecl("callback", (TypeRef)TypeRef.AsyncCallbackRef.Clone()));
             parameters.Add(new ParameterDecl("object", (TypeRef)TypeRef.ObjectRef.Clone()));
@@ -235,7 +235,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             Add(beginInvokeDecl);
 
             // The EndInvoke method has any 'ref' or 'out' parameters of the delegate, plus 1 extra one, and the same return type
-            MethodDecl endInvokeDecl = new MethodDecl("EndInvoke", (Expression)_returnType.Clone(), Modifiers.Public) { IsGenerated = true };
+            MethodDecl endInvokeDecl = new("EndInvoke", (Expression)_returnType.Clone(), Modifiers.Public) { IsGenerated = true };
             parameters = new ChildList<ParameterDecl>(endInvokeDecl);
             if (_parameters != null)
             {
@@ -253,7 +253,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             // code generation.  We have to create a dummy constructor that will allow a MethodRef to be passed to it, in order
             // to make the C# syntax work when resolving.
             TypeRef delegateTypeRef = CreateRef();
-            ConstructorDecl constructor = new ConstructorDecl(new[] { new ParameterDecl(DelegateConstructorParameterName, delegateTypeRef) }) { IsGenerated = true };
+            ConstructorDecl constructor = new(new[] { new ParameterDecl(DelegateConstructorParameterName, delegateTypeRef) }) { IsGenerated = true };
             Add(constructor);
         }
 
@@ -330,8 +330,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types
             ParseNameTypeParameters(parser);  // Parse the name and any optional type parameters
 
             // Parse the parameter declarations
-            bool isEndFirstOnLine;
-            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out isEndFirstOnLine);
+            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out bool isEndFirstOnLine);
             IsEndFirstOnLine = isEndFirstOnLine;
 
             ParseModifiersAndAnnotations(parser);  // Parse any attributes and/or modifiers

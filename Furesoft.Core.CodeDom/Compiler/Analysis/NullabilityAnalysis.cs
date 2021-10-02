@@ -15,7 +15,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// Gets an instance of the nullability analysis.
         /// </summary>
         /// <returns>An instance of the nullability analysis.</returns>
-        public static readonly NullabilityAnalysis Instance = new NullabilityAnalysis();
+        public static readonly NullabilityAnalysis Instance = new();
 
         private NullabilityAnalysis()
         { }

@@ -79,8 +79,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             // handle preallocated registers first.
             foreach (var value in graph.ValueTags)
             {
-                TRegister assignedRegister;
-                if (TryGetPreallocatedRegister(value, graph, out assignedRegister))
+                if (TryGetPreallocatedRegister(value, graph, out TRegister assignedRegister))
                 {
                     // If we have a preallocated register, then we should just accept it.
                     allocation[value] = assignedRegister;
@@ -119,8 +118,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 var relatedRegisters = new HashSet<TRegister>();
                 foreach (var relatedValue in related.GetRelatedValues(value))
                 {
-                    TRegister reg;
-                    if (allocation.TryGetValue(relatedValue, out reg)
+                    if (allocation.TryGetValue(relatedValue, out TRegister reg)
                         && recyclable.Contains(reg))
                     {
                         relatedRegisters.Add(reg);
@@ -131,8 +129,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 // doesn't work out, try to recycle a non-related register. If
                 // that fails as well, then we'll create a new register.
                 var valueType = graph.GetValueType(value);
-                TRegister assignedRegister;
-                if (!TryRecycleRegister(valueType, relatedRegisters, out assignedRegister)
+                if (!TryRecycleRegister(valueType, relatedRegisters, out TRegister assignedRegister)
                     && !TryRecycleRegister(valueType, recyclable, out assignedRegister))
                 {
                     assignedRegister = CreateRegister(valueType);

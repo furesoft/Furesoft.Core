@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         /// Gets an instance of unreachable flow.
         /// </summary>
         /// <returns>Unreachable flow.</returns>
-        public static readonly UnreachableFlow Instance = new UnreachableFlow();
+        public static readonly UnreachableFlow Instance = new();
 
         /// <inheritdoc/>
         public override IReadOnlyList<Instruction> Instructions => EmptyArray<Instruction>.Value;

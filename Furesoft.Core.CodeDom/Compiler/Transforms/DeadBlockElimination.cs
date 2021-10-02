@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the dead block elimination transform.
         /// </summary>
-        public static readonly DeadBlockElimination Instance = new DeadBlockElimination();
+        public static readonly DeadBlockElimination Instance = new();
 
         /// <summary>
         /// Removes dead blocks from a particular graph.

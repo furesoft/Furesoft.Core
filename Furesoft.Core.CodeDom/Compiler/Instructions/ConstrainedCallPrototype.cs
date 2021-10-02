@@ -143,7 +143,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<ConstrainedCallPrototype> instanceCache
-            = new InterningCache<ConstrainedCallPrototype>(
+            = new(
                 new MappedComparer<ConstrainedCallPrototype, IMethod>(proto => proto.Callee));
 
         /// <summary>

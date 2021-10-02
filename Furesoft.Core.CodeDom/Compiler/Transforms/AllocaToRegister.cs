@@ -21,7 +21,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the alloca-to-register transform.
         /// </summary>
-        public static readonly AllocaToRegister Instance = new AllocaToRegister();
+        public static readonly AllocaToRegister Instance = new();
 
         // This transform is based on the algorithm described by M. Braun et al
         // in Simple and Efficient Construction of Static Single Assignment Form
@@ -124,9 +124,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             {
                 return;
             }
-            else if (prototype is StorePrototype)
+            else if (prototype is StorePrototype storeProto)
             {
-                var storeProto = (StorePrototype)prototype;
                 blacklistedAllocas.Add(storeProto.GetValue(instruction));
             }
             else
@@ -265,8 +264,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     var branchArgs = new List<ValueTag>();
                     foreach (var parameter in entryPoint.Parameters)
                     {
-                        ValueTag newTag;
-                        if (oldToNew.TryGetValue(parameter.Tag, out newTag))
+                        if (oldToNew.TryGetValue(parameter.Tag, out ValueTag newTag))
                         {
                             branchArgs.Add(newTag);
                         }
@@ -341,8 +339,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 // Actually fill the block, starting with the block's instructions.
                 foreach (var selection in block.NamedInstructions)
                 {
-                    Instruction newInstruction;
-                    if (RewriteInstruction(selection.Instruction, block, out newInstruction))
+                    if (RewriteInstruction(selection.Instruction, block, out Instruction newInstruction))
                     {
                         selection.Instruction = newInstruction;
                     }
@@ -353,8 +350,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 bool flowChanged = false;
                 foreach (var instruction in block.Flow.Instructions)
                 {
-                    Instruction newInstruction;
-                    if (RewriteInstruction(instruction, block, out newInstruction))
+                    if (RewriteInstruction(instruction, block, out Instruction newInstruction))
                     {
                         flowChanged = true;
                         newFlowInstructions.Add(newInstruction);
@@ -397,9 +393,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 out Instruction newInstruction)
             {
                 var prototype = instruction.Prototype;
-                if (prototype is LoadPrototype)
+                if (prototype is LoadPrototype loadProto)
                 {
-                    var loadProto = (LoadPrototype)prototype;
                     var pointer = loadProto.GetPointer(instruction);
                     if (eligibleAllocas.Contains(pointer))
                     {
@@ -409,9 +404,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                         return true;
                     }
                 }
-                else if (prototype is StorePrototype)
+                else if (prototype is StorePrototype storeProto)
                 {
-                    var storeProto = (StorePrototype)prototype;
                     var pointer = storeProto.GetPointer(instruction);
                     if (eligibleAllocas.Contains(pointer))
                     {
@@ -497,8 +491,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 BasicBlockTag block,
                 IType type)
             {
-                ValueTag value;
-                if (currentDef[variable].TryGetValue(block, out value))
+                if (currentDef[variable].TryGetValue(block, out ValueTag value))
                 {
                     return value;
                 }

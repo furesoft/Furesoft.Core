@@ -230,8 +230,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </returns>
         private bool UseAt(ValueTag value, int index)
         {
-            int previousIndex;
-            if (deadPositions.TryGetValue(value, out previousIndex)
+            if (deadPositions.TryGetValue(value, out int previousIndex)
                 && previousIndex >= index)
             {
                 return false;
@@ -344,7 +343,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// Gets an instance of the liveness analysis.
         /// </summary>
         /// <returns>An instance of the liveness analysis.</returns>
-        public static readonly LivenessAnalysis Instance = new LivenessAnalysis();
+        public static readonly LivenessAnalysis Instance = new();
 
         /// <inheritdoc/>
         public ValueLiveness Analyze(FlowGraph graph)

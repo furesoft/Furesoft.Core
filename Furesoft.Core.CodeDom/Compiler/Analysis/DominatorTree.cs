@@ -364,7 +364,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// An instance of the dominator tree analysis.
         /// </summary>
         /// <returns>An instance of the dominator tree analysis.</returns>
-        public static readonly DominatorTreeAnalysis Instance = new DominatorTreeAnalysis();
+        public static readonly DominatorTreeAnalysis Instance = new();
 
         private DominatorTreeAnalysis()
         { }

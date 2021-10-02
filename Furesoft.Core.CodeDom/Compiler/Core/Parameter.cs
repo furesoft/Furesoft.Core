@@ -95,7 +95,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// <returns>The parameter's full name.</returns>
         public QualifiedName FullName => Name.Qualify();
 
-        private static SimpleName emptyParameterName = new SimpleName("");
+        private static SimpleName emptyParameterName = new("");
 
         /// <summary>
         /// Creates a new parameter that retains all characteristics

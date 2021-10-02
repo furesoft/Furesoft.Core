@@ -644,8 +644,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Base
         protected void ParseParameters(Parser parser)
         {
             // Parse the parameter declarations
-            bool isEndFirstOnLine;
-            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out isEndFirstOnLine);
+            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out bool isEndFirstOnLine);
             IsEndFirstOnLine = isEndFirstOnLine;
         }
     }

@@ -223,9 +223,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
                     {
                         await DefineAsync(parent);
                     }
-                    if (member is IMethod)
+                    if (member is IMethod method)
                     {
-                        var method = (IMethod)member;
                         HashSet<IMethod> extraDefs;
                         lock (syncRoot)
                         {
@@ -274,8 +273,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
                         // Add this method to the override set of every base method. If
                         // and when the base method is defined, it will also define all
                         // methods in the override set.
-                        HashSet<IMethod> overrideSet;
-                        if (!overrides.TryGetValue(baseMethod, out overrideSet))
+                        if (!overrides.TryGetValue(baseMethod, out HashSet<IMethod> overrideSet))
                         {
                             overrides[baseMethod] = overrideSet = new HashSet<IMethod>();
                         }

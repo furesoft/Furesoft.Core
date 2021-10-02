@@ -67,8 +67,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         public IReadOnlyList<TValue> GetAll(TContainer container, TKey key)
         {
             var dictionary = indexCache.Get(container, IndexContainer);
-            List<TValue> results;
-            if (dictionary.TryGetValue(key, out results))
+            if (dictionary.TryGetValue(key, out List<TValue> results))
             {
                 return results;
             }
@@ -83,8 +82,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
             var results = new Dictionary<TKey, List<TValue>>(keyComparer);
             foreach (var kvPair in getElements(container))
             {
-                List<TValue> elemList;
-                if (!results.TryGetValue(kvPair.Key, out elemList))
+                if (!results.TryGetValue(kvPair.Key, out List<TValue> elemList))
                 {
                     elemList = new List<TValue>();
                     results[kvPair.Key] = elemList;

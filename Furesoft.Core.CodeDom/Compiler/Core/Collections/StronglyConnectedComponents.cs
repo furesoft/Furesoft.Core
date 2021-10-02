@@ -64,8 +64,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
             // Consider successors of v.
             foreach (var w in getSuccessors(v))
             {
-                int wIndex;
-                if (!vertexIndices.TryGetValue(w, out wIndex))
+                if (!vertexIndices.TryGetValue(w, out int wIndex))
                 {
                     // Successor w has not yet been visited; recurse on it.
                     StrongConnect(w, getSuccessors, ref index, vertexIndices, vertexLowlinks, stack, onStack, sccs);

@@ -94,8 +94,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
 
         private HashSet<BasicBlockTag> GetReachableBlocksImpl(BasicBlockTag source)
         {
-            HashSet<BasicBlockTag> reachable;
-            if (results.TryGetValue(source, out reachable))
+            if (results.TryGetValue(source, out HashSet<BasicBlockTag> reachable))
             {
                 return reachable;
             }
@@ -113,8 +112,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             HashSet<BasicBlockTag> reachable)
         {
             // Try to re-use existing results if possible.
-            HashSet<BasicBlockTag> existingReachability;
-            if (results.TryGetValue(source, out existingReachability))
+            if (results.TryGetValue(source, out HashSet<BasicBlockTag> existingReachability))
             {
                 reachable.UnionWith(existingReachability);
             }
@@ -144,7 +142,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// Gets an instance of the lazy block reachability analysis.
         /// </summary>
         /// <returns>An instance of the lazy block reachability analysis.</returns>
-        public static readonly LazyBlockReachabilityAnalysis Instance = new LazyBlockReachabilityAnalysis();
+        public static readonly LazyBlockReachabilityAnalysis Instance = new();
 
         /// <inheritdoc/>
         public LazyBlockReachability Analyze(FlowGraph graph)

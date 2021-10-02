@@ -220,9 +220,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
         {
             // The 'return type' of a constructor is its declaring type, along with any type parameters
             TypeRefBase typeRefBase;
-            if (reference is ConstructorDecl)
+            if (reference is ConstructorDecl constructorDecl)
             {
-                ConstructorDecl constructorDecl = (ConstructorDecl)reference;
                 CodeObject parent = constructorDecl.Parent;
                 if (parent == null)
                 {

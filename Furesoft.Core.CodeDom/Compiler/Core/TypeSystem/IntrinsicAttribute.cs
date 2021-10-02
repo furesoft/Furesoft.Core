@@ -49,7 +49,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <returns>The attribute type.</returns>
         public IType AttributeType { get; private set; }
 
-        private static ConcurrentDictionary<string, IType> attrTypes = new ConcurrentDictionary<string, IType>();
+        private static ConcurrentDictionary<string, IType> attrTypes = new();
 
         private static IType SynthesizeAttributeType(string name)
         {

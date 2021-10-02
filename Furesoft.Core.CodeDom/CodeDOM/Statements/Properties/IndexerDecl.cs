@@ -99,8 +99,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
             ParseTypeModifiersAnnotations(parser);  // Parse type and any modifiers and/or attributes
 
             // Parse the parameter declarations
-            bool isEndFirstOnLine;
-            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out isEndFirstOnLine);
+            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, false, out bool isEndFirstOnLine);
             IsEndFirstOnLine = isEndFirstOnLine;
 
             new Block(out _body, parser, this, true);  // Parse the body
@@ -401,9 +400,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Properties
         private static Expression CheckUnresolvedThisRef(Expression expression)
         {
             // If we have an "Interface.this" expression, convert a ThisRef to an UnresolvedThisRef
-            if (expression is Dot)
+            if (expression is Dot dot)
             {
-                Dot dot = (Dot)expression;
                 if (dot.Right is ThisRef)
                     dot.Right = new UnresolvedThisRef(dot.Right as ThisRef);
             }

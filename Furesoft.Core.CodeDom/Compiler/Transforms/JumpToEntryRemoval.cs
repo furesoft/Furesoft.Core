@@ -19,7 +19,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the jump-to-entry removal transform.
         /// </summary>
-        public static readonly JumpToEntryRemoval Instance = new JumpToEntryRemoval();
+        public static readonly JumpToEntryRemoval Instance = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)

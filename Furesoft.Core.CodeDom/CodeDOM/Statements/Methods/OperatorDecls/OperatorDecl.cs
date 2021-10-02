@@ -151,8 +151,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls
                 for (int i = 0; i < _binaryMapData.GetLength(0); ++i)
                     _internalNameToSymbolMap.Add(_binaryMapData[i, 1], _binaryMapData[i, 0]);
             }
-            string symbol;
-            _internalNameToSymbolMap.TryGetValue(internalName, out symbol);
+            _internalNameToSymbolMap.TryGetValue(internalName, out string symbol);
             return symbol;
         }
 
@@ -209,8 +208,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls
                 for (int i = 0; i < _binaryMapData.GetLength(0); ++i)
                     _symbolToInternalNameMap.Add(_binaryMapData[i, 0] + "`2", _binaryMapData[i, 1]);
             }
-            string name;
-            _symbolToInternalNameMap.TryGetValue(symbol + '`' + parameterCount, out name);
+            _symbolToInternalNameMap.TryGetValue(symbol + '`' + parameterCount, out string name);
             return name ?? symbol;
         }
 

@@ -74,8 +74,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         public string ParseIntrinsicName(
             string intrinsicName)
         {
-            string result;
-            if (TryParseIntrinsicName(intrinsicName, out result))
+            if (TryParseIntrinsicName(intrinsicName, out string result))
             {
                 return result;
             }
@@ -98,8 +97,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// </returns>
         public bool IsIntrinsicName(string intrinsicName)
         {
-            string opName;
-            return TryParseIntrinsicName(intrinsicName, out opName);
+            return TryParseIntrinsicName(intrinsicName, out string opName);
         }
 
         /// <summary>
@@ -150,9 +148,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// </returns>
         public bool IsIntrinsicPrototype(InstructionPrototype prototype, string name)
         {
-            string opName;
             return prototype is IntrinsicPrototype
-                && TryParseIntrinsicName(((IntrinsicPrototype)prototype).Name, out opName)
+                && TryParseIntrinsicName(((IntrinsicPrototype)prototype).Name, out string opName)
                 && name == opName;
         }
     }

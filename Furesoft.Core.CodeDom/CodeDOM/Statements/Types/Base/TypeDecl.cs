@@ -548,8 +548,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// <returns>The index of the <see cref="TypeParameter"/>, or -1 if not found.</returns>
         public int FindTypeParameterIndex(TypeParameter typeParameter)
         {
-            int index;
-            if (FindTypeParameterIndex(typeParameter, out index))
+            if (FindTypeParameterIndex(typeParameter, out int index))
                 return index;
             return -1;
         }
@@ -599,8 +598,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// </summary>
         public virtual NamedCodeObjectGroup GetConstructors(bool currentPartOnly)
         {
-            NamedCodeObjectGroup constructors = new NamedCodeObjectGroup();
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup constructors = new();
+            NamedCodeObjectGroup found = new();
             if (currentPartOnly && _body != null)
                 _body.FindChildren<ConstructorDecl>(_name, found);
             else
@@ -642,7 +641,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// </summary>
         public virtual FieldRef GetField(string name)
         {
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup found = new();
             FindInAllParts<FieldDecl>(name, found);
             if (found.Count > 0)
                 return (FieldRef)((FieldDecl)found[0]).CreateRef();
@@ -743,7 +742,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// </summary>
         public T GetMethod<T>(string name, params TypeRefBase[] parameterTypes) where T : MethodDeclBase
         {
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup found = new();
             FindInAllParts<T>(name, found);
             foreach (T methodDecl in found)
             {
@@ -774,7 +773,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// <param name="searchBaseClasses">Pass <c>false</c> to NOT search base classes.</param>
         public List<MethodRef> GetMethods(string name, bool searchBaseClasses)
         {
-            NamedCodeObjectGroup results = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup results = new();
             GetMethods(name, searchBaseClasses, results);
             return MethodRef.MethodRefsFromGroup(results);
         }
@@ -793,7 +792,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// </summary>
         public TypeRef GetNestedType(string name)
         {
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup found = new();
             FindInAllParts<TypeDecl>(name, found);
             if (found.Count > 0)
                 return ((TypeDecl)found[0]).CreateRef();
@@ -812,9 +811,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             {
                 foreach (CodeObject codeObject in _body)
                 {
-                    if (codeObject is TypeDecl)
+                    if (codeObject is TypeDecl typeDecl)
                     {
-                        TypeDecl typeDecl = (TypeDecl)codeObject;
                         yield return typeDecl;
 
                         if (recursive)
@@ -833,9 +831,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                     {
                         foreach (CodeObject codeObject in otherPart.Body)
                         {
-                            if (codeObject is TypeDecl)
+                            if (codeObject is TypeDecl typeDecl)
                             {
-                                TypeDecl typeDecl = (TypeDecl)codeObject;
                                 yield return typeDecl;
 
                                 if (recursive)
@@ -873,7 +870,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// <returns></returns>
         public List<TypeDecl> GetOtherParts()
         {
-            List<TypeDecl> otherParts = new List<TypeDecl>();
+            List<TypeDecl> otherParts = new();
             GetOtherParts(otherParts, null);
             return otherParts;
         }
@@ -883,7 +880,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         /// </summary>
         public virtual PropertyRef GetProperty(string name)
         {
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup found = new();
             FindInAllParts<PropertyDecl>(name, found);
             if (found.Count > 0)
                 return (PropertyRef)((PropertyDecl)found[0]).CreateRef();
@@ -1049,10 +1046,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             CodeObject parent = _parent;
             if (parent is NamespaceDecl)
                 GetOtherParts(((NamespaceDecl)parent).Namespace.Find(_name), otherParts, parentTypes);
-            else if (parent is TypeDecl)
+            else if (parent is TypeDecl parentTypeDecl) // Look for other parts of a nested type in the parent type
             {
-                // Look for other parts of a nested type in the parent type
-                TypeDecl parentTypeDecl = (TypeDecl)parent;
                 GetOtherParts(parentTypeDecl.Body.FindChildren(_name), otherParts, parentTypes);
 
                 // If the parent type is also partial, then look for other parts of the parent
@@ -1105,9 +1100,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         {
             if (obj is TypeDecl)
                 GetOtherParts((TypeDecl)obj, otherParts, parentTypes);
-            else if (obj is NamespaceTypeGroup)
+            else if (obj is NamespaceTypeGroup group)
             {
-                NamespaceTypeGroup group = (NamespaceTypeGroup)obj;
                 // Lock the NamespaceTypeGroup while iterating it to prevent changes while parsing on other threads
                 lock (group.SyncRoot)
                 {
@@ -1131,7 +1125,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
                 }
                 else
                 {
-                    List<string> newList = new List<string>(parentTypes);
+                    List<string> newList = new(parentTypes);
                     string parentType = parentTypes[0];
                     newList.RemoveAt(0);
                     GetOtherParts(typeDecl.Body.FindChildren(parentType), otherParts, newList.Count > 0 ? newList : null);

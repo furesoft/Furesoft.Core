@@ -25,9 +25,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
     /// </summary>
     public static class AttributeTargetHelpers
     {
-        private static readonly Dictionary<string, AttributeTarget> _nameToTarget = new Dictionary<string, AttributeTarget>();
+        private static readonly Dictionary<string, AttributeTarget> _nameToTarget = new();
 
-        private static readonly Dictionary<AttributeTarget, string> _targetToName = new Dictionary<AttributeTarget, string>();
+        private static readonly Dictionary<AttributeTarget, string> _targetToName = new();
 
         // Setup maps of name-to-enum and enum-to-name.
         static AttributeTargetHelpers()
@@ -50,8 +50,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
         public static string AsString(AttributeTarget target)
         {
             string result = "";
-            string name;
-            if (_targetToName.TryGetValue(target, out name))
+            if (_targetToName.TryGetValue(target, out string name))
                 result = name;
             return result;
         }
@@ -62,8 +61,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
         public static AttributeTarget Parse(Parser parser)
         {
             AttributeTarget target = 0;
-            AttributeTarget temp;
-            if (_nameToTarget.TryGetValue(parser.TokenText, out temp))
+            if (_nameToTarget.TryGetValue(parser.TokenText, out AttributeTarget temp))
                 target = temp;
             parser.NextToken();  // Move past target
             parser.NextToken();  // Move past ':'
@@ -315,7 +313,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
         {
             while (parser.TokenText == ParseTokenStart)
             {
-                Attribute attribute = new Attribute(parser, parent);
+                Attribute attribute = new(parser, parent);
                 parent.AttachAnnotation(attribute, true);
             }
         }
@@ -499,21 +497,21 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
         {
             if (value is Type)
             {
-                TypeOf typeOf = new TypeOf(TypeRef.CreateNested((Type)value));
+                TypeOf typeOf = new(TypeRef.CreateNested((Type)value));
                 typeOf.AsText(writer, RenderFlags.None);
             }
             else
             {
                 if (value is Array)
                 {
-                    Initializer initializer = new Initializer();
+                    Initializer initializer = new();
                     foreach (object element in (Array)value)
                         initializer.CreateExpressions().Add(new Literal(element));
                     initializer.AsText(writer, RenderFlags.None);
                 }
                 else
                 {
-                    Literal literal = new Literal(value);
+                    Literal literal = new(value);
                     literal.AsText(writer, RenderFlags.None);
                 }
             }

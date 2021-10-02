@@ -244,8 +244,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
                     return false;
             }
 
-            int size;
-            if (int.TryParse(str.Substring(1), out size))
+            if (int.TryParse(str.Substring(1), out int size))
             {
                 spec = new IntegerSpec(size, isSigned);
                 return true;

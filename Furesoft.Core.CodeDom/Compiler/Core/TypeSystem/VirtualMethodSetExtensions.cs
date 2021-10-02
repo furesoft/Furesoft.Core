@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     public static class VirtualMethodSetExtensions
     {
         private static WeakCache<IType, HashSet<IMethod>> virtualMethodSets =
-            new WeakCache<IType, HashSet<IMethod>>();
+            new();
 
         /// <summary>
         /// Gets the virtual method set of a particular type: the set of

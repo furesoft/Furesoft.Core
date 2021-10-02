@@ -287,7 +287,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
             // inside them, but we also have to avoid any confusion with LessThan/GreatherThan operators.
 
             bool firstToken = true;
-            Stack<string> stack = new Stack<string>(8);
+            Stack<string> stack = new(8);
             while (true)
             {
                 Token next = parser.PeekNextToken();

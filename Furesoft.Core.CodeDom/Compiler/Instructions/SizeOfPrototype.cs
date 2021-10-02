@@ -53,7 +53,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<SizeOfPrototype> instanceCache
-            = new InterningCache<SizeOfPrototype>(
+            = new(
                 new StructuralSizeOfPrototypeComparer());
 
         /// <summary>

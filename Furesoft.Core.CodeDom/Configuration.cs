@@ -75,8 +75,7 @@ namespace Furesoft.Core.CodeDom
                                     {
                                         if (fieldType == typeof(Log.Level))
                                         {
-                                            Log.Level enumValue;
-                                            if (Enum.TryParse((string)value, true, out enumValue))
+                                            if (Enum.TryParse((string)value, true, out Log.Level enumValue))
                                                 value = enumValue;
                                         }
                                     }

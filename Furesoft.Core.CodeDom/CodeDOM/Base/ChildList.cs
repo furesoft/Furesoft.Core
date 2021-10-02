@@ -19,7 +19,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         {
             if (thisChildList != null)
             {
-                ChildList<T> clone = new ChildList<T>(thisChildList.Count, parent);
+                ChildList<T> clone = new(thisChildList.Count, parent);
                 foreach (T child in thisChildList)
                     clone.Add(child != null ? (T)child.Clone() : null);
                 return clone;
@@ -160,7 +160,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// </summary>
         public static ChildList<T> CreateListOfNulls(int nullEntryCount)
         {
-            ChildList<T> list = new ChildList<T>(nullEntryCount);
+            ChildList<T> list = new(nullEntryCount);
             for (int i = 0; i < nullEntryCount; ++i)
                 list.Add((T)null);
             return list;

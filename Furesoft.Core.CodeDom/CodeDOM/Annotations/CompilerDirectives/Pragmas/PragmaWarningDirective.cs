@@ -76,8 +76,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas
                     // Parse the list of warning numbers
                     while (token != null && token.IsNumeric)
                     {
-                        int number;
-                        if (!int.TryParse(token.Text, out number))
+                        if (!int.TryParse(token.Text, out int number))
                         {
                             number = int.MaxValue;
                             parser.AttachMessage(this, "Integer value expected", token);

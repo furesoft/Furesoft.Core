@@ -116,8 +116,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         /// <summary>
         /// A hash set of primitive type names (the "System" namespace prefix is NOT included on the names).
         /// </summary>
-        public static readonly HashSet<string> PrimitiveTypeNames = new HashSet<string>
-            {
+        public static readonly HashSet<string> PrimitiveTypeNames = new()
+        {
                 "SByte",
                 "Byte",
                 "Int16",
@@ -137,7 +137,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         /// <summary>
         /// A map of type names to TypeCodes (the "System" namespace prefix is NOT included on the names).
         /// </summary>
-        public static readonly Dictionary<string, TypeCode> TypeNameToTypeCodeMap = new Dictionary<string, TypeCode>(17)
+        public static readonly Dictionary<string, TypeCode> TypeNameToTypeCodeMap = new(17)
             {
                 { "Object",   TypeCode.Object   },
                 { "SByte",    TypeCode.SByte    },
@@ -161,7 +161,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         /// <summary>
         /// A map of type names to primitive and built-in .NET types.
         /// </summary>
-        public static readonly Dictionary<string, Type> TypeNameToTypeMap = new Dictionary<string, Type>(16)
+        public static readonly Dictionary<string, Type> TypeNameToTypeMap = new(16)
             {
                 { "System.Object",  typeof(object)  },
                 { "System.Void",    typeof(void)    },
@@ -229,7 +229,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 
         public static TypeRef ISerializableRef;
 
-        public static Dictionary<string, TypeRef> KeywordToTypeRefMap = new Dictionary<string, TypeRef>(16);
+        public static Dictionary<string, TypeRef> KeywordToTypeRefMap = new(16);
 
         public static TypeRef LongRef;
 
@@ -251,7 +251,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         public static TypeRef UShortRef;
         public static TypeRef ValueTypeRef;
         public static TypeRef VoidRef;
-        private static readonly Dictionary<Type, TypeRef> TypeToTypeRefMap = new Dictionary<Type, TypeRef>();
+        private static readonly Dictionary<Type, TypeRef> TypeToTypeRefMap = new();
 
         /// <summary>
         /// Create a <see cref="TypeRef"/> from an <see cref="ITypeDecl"/>.
@@ -953,9 +953,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
                 object reference = GetReferencedType();
                 if (reference is ITypeDecl)
                     return ((ITypeDecl)reference).IsValueType;
-                if (reference is Type)
+                if (reference is Type type)
                 {
-                    Type type = (Type)reference;
                     return (type.IsValueType || (type.Name == "ValueType" && type.Namespace == "System"));
                 }
                 return false;
@@ -971,9 +970,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
             {
                 if (_reference is ITypeDecl)
                     return ((ITypeDecl)_reference).Name;
-                if (_reference is Type)
+                if (_reference is Type type)
                 {
-                    Type type = (Type)_reference;
                     return (type.IsGenericType ? TypeUtil.NonGenericName(type) : type.Name);
                 }
                 if (_reference is EnumConstant)  // Enum constant
@@ -1351,12 +1349,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         /// </summary>
         public static TypeRef FindTypeRef(Type type)
         {
-            TypeRef typeRef;
 
             // When using reflection, the 'loaded' mscorlib will always be the same as that used by the currently
             // running app, so we can just initialize using the 'typeof' type.
             // Once a TypeRef is created for a particular Type, always re-use it.
-            if (TypeToTypeRefMap.TryGetValue(type, out typeRef))
+            if (TypeToTypeRefMap.TryGetValue(type, out TypeRef typeRef))
                 return typeRef;
             typeRef = new TypeRef(type);
             TypeToTypeRefMap.Add(type, typeRef);
@@ -1471,9 +1468,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         {
             if (obj is ITypeDecl)
                 return ((ITypeDecl)obj).GetConstructors(currentPartOnly);
-            if (obj is Type)
+            if (obj is Type type)
             {
-                Type type = (Type)obj;
                 if (TypeUtil.IsDelegateType(type))
                 {
                     // Delegates have a constructor that takes an object and an IntPtr that is used internally
@@ -1481,7 +1477,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
                     // allow a MethodRef to be passed to it, in order to make the C# syntax work.  The Parent
                     // can't be set to the Type, but the Type can be acquired from the parameter's type.
                     ConstructorDecl constructorDecl =
-                        new ConstructorDecl(new[] { new ParameterDecl(DelegateDecl.DelegateConstructorParameterName, new TypeRef(type)) }) { IsGenerated = true, Name = TypeUtil.NonGenericName(type) };
+                        new(new[] { new ParameterDecl(DelegateDecl.DelegateConstructorParameterName, new TypeRef(type)) }) { IsGenerated = true, Name = TypeUtil.NonGenericName(type) };
                     return new NamedCodeObjectGroup(constructorDecl);
                 }
                 // Find both public and protected instance constructors
@@ -1650,11 +1646,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
 
             object reference = GetReferencedType();
             RenderFlags passFlags = flags & ~RenderFlags.Description;
+            // Handle references to Types
 
-            if (reference is Type)
+            if (reference is Type type)
             {
-                // Handle references to Types
-                Type type = (Type)reference;
 
                 // If we have array ranks, or were requested to suppress them (by NewArray for jagged
                 // arrays), then suppress them in the Type rendering by getting the innermost type.
@@ -1814,9 +1809,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
             object reference = GetReferencedType();
             if (reference is ITypeDecl)
                 returnTypeRef = ((ITypeDecl)reference).GetDelegateReturnType();
-            else if (reference is Type)
+            else if (reference is Type type)
             {
-                Type type = (Type)reference;
                 if (TypeUtil.IsDelegateType(type))
                 {
                     MethodInfo delegateInvokeMethodInfo = TypeUtil.GetInvokeMethod(type);
@@ -1865,7 +1859,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         /// </summary>
         public List<TypeRef> GetInterfaces(bool includeBaseInterfaces)
         {
-            List<TypeRef> interfaces = new List<TypeRef>();
+            List<TypeRef> interfaces = new();
             object reference = GetReferencedType();
             if (reference is ITypeDecl)
             {
@@ -2031,7 +2025,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
         /// <param name="searchBaseClasses">Pass <c>false</c> to NOT search base classes.</param>
         public List<MethodRef> GetMethods(string name, bool searchBaseClasses)
         {
-            NamedCodeObjectGroup results = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup results = new();
             GetMethods(name, searchBaseClasses, results);
             return MethodRef.MethodRefsFromGroup(results);
         }
@@ -2108,8 +2102,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types
             object reference = GetReferencedType();
             if (reference is ITypeDecl)
             {
-                TypeCode typeCode;
-                if (TypeNameToTypeCodeMap.TryGetValue(((ITypeDecl)reference).Name, out typeCode) && ((ITypeDecl)reference).GetNamespace().Name == "System")
+                if (TypeNameToTypeCodeMap.TryGetValue(((ITypeDecl)reference).Name, out TypeCode typeCode) && ((ITypeDecl)reference).GetNamespace().Name == "System")
                     return typeCode;
             }
             else if (reference is Type)

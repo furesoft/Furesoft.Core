@@ -41,8 +41,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <returns>The value for the key.</returns>
         public virtual TValue Get(TKey key, Func<TKey, TValue> createValue)
         {
-            TValue result;
-            if (!TryGet(key, out result))
+            if (!TryGet(key, out TValue result))
             {
                 result = createValue(key);
                 Insert(key, result);
@@ -57,8 +56,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="key">The key to look for.</param>
         public virtual bool ContainsKey(TKey key)
         {
-            TValue value;
-            return TryGet(key, out value);
+            return TryGet(key, out TValue value);
         }
     }
 
@@ -114,8 +112,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <inheritdoc/>
         public override void Insert(TKey key, TValue value)
         {
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (cache.TryGetValue(key, out node))
+            if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
             {
                 RegisterUse(node);
                 node.Value = new KeyValuePair<TKey, TValue>(key, value);
@@ -129,8 +126,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <inheritdoc/>
         public override bool TryGet(TKey key, out TValue value)
         {
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (cache.TryGetValue(key, out node))
+            if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
             {
                 RegisterUse(node);
                 value = node.Value.Value;
@@ -146,8 +142,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <inheritdoc/>
         public override TValue Get(TKey key, Func<TKey, TValue> createValue)
         {
-            LinkedListNode<KeyValuePair<TKey, TValue>> node;
-            if (cache.TryGetValue(key, out node))
+            if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
             {
                 RegisterUse(node);
                 return node.Value.Value;

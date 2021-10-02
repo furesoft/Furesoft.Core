@@ -101,7 +101,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<ReinterpretCastPrototype> instanceCache
-            = new InterningCache<ReinterpretCastPrototype>(
+            = new(
                 new StructuralReinterpretCastPrototypeComparer());
 
         /// <summary>

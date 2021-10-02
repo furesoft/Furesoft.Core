@@ -66,7 +66,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
         }
 
         private static readonly InterningCache<StoreFieldPrototype> instanceCache
-            = new InterningCache<StoreFieldPrototype>(
+            = new(
                 new MappedComparer<StoreFieldPrototype, IField>(proto => proto.Field));
 
         /// <summary>

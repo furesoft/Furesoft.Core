@@ -20,7 +20,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the copy propagation transform.
         /// </summary>
-        public static readonly CopyPropagation Instance = new CopyPropagation();
+        public static readonly CopyPropagation Instance = new();
 
         /// <summary>
         /// Propagates copies in a flow graph.
@@ -301,8 +301,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
 
         private static ValueTag GetActualCopy(ValueTag key, Dictionary<ValueTag, ValueTag> copyMap)
         {
-            ValueTag copy;
-            if (key != null && copyMap.TryGetValue(key, out copy))
+            if (key != null && copyMap.TryGetValue(key, out ValueTag copy))
             {
                 var actualCopy = GetActualCopy(copy, copyMap);
                 if (actualCopy != copy)

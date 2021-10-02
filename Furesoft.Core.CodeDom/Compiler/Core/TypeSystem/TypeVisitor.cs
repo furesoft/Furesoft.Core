@@ -37,9 +37,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <returns>A visited type.</returns>
         protected virtual IType VisitUninteresting(IType type)
         {
-            if (type is ContainerType)
+            if (type is ContainerType container)
             {
-                var container = (ContainerType)type;
                 return container.WithElementType(Visit(container.ElementType));
             }
             else if (type.IsRecursiveGenericInstance())
@@ -120,9 +119,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <returns>A visited method.</returns>
         public IMethod Visit(IMethod method)
         {
-            if (method is DirectMethodSpecialization)
+            if (method is DirectMethodSpecialization specialization)
             {
-                var specialization = (DirectMethodSpecialization)method;
                 return Visit(specialization.Declaration)
                     .MakeGenericMethod(
                         VisitAll(specialization.GenericArguments));

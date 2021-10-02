@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// An instance of the memory access elimination pass.
         /// </summary>
         public static readonly MemoryAccessElimination Instance
-            = new MemoryAccessElimination();
+            = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)
@@ -34,26 +34,22 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             foreach (var instruction in builder.NamedInstructions)
             {
                 var proto = instruction.Prototype;
-                if (proto is LoadPrototype)
+                // Loads can be eliminated if we know the memory contents.
+                if (proto is LoadPrototype loadProto)
                 {
-                    // Loads can be eliminated if we know the memory contents.
-                    var loadProto = (LoadPrototype)proto;
                     var state = memSSA.GetMemoryAfter(instruction);
-                    ValueTag value;
                     if (state.TryGetValueAt(
                         loadProto.GetPointer(instruction.Instruction),
                         graph,
-                        out value))
+                        out ValueTag value))
                     {
                         instruction.Instruction = Instruction.CreateCopy(
                             instruction.ResultType,
                             value);
                     }
                 }
-                else if (proto is StorePrototype)
+                else if (proto is StorePrototype storeProto) // Stores can be eliminated if they don't affect the memory state.
                 {
-                    // Stores can be eliminated if they don't affect the memory state.
-                    var storeProto = (StorePrototype)proto;
                     var stateBefore = memSSA.GetMemoryBefore(instruction);
                     var stateAfter = memSSA.GetMemoryAfter(instruction);
                     if (stateBefore == stateAfter)
@@ -70,9 +66,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 foreach (var instruction in block.NamedInstructions)
                 {
                     var proto = instruction.Prototype;
-                    if (proto is StorePrototype)
+                    if (proto is StorePrototype storeProto)
                     {
-                        var storeProto = (StorePrototype)proto;
                         var pointer = storeProto.GetPointer(instruction.Instruction);
 
                         var newPending = new List<NamedInstructionBuilder>();

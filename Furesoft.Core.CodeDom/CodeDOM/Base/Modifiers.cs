@@ -77,7 +77,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
     public static class ModifiersHelpers
     {
         private static readonly string[] _names;
-        private static readonly Dictionary<string, Modifiers> _nameToModifierMap = new Dictionary<string, Modifiers>();
+        private static readonly Dictionary<string, Modifiers> _nameToModifierMap = new();
         private static readonly Array _values;
 
         // Setup arrays of names, values, and a map of names to values.
@@ -99,7 +99,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         {
             if (modifiers == Modifiers.None)
                 return "";
-            using (CodeWriter writer = new CodeWriter())
+            using (CodeWriter writer = new())
             {
                 AsText(modifiers, writer);
                 return writer.ToString();
@@ -148,10 +148,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             for (int i = unusedList.Count - 1; i >= 0; --i)
             {
                 ParsedObject parsedObject = unusedList[i];
-                if (parsedObject is Token)
+                // Abort if there's a blank line, or if we get a token that isn't a modifier
+                if (parsedObject is Token token)
                 {
-                    // Abort if there's a blank line, or if we get a token that isn't a modifier
-                    Token token = (Token)parsedObject;
                     if (token.NewLines > 1 || !IsModifier(token.Text))
                         break;
                     if (foundEndIf)
@@ -196,7 +195,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             string declarationText = null;
             string declarationModifiersText = null;
             Token lastUnrecognizedToken = null;
-            List<ConditionalDirective> inactiveConditions = new List<ConditionalDirective>();
+            List<ConditionalDirective> inactiveConditions = new();
             for (int i = unusedList.Count - 1; i >= 0; --i)
             {
                 ParsedObject parsedObject = unusedList[i];
@@ -204,8 +203,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                 {
                     // Check for modifier tokens
                     Token token = (Token)unusedList[i];
-                    Modifiers value;
-                    if (_nameToModifierMap.TryGetValue(token.Text, out value))
+                    if (_nameToModifierMap.TryGetValue(token.Text, out Modifiers value))
                     {
                         modifiers |= value;
                         parent.MoveFormatting(token);
@@ -236,23 +234,21 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                     // verified that we have a valid sequence (above), so we process conditional directives
                     // backwards here until we get to the starting #if.
                     UnusedCodeObject unused = (UnusedCodeObject)parsedObject;
-                    if (unused.CodeObject is CompilerDirective)
+                    // Store any compiler directives as pre or post annotations on the parent
+                    if (unused.CodeObject is CompilerDirective compilerDirective)
                     {
-                        // Store any compiler directives as pre or post annotations on the parent
-                        CompilerDirective compilerDirective = (CompilerDirective)unused.CodeObject;
                         if (compilerDirective is EndIfDirective)
                         {
                             declarationText = parent.AsString();
                             declarationModifiersText = AsString(modifiers);
                         }
-                        else if (compilerDirective is ConditionalDirective)
+                        else if (compilerDirective is ConditionalDirective conditionalDirective)
                         {
-                            ConditionalDirective conditionalDirective = (ConditionalDirective)compilerDirective;
 
                             // Create an #else if none existed
                             if (needsElseCondition)
                             {
-                                ElseDirective elseDirective = new ElseDirective();
+                                ElseDirective elseDirective = new();
                                 if (elseIsNotActive)
                                 {
                                     elseDirective.SkippedText = declarationText;
@@ -311,8 +307,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             Modifiers modifiers = 0;
             foreach (string modifier in input.Split(' '))
             {
-                Modifiers value;
-                if (_nameToModifierMap.TryGetValue(modifier, out value))
+                if (_nameToModifierMap.TryGetValue(modifier, out Modifiers value))
                     modifiers |= value;
             }
             return modifiers;

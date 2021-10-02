@@ -12,21 +12,21 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute ReferenceType =
-            new IntrinsicAttribute("ReferenceType");
+            new("ReferenceType");
 
         /// <summary>
         /// An attribute that identifies a type as an interface.
         /// </summary>
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute InterfaceType =
-            new IntrinsicAttribute("InterfaceType");
+            new("InterfaceType");
 
         /// <summary>
         /// An attribute that identifies a type or method as abstract.
         /// </summary>
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute Abstract =
-            new IntrinsicAttribute("Abstract");
+            new("Abstract");
 
         /// <summary>
         /// An attribute that identifies a type or method as virtual,
@@ -34,7 +34,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute Virtual =
-            new IntrinsicAttribute("Virtual");
+            new("Virtual");
 
         /// <summary>
         /// An attribute that identifies a type as special, i.e., it is
@@ -43,7 +43,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute SpecialType =
-            new IntrinsicAttribute("SpecialType");
+            new("SpecialType");
 
         /// <summary>
         /// An attribute that identifies a method as being implemented by
@@ -52,7 +52,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute InternalCall =
-            new IntrinsicAttribute("InternalCall");
+            new("InternalCall");
 
         /// <summary>
         /// Tests if a particular type is definitely a reference type.

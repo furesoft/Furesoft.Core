@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// The namespace for intrinsics that inspect or manipulate memory.
         /// </summary>
         public static readonly IntrinsicNamespace Namespace =
-            new IntrinsicNamespace("memory");
+            new("memory");
 
         /// <summary>
         /// Creates a memory intrinsic prototype.

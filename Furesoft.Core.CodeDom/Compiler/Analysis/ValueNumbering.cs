@@ -36,8 +36,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </returns>
         public bool AreEquivalent(Instruction first, ValueTag second)
         {
-            ValueTag number;
-            return TryGetNumber(first, out number) && number == GetNumber(second);
+            return TryGetNumber(first, out ValueTag number) && number == GetNumber(second);
         }
 
         /// <summary>
@@ -147,7 +146,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// Gets an instance of the value numbering analysis.
         /// </summary>
         /// <returns>An instance of the value numbering analysis.</returns>
-        public static readonly ValueNumberingAnalysis Instance = new ValueNumberingAnalysis();
+        public static readonly ValueNumberingAnalysis Instance = new();
 
         private ValueNumberingAnalysis()
         { }
@@ -234,8 +233,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                     }
                 }
 
-                ValueTag number;
-                if (!TryGetNumber(instruction.Instruction, out number))
+                if (!TryGetNumber(instruction.Instruction, out ValueTag number))
                 {
                     number = instruction;
                 }

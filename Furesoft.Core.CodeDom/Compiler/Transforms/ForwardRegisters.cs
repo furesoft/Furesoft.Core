@@ -20,7 +20,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the register forwarding form construction transform.
         /// </summary>
-        public static readonly ForwardRegisters Instance = new ForwardRegisters();
+        public static readonly ForwardRegisters Instance = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)
@@ -83,8 +83,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 {
                     var rffName = value.Name + ".rff." + block.Tag.Name;
 
-                    NamedInstruction valueInstruction;
-                    if (graph.TryGetInstruction(value, out valueInstruction)
+                    if (graph.TryGetInstruction(value, out NamedInstruction valueInstruction)
                         && valueInstruction.Prototype is ConstantPrototype)
                     {
                         // Create duplicate definitions of constants instead of

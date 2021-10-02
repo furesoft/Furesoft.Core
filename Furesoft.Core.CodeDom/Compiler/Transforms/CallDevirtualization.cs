@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the call devirtualization transform.
         /// </summary>
-        public static readonly CallDevirtualization Instance = new CallDevirtualization();
+        public static readonly CallDevirtualization Instance = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)
@@ -33,17 +33,15 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         private static bool TrySimplify(InstructionBuilder instruction)
         {
             var proto = instruction.Prototype;
-            if (proto is ConstrainedCallPrototype)
+            //
+            //     constrained_call(f)(this_ref, args...)
+            //
+            // is equivalent to
+            //
+            //     call(impl(f), static)(this_ref, args...)  if this_ref == T ref* where T is a value type,
+            //     call(f, virtual)(load(this_ref), args...) if this_ref == T any* ref*.
+            if (proto is ConstrainedCallPrototype constrainedCallProto)
             {
-                //
-                //     constrained_call(f)(this_ref, args...)
-                //
-                // is equivalent to
-                //
-                //     call(impl(f), static)(this_ref, args...)  if this_ref == T ref* where T is a value type,
-                //     call(f, virtual)(load(this_ref), args...) if this_ref == T any* ref*.
-
-                var constrainedCallProto = (ConstrainedCallPrototype)proto;
                 var thisArg = constrainedCallProto.GetThisArgument(instruction.Instruction);
                 var thisRefType = instruction.Graph.GetValueType(thisArg) as PointerType;
                 if (thisRefType == null)
@@ -80,9 +78,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     }
                 }
             }
-            else if (proto is CallPrototype)
+            else if (proto is CallPrototype callProto)
             {
-                var callProto = (CallPrototype)proto;
                 if (callProto.Callee.IsStatic)
                 {
                     return false;
@@ -119,8 +116,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
 
         private static IType GetActualType(ValueTag value, FlowGraph graph)
         {
-            NamedInstruction insn;
-            if (graph.TryGetInstruction(value, out insn))
+            if (graph.TryGetInstruction(value, out NamedInstruction insn))
             {
                 var proto = insn.Prototype;
                 if (proto is ReinterpretCastPrototype || proto is CopyPrototype)

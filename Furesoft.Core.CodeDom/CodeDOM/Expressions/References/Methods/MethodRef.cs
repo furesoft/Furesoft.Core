@@ -1089,9 +1089,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
             TypeRefBase returnTypeRef = null;
             if (_reference is MethodDeclBase)
                 returnTypeRef = ((MethodDeclBase)_reference).ReturnType.SkipPrefixes() as TypeRefBase;
-            else if (_reference is MethodInfo)
+            else if (_reference is MethodInfo methodInfo)
             {
-                MethodInfo methodInfo = (MethodInfo)_reference;
                 Type returnType = methodInfo.ReturnType;
                 returnTypeRef = TypeRef.Create(returnType);
             }

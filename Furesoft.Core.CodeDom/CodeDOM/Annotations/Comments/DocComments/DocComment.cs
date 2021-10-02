@@ -166,9 +166,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
                     if (value)
                         _content = ((string)_content).Trim().Replace("\n", "; ");
                 }
-                else if (_content is ChildList<DocComment>)
+                else if (_content is ChildList<DocComment> childList)
                 {
-                    ChildList<DocComment> childList = (ChildList<DocComment>)_content;
                     if (value && childList.Count > 0)
                         childList[0].IsFirstOnLine = false;
                     childList.IsSingleLine = value;
@@ -245,7 +244,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
             parser.Token.NewLines = 0;
 
             // Parse a DocComment object
-            DocComment docComment = new DocComment(parser, parent) { NewLines = newLines };
+            DocComment docComment = new(parser, parent) { NewLines = newLines };
 
             // Restore the previous Unused list in the parser - it's the responsibility of the DocComment parsing
             // logic to flush any unused tokens, such as into the content area of the comment.
@@ -254,7 +253,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
             // Remove the parent DocComment if it only has a single child
             if (docComment.Content is string)
             {
-                DocText docText = new DocText((string)docComment.Content) { NewLines = newLines };
+                DocText docText = new((string)docComment.Content) { NewLines = newLines };
                 docText.SetLineCol(docComment);
                 docComment = docText;
             }
@@ -287,9 +286,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
                     _content = text;
                 else if (_content is string)
                     _content += text;
-                else if (_content is ChildList<DocComment>)
+                else if (_content is ChildList<DocComment> children)
                 {
-                    ChildList<DocComment> children = (ChildList<DocComment>)_content;
                     if (children.Count == 0)
                         _content = text;
                     else if (children.Last is DocText)
@@ -311,9 +309,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
             {
                 if (_content == null)
                     _content = new ChildList<DocComment>(this);
-                else if (_content is string)
+                else if (_content is string existing)
                 {
-                    string existing = (string)_content;
                     _content = new ChildList<DocComment>(this);
                     if (existing.Length > 0)  // Don't use NotEmpty(), because we want to preserve whitespace
                         ((ChildList<DocComment>)_content).Add(new DocText(existing));
@@ -417,9 +414,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
         /// </summary>
         public void NormalizeContent()
         {
-            if (_content is ChildList<DocComment>)
+            if (_content is ChildList<DocComment> children)
             {
-                ChildList<DocComment> children = (ChildList<DocComment>)_content;
 
                 // Replace an empty collection with null
                 if (children.Count == 0)
@@ -502,9 +498,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments
             writer.EscapeUnicode = false;
             if (_content is string)
                 DocText.AsTextText(writer, GetContentForDisplay(flags), flags);
-            else if (_content is ChildList<DocComment>)
+            else if (_content is ChildList<DocComment> content)
             {
-                ChildList<DocComment> content = (ChildList<DocComment>)_content;
                 for (int i = 0; i < content.Count; ++i)
                 {
                     DocComment docComment = content[i];

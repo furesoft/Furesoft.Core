@@ -69,7 +69,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// Gets an instance of the related value analysis.
         /// </summary>
         /// <returns>An instance of the related value analysis.</returns>
-        public static readonly RelatedValueAnalysis Instance = new RelatedValueAnalysis();
+        public static readonly RelatedValueAnalysis Instance = new();
 
         /// <inheritdoc/>
         public RelatedValues Analyze(FlowGraph graph)

@@ -72,7 +72,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         /// <returns>A read-only view of this type resolver.</returns>
         public ReadOnlyTypeResolver ReadOnlyView =>
-            new ReadOnlyTypeResolver(this);
+            new(this);
 
         /// <summary>
         /// Adds an assembly to this type resolver.
@@ -106,10 +106,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </returns>
         public IReadOnlyList<IType> ResolveTypes(QualifiedName fullName)
         {
-            TypeResolverNamespace definingNamespace;
             if (TryResolveNamespace(
                 fullName.Slice(0, fullName.PathLength - 1),
-                out definingNamespace))
+                out TypeResolverNamespace definingNamespace))
             {
                 return definingNamespace.ResolveTypes(fullName.FullyUnqualifiedName);
             }
@@ -502,8 +501,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <returns>A list of all types with that name.</returns>
         public IReadOnlyList<IType> ResolveTypes(UnqualifiedName name)
         {
-            List<IType> result;
-            if (typeMap.TryGetValue(name, out result))
+            if (typeMap.TryGetValue(name, out List<IType> result))
             {
                 return result;
             }
@@ -524,8 +522,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </returns>
         public IReadOnlyList<IType> ResolveTypes(string name)
         {
-            List<IType> result;
-            if (impreciseTypeMap.TryGetValue(name, out result))
+            if (impreciseTypeMap.TryGetValue(name, out List<IType> result))
             {
                 return result;
             }
@@ -539,8 +536,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             Dictionary<TKey, List<TValue>> dict,
             TKey key)
         {
-            List<TValue> result;
-            if (!dict.TryGetValue(key, out result))
+            if (!dict.TryGetValue(key, out List<TValue> result))
             {
                 result = new List<TValue>();
                 dict[key] = result;
@@ -553,8 +549,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             var qualifier = path.Qualifier;
             if (path.IsQualified)
             {
-                TypeResolverNamespace subNamespace;
-                if (!namespaceMap.TryGetValue(qualifier, out subNamespace))
+                if (!namespaceMap.TryGetValue(qualifier, out TypeResolverNamespace subNamespace))
                 {
                     subNamespace = new TypeResolverNamespace();
                     namespaceMap[qualifier] = subNamespace;
@@ -609,8 +604,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
                 return true;
             }
 
-            TypeResolverNamespace childNamespace;
-            if (namespaceMap.TryGetValue(fullName.Qualifier, out childNamespace))
+            if (namespaceMap.TryGetValue(fullName.Qualifier, out TypeResolverNamespace childNamespace))
             {
                 return childNamespace.TryResolveNamespace(fullName.Name, out result);
             }

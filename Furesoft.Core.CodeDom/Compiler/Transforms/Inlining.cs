@@ -29,7 +29,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// </summary>
         /// <value>A call-inlining transform.</value>
         public static readonly Inlining Instance
-            = new Inlining();
+            = new();
 
         /// <inheritdoc/>
         public override bool IsCheckpoint => false;
@@ -44,8 +44,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             var candidates = new Dictionary<InstructionBuilder, IMethod>();
             foreach (var instruction in graph.Instructions)
             {
-                IMethod callee;
-                if (TryGetCallee(instruction, out callee)
+                if (TryGetCallee(instruction, out IMethod callee)
                     && ShouldConsider(callee, state.Method))
                 {
                     candidates[instruction] = callee;
@@ -127,18 +126,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         private bool TryGetCallee(InstructionBuilder instruction, out IMethod callee)
         {
             var proto = instruction.Prototype;
-            if (proto is CallPrototype)
+            if (proto is CallPrototype callProto)
             {
-                var callProto = (CallPrototype)proto;
                 if (callProto.Lookup == MethodLookup.Static)
                 {
                     callee = callProto.Callee;
                     return true;
                 }
             }
-            else if (proto is NewObjectPrototype)
+            else if (proto is NewObjectPrototype newObjproto)
             {
-                var newObjproto = (NewObjectPrototype)proto;
                 callee = newObjproto.Constructor;
                 return true;
             }
@@ -295,8 +292,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             int gain = 10;
             foreach (var arg in arguments)
             {
-                NamedInstruction argInstruction;
-                if (caller.TryGetInstruction(arg, out argInstruction))
+                if (caller.TryGetInstruction(arg, out NamedInstruction argInstruction))
                 {
                     if (argInstruction.Prototype is AllocaPrototype)
                     {

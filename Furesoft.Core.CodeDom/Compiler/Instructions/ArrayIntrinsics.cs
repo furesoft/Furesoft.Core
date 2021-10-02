@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// The namespace for array intrinsics.
         /// </summary>
         public static readonly IntrinsicNamespace Namespace =
-            new IntrinsicNamespace("array");
+            new("array");
 
         /// <summary>
         /// Creates an array intrinsic prototype.

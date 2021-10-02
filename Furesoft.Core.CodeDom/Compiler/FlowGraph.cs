@@ -331,8 +331,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// <returns><c>true</c> if the instruction exists; otherwise, <c>false</c>.</returns>
         public bool TryGetInstruction(ValueTag tag, out NamedInstruction result)
         {
-            Instruction insn;
-            if (instructions.TryGetValue(tag, out insn))
+            if (instructions.TryGetValue(tag, out Instruction insn))
             {
                 result = new NamedInstruction(GetValueParent(tag), tag, insn);
                 return true;
@@ -409,8 +408,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         public IType GetValueType(ValueTag tag)
         {
             AssertContainsValue(tag);
-            Instruction instr;
-            if (instructions.TryGetValue(tag, out instr))
+            if (instructions.TryGetValue(tag, out Instruction instr))
             {
                 return instr.ResultType;
             }
@@ -617,11 +615,10 @@ namespace Furesoft.Core.CodeDom.Compiler
             // Replace uses in instructions.
             foreach (var selection in builder.NamedInstructions)
             {
-                Instruction newInstruction;
                 if (TryReplaceUsesInInstruction(
                     selection.Instruction,
                     replacementMap,
-                    out newInstruction))
+                    out Instruction newInstruction))
                 {
                     selection.Instruction = newInstruction;
                 }
@@ -631,8 +628,7 @@ namespace Furesoft.Core.CodeDom.Compiler
             foreach (var block in builder.BasicBlocks)
             {
                 var flow = block.Flow;
-                BlockFlow newFlow;
-                if (TryReplaceUsesInFlow(flow, replacementMap, out newFlow))
+                if (TryReplaceUsesInFlow(flow, replacementMap, out BlockFlow newFlow))
                 {
                     block.Flow = newFlow;
                 }
@@ -652,8 +648,7 @@ namespace Furesoft.Core.CodeDom.Compiler
             for (int i = 0; i < argCount; i++)
             {
                 var key = instruction.Arguments[i];
-                ValueTag value;
-                if (replacementMap.TryGetValue(key, out value)
+                if (replacementMap.TryGetValue(key, out ValueTag value)
                     && value != key)
                 {
                     newArgs[i] = value;
@@ -685,8 +680,7 @@ namespace Furesoft.Core.CodeDom.Compiler
             var newInstructions = new Instruction[instructions.Count];
             for (int i = 0; i < newInstructions.Length; i++)
             {
-                Instruction newInsn;
-                if (TryReplaceUsesInInstruction(instructions[i], replacementMap, out newInsn))
+                if (TryReplaceUsesInInstruction(instructions[i], replacementMap, out Instruction newInsn))
                 {
                     newInstructions[i] = newInsn;
                     replacedAny = true;
@@ -706,9 +700,8 @@ namespace Furesoft.Core.CodeDom.Compiler
                 for (int j = 0; j < newArgs.Length; j++)
                 {
                     var arg = branch.Arguments[j];
-                    ValueTag value;
                     if (arg.IsValue
-                        && replacementMap.TryGetValue(arg.ValueOrNull, out value)
+                        && replacementMap.TryGetValue(arg.ValueOrNull, out ValueTag value)
                         && value != arg.ValueOrNull)
                     {
                         newArgs[j] = BranchArgument.FromValue(value);

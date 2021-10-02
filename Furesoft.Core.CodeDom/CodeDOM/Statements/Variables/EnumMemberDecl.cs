@@ -221,10 +221,10 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             if (parser.HasUnusedIdentifier)
             {
                 // Parse the first EnumMemberDecl
-                EnumMemberDecl enumMemberDecl = new EnumMemberDecl(parser, parent, true);
+                EnumMemberDecl enumMemberDecl = new(parser, parent, true);
 
                 // Always create a MultiEnumMemberDecl for enums
-                MultiEnumMemberDecl multiEnumMemberDecl = new MultiEnumMemberDecl(enumMemberDecl);
+                MultiEnumMemberDecl multiEnumMemberDecl = new(enumMemberDecl);
                 multiEnumMemberDecl.SetLineCol(enumMemberDecl);
 
                 // Handle additional EnumMemberDecls after any commas

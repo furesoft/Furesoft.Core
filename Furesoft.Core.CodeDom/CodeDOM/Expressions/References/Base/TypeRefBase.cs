@@ -74,7 +74,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
         /// <summary>
         /// A map of built-in type names to keywords (the "System" namespace prefix is NOT included on the names).
         /// </summary>
-        public static readonly Dictionary<string, string> TypeNameToKeywordMap = new Dictionary<string, string>(16)
+        public static readonly Dictionary<string, string> TypeNameToKeywordMap = new(16)
             {
                 { "Object",  "object"  },
                 { "Void",    "void"    },
@@ -94,8 +94,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base
                 { "Decimal", "decimal" }
             };
 
-        protected static readonly HashSet<string> TypeArgumentTerminators = new HashSet<string>
-            {
+        protected static readonly HashSet<string> TypeArgumentTerminators = new()
+        {
                 "(", ")", "]", "}", ":", ";", ",", ".", "?", "==", "!=", "|", "^"
             };
 

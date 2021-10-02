@@ -121,8 +121,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
         public IReadOnlyList<TInstruction> Optimize(
             IReadOnlyList<TInstruction> instructions)
         {
-            IReadOnlyList<TExternalRef> newExternalRefs;
-            return Optimize(instructions, EmptyArray<TExternalRef>.Value, out newExternalRefs);
+            return Optimize(instructions, EmptyArray<TExternalRef>.Value, out IReadOnlyList<TExternalRef> newExternalRefs);
         }
 
         /// <summary>
@@ -368,11 +367,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
             if (!object.Equals(newFirst.Value, oldFirstInstruction))
             {
                 // Update the branch target map.
-                HashSet<TInstruction> oldBranchTargets;
-                if (replacedBranchTargets.TryGetValue(oldFirstInstruction, out oldBranchTargets))
+                if (replacedBranchTargets.TryGetValue(oldFirstInstruction, out HashSet<TInstruction> oldBranchTargets))
                 {
-                    HashSet<TInstruction> newBranchTargets;
-                    if (!replacedBranchTargets.TryGetValue(newFirst.Value, out newBranchTargets))
+                    if (!replacedBranchTargets.TryGetValue(newFirst.Value, out HashSet<TInstruction> newBranchTargets))
                     {
                         replacedBranchTargets[newFirst.Value] = newBranchTargets = new HashSet<TInstruction>();
                     }

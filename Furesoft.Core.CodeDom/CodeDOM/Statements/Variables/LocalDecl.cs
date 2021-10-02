@@ -194,13 +194,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
         public static LocalDecl Parse(Parser parser, CodeObject parent, bool standAlone, bool allowInitAndMulti)
         {
             // Parse the first LocalDecl
-            LocalDecl localDecl = new LocalDecl(parser, parent, standAlone, allowInitAndMulti, true, false);
+            LocalDecl localDecl = new(parser, parent, standAlone, allowInitAndMulti, true, false);
 
             // Handle additional LocalDecls after any commas
             if (!localDecl.HasTerminator && allowInitAndMulti && parser.TokenText == Expression.ParseTokenSeparator)
             {
                 // If it's a multi, create one, and transfer the IsFirstOnLine setting
-                MultiLocalDecl multiLocalDecl = new MultiLocalDecl(localDecl) { NewLines = localDecl.NewLines, HasTerminator = false };
+                MultiLocalDecl multiLocalDecl = new(localDecl) { NewLines = localDecl.NewLines, HasTerminator = false };
                 multiLocalDecl.SetLineCol(localDecl);
                 localDecl.NewLines = 0;
                 do

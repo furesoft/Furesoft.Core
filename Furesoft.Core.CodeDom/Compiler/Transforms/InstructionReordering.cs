@@ -24,7 +24,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// </summary>
         /// <value>An instruction reordering transform.</value>
         public static readonly InstructionReordering Instance
-            = new InstructionReordering();
+            = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)

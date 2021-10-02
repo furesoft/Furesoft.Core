@@ -80,9 +80,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             {
                 return arguments[0];
             }
-            else if (prototype is ConstantPrototype)
+            else if (prototype is ConstantPrototype constProto)
             {
-                var constProto = (ConstantPrototype)prototype;
                 if (constProto.Value is DefaultConstant)
                 {
                     // Try to specialize 'default' constants.
@@ -94,13 +93,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 }
                 return constProto.Value;
             }
-            else if (prototype is IntrinsicPrototype)
+            else if (prototype is IntrinsicPrototype intrinsicProto)
             {
-                var intrinsicProto = (IntrinsicPrototype)prototype;
-
-                Constant result;
                 if (ArithmeticIntrinsics.IsArithmeticIntrinsicPrototype(intrinsicProto)
-                    && ArithmeticIntrinsics.TryEvaluate(intrinsicProto, arguments, out result))
+                    && ArithmeticIntrinsics.TryEvaluate(intrinsicProto, arguments, out Constant result))
                 {
                     return result;
                 }
@@ -125,8 +121,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             // Replace instructions with constants.
             foreach (var selection in graphBuilder.NamedInstructions)
             {
-                LatticeCell cell;
-                if (cells.TryGetValue(selection, out cell)
+                if (cells.TryGetValue(selection, out LatticeCell cell)
                     && cell.IsConstant)
                 {
                     selection.Instruction = Instruction.CreateConstant(
@@ -143,8 +138,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             {
                 foreach (var param in block.Parameters)
                 {
-                    LatticeCell cell;
-                    if (cells.TryGetValue(param.Tag, out cell)
+                    if (cells.TryGetValue(param.Tag, out LatticeCell cell)
                         && cell.IsConstant)
                     {
                         phiReplacements[param.Tag] = entryPoint.InsertInstruction(
@@ -362,9 +356,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 IReadOnlyDictionary<ValueTag, LatticeCell> cells,
                 FlowGraph graph)
             {
-                if (flow is SwitchFlow)
+                if (flow is SwitchFlow switchFlow)
                 {
-                    var switchFlow = (SwitchFlow)flow;
                     var condition = Evaluate(switchFlow.SwitchValue, cells, graph);
                     if (condition.Kind == LatticeCellKind.Top)
                     {
@@ -537,16 +530,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             }
 
             public static LatticeCell Top =>
-                new LatticeCell(LatticeCellKind.Top, null);
+                new(LatticeCellKind.Top, null);
 
             public static LatticeCell Bottom =>
-                new LatticeCell(LatticeCellKind.Bottom, null);
+                new(LatticeCellKind.Bottom, null);
 
             public static LatticeCell NonNull =>
-                new LatticeCell(LatticeCellKind.NonNull, null);
+                new(LatticeCellKind.NonNull, null);
 
             public static LatticeCell Constant(Constant value) =>
-                new LatticeCell(LatticeCellKind.Constant, value);
+                new(LatticeCellKind.Constant, value);
 
             public bool Equals(LatticeCell other)
             {

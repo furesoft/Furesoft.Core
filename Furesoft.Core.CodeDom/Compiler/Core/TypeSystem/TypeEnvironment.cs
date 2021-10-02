@@ -239,8 +239,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </returns>
         public IType MakeSignedIntegerType(int sizeInBits)
         {
-            IType result;
-            if (TryMakeSignedIntegerType(sizeInBits, out result))
+            if (TryMakeSignedIntegerType(sizeInBits, out IType result))
             {
                 return result;
             }
@@ -261,8 +260,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </returns>
         public IType MakeUnsignedIntegerType(int sizeInBits)
         {
-            IType result;
-            if (TryMakeUnsignedIntegerType(sizeInBits, out result))
+            if (TryMakeUnsignedIntegerType(sizeInBits, out IType result))
             {
                 return result;
             }
@@ -285,8 +283,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </returns>
         public IType MakeArrayType(IType elementType, int rank)
         {
-            IType result;
-            if (TryMakeArrayType(elementType, rank, out result))
+            if (TryMakeArrayType(elementType, rank, out IType result))
             {
                 return result;
             }

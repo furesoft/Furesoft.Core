@@ -169,7 +169,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         // private set-up logic) have equal declaration
         // types and parent types, then they are *referentially* equal.
         private static InterningCache<IndirectMethodSpecialization> instanceCache
-            = new InterningCache<IndirectMethodSpecialization>(
+            = new(
                 new StructuralIndirectMethodSpecializationComparer(),
                 InitializeInstance);
 
@@ -188,9 +188,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IMethod declaration,
             TypeSpecialization parentType)
         {
-            if (declaration is IAccessor)
+            if (declaration is IAccessor accessor)
             {
-                var accessor = (IAccessor)declaration;
                 return Create(
                     accessor,
                     IndirectPropertySpecialization.Create(
@@ -311,7 +310,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         // private set-up logic) have equal declaration
         // types and type arguments, then they are *referentially* equal.
         private static InterningCache<DirectMethodSpecialization> instanceCache
-            = new InterningCache<DirectMethodSpecialization>(
+            = new(
                 new StructuralDirectMethodSpecializationComparer(),
                 InitializeInstance);
 

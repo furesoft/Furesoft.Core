@@ -20,7 +20,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the dead value elimination transform.
         /// </summary>
-        public static readonly DeadValueElimination Instance = new DeadValueElimination();
+        public static readonly DeadValueElimination Instance = new();
 
         /// <summary>
         /// Removes unused, non-effectful instructions and basic block
@@ -114,8 +114,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 var value = worklist.Dequeue();
                 if (liveValues.Add(value))
                 {
-                    HashSet<ValueTag> args;
-                    if (phiArgs.TryGetValue(value, out args))
+                    if (phiArgs.TryGetValue(value, out HashSet<ValueTag> args))
                     {
                         foreach (var arg in args)
                         {
@@ -128,8 +127,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                         {
                             worklist.Enqueue(arg);
                         }
-                        HashSet<ValueTag> storeDependencies;
-                        if (localStores.TryGetValue(value, out storeDependencies))
+                        if (localStores.TryGetValue(value, out HashSet<ValueTag> storeDependencies))
                         {
                             // A local variable has become live. We must mark any store instructions
                             // that depend on said local as live as well.
@@ -158,13 +156,11 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 if (instruction.Prototype is StorePrototype)
                 {
                     var pointer = ((StorePrototype)instruction.Prototype).GetPointer(instruction.Instruction);
-                    IEnumerable<ValueTag> localInstructions;
-                    if (TryRecognizeAsLocal(pointer, graph, out localInstructions))
+                    if (TryRecognizeAsLocal(pointer, graph, out IEnumerable<ValueTag> localInstructions))
                     {
                         foreach (var item in localInstructions)
                         {
-                            HashSet<ValueTag> localDeps;
-                            if (!results.TryGetValue(item, out localDeps))
+                            if (!results.TryGetValue(item, out HashSet<ValueTag> localDeps))
                             {
                                 results[item] = localDeps = new HashSet<ValueTag>();
                             }
@@ -194,8 +190,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             FlowGraph graph,
             out IEnumerable<ValueTag> localInstructions)
         {
-            NamedInstruction instruction;
-            if (graph.TryGetInstruction(pointer, out instruction))
+            if (graph.TryGetInstruction(pointer, out NamedInstruction instruction))
             {
                 if (instruction.Prototype is AllocaPrototype
                     || instruction.Prototype is AllocaArrayPrototype)

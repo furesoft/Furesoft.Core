@@ -68,7 +68,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         // in this private set-up logic) have equal declaration
         // and parent types, then they are *referentially* equal.
         private static InterningCache<IndirectFieldSpecialization> instanceCache
-            = new InterningCache<IndirectFieldSpecialization>(
+            = new(
                 new StructuralIndirectFieldSpecializationComparer(),
                 InitializeInstance);
 

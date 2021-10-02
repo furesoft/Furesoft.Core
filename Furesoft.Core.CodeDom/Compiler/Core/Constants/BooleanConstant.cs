@@ -11,14 +11,14 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         /// <returns>The 'true' constant.</returns>
         public static readonly IntegerConstant True =
-            new IntegerConstant(true);
+            new(true);
 
         /// <summary>
         /// Gets a Boolean constant for 'false.'
         /// </summary>
         /// <returns>The 'false' constant.</returns>
         public static readonly IntegerConstant False =
-            new IntegerConstant(false);
+            new(false);
 
         /// <summary>
         /// Creates a Boolean constant from a value.

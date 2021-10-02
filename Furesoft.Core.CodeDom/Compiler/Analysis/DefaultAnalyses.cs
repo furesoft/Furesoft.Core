@@ -92,8 +92,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         internal static bool TryGetDefaultAnalysisCache(
             Type type, FlowGraph graph, out FlowGraphAnalysisCache result)
         {
-            Func<FlowGraph, FlowGraphAnalysisCache> create;
-            if (defaults.TryGetValue(type, out create))
+            if (defaults.TryGetValue(type, out Func<FlowGraph, FlowGraphAnalysisCache> create))
             {
                 result = create(graph);
                 return true;

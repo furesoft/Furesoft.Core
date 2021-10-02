@@ -629,7 +629,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
         public static Expression Parse(string src, out CodeUnit rootObject)
         {
             var root = new CodeUnit("inline-parse", src);
-            Parser parser = new Parser(root, ParseFlags.Expression);
+            Parser parser = new(root, ParseFlags.Expression);
             rootObject = root;
 
             // Parse the body until we hit EOF

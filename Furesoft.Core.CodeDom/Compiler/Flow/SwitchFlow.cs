@@ -59,8 +59,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
                     continue;
                 }
 
-                ImmutableHashSet<Constant> pattern;
-                if (!branchPatterns.TryGetValue(switchCase.Branch, out pattern))
+                if (!branchPatterns.TryGetValue(switchCase.Branch, out ImmutableHashSet<Constant> pattern))
                 {
                     pattern = ImmutableHashSet.Create<Constant>();
                     branchList.Add(switchCase.Branch);
@@ -73,8 +72,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
             var caseList = new List<SwitchCase>();
             foreach (var branch in branchList)
             {
-                ImmutableHashSet<Constant> pattern;
-                if (branchPatterns.TryGetValue(branch, out pattern))
+                if (branchPatterns.TryGetValue(branch, out ImmutableHashSet<Constant> pattern))
                 {
                     caseList.Add(new SwitchCase(pattern, branch));
                 }
@@ -444,8 +442,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
 
             foreach (var item in x.Cases)
             {
-                ImmutableHashSet<Constant> pattern;
-                if (!branchPatternsForY.TryGetValue(item.Branch, out pattern)
+                if (!branchPatternsForY.TryGetValue(item.Branch, out ImmutableHashSet<Constant> pattern)
                     || !pattern.SetEquals(item.Values))
                 {
                     return false;

@@ -97,7 +97,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// Gets an instance of the value use analysis.
         /// </summary>
         /// <returns>An instance of the value use analysis.</returns>
-        public static readonly ValueUseAnalysis Instance = new ValueUseAnalysis();
+        public static readonly ValueUseAnalysis Instance = new();
 
         /// <inheritdoc/>
         public ValueUses Analyze(FlowGraph graph)

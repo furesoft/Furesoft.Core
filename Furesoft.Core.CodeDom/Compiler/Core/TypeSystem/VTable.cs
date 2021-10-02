@@ -35,8 +35,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 
         public IMethod GetImplementation(IMethod method)
         {
-            IMethod impl;
-            if (implementations.TryGetValue(method, out impl))
+            if (implementations.TryGetValue(method, out IMethod impl))
             {
                 return GetImplementation(impl);
             }
@@ -48,7 +47,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 
         // This cache interns all VTables.
         private static ConditionalWeakTable<IType, VTable> instanceCache
-            = new ConditionalWeakTable<IType, VTable>();
+            = new();
 
         public static VTable Get(IType type)
         {

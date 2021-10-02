@@ -65,9 +65,11 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public void AddModule(string name, Scope scope)
         {
-            var module = new Module();
-            module.Name = name;
-            module.Scope = scope;
+            var module = new Module
+            {
+                Name = name,
+                Scope = scope
+            };
 
             if (!Modules.ContainsKey(name))
             {
@@ -239,12 +241,12 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 return expr switch
                 {
-                    LessThan lt => left < right,
-                    GreaterThan gt => left > right,
-                    LessThanEqual gt => left <= right,
-                    GreaterThanEqual gt => left >= right,
-                    NotEqual ne => left != right,
-                    Equal ne => left == right,
+                    LessThan => left < right,
+                    GreaterThan => left > right,
+                    LessThanEqual => left <= right,
+                    GreaterThanEqual => left >= right,
+                    NotEqual => left != right,
+                    Equal => left == right,
                     _ => false,
                 };
             }
@@ -355,7 +357,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 foreach (var c in Binder.ArgumentConstraints[fn.Name])
                 {
-                    (string parameter, Expression condition) constrain = (
+                    (string parameter, Expression condition) = (
                         GetParameterName(c.Condition),
                         Binder.BindExpression(c.Condition, fnScope)
                     );
@@ -364,13 +366,13 @@ namespace Furesoft.Core.ExpressionEvaluator
                     {
                         if (EvaluateNumberRoom(c, arg.Value))
                         {
-                            if (EvaluateCondition((BinaryBooleanOperator)constrain.condition, fnScope))
+                            if (EvaluateCondition((BinaryBooleanOperator)condition, fnScope))
                             {
                                 continue;
                             }
                             else
                             {
-                                call.AttachMessage($"Parameter Constraint Failed On {call._AsString}: {arg.Key} Does Not Match Condition: {constrain.condition._AsString}", MessageSeverity.Error, MessageSource.Resolve);
+                                call.AttachMessage($"Parameter Constraint Failed On {call._AsString}: {arg.Key} Does Not Match Condition: {condition._AsString}", MessageSeverity.Error, MessageSource.Resolve);
 
                                 return 0;
                             }
@@ -396,9 +398,9 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 return (double)importedFn.Invoke(args);
             }
-            catch (TargetParameterCountException ex)
+            catch (TargetParameterCountException)
             {
-                call.AttachMessage($"Argument Count Mismatch. Expected {importedFn.Method.GetParameters().Count()} given {args.Length} on {fnName}",
+                call.AttachMessage($"Argument Count Mismatch. Expected {importedFn.Method.GetParameters().Length} given {args.Length} on {fnName}",
                     MessageSeverity.Error, MessageSource.Resolve);
 
                 return 0;

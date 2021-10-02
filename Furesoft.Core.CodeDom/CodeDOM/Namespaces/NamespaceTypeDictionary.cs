@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
     /// </remarks>
     public class NamespaceTypeDictionary : ICollection
     {
-        protected Dictionary<string, object> _dictionary = new Dictionary<string, object>();
+        protected Dictionary<string, object> _dictionary = new();
 
         /// <summary>
         /// The number of items in the dictionary.
@@ -103,8 +103,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
         {
             if (name == null)
                 return null;
-            object found;
-            _dictionary.TryGetValue(name, out found);
+            _dictionary.TryGetValue(name, out object found);
             if (found == null)
             {
                 // If we didn't find a match, check for a trailing generic parameter count
@@ -173,8 +172,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
             // Protect against null names - shouldn't occur, but might in rare cases for code with parsing errors
             if (name != null)
             {
-                object existingObj;
-                if (_dictionary.TryGetValue(name, out existingObj))
+                if (_dictionary.TryGetValue(name, out object existingObj))
                 {
                     // If we had a name collision, add to any existing group, or create a new one
                     if (existingObj is NamespaceTypeGroup)
@@ -197,13 +195,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
         /// <param name="obj">The <see cref="TypeDecl"/>, <see cref="Type"/>, or <see cref="Namespace"/> object.</param>
         protected void Remove(string name, object obj)
         {
-            object existingObj;
-            if (_dictionary.TryGetValue(name, out existingObj))
+            if (_dictionary.TryGetValue(name, out object existingObj))
             {
-                if (existingObj is NamespaceTypeGroup)
+                // If there's a group with the given name, remove the object from the group
+                if (existingObj is NamespaceTypeGroup group)
                 {
-                    // If there's a group with the given name, remove the object from the group
-                    NamespaceTypeGroup group = (NamespaceTypeGroup)existingObj;
                     group.Remove(obj);
                     if (group.Count == 1)
                     {

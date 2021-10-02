@@ -92,7 +92,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         private static Expression BindConstainCondition(RelationalOperator condition)
         {
-            if (condition.Left is RelationalOperator l && condition.Right is Literal r)
+            if (condition.Left is RelationalOperator l && condition.Right is Literal)
             {
                 if (condition.Symbol == "<")
                 {
@@ -189,7 +189,7 @@ namespace Furesoft.Core.ExpressionEvaluator
         {
             if (interval.IsMinimumInclusive)
             {
-                if (interval.Minimum is Negative neg && neg.Expression is InfinityRef infinity)
+                if (interval.Minimum is Negative neg && neg.Expression is InfinityRef)
                 {
                     interval.Minimum = BindNegInfinity((FunctionArgumentConditionDefinition)interval.Parent);
                 }
@@ -284,8 +284,10 @@ namespace Furesoft.Core.ExpressionEvaluator
                 }
                 else
                 {
-                    var constrains = new List<FunctionArgumentConditionDefinition>();
-                    constrains.Add(facd);
+                    var constrains = new List<FunctionArgumentConditionDefinition>
+                    {
+                        facd
+                    };
 
                     ArgumentConstraints.Add(facd.Function, constrains);
                 }
@@ -309,7 +311,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                     useStmt.AttachMessage($"'{useStmt.Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
                 }
             }
-            else if (useStmt.Module is Literal lit)
+            else if (useStmt.Module is Literal)
             {
                 //ToDo: implement module loading from string path
                 var filename = useStmt.Module._AsString.ToString().Replace("\"", "");

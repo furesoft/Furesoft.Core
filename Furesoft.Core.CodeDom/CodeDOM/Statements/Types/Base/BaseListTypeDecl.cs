@@ -122,14 +122,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
             // Get the list of base types, building it if this is a partial type
             if (IsPartial)
             {
-                List<Expression> baseTypes = new List<Expression>();
+                List<Expression> baseTypes = new();
                 if (_baseTypes != null)
                     baseTypes.AddRange(_baseTypes);
                 foreach (TypeDecl otherPart in GetOtherParts())
                 {
-                    if (otherPart is BaseListTypeDecl)
+                    if (otherPart is BaseListTypeDecl baseListTypeDecl)
                     {
-                        BaseListTypeDecl baseListTypeDecl = (BaseListTypeDecl)otherPart;
                         if (baseListTypeDecl.HasBaseTypes)
                             baseTypes.AddRange(baseListTypeDecl.BaseTypes);
                     }
@@ -196,7 +195,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base
         public override PropertyRef GetProperty(string name)
         {
             // Look for the property in the type declaration
-            NamedCodeObjectGroup found = new NamedCodeObjectGroup();
+            NamedCodeObjectGroup found = new();
             FindInAllParts<PropertyDecl>(name, found);
             if (found.Count > 0)
                 return (PropertyRef)((PropertyDecl)found[0]).CreateRef();

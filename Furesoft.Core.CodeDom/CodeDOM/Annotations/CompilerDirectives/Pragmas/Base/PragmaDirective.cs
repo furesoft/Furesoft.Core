@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.B
         public new const string ParseToken = "pragma";
 
         // Map of parse-point tokens to callbacks
-        private static readonly Dictionary<string, ParseDelegate> _parsePoints = new Dictionary<string, ParseDelegate>();
+        private static readonly Dictionary<string, ParseDelegate> _parsePoints = new();
 
         protected PragmaDirective()
         { }
@@ -61,8 +61,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Pragmas.B
                 return null;
 
             // Execute the callback if we have a parse-point for the token
-            ParseDelegate callback;
-            if (_parsePoints.TryGetValue(next.Text, out callback))
+            if (_parsePoints.TryGetValue(next.Text, out ParseDelegate callback))
                 return (PragmaDirective)callback(parser, parent, flags);
 
             return null;

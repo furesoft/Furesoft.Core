@@ -24,7 +24,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
         /// All loaded namespaces under the root namespace, indexed by full name (the contents of namespaces
         /// may vary depending upon referenced assemblies, so each project must maintain its own namespaces).
         /// </summary>
-        protected Dictionary<string, Namespace> _namespaces = new Dictionary<string, Namespace>();
+        protected Dictionary<string, Namespace> _namespaces = new();
 
         /// <summary>
         /// Create a <see cref="RootNamespace"/>.

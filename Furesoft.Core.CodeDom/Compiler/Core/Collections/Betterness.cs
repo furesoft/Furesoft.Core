@@ -181,8 +181,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
             this IEnumerable<T> Elements,
             Func<T, T, Betterness> Compare)
         {
-            T result;
-            TryGetBestElement(Elements, Compare, out result);
+            TryGetBestElement(Elements, Compare, out T result);
             return result;
         }
     }

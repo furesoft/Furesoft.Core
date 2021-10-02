@@ -245,14 +245,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Loops
         /// </summary>
         public static BlockStatement Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            For @for = new For(parser, parent);
+            For @for = new(parser, parent);
 
             if (AutomaticCodeCleanup && !parser.IsGenerated)
             {
                 // Normalize 'for (;;)' to 'while (true)' (with a null conditional)
                 if (@for._initializations == null && @for._conditional == null && @for._iterations == null && !@for.HasInfixComments)
                 {
-                    While @while = new While(@for);
+                    While @while = new(@for);
                     @while.SetLineCol(@for);
                     return @while;
                 }

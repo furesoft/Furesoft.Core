@@ -77,8 +77,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
             parser.NextToken();                  // Move past 'delegate'
 
             // Parse the parameter declarations
-            bool isEndFirstOnLine;
-            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, true, out isEndFirstOnLine);
+            _parameters = ParameterDecl.ParseList(parser, this, ParseTokenStart, ParseTokenEnd, true, out bool isEndFirstOnLine);
             IsEndFirstOnLine = isEndFirstOnLine;
 
             // If the body is indented less than the parent object, set the NoIndentation flag to prevent it from

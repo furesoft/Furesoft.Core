@@ -96,8 +96,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         {
             return MapArguments(arg =>
             {
-                ValueTag result;
-                if (mapping.TryGetValue(arg, out result))
+                if (mapping.TryGetValue(arg, out ValueTag result))
                 {
                     return result;
                 }

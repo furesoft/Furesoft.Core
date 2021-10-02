@@ -54,7 +54,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<GetStaticFieldPointerPrototype> instanceCache
-            = new InterningCache<GetStaticFieldPointerPrototype>(
+            = new(
                 new StructuralGetStaticFieldPointerPrototypeComparer());
 
         /// <summary>

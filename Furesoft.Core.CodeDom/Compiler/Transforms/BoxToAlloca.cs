@@ -22,7 +22,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the box-to-alloca transform.
         /// </summary>
-        public static readonly BoxToAlloca Instance = new BoxToAlloca();
+        public static readonly BoxToAlloca Instance = new();
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)

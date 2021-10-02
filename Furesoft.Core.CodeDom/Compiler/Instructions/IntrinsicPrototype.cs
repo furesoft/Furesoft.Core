@@ -111,7 +111,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<IntrinsicPrototype> instanceCache
-            = new InterningCache<IntrinsicPrototype>(
+            = new(
                 new StructuralIntrinsicPrototypeComparer());
 
         /// <summary>

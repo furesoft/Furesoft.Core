@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// An instance of a null constant.
         /// </summary>
         /// <returns>A null constant.</returns>
-        public static readonly NullConstant Instance = new NullConstant();
+        public static readonly NullConstant Instance = new();
 
         /// <inheritdoc/>
         public override bool Equals(Constant other)

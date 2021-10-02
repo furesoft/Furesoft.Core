@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// The namespace for object-oriented intrinsics.
         /// </summary>
         public static readonly IntrinsicNamespace Namespace =
-            new IntrinsicNamespace("object");
+            new("object");
 
         /// <summary>
         /// Creates an object-oriented intrinsic prototype.

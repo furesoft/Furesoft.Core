@@ -58,7 +58,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         /// <value>An instruction specification analysis.</value>
         public static readonly ReifiedInstructionExceptionAnalysis Instance
-            = new ReifiedInstructionExceptionAnalysis();
+            = new();
 
         private ReifiedInstructionExceptionAnalysis()
         { }
@@ -100,9 +100,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             Instruction instruction,
             FlowGraph graph)
         {
-            if (prototypeSpec is ExceptionSpecification.Union)
+            if (prototypeSpec is ExceptionSpecification.Union unionSpec)
             {
-                var unionSpec = (ExceptionSpecification.Union)prototypeSpec;
                 var newOperands = new List<ExceptionSpecification>();
                 foreach (var operand in unionSpec.Operands)
                 {
@@ -118,9 +117,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 }
                 return ExceptionSpecification.Union.Create(newOperands.ToArray());
             }
-            else if (prototypeSpec is NullCheckExceptionSpecification)
+            else if (prototypeSpec is NullCheckExceptionSpecification nullCheck)
             {
-                var nullCheck = (NullCheckExceptionSpecification)prototypeSpec;
                 var arg = instruction.Arguments[nullCheck.ParameterIndex];
                 var nullability = graph.GetAnalysisResult<ValueNullability>();
                 if (nullability.IsNonNull(arg))

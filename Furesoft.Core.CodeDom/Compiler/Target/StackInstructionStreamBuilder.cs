@@ -86,8 +86,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
 
             foreach (var insn in block.NamedInstructions)
             {
-                SelectedInstructions<TInstruction> selection;
-                if (instructions.TryGetValue(insn, out selection))
+                if (instructions.TryGetValue(insn, out SelectedInstructions<TInstruction> selection))
                 {
                     // Place the instruction.
                     builder.Emit(insn, selection);
@@ -345,9 +344,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                 {
                     emptyStackPoints.Remove(finger);
 
-                    ValueTag rezValue;
                     if (firstRezToDelete < 0
-                        && invResurrectionPoints.TryGetValue(finger, out rezValue)
+                        && invResurrectionPoints.TryGetValue(finger, out ValueTag rezValue)
                         && rezValue != valueResurrectedAtPoint)
                     {
                         // Make sure that no values are resurrected after the push point.
@@ -463,8 +461,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                         {
                             // Looks like we'll have to insert a dup instruction.
                             var valueType = Block.Graph.GetValueType(value);
-                            IReadOnlyList<TInstruction> dup;
-                            if (!StackSelector.TryCreateDup(valueType, out dup))
+                            if (!StackSelector.TryCreateDup(valueType, out IReadOnlyList<TInstruction> dup))
                             {
                                 // Instruction selector won't let us create a dup instruction,
                                 // so it would appear that we can't resurrect this value after
@@ -525,8 +522,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                     // We will go with the "as early as possible" solution but remove non-dependency
                     // instructions from the resurrection list in LoadDependencies.
 
-                    NamedInstruction instruction;
-                    if (Block.Graph.TryGetInstruction(value, out instruction)
+                    if (Block.Graph.TryGetInstruction(value, out NamedInstruction instruction)
                         && blockBuilder.parent.ShouldMaterializeOnUse(instruction))
                     {
                         Materialize(instruction);
@@ -578,8 +574,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                     point = point.Next;
                     while (point != null)
                     {
-                        ValueTag resurrectible;
-                        if (invResurrectionPoints.TryGetValue(point, out resurrectible)
+                        if (invResurrectionPoints.TryGetValue(point, out ValueTag resurrectible)
                             && resurrectible == value)
                         {
                             return false;

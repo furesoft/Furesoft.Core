@@ -266,9 +266,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <inheritdoc/>
         public override bool CanAccess(IType accessor, ITypeMember accessed)
         {
-            if (accessed is MethodSpecialization)
+            if (accessed is MethodSpecialization methodSpecialization)
             {
-                var methodSpecialization = (MethodSpecialization)accessed;
                 return CanAccess(accessor, methodSpecialization.Declaration)
                     && methodSpecialization.GetRecursiveGenericArgumentMapping()
                         .Values.All(arg => CanAccess(accessor, arg));

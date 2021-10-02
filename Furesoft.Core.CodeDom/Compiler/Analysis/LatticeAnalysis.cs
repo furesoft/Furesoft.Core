@@ -227,8 +227,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                         {
                             if (pair.Value.IsValue)
                             {
-                                HashSet<ValueTag> args;
-                                if (!parameterArgs.TryGetValue(pair.Key, out args))
+                                if (!parameterArgs.TryGetValue(pair.Key, out HashSet<ValueTag> args))
                                 {
                                     args = new HashSet<ValueTag>();
                                     parameterArgs[pair.Key] = args;
@@ -255,8 +254,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             Dictionary<ValueTag, TCell> cells,
             FlowGraph graph)
         {
-            TCell cell;
-            if (!cells.TryGetValue(value, out cell))
+            if (!cells.TryGetValue(value, out TCell cell))
             {
                 cell = Top;
             }
@@ -277,8 +275,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             Dictionary<ValueTag, TCell> cells,
             Dictionary<ValueTag, HashSet<ValueTag>> parameterArguments)
         {
-            HashSet<ValueTag> args;
-            if (!parameterArguments.TryGetValue(value, out args))
+            if (!parameterArguments.TryGetValue(value, out HashSet<ValueTag> args))
             {
                 args = new HashSet<ValueTag>();
                 parameterArguments[value] = args;
@@ -287,8 +284,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             var cell = cells.ContainsKey(value) ? cells[value] : Top;
             foreach (var arg in args)
             {
-                TCell argCell;
-                if (cells.TryGetValue(arg, out argCell))
+                if (cells.TryGetValue(arg, out TCell argCell))
                 {
                     cell = Meet(cell, argCell);
                     if (Equals(cell, Bottom))

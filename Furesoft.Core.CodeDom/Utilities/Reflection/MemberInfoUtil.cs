@@ -60,11 +60,10 @@ namespace Furesoft.Core.CodeDom.Utilities.Reflection
         /// </summary>
         public static string GetFullName(MemberInfo thisMemberInfo)
         {
-            if (thisMemberInfo is Type)
+            // The FullName property on Type can return null under certain circumstances, so build the name from the Namespace
+            // and Name in such a case (but use FullName if possible, because it handles nested types properly).
+            if (thisMemberInfo is Type thisType)
             {
-                // The FullName property on Type can return null under certain circumstances, so build the name from the Namespace
-                // and Name in such a case (but use FullName if possible, because it handles nested types properly).
-                Type thisType = (Type)thisMemberInfo;
                 return (thisType.FullName ?? thisType.Namespace + "." + thisType.Name);
             }
             return (thisMemberInfo.DeclaringType != null ? GetFullName(thisMemberInfo.DeclaringType) + "." : "") + thisMemberInfo.Name;

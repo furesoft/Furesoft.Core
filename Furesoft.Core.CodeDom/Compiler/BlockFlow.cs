@@ -125,8 +125,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         {
             return MapValues(arg =>
             {
-                ValueTag result;
-                if (mapping.TryGetValue(arg, out result))
+                if (mapping.TryGetValue(arg, out ValueTag result))
                 {
                     return result;
                 }
@@ -164,8 +163,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         {
             return MapBlocks(arg =>
             {
-                BasicBlockTag result;
-                if (mapping.TryGetValue(arg, out result))
+                if (mapping.TryGetValue(arg, out BasicBlockTag result))
                 {
                     return result;
                 }
@@ -213,8 +211,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         {
             return MapArguments(arg =>
             {
-                BranchArgument result;
-                if (mapping.TryGetValue(arg, out result))
+                if (mapping.TryGetValue(arg, out BranchArgument result))
                 {
                     return result;
                 }

@@ -59,8 +59,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         {
             get
             {
-                Version result;
-                TryGetAnnotation(VersionAnnotationKey, out result);
+                TryGetAnnotation(VersionAnnotationKey, out Version result);
                 return result;
             }
         }
@@ -76,8 +75,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         {
             get
             {
-                bool result;
-                TryGetAnnotation(IsRetargetableKey, out result);
+                TryGetAnnotation(IsRetargetableKey, out bool result);
                 return result;
             }
         }
@@ -137,8 +135,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// </returns>
         public bool TryGetAnnotation(string key, out bool value)
         {
-            string strVal;
-            if (Annotations.TryGetValue(key, out strVal))
+            if (Annotations.TryGetValue(key, out string strVal))
             {
                 value = bool.Parse(strVal);
                 return true;
@@ -165,8 +162,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// </returns>
         public bool TryGetAnnotation(string key, out Version value)
         {
-            string strVal;
-            if (Annotations.TryGetValue(key, out strVal))
+            if (Annotations.TryGetValue(key, out string strVal))
             {
                 value = Version.Parse(strVal);
                 return true;
@@ -240,8 +236,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
 
             foreach (var kvPair in Annotations)
             {
-                string otherValue;
-                if (!other.Annotations.TryGetValue(kvPair.Key, out otherValue)
+                if (!other.Annotations.TryGetValue(kvPair.Key, out string otherValue)
                     || kvPair.Value != otherValue)
                 {
                     return false;

@@ -102,7 +102,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         }
 
         private static readonly InterningCache<DynamicCastPrototype> instanceCache
-            = new InterningCache<DynamicCastPrototype>(
+            = new(
                 new StructuralDynamicCastPrototypeComparer());
 
         /// <summary>

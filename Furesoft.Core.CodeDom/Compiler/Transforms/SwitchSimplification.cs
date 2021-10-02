@@ -20,7 +20,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// <summary>
         /// An instance of the switch simplification optimization.
         /// </summary>
-        public static readonly SwitchSimplification Instance = new SwitchSimplification();
+        public static readonly SwitchSimplification Instance = new();
 
         private SwitchSimplification()
         { }
@@ -35,9 +35,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// </returns>
         public static bool TrySimplifySwitchFlow(BasicBlockBuilder block)
         {
-            if (block.Flow is SwitchFlow)
+            if (block.Flow is SwitchFlow flow)
             {
-                var flow = (SwitchFlow)block.Flow;
                 var simpleFlow = SimplifySwitchFlow(flow, block.Graph.ImmutableGraph);
                 if (flow != simpleFlow)
                 {
@@ -88,9 +87,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             Instruction instruction,
             FlowGraph graph)
         {
-            if (instruction.Prototype is CopyPrototype)
+            if (instruction.Prototype is CopyPrototype copyProto)
             {
-                var copyProto = (CopyPrototype)instruction.Prototype;
                 var copiedVal = copyProto.GetCopiedValue(instruction);
                 if (graph.ContainsInstruction(copiedVal))
                 {
@@ -189,9 +187,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     var args = proto.GetArgumentList(value);
                     var lhs = args[0];
                     var rhs = args[1];
-                    Constant constant;
-                    ValueTag operand;
-                    if (TryExtractConstantAndValue(lhs, rhs, graph, out constant, out operand))
+                    if (TryExtractConstantAndValue(lhs, rhs, graph, out Constant constant, out ValueTag operand))
                     {
                         // The 'arith.eq' intrinsic always either produces '0' or '1'.
                         // Because of that property, we can safely rewrite switches

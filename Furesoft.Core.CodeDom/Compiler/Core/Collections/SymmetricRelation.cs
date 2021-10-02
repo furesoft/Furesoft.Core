@@ -83,8 +83,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </returns>
         public bool Contains(T first, T second)
         {
-            HashSet<T> firstSet;
-            if (relation.TryGetValue(first, out firstSet))
+            if (relation.TryGetValue(first, out HashSet<T> firstSet))
             {
                 return firstSet.Contains(second);
             }
@@ -106,8 +105,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
 
         private HashSet<T> GetSetFor(T value)
         {
-            HashSet<T> valueSet;
-            if (relation.TryGetValue(value, out valueSet))
+            if (relation.TryGetValue(value, out HashSet<T> valueSet))
             {
                 return valueSet;
             }

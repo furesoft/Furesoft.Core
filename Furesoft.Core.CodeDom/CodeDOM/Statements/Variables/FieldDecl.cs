@@ -281,13 +281,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
             // parent is a TypeDecl (necessary when constraints are relaxed for code embedded in doc comments).
             if (parser.HasUnusedTypeRefAndIdentifier && parent is TypeDecl)
             {
-                FieldDecl fieldDecl = new FieldDecl(parser, parent, false);
+                FieldDecl fieldDecl = new(parser, parent, false);
 
                 // Handle additional FieldDecls after any commas
                 if (!fieldDecl.HasTerminator && parser.TokenText == Expression.ParseTokenSeparator)
                 {
                     // If it's a multi, create one, and transfer any new lines and annotations
-                    MultiFieldDecl multiFieldDecl = new MultiFieldDecl(fieldDecl) { NewLines = fieldDecl.NewLines, HasTerminator = false };
+                    MultiFieldDecl multiFieldDecl = new(fieldDecl) { NewLines = fieldDecl.NewLines, HasTerminator = false };
                     multiFieldDecl.SetLineCol(fieldDecl);
                     fieldDecl.NewLines = 0;
                     do

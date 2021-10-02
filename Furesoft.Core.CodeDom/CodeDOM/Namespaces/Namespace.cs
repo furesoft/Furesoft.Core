@@ -29,7 +29,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
         /// <summary>
         /// Dictionary of child namespaces and types (<see cref="Namespace"/>s, <see cref="TypeDecl"/>s, and <see cref="Type"/>s) by name.
         /// </summary>
-        protected NamespaceTypeDictionary _children = new NamespaceTypeDictionary();
+        protected NamespaceTypeDictionary _children = new();
 
         /// <summary>
         /// The full name of the Namespace (including any parent Namespaces).

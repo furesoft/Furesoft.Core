@@ -56,7 +56,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// An instance of the trivial alias analysis result.
         /// </summary>
         public static readonly TrivialAliasAnalysisResult Instance =
-            new TrivialAliasAnalysisResult();
+            new();
 
         /// <inheritdoc/>
         public override Aliasing GetAliasing(ValueTag first, ValueTag second)

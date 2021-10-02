@@ -54,7 +54,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base
         /// </summary>
         public static List<TypeParameterConstraint> Create(Type typeParameter)
         {
-            List<TypeParameterConstraint> typeParameterConstraints = new List<TypeParameterConstraint>();
+            List<TypeParameterConstraint> typeParameterConstraints = new();
             foreach (Type typeConstraint in typeParameter.GetGenericParameterConstraints())
                 typeParameterConstraints.Add(new TypeConstraint(TypeRef.Create(typeConstraint)));
             GenericParameterAttributes attributes = typeParameter.GenericParameterAttributes;

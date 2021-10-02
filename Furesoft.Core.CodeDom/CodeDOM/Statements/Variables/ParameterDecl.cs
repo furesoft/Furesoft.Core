@@ -273,7 +273,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables
 
                 while (parser.TokenText != null && (parser.TokenText.Length != 1 || terminators.IndexOf(parser.TokenText[0]) < 0))
                 {
-                    ParameterDecl parameterDecl = new ParameterDecl(parser, parent, parseTokenEnd);
+                    ParameterDecl parameterDecl = new(parser, parent, parseTokenEnd);
 
                     // Move any preceeding comments to the current ParameterDecl
                     parameterDecl.MoveComments(lastToken);

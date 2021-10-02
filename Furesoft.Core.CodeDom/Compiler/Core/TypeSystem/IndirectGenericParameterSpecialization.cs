@@ -67,7 +67,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         }
 
         private static InterningCache<IndirectGenericParameterSpecialization> instanceCache =
-            new InterningCache<IndirectGenericParameterSpecialization>(
+            new(
                 new StructuralGenericParameterSpecializationComparer(),
                 InitializeInstance);
 

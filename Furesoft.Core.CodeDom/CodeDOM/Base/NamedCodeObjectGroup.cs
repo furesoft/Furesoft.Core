@@ -24,7 +24,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         /// <summary>
         /// The list of code objects with the same name.
         /// </summary>
-        protected ArrayList _list = new ArrayList();
+        protected ArrayList _list = new();
 
         /// <summary>
         /// Create an empty <see cref="NamedCodeObjectGroup"/>.

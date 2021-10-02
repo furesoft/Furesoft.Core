@@ -143,10 +143,9 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
                 _text = ParseTokenNull;
             else if (obj is bool)
                 _text = ((bool)obj ? ParseTokenTrue : ParseTokenFalse);
-            else if (obj is string)
+            else if (obj is string text)
             {
-                string text = (string)obj;
-                StringBuilder builder = new StringBuilder(text.Length + 8);
+                StringBuilder builder = new(text.Length + 8);
                 builder.Append('"');
                 foreach (char ch in text)
                     CharToEscapedString(builder, ch, false);
@@ -155,7 +154,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             }
             else if (obj is char)
             {
-                StringBuilder builder = new StringBuilder(8);
+                StringBuilder builder = new(8);
                 builder.Append('\'');
                 CharToEscapedString(builder, (char)obj, true);
                 builder.Append('\'');

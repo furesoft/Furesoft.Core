@@ -138,9 +138,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
                         foreach (TypeDecl typeDecl in ((NamespaceDecl)codeObject).GetTypeDecls(true, includeNestedTypes))
                             yield return typeDecl;
                     }
-                    else if (codeObject is TypeDecl)
+                    else if (codeObject is TypeDecl typeDecl)
                     {
-                        TypeDecl typeDecl = (TypeDecl)codeObject;
                         yield return typeDecl;
 
                         if (includeNestedTypes)
@@ -212,18 +211,15 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces
 
         private static Expression ResolveNamespaceExpression(Namespace parentNamespace, Expression expression)
         {
-            if (expression is UnresolvedRef)
+            // Find any existing or create the namespace
+            if (expression is UnresolvedRef unresolvedRef)
             {
-                // Find any existing or create the namespace
-                UnresolvedRef unresolvedRef = (UnresolvedRef)expression;
                 Namespace @namespace = parentNamespace.FindOrCreateChildNamespace(unresolvedRef.Name);
                 @namespace.SetDeclarationsInProject(true);
                 expression = @namespace.CreateRef();
             }
-            else if (expression is Dot)
+            else if (expression is Dot dot) // If multiple namespaces are specified, resolve from left to right
             {
-                // If multiple namespaces are specified, resolve from left to right
-                Dot dot = (Dot)expression;
                 dot.Left = ResolveNamespaceExpression(parentNamespace, dot.Left);
                 dot.Right = ResolveNamespaceExpression(((NamespaceRef)dot.Left.SkipPrefixes()).Namespace, dot.Right);
             }

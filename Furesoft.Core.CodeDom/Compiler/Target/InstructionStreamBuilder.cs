@@ -150,13 +150,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                 var flow = block.Flow;
 
                 // Select instructions for the flow.
-                BasicBlockTag fallthrough;
                 var selection = InstructionSelector.SelectInstructions(
                     flow,
                     block.Tag,
                     graph,
                     flow.BranchTargets.FirstOrDefault(target => !flowSelection.ContainsKey(target)),
-                    out fallthrough);
+                    out BasicBlockTag fallthrough);
 
                 // Emit all branch targets.
                 foreach (var target in flow.BranchTargets)
@@ -278,8 +277,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
             var instructionStream = new List<TInstruction>();
             foreach (var insnTag in block.InstructionTags)
             {
-                SelectedInstructions<TInstruction> selection;
-                if (instructions.TryGetValue(insnTag, out selection))
+                if (instructions.TryGetValue(insnTag, out SelectedInstructions<TInstruction> selection))
                 {
                     instructionStream.AddRange(selection.Instructions);
                 }

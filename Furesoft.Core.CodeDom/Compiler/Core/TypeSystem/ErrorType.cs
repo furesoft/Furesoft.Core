@@ -24,7 +24,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <summary>
         /// An error type.
         /// </summary>
-        public static readonly ErrorType Instance = new ErrorType();
+        public static readonly ErrorType Instance = new();
 
         /// <inheritdoc/>
         public TypeParent Parent => TypeParent.Nothing;

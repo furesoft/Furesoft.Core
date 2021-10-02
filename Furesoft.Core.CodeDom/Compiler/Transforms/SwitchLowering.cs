@@ -71,9 +71,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             foreach (var block in graphBuilder.BasicBlocks)
             {
                 var flow = block.Flow;
-                if (flow is SwitchFlow)
+                if (flow is SwitchFlow switchFlow)
                 {
-                    var switchFlow = (SwitchFlow)flow;
                     if (switchFlow.IsIfElseFlow)
                     {
                         // If-else flow is its own optimal lowering.

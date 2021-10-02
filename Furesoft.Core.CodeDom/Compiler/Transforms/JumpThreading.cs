@@ -234,10 +234,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             }
 
             var flow = block.Flow;
-            if (flow is JumpFlow)
+            // Jump flow is usually fairly straightforward to thread.
+            if (flow is JumpFlow jumpFlow)
             {
-                // Jump flow is usually fairly straightforward to thread.
-                var jumpFlow = (JumpFlow)flow;
                 var threadFlow = AsThreadableFlow(jumpFlow.Branch, block.Graph, processedBlocks);
                 if (threadFlow != null && jumpFlow.Branch.Target != block.Tag)
                 {
@@ -256,8 +255,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 // Now would also be a good time to try and fuse this block with
                 // its successor, if this jump is the only branch to the successor.
                 var predecessors = block.Graph.GetAnalysisResult<BasicBlockPredecessors>();
-                BasicBlockTag tail;
-                if (BlockFusion.TryGetFusibleTail(block, block.Graph.ToImmutable(), predecessors, out tail))
+                if (BlockFusion.TryGetFusibleTail(block, block.Graph.ToImmutable(), predecessors, out BasicBlockTag tail))
                 {
                     // Fuse the blocks.
                     FuseBlocks(block, tail);
@@ -268,11 +266,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     ThreadJumps(block, processedBlocks);
                 }
             }
-            else if (flow is TryFlow)
+            else if (flow is TryFlow tryFlow) // We might be able to turn try flow into a jump, which we can thread
+                                              // recursively.
             {
-                // We might be able to turn try flow into a jump, which we can thread
-                // recursively.
-                var tryFlow = (TryFlow)flow;
 
                 // Start off by threading the try flow's branches.
                 var successBranch = tryFlow.SuccessBranch;
@@ -385,16 +381,14 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                             changed = true;
                             continue;
                         }
-                        else if (caseFlow is SwitchFlow)
+                        else if (caseFlow is SwitchFlow threadedSwitch)
                         {
-                            var threadedSwitch = (SwitchFlow)caseFlow;
                             if (threadedSwitch.SwitchValue == switchFlow.SwitchValue)
                             {
                                 var valuesToBranches = threadedSwitch.ValueToBranchMap;
                                 foreach (var value in switchCase.Values)
                                 {
-                                    Branch branchForValue;
-                                    if (!valuesToBranches.TryGetValue(value, out branchForValue))
+                                    if (!valuesToBranches.TryGetValue(value, out Branch branchForValue))
                                     {
                                         branchForValue = threadedSwitch.DefaultBranch;
                                     }
@@ -421,9 +415,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                         defaultBranch = ((JumpFlow)defaultFlow).Branch;
                         changed = true;
                     }
-                    else if (defaultFlow is SwitchFlow)
+                    else if (defaultFlow is SwitchFlow threadedSwitch)
                     {
-                        var threadedSwitch = (SwitchFlow)defaultFlow;
                         if (threadedSwitch.SwitchValue == switchFlow.SwitchValue)
                         {
                             var valueSet = ImmutableHashSet.CreateRange(switchFlow.ValueToBranchMap.Keys);

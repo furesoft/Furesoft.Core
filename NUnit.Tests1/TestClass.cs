@@ -53,7 +53,7 @@ namespace NUnit.Tests1
             ExecuteTest(input, expected);
         }
 
-        private void ExecuteTest(string input, double expected)
+        private static void ExecuteTest(string input, double expected)
         {
             var ep = new ExpressionParser();
             ep.RootScope.Import(typeof(Math));

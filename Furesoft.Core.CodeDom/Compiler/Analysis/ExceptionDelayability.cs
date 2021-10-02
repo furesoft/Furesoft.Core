@@ -28,8 +28,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </returns>
         public static bool CanDelayExceptions(this FlowGraph graph, ValueTag instruction)
         {
-            ExceptionDelayability delayability;
-            if (graph.TryGetAnalysisResult(out delayability))
+            if (graph.TryGetAnalysisResult(out ExceptionDelayability delayability))
             {
                 return delayability.CanDelayExceptions(
                     graph.GetInstruction(instruction).Prototype);
@@ -143,10 +142,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// An instance of the permissive exception delayability policy.
         /// </summary>
         public static readonly PermissiveExceptionDelayability Instance =
-            new PermissiveExceptionDelayability();
+            new();
 
         private static readonly HashSet<string> delayableIntrinsics =
-            new HashSet<string>()
+            new()
         {
             ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetElementPointer)
         };
@@ -163,9 +162,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             {
                 return true;
             }
-            else if (prototype is IntrinsicPrototype)
+            else if (prototype is IntrinsicPrototype intrinsicProto)
             {
-                var intrinsicProto = (IntrinsicPrototype)prototype;
                 return delayableIntrinsics.Contains(intrinsicProto.Name);
             }
             else
@@ -185,7 +183,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// An instance of the strict exception delayability policy.
         /// </summary>
         public static readonly StrictExceptionDelayability Instance =
-            new StrictExceptionDelayability();
+            new();
 
         private StrictExceptionDelayability()
         { }

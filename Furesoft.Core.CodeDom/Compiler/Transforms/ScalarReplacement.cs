@@ -86,9 +86,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             foreach (var instruction in builder.NamedInstructions)
             {
                 var proto = instruction.Prototype;
-                if (proto is GetFieldPointerPrototype)
+                if (proto is GetFieldPointerPrototype gfpProto)
                 {
-                    var gfpProto = (GetFieldPointerPrototype)proto;
                     var basePointer = gfpProto.GetBasePointer(instruction.Instruction);
                     if (eligible.Contains(basePointer))
                     {
@@ -201,8 +200,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             var pointer = storeProto.GetPointer(instruction.Instruction);
             var value = storeProto.GetValue(instruction.Instruction);
 
-            NamedInstructionBuilder valueInstruction;
-            if (instruction.Graph.TryGetInstruction(value, out valueInstruction)
+            if (instruction.Graph.TryGetInstruction(value, out NamedInstructionBuilder valueInstruction)
                 && valueInstruction.Prototype is LoadPrototype)
             {
                 var loadPointer = valueInstruction.Arguments[0];
@@ -401,9 +399,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         private static bool IsDefaultInitialization(Instruction instruction, FlowGraph graph)
         {
             var proto = instruction.Prototype;
-            if (proto is StorePrototype)
+            if (proto is StorePrototype storeProto)
             {
-                var storeProto = (StorePrototype)proto;
                 var value = storeProto.GetValue(instruction);
                 if (graph.ContainsInstruction(value))
                 {

@@ -28,7 +28,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
         /// <summary>
         /// The list of type objects with the same name.
         /// </summary>
-        protected ArrayList _list = new ArrayList();
+        protected ArrayList _list = new();
 
         /// <summary>
         /// Create an empty <see cref="NamespaceTypeGroup"/>.

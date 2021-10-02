@@ -70,7 +70,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// </summary>
         /// <value>A tail recursion elimination optimization.</value>
         public static readonly TailRecursionElimination Instance
-            = new TailRecursionElimination();
+            = new();
 
         /// <inheritdoc/>
         public override bool IsCheckpoint => false;
@@ -99,9 +99,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             var ordering = graph.GetAnalysisResult<InstructionOrdering>();
             foreach (var block in builder.BasicBlocks)
             {
-                if (block.Flow is ReturnFlow)
+                if (block.Flow is ReturnFlow retFlow)
                 {
-                    var retFlow = (ReturnFlow)block.Flow;
                     TryReplaceWithBranchToEntry(
                         block,
                         retFlow.ReturnValue,
@@ -209,9 +208,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             InstructionPrototype prototype,
             IMethod method)
         {
-            if (prototype is CallPrototype)
+            if (prototype is CallPrototype callProto)
             {
-                var callProto = (CallPrototype)prototype;
                 return callProto.Lookup == MethodLookup.Static
                     && callProto.Callee.Equals(method);
             }

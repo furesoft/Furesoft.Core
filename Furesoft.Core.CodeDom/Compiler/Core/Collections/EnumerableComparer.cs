@@ -33,7 +33,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// default element comparer.
         /// </summary>
         public static readonly EnumerableComparer<T> Default =
-            new EnumerableComparer<T>(EqualityComparer<T>.Default);
+            new(EqualityComparer<T>.Default);
 
         /// <summary>
         /// Tests if two sequences of values are equal.

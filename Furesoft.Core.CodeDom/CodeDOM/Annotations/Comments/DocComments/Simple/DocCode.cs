@@ -94,7 +94,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple
         /// </summary>
         public static new DocComment Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
-            DocCode docCode = new DocCode(parser, parent);
+            DocCode docCode = new(parser, parent);
             if (AutomaticCodeCleanup && docCode.Content is Expression)
                 return new DocC((Expression)docCode.Content);
             return docCode;
@@ -220,9 +220,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple
                 if (_content != null)
                 {
                     // Convert a single-line block without braces to the single statement
-                    if (_content is Block)
+                    if (_content is Block block)
                     {
-                        Block block = (Block)_content;
                         if (block.Count == 1 && !block.HasBraces)
                             _content = block[0];
                     }

@@ -346,7 +346,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// </summary>
         /// <returns>A branch argument.</returns>
         public static BranchArgument TryResult =>
-            new BranchArgument(BranchArgumentKind.TryResult, null);
+            new(BranchArgumentKind.TryResult, null);
 
         /// <summary>
         /// Gets a branch argument that represents the exception thrown by
@@ -354,6 +354,6 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// </summary>
         /// <returns>A branch argument.</returns>
         public static BranchArgument TryException =>
-            new BranchArgument(BranchArgumentKind.TryException, null);
+            new(BranchArgumentKind.TryException, null);
     }
 }
