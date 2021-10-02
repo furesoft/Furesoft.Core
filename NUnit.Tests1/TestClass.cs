@@ -31,8 +31,8 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("areaTriangle(width, height) = width * height / 2; areaTriangle(5,10);", 25);
                 yield return new TestCaseData("use \"geometry.math\"; geometry.areaRectangle(5, 3);", 15);
                 yield return new TestCaseData("g: x in N [5, INFINITY];g(x) = x*x; g(6);", 36);
-                yield return new TestCaseData("|-4**2|;", 16);
-                yield return new TestCaseData("-|4**2|;", -16);
+                yield return new TestCaseData("|-4^2|;", 16);
+                yield return new TestCaseData("-|4^2|;", -16);
                 yield return new TestCaseData("use \"geometry.math\"; -geometry.areaRectangle(5, 3);", -15);
                 yield return new TestCaseData("use geometry; round(circumference(5), 5);", 31.4159265359);
                 yield return new TestCaseData("round(geometry.circumference(5), 5);", 31.4159265359);

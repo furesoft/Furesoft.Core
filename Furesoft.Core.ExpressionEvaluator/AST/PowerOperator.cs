@@ -14,7 +14,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public static new void AddParsePoints()
         {
-            Parser.AddOperatorParsePoint("**", Precedence, true, false, Parse);
+            Parser.AddOperatorParsePoint("^", Precedence, true, false, Parse);
         }
 
         public static PowerOperator Parse(Parser parser, CodeObject parent, ParseFlags flags)
