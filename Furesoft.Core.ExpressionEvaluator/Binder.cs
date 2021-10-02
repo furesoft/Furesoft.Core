@@ -35,6 +35,10 @@ namespace Furesoft.Core.ExpressionEvaluator
                 op.Left = BindExpression(op.Left, scope);
                 op.Right = BindExpression(op.Right, scope);
             }
+            else if (expr is Negative neg)
+            {
+                neg.Expression = BindExpression(neg.Expression, scope);
+            }
             else if (expr is Call call && call.Expression is Dot dot)
             {
                 var moduleRef = (SymbolicRef)dot.Left;
@@ -332,7 +336,14 @@ namespace Furesoft.Core.ExpressionEvaluator
                     }
                     else
                     {
-                        useStmt.Module = new ModuleRef(ep.RootScope);
+                        if (string.IsNullOrEmpty(contentResult.ModuleName))
+                        {
+                            useStmt.Module = new ModuleRef(ep.RootScope);
+                        }
+                        else
+                        {
+                            ExpressionParser.AddModule(contentResult.ModuleName, ep.RootScope);
+                        }
                     }
                 }
                 else

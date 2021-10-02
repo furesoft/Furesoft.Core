@@ -7,5 +7,6 @@ namespace Furesoft.Core.ExpressionEvaluator
     {
         public List<Message> Errors { get; set; }
         public List<double> Values { get; set; } = new();
+        public string ModuleName { get; internal set; }
     }
 }

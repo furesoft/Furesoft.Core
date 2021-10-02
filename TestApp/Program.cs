@@ -21,9 +21,9 @@ namespace TestApp
             geometryScope.ImportedFunctions.Add("areaRectangle", new Func<double[], double>((x) => { return x[0] * x[1]; }));
             geometryScope.Evaluate("areaTriangle(width, height) = width * height / 2;");
 
-            ep.AddModule("geometry", geometryScope);
+            // ep.AddModule("geometry", geometryScope);
 
-            var module = ep.Evaluate("use \"geometry.math\"; areaRectangle(5, 3);");
+            var module = ep.Evaluate("use \"geometry.math\"; geometry.areaRectangle(5, 3);");
 
             var floorPi = ep.Evaluate("floor(PI);");
             ep.Evaluate("g(x) = x*x");
@@ -37,8 +37,6 @@ namespace TestApp
             var aliasCall = ep.Evaluate("geometry.areaTriangle(2, 6);");
 
             //ToDo: add standard library
-            //ToDo: add call with alias module: if using "use 'geometry.math'" and it contains moduledefinition than don't import scope, add scope to new module to use it call
-            //geometry.areaRectangle(1,2);
 
             //ToDo: add constrain for return value?
             //ToDo: add measurements for parameters and variables and resolve or specify is return value is in correct measurement: f: x is [m]
@@ -49,6 +47,9 @@ namespace TestApp
             //ToDo: add comments
 
             //ToDo: add function overloading for script methods? based on argumentcount areaTriangle:2
+            //ToDo: add semantic check
+            //ToDo: allow custom operators? operator ^(x, y) : 500 = x**y;
+            // CustomOperatorNode -> Binding: Parser.AddOperatorPoint and on usage replace with function call
 
             return App.Current.Run();
         }

@@ -61,6 +61,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             Dot.AddParsePoints();
 
             UseStatement.AddParsePoints();
+            ModuleStatement.AddParsePoints();
         }
 
         public void AddModule(string name, Scope scope)
@@ -175,8 +176,16 @@ namespace Furesoft.Core.ExpressionEvaluator
             var returnValues = new List<double>();
             var errors = new List<Message>();
 
+            string moduleName = "";
             foreach (var node in boundTree)
             {
+                if (node is ModuleStatement m && m.ModuleName is UnresolvedRef uref && uref.Reference is string modName)
+                {
+                    moduleName = modName;
+
+                    continue;
+                }
+
                 var result = Evaluate(node);
 
                 if (result != null)
@@ -190,7 +199,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                 errors.AddRange(GetMessagesOfCall(funcs));
             }
 
-            return new() { Values = returnValues, Errors = errors };
+            return new() { Values = returnValues, Errors = errors, ModuleName = moduleName };
         }
 
         private double? Evaluate(CodeObject obj)
