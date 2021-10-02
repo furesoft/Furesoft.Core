@@ -12,17 +12,17 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
+using Furesoft.Core.ExpressionEvaluator.AST;
+using Furesoft.Core.ExpressionEvaluator.Symbols;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Furesoft.Core.ExpressionEvaluator.AST;
-using Furesoft.Core.ExpressionEvaluator.Symbols;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Binder
     {
-        public static Dictionary<string, List<FunctionArgumentConditionDefinition>> _argumentConstrains = new();
+        public static Dictionary<string, List<FunctionArgumentConditionDefinition>> ArgumentConstraints = new();
 
         public static ExpressionParser ExpressionParser { get; set; }
 
@@ -33,10 +33,6 @@ namespace Furesoft.Core.ExpressionEvaluator
                 op.Left = BindExpression(op.Left, scope);
                 op.Right = BindExpression(op.Right, scope);
             }
-            /*else if (expr is UnresolvedRef uref)
-            {
-                return scope.GetVariable(uref.Reference.ToString());
-            }*/
 
             return expr;
         }
@@ -45,7 +41,7 @@ namespace Furesoft.Core.ExpressionEvaluator
         {
             var boundTree = new List<CodeObject>();
 
-            ExpressionParser = ExpressionParser;
+            ExpressionParser = expressionParser;
 
             foreach (var node in tree)
             {
@@ -255,16 +251,16 @@ namespace Furesoft.Core.ExpressionEvaluator
                     facd.Condition = BindInterval(interval, facd.Parameter);
                 }
 
-                if (_argumentConstrains.ContainsKey(facd.Function))
+                if (ArgumentConstraints.ContainsKey(facd.Function))
                 {
-                    _argumentConstrains[facd.Function].Add(facd);
+                    ArgumentConstraints[facd.Function].Add(facd);
                 }
                 else
                 {
                     var constrains = new List<FunctionArgumentConditionDefinition>();
                     constrains.Add(facd);
 
-                    _argumentConstrains.Add(facd.Function, constrains);
+                    ArgumentConstraints.Add(facd.Function, constrains);
                 }
 
                 return facd;

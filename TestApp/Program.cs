@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CLI;
 using Furesoft.Core.ExpressionEvaluator;
+using Furesoft.Core.ExpressionEvaluator.Library;
 using System;
 
 namespace TestApp
@@ -14,6 +15,7 @@ namespace TestApp
 
             ep.AddVariable("x", 42);
             ep.RootScope.Import(typeof(Math));
+            ep.Import(typeof(Geometry));
 
             var geometryScope = new Scope();
             geometryScope.ImportedFunctions.Add("areaRectangle", new Func<double[], double>((x) => { return x[0] * x[1]; }));
@@ -44,6 +46,8 @@ namespace TestApp
             //measure for f(x) is [m/s*s]
             //ToDo: add aliases for function names to be able to translate it or use custom name instead of module.fnName();
             //ToDo: implement custom measurements
+            //ToDo: add comments
+            //ToDo: add function overloading for clr methods?
 
             return App.Current.Run();
         }
