@@ -41,6 +41,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("-(2+3+4)", -9);
                 yield return new TestCaseData("f: x in N 2 <= x < 20; f(x) = 2*x; f(5);", 10);
                 yield return new TestCaseData("f: x in N; f(x) = 2*x; f(5);", 10);
+                yield return new TestCaseData("h(x) = x^2; h(x, y) = x ^ y; h(4, 2)", 16);
             }
         }
 

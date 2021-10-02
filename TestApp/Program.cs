@@ -46,7 +46,6 @@ namespace TestApp
             //ToDo: implement custom measurements
             //ToDo: add comments
 
-            //ToDo: add function overloading for script methods? based on argumentcount areaTriangle:2
             //ToDo: add semantic check
             //ToDo: allow custom operators? operator ^(x, y) : 500 = x**y;
             // CustomOperatorNode -> Binding: Parser.AddOperatorPoint and on usage replace with function call

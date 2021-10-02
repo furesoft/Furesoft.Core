@@ -221,7 +221,9 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (obj is FunctionDefinition funcDef)
             {
-                RootScope.Functions.Add(funcDef.Name, funcDef);
+                string mangledName = funcDef.Name + ":" + funcDef.ParameterCount;
+
+                RootScope.Functions.Add(mangledName, funcDef);
 
                 return null;
             }
@@ -304,7 +306,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                 string fnName = nameRef.Reference.ToString();
                 string mangledName = fnName + ":" + call.ArgumentCount;
 
-                if (RootScope.Functions.TryGetValue(fnName, out var fn))
+                if (RootScope.Functions.TryGetValue(mangledName, out var fn))
                 {
                     return EvaluateFunction(scope, call, fnName, fn);
                 }
