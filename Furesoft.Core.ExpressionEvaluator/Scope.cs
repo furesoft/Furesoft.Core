@@ -8,10 +8,10 @@ namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Scope
     {
+        public Dictionary<string, string> Aliases = new();
         public Dictionary<string, FunctionDefinition> Functions = new();
         public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
         public Dictionary<string, double> Variables = new();
-
         public Scope Parent { get; set; }
 
         public static Scope CreateScope(Scope parent = null)

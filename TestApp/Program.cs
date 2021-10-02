@@ -42,9 +42,11 @@ namespace TestApp
             //ToDo: add measurements for parameters and variables and resolve or specify is return value is in correct measurement: f: x is [m]
             //y is [m/s]
             //measure for f(x) is [m/s*s]
-            //ToDo: add aliases for function names to be able to translate it or use custom name instead of module.fnName();
+
             //ToDo: implement custom measurements
             //ToDo: add comments
+
+            //ToDo: allow alias for module function: alias geometry.areaCircle as circle;
 
             //ToDo: add semantic check
             //ToDo: allow custom operators? operator ^(x, y) : 500 = x**y;

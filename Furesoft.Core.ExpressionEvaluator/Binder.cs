@@ -57,11 +57,26 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (expr is Call c)
             {
+                if (c.Expression is UnresolvedRef unresolved)
+                {
+                    if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
+                    {
+                        c.Expression = new UnresolvedRef(ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()]);
+                    }
+                }
+
                 for (int i = 0; i < c.Arguments.Count; i++)
                 {
                     Expression arg = BindExpression(c.Arguments[i], scope);
 
                     c.Arguments[i] = arg;
+                }
+            }
+            else if (expr is UnresolvedRef unresolved)
+            {
+                if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
+                {
+                    return new UnresolvedRef(ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()]);
                 }
             }
 
@@ -80,6 +95,26 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
 
             return boundTree;
+        }
+
+        private static CodeObject BindAlias(AliasNode aliasNode)
+        {
+            if (aliasNode.Name is UnresolvedRef nameRef && aliasNode.Value is UnresolvedRef valueRef)
+            {
+                string name = nameRef.Reference.ToString();
+                string value = valueRef.Reference.ToString();
+
+                if (!ExpressionParser.RootScope.Aliases.ContainsKey(name))
+                {
+                    ExpressionParser.RootScope.Aliases.Add(name, value);
+                }
+                else
+                {
+                    aliasNode.AttachMessage($"Alias '{name}' already exists.", MessageSeverity.Error, MessageSource.Resolve);
+                }
+            }
+
+            return aliasNode;
         }
 
         private static CodeObject BindAssignment(Assignment a)
@@ -259,6 +294,10 @@ namespace Furesoft.Core.ExpressionEvaluator
             else if (fdef is UseStatement useStmt)
             {
                 return BindUseStatement(useStmt);
+            }
+            else if (fdef is AliasNode aliasNode)
+            {
+                return BindAlias(aliasNode);
             }
             else if (fdef is FunctionArgumentConditionDefinition facd)
             {
