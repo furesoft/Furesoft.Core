@@ -47,7 +47,8 @@ namespace TestApp
             //ToDo: add aliases for function names to be able to translate it or use custom name instead of module.fnName();
             //ToDo: implement custom measurements
             //ToDo: add comments
-            //ToDo: add function overloading for clr methods?
+            //ToDo: add function overloading for clr methods? based on argumentcount round:2
+            //ToDo: add function overloading for script methods? based on argumentcount areaTriangle:2
 
             return App.Current.Run();
         }

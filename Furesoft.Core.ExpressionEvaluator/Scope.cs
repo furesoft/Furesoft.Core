@@ -59,9 +59,10 @@ namespace Furesoft.Core.ExpressionEvaluator
                         funcName = attr.Name;
                     }
 
-                    if (!ImportedFunctions.ContainsKey(mi.Name.ToLower()))
+                    string mangledName = funcName + ":" + mi.GetParameters().Length;
+                    if (!ImportedFunctions.ContainsKey(mangledName))
                     {
-                        ImportedFunctions.Add(funcName, new Func<double[], double>(args =>
+                        ImportedFunctions.Add(mangledName, new Func<double[], double>(args =>
                         {
                             return (double)mi.Invoke(null, args.Cast<object>().ToArray());
                         }));
@@ -69,7 +70,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                     else
                     {
                         //override registered function
-                        ImportedFunctions[funcName] = new Func<double[], double>(args =>
+                        ImportedFunctions[mangledName] = new Func<double[], double>(args =>
                         {
                             return (double)mi.Invoke(null, args.Cast<object>().ToArray());
                         });

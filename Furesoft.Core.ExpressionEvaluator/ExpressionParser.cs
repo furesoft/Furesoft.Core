@@ -291,11 +291,13 @@ namespace Furesoft.Core.ExpressionEvaluator
             else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
             {
                 string fnName = nameRef.Reference.ToString();
+                string mangledName = fnName + ":" + call.ArgumentCount;
+
                 if (RootScope.Functions.TryGetValue(fnName, out var fn))
                 {
                     return EvaluateFunction(scope, call, fnName, fn);
                 }
-                else if (RootScope.ImportedFunctions.TryGetValue(fnName, out var importedFn))
+                else if (RootScope.ImportedFunctions.TryGetValue(mangledName, out var importedFn))
                 {
                     return EvaluateImportedFunction(scope, call, fnName, importedFn);
                 }
@@ -308,11 +310,13 @@ namespace Furesoft.Core.ExpressionEvaluator
                 if (funcRef.Call.Expression is UnresolvedRef nr)
                 {
                     string fnName = nr.Reference.ToString();
+                    string mangledName = fnName + ":" + funcRef.Call.ArgumentCount;
+
                     if (m.Scope.Functions.TryGetValue(fnName, out var fn))
                     {
                         return EvaluateFunction(s, funcRef.Call, fnName, fn);
                     }
-                    else if (m.Scope.ImportedFunctions.TryGetValue(fnName, out var importedFn))
+                    else if (m.Scope.ImportedFunctions.TryGetValue(mangledName, out var importedFn))
                     {
                         return EvaluateImportedFunction(scope, funcRef.Call, fnName, importedFn);
                     }
