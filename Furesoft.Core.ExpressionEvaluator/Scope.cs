@@ -19,6 +19,15 @@ namespace Furesoft.Core.ExpressionEvaluator
             return new Scope { Parent = parent };
         }
 
+        public void Evaluate(string content)
+        {
+            var ep = new ExpressionParser();
+
+            ep.Evaluate(content);
+
+            ImportScope(ep.RootScope);
+        }
+
         public double GetVariable(string name)
         {
             Scope currentScope = this;

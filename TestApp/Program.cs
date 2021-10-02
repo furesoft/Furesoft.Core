@@ -19,6 +19,7 @@ namespace TestApp
 
             var geometryScope = new Scope();
             geometryScope.ImportedFunctions.Add("areaRectangle", new Func<double[], double>((x) => { return x[0] * x[1]; }));
+            geometryScope.Evaluate("areaTriangle(width, height) = width * height / 2;");
 
             ep.AddModule("geometry", geometryScope);
 
@@ -36,7 +37,6 @@ namespace TestApp
             var aliasCall = ep.Evaluate("geometry.areaTriangle(2, 6);");
 
             //ToDo: add standard library
-            //ToDo: add ability to add module with Attribute on clr type
             //ToDo: add call with alias module: if using "use 'geometry.math'" and it contains moduledefinition than don't import scope, add scope to new module to use it call
             //geometry.areaRectangle(1,2);
 
