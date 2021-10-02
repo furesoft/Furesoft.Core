@@ -51,6 +51,16 @@ namespace TestApp
             //ToDo: allow custom operators? operator ^(x, y) : 500 = x**y;
             // CustomOperatorNode -> Binding: Parser.AddOperatorPoint and on usage replace with function call
 
+            //ToDo: eigene mengen definieren, diese können dann als eigener zahlenraum verwendet werden
+            // Wertebereich aller Primzahlen
+            //  set P in N 1 < x && x % 1 == 0 && x % x == 0
+            // eingeschränkter inherierter wertebereich: Primzahlen unter 100
+            // set MP in P x < 100
+            // oder:
+            // set D = {0,1,2,3,4,5,6};
+
+            //f: x in MP;
+
             return App.Current.Run();
         }
     }

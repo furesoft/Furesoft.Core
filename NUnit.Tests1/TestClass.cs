@@ -5,6 +5,7 @@ using Furesoft.Core.ExpressionEvaluator.Library;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace NUnit.Tests1
 {
@@ -36,6 +37,9 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("use geometry; round(circumference(5), 5);", 31.4159265359);
                 yield return new TestCaseData("round(geometry.circumference(5), 5);", 31.4159265359);
                 yield return new TestCaseData("module trignonomic; b(p) = 2 * PI / p; b(PI);", 2);
+                yield return new TestCaseData("-(2+3+4)", -9);
+                yield return new TestCaseData("f: x in N 2 <= x < 20; f(x) = 2*x; f(5);", 10);
+                yield return new TestCaseData("f: x in N; f(x) = 2*x; f(5);", 10);
             }
         }
 
@@ -65,8 +69,14 @@ namespace NUnit.Tests1
             ep.Import(typeof(Geometry));
 
             var result = ep.Evaluate(input);
-
-            Assert.That(result.Values, Does.Contain(Math.Round(expected, 5)), "Calculation is wrong");
+            if (result.Errors.Count == 0)
+            {
+                Assert.That(result.Values, Does.Contain(Math.Round(expected, 5)), "Calculation is wrong");
+            }
+            else
+            {
+                Assert.Fail(result.Errors.First().Text);
+            }
         }
     }
 }

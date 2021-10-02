@@ -375,6 +375,9 @@ namespace Furesoft.Core.ExpressionEvaluator
                     {
                         if (EvaluateNumberRoom(c, arg.Value))
                         {
+                            if (condition == null)
+                                continue;
+
                             if (EvaluateCondition((BinaryBooleanOperator)condition, fnScope))
                             {
                                 continue;
