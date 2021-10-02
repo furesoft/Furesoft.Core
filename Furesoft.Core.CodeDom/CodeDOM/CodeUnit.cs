@@ -402,23 +402,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM
         /// </summary>
         public void ParseLog(LoadOptions loadOptions, Action<LoadStatus, CodeObject> statusCallback)
         {
-            Stopwatch overallStopWatch = new Stopwatch();
-            overallStopWatch.Start();
-            GC.Collect();
-            long startBytes = GC.GetTotalMemory(true);
-
             // Parse the code unit
             if (statusCallback != null)
                 statusCallback(LoadStatus.Parsing, null);
             Unrecognized.Count = 0;
             Parse(loadOptions.HasFlag(LoadOptions.DoNotParseBodies) ? ParseFlags.SkipMethodBodies : ParseFlags.None);
-            if (Unrecognized.Count > 0)
-                Log.WriteLine("UNRECOGNIZED OBJECT COUNT: " + Unrecognized.Count);
-            Log.WriteLine("Parsed " + (IsFile ? "file" : "fragment") + " '" + Name + "', total elapsed time: " + overallStopWatch.Elapsed.TotalSeconds.ToString("N3"));
-
-            long memoryUsage = GC.GetTotalMemory(true) - startBytes;
-            Log.WriteLine(string.Format("Total elapsed time: {0:N3}, memory usage: {1} MBs", overallStopWatch.Elapsed.TotalSeconds, memoryUsage / (1024 * 1024)));
-
+            
             if (statusCallback != null)
                 statusCallback(LoadStatus.LoggingResults, null);
             LogMessageCounts(loadOptions.HasFlag(LoadOptions.LogMessages));

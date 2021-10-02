@@ -39,7 +39,7 @@ namespace NUnit.Tests1
         }
 
         [Test, TestCaseSource(nameof(TestData))]
-        public void FunctionCall_Should_Pass(string input, double expected)
+        public void ExtendedExpressions_Should_Pass(string input, double expected)
         {
             ExecuteTest(input, expected);
         }
