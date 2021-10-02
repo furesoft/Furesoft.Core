@@ -1,6 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
@@ -9,6 +10,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational.Base
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
@@ -32,6 +34,31 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 op.Left = BindExpression(op.Left, scope);
                 op.Right = BindExpression(op.Right, scope);
+            }
+            else if (expr is Call call && call.Expression is Dot dot)
+            {
+                var moduleRef = (SymbolicRef)dot.Left;
+                var funcRef = dot.Right;
+
+                if (ExpressionParser.Modules.TryGetValue(moduleRef.Reference.ToString(), out var module))
+                {
+                    call.Expression = funcRef;
+
+                    return new ModuleFunctionRef(module, call);
+                }
+                else
+                {
+                    call.AttachMessage($"Module '{moduleRef.Reference}' not found on call {call._AsString}", MessageSeverity.Error, MessageSource.Resolve);
+                }
+            }
+            else if (expr is Call c)
+            {
+                for (int i = 0; i < c.Arguments.Count; i++)
+                {
+                    Expression arg = BindExpression(c.Arguments[i], scope);
+
+                    c.Arguments[i] = arg;
+                }
             }
 
             return expr;

@@ -293,71 +293,28 @@ namespace Furesoft.Core.ExpressionEvaluator
                 string fnName = nameRef.Reference.ToString();
                 if (RootScope.Functions.TryGetValue(fnName, out var fn))
                 {
-                    Scope fnScope = Scope.CreateScope(RootScope);
-
-                    if (fn.ParameterCount != call.ArgumentCount)
-                    {
-                        call.AttachMessage($"Argument Count Mismatch. Expected {fn.ParameterCount} but given {call.ArgumentCount} on {fnName}",
-                            MessageSeverity.Error, MessageSource.Resolve);
-
-                        return 0;
-                    }
-
-                    for (int i = 0; i < fn.ParameterCount; i++)
-                    {
-                        fnScope.Variables.Add(fn.Parameters[i].Name, EvaluateExpression(call.Arguments[i], scope));
-                    }
-
-                    if (Binder.ArgumentConstraints.ContainsKey(fn.Name))
-                    {
-                        foreach (var c in Binder.ArgumentConstraints[fn.Name])
-                        {
-                            (string parameter, Expression condition) constrain = (
-                                GetParameterName(c.Condition),
-                                Binder.BindExpression(c.Condition, fnScope)
-                            );
-
-                            foreach (var arg in fnScope.Variables)
-                            {
-                                if (EvaluateNumberRoom(c, arg.Value))
-                                {
-                                    if (EvaluateCondition((BinaryBooleanOperator)constrain.condition, fnScope))
-                                    {
-                                        continue;
-                                    }
-                                    else
-                                    {
-                                        call.AttachMessage($"Parameter Constraint Failed On {call._AsString}: {arg.Key} Does Not Match Condition: {constrain.condition._AsString}", MessageSeverity.Error, MessageSource.Resolve);
-
-                                        return 0;
-                                    }
-                                }
-                                else
-                                {
-                                    fn.AttachMessage($"'{arg.Key}' is not in {c.NumberRoom}", MessageSeverity.Error, MessageSource.Resolve);
-
-                                    return 0;
-                                }
-                            }
-                        }
-                    }
-
-                    return EvaluateExpression((Expression)fn.Body.First(), fnScope);
+                    return EvaluateFunction(scope, call, fnName, fn);
                 }
                 else if (RootScope.ImportedFunctions.TryGetValue(fnName, out var importedFn))
                 {
-                    double[] args = call.Arguments.Select(_ => EvaluateExpression(_, scope)).ToArray();
+                    return EvaluateImportedFunction(scope, call, fnName, importedFn);
+                }
 
-                    try
+                return 0;
+            }
+            else if (expr is ModuleFunctionRef funcRef && funcRef.Reference is Module m)
+            {
+                Scope s = Scope.CreateScope(RootScope);
+                if (funcRef.Call.Expression is UnresolvedRef nr)
+                {
+                    string fnName = nr.Reference.ToString();
+                    if (m.Scope.Functions.TryGetValue(fnName, out var fn))
                     {
-                        return (double)importedFn.Invoke(args);
+                        return EvaluateFunction(s, funcRef.Call, fnName, fn);
                     }
-                    catch (TargetParameterCountException ex)
+                    else if (m.Scope.ImportedFunctions.TryGetValue(fnName, out var importedFn))
                     {
-                        call.AttachMessage($"Argument Count Mismatch. Expected {importedFn.Method.GetParameters().Count()} given {args.Length} on {fnName}",
-                            MessageSeverity.Error, MessageSource.Resolve);
-
-                        return 0;
+                        return EvaluateImportedFunction(scope, funcRef.Call, fnName, importedFn);
                     }
                 }
 
@@ -369,6 +326,77 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else
             {
+                return 0;
+            }
+        }
+
+        private double EvaluateFunction(Scope scope, Call call, string fnName, FunctionDefinition fn)
+        {
+            Scope fnScope = Scope.CreateScope(RootScope);
+
+            if (fn.ParameterCount != call.ArgumentCount)
+            {
+                call.AttachMessage($"Argument Count Mismatch. Expected {fn.ParameterCount} but given {call.ArgumentCount} on {fnName}",
+                    MessageSeverity.Error, MessageSource.Resolve);
+
+                return 0;
+            }
+
+            for (int i = 0; i < fn.ParameterCount; i++)
+            {
+                fnScope.Variables.Add(fn.Parameters[i].Name, EvaluateExpression(call.Arguments[i], scope));
+            }
+
+            if (Binder.ArgumentConstraints.ContainsKey(fn.Name))
+            {
+                foreach (var c in Binder.ArgumentConstraints[fn.Name])
+                {
+                    (string parameter, Expression condition) constrain = (
+                        GetParameterName(c.Condition),
+                        Binder.BindExpression(c.Condition, fnScope)
+                    );
+
+                    foreach (var arg in fnScope.Variables)
+                    {
+                        if (EvaluateNumberRoom(c, arg.Value))
+                        {
+                            if (EvaluateCondition((BinaryBooleanOperator)constrain.condition, fnScope))
+                            {
+                                continue;
+                            }
+                            else
+                            {
+                                call.AttachMessage($"Parameter Constraint Failed On {call._AsString}: {arg.Key} Does Not Match Condition: {constrain.condition._AsString}", MessageSeverity.Error, MessageSource.Resolve);
+
+                                return 0;
+                            }
+                        }
+                        else
+                        {
+                            fn.AttachMessage($"'{arg.Key}' is not in {c.NumberRoom}", MessageSeverity.Error, MessageSource.Resolve);
+
+                            return 0;
+                        }
+                    }
+                }
+            }
+
+            return EvaluateExpression((Expression)fn.Body.First(), fnScope);
+        }
+
+        private double EvaluateImportedFunction(Scope scope, Call call, string fnName, Func<double[], double> importedFn)
+        {
+            double[] args = call.Arguments.Select(_ => EvaluateExpression(_, scope)).ToArray();
+
+            try
+            {
+                return (double)importedFn.Invoke(args);
+            }
+            catch (TargetParameterCountException ex)
+            {
+                call.AttachMessage($"Argument Count Mismatch. Expected {importedFn.Method.GetParameters().Count()} given {args.Length} on {fnName}",
+                    MessageSeverity.Error, MessageSource.Resolve);
+
                 return 0;
             }
         }

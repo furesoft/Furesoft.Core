@@ -30,6 +30,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("-|4**2|;", -16);
                 yield return new TestCaseData("use \"geometry.math\"; -areaRectangle(5, 3);", -15);
                 yield return new TestCaseData("use geometry; round(circumference(5), 5);", 31.4159265359);
+                yield return new TestCaseData("round(geometry.circumference(5), 5);", 31.4159265359);
             }
         }
 
