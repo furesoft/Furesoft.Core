@@ -16,6 +16,7 @@ using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Symbols;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
@@ -174,16 +175,13 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             foreach (var node in boundTree)
             {
-                returnValues.Add(Evaluate(node));
-            }
+                var result = Evaluate(node);
 
-            /*foreach (var funcs in RootScope.Functions)
-            {
-                if (funcs.Value.HasAnnotations)
+                if (result != null)
                 {
-                    errors.AddRange(funcs.Value.Annotations.OfType<Message>());
+                    returnValues.Add(result.Value);
                 }
-            }*/
+            }
 
             foreach (var funcs in boundTree)
             {
@@ -193,7 +191,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             return new() { Values = returnValues, Errors = errors };
         }
 
-        private double Evaluate(CodeObject obj)
+        private double? Evaluate(CodeObject obj)
         {
             if (obj is Block blk)
             {
@@ -213,13 +211,15 @@ namespace Furesoft.Core.ExpressionEvaluator
             else if (obj is FunctionDefinition funcDef)
             {
                 RootScope.Functions.Add(funcDef.Name, funcDef);
+
+                return null;
             }
             else if (obj is FunctionArgumentConditionDefinition)
             {
-                return 0;
+                return null;
             }
 
-            return 0;
+            return null;
         }
 
         private bool EvaluateCondition(BinaryOperator expr, Scope scope)
@@ -282,7 +282,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (expr is Literal lit)
             {
-                return double.Parse(lit.Text.Replace("d", ""));
+                return double.Parse(lit.Text.Replace("d", ""), CultureInfo.InvariantCulture);
             }
             else if (expr is Negative neg)
             {
@@ -401,7 +401,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
-        private double EvaluateUseStatement(UseStatement useStmt)
+        private double? EvaluateUseStatement(UseStatement useStmt)
         {
             if (useStmt.Module is ModuleRef modRef)
             {
@@ -415,7 +415,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                 }
             }
 
-            return 0;
+            return null;
         }
     }
 }
