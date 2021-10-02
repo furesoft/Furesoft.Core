@@ -61,6 +61,9 @@ namespace TestApp
 
             //f: x in MP;
 
+            //ToDo: add boolean logic
+            //ToDo: Macrosystem
+
             return App.Current.Run();
         }
     }

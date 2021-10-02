@@ -21,6 +21,7 @@ namespace NUnit.Tests1
         {
             get
             {
+                yield return new TestCaseData("xy = 5; xy", 5);
                 yield return new TestCaseData("log10(100)", Math.Log10(100));
                 yield return new TestCaseData("floor(PI)", Math.Floor(Math.PI));
                 yield return new TestCaseData("-2 * 5", -10);

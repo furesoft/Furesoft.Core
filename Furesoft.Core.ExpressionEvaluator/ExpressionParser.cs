@@ -335,6 +335,14 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 return 0;
             }
+            else if (expr is Assignment ass && ass.Left is UnresolvedRef ureff)
+            {
+                var name = ureff.Reference.ToString();
+
+                scope.Variables.Add(name, EvaluateExpression(ass.Right, scope));
+
+                return 0;
+            }
             else if (expr is UnresolvedRef uref)
             {
                 return scope.GetVariable(uref.Reference.ToString());
