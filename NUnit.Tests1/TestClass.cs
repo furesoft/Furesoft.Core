@@ -1,6 +1,7 @@
 ﻿// NUnit 3 tests
 // See documentation : https://github.com/nunit/docs/wiki/NUnit-Documentation
 using Furesoft.Core.ExpressionEvaluator;
+using Furesoft.Core.ExpressionEvaluator.Library;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -28,6 +29,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("|-4**2|;", 16);
                 yield return new TestCaseData("-|4**2|;", -16);
                 yield return new TestCaseData("use \"geometry.math\"; -areaRectangle(5, 3);", -15);
+                yield return new TestCaseData("use geometry; round(circumference(5), 5);", 31.4159265359);
             }
         }
 
@@ -50,10 +52,13 @@ namespace NUnit.Tests1
         {
             var ep = new ExpressionParser();
             ep.RootScope.Import(typeof(Math));
+            ep.RootScope.Import(typeof(Core));
+
+            ep.Import(typeof(Geometry));
 
             var result = ep.Evaluate(input);
 
-            Assert.That(result.Values, Does.Contain(expected), "Calculation is wrong");
+            Assert.That(result.Values, Does.Contain(Math.Round(expected, 5)), "Calculation is wrong");
         }
     }
 }

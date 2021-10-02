@@ -25,7 +25,7 @@ namespace Furesoft.Core.ExpressionEvaluator
     {
         public Dictionary<string, Module> Modules = new();
         public Scope RootScope = Scope.CreateScope();
-        private Binder Binder = new();
+        private readonly Binder Binder = new();
 
         public static void Init()
         {
@@ -72,6 +72,10 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 Modules.Add(name, module);
             }
+            else
+            {
+                Modules[name].Scope.ImportScope(scope);
+            }
         }
 
         public void AddVariable(string name, double value, Scope scope = null)
@@ -92,6 +96,23 @@ namespace Furesoft.Core.ExpressionEvaluator
             var boundTree = Binder.BindTree(tree, this);
 
             return Evaluate(boundTree);
+        }
+
+        public void Import(Type type)
+        {
+            var attr = type.GetCustomAttribute<ModuleAttribute>();
+
+            if (attr != null)
+            {
+                var scope = new Scope();
+                scope.Import(type);
+
+                AddModule(attr.Name, scope);
+            }
+            else
+            {
+                RootScope.Import(type);
+            }
         }
 
         private static bool EvaluateNumberRoom(FunctionArgumentConditionDefinition cond, double value)
@@ -287,9 +308,9 @@ namespace Furesoft.Core.ExpressionEvaluator
                         fnScope.Variables.Add(fn.Parameters[i].Name, EvaluateExpression(call.Arguments[i], scope));
                     }
 
-                    if (Binder._argumentConstrains.ContainsKey(fn.Name))
+                    if (Binder.ArgumentConstraints.ContainsKey(fn.Name))
                     {
-                        foreach (var c in Binder._argumentConstrains[fn.Name])
+                        foreach (var c in Binder.ArgumentConstraints[fn.Name])
                         {
                             (string parameter, Expression condition) constrain = (
                                 GetParameterName(c.Condition),

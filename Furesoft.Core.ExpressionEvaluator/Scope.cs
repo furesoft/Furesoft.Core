@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Furesoft.Core.ExpressionEvaluator.AST;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.ExpressionEvaluator.AST;
+using System.Reflection;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
@@ -41,12 +42,28 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 if (mi.IsStatic && !mi.GetParameters().Select(_ => _.ParameterType).Any(_ => _ != typeof(double)))
                 {
+                    string funcName = mi.Name.ToLower();
+                    var attr = mi.GetCustomAttribute<FunctionNameAttribute>();
+
+                    if (attr != null)
+                    {
+                        funcName = attr.Name;
+                    }
+
                     if (!ImportedFunctions.ContainsKey(mi.Name.ToLower()))
                     {
-                        ImportedFunctions.Add(mi.Name.ToLower(), new Func<double[], double>(args =>
+                        ImportedFunctions.Add(funcName, new Func<double[], double>(args =>
                         {
                             return (double)mi.Invoke(null, args.Cast<object>().ToArray());
                         }));
+                    }
+                    else
+                    {
+                        //override registered function
+                        ImportedFunctions[funcName] = new Func<double[], double>(args =>
+                        {
+                            return (double)mi.Invoke(null, args.Cast<object>().ToArray());
+                        });
                     }
                 }
             }
