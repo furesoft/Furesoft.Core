@@ -43,6 +43,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("f: x in N; f(x) = 2*x; f(5);", 10);
                 yield return new TestCaseData("h(x) = x^2; h(x, y) = x ^ y; h(4, 2)", 16);
                 yield return new TestCaseData("alias round as rnd; rnd(2.345, 1)", 2.3);
+                yield return new TestCaseData("alias geometry.circumference as umfang; round(umfang(1), 5);", 2 * Math.PI);
             }
         }
 

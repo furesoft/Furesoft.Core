@@ -61,7 +61,9 @@ namespace Furesoft.Core.ExpressionEvaluator
                 {
                     if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
                     {
-                        c.Expression = new UnresolvedRef(ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()]);
+                        c.Expression = ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()];
+
+                        return BindExpression(c, scope);
                     }
                 }
 
@@ -76,7 +78,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
                 {
-                    return new UnresolvedRef(ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()]);
+                    return ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()];
                 }
             }
 
@@ -99,14 +101,13 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         private static CodeObject BindAlias(AliasNode aliasNode)
         {
-            if (aliasNode.Name is UnresolvedRef nameRef && aliasNode.Value is UnresolvedRef valueRef)
+            if (aliasNode.Name is UnresolvedRef nameRef)
             {
                 string name = nameRef.Reference.ToString();
-                string value = valueRef.Reference.ToString();
 
                 if (!ExpressionParser.RootScope.Aliases.ContainsKey(name))
                 {
-                    ExpressionParser.RootScope.Aliases.Add(name, value);
+                    ExpressionParser.RootScope.Aliases.Add(name, aliasNode.Value);
                 }
                 else
                 {
@@ -356,7 +357,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (useStmt.Module is Literal)
             {
-                //ToDo: implement module loading from string path
                 var filename = useStmt.Module._AsString.ToString().Replace("\"", "");
 
                 if (File.Exists(filename))
@@ -382,6 +382,8 @@ namespace Furesoft.Core.ExpressionEvaluator
                         else
                         {
                             ExpressionParser.AddModule(contentResult.ModuleName, ep.RootScope);
+
+                            useStmt.Module = new ModuleRef(ExpressionParser.Modules[contentResult.ModuleName]);
                         }
                     }
                 }

@@ -326,7 +326,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                     string fnName = nr.Reference.ToString();
                     string mangledName = fnName + ":" + funcRef.Call.ArgumentCount;
 
-                    if (m.Scope.Functions.TryGetValue(fnName, out var fn))
+                    if (m.Scope.Functions.TryGetValue(mangledName, out var fn))
                     {
                         return EvaluateFunction(s, funcRef.Call, fnName, fn);
                     }

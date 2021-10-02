@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.ExpressionEvaluator.AST;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.ExpressionEvaluator.AST;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Scope
     {
-        public Dictionary<string, string> Aliases = new();
+        public Dictionary<string, Expression> Aliases = new();
         public Dictionary<string, FunctionDefinition> Functions = new();
         public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
         public Dictionary<string, double> Variables = new();
