@@ -74,6 +74,10 @@ namespace Furesoft.Core.ExpressionEvaluator
                     c.Arguments[i] = arg;
                 }
             }
+            else if (expr is OperatorNode o)
+            {
+                return BindOperatorDefinition(o);
+            }
             else if (expr is UnresolvedRef unresolved)
             {
                 if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
@@ -255,6 +259,11 @@ namespace Furesoft.Core.ExpressionEvaluator
                 "R" => double.MinValue,
                 _ => false,
             };
+        }
+
+        private static Expression BindOperatorDefinition(OperatorNode o)
+        {
+            return o;
         }
 
         private static Expression BindPosInfinity(FunctionArgumentConditionDefinition facd)

@@ -44,6 +44,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("h(x) = x^2; h(x, y) = x ^ y; h(4, 2)", 16);
                 yield return new TestCaseData("alias round as rnd; rnd(2.345, 1)", 2.3);
                 yield return new TestCaseData("alias geometry.circumference as umfang; round(umfang(1), 5);", 2 * Math.PI);
+                yield return new TestCaseData("operator[104] $(x) = x*x;", 0);
             }
         }
 
