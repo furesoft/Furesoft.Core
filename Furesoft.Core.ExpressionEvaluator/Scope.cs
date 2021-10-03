@@ -107,6 +107,10 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 ImportedFunctions.Add(item.Key, item.Value);
             }
+            foreach (var item in scope.Aliases)
+            {
+                Aliases.Add(item.Key, item.Value);
+            }
         }
     }
 }
