@@ -74,10 +74,6 @@ namespace Furesoft.Core.ExpressionEvaluator
                     c.Arguments[i] = arg;
                 }
             }
-            else if (expr is OperatorNode o)
-            {
-                return BindOperatorDefinition(o);
-            }
             else if (expr is UnresolvedRef unresolved)
             {
                 if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
@@ -101,6 +97,85 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
 
             return boundTree;
+        }
+
+        public static CodeObject BindUnrecognized(CodeObject fdef, Scope scope, ExpressionParser expressionParser = null)
+        {
+            if (expressionParser != null)
+            {
+                ExpressionParser = expressionParser;
+            }
+
+            if (fdef is Unrecognized u)
+            {
+                foreach (var expr in u.Expressions)
+                {
+                    if (expr is Assignment a)
+                    {
+                        return BindAssignment(a);
+                    }
+                    else
+                    {
+                        return BindExpression(expr, scope);
+                    }
+                }
+            }
+            else if (fdef is Assignment a)
+            {
+                return BindAssignment(a);
+            }
+            else if (fdef is Expression expr)
+            {
+                return BindExpression(expr, scope);
+            }
+            else if (fdef is UseStatement useStmt)
+            {
+                return BindUseStatement(useStmt);
+            }
+            else if (fdef is AliasNode aliasNode)
+            {
+                return BindAlias(aliasNode);
+            }
+            else if (fdef is FunctionArgumentConditionDefinition facd)
+            {
+                if (facd.Condition is RelationalOperator rel)
+                {
+                    facd.Condition = BindConstainCondition(rel);
+                }
+                else if (facd.Condition is And an)
+                {
+                    if (an.Left is RelationalOperator l)
+                    {
+                        an.Left = BindConstainCondition(l);
+                    }
+                    if (an.Right is RelationalOperator r)
+                    {
+                        an.Right = BindConstainCondition(r);
+                    }
+                }
+                else if (facd.Condition is IntervalExpression interval)
+                {
+                    facd.Condition = BindInterval(interval, facd.Parameter);
+                }
+
+                if (ArgumentConstraints.ContainsKey(facd.Function))
+                {
+                    ArgumentConstraints[facd.Function].Add(facd);
+                }
+                else
+                {
+                    var constrains = new List<FunctionArgumentConditionDefinition>
+                    {
+                        facd
+                    };
+
+                    ArgumentConstraints.Add(facd.Function, constrains);
+                }
+
+                return facd;
+            }
+
+            return fdef;
         }
 
         private static CodeObject BindAlias(AliasNode aliasNode)
@@ -261,11 +336,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             };
         }
 
-        private static Expression BindOperatorDefinition(OperatorNode o)
-        {
-            return o;
-        }
-
         private static Expression BindPosInfinity(FunctionArgumentConditionDefinition facd)
         {
             return facd.NumberRoom switch
@@ -275,80 +345,6 @@ namespace Furesoft.Core.ExpressionEvaluator
                 "R" => double.MaxValue,
                 _ => false,
             };
-        }
-
-        private static CodeObject BindUnrecognized(CodeObject fdef, Scope scope)
-        {
-            if (fdef is Unrecognized u)
-            {
-                foreach (var expr in u.Expressions)
-                {
-                    if (expr is Assignment a)
-                    {
-                        return BindAssignment(a);
-                    }
-                    else
-                    {
-                        return BindExpression(expr, scope);
-                    }
-                }
-            }
-            else if (fdef is Assignment a)
-            {
-                return BindAssignment(a);
-            }
-            else if (fdef is Expression expr)
-            {
-                return BindExpression(expr, scope);
-            }
-            else if (fdef is UseStatement useStmt)
-            {
-                return BindUseStatement(useStmt);
-            }
-            else if (fdef is AliasNode aliasNode)
-            {
-                return BindAlias(aliasNode);
-            }
-            else if (fdef is FunctionArgumentConditionDefinition facd)
-            {
-                if (facd.Condition is RelationalOperator rel)
-                {
-                    facd.Condition = BindConstainCondition(rel);
-                }
-                else if (facd.Condition is And an)
-                {
-                    if (an.Left is RelationalOperator l)
-                    {
-                        an.Left = BindConstainCondition(l);
-                    }
-                    if (an.Right is RelationalOperator r)
-                    {
-                        an.Right = BindConstainCondition(r);
-                    }
-                }
-                else if (facd.Condition is IntervalExpression interval)
-                {
-                    facd.Condition = BindInterval(interval, facd.Parameter);
-                }
-
-                if (ArgumentConstraints.ContainsKey(facd.Function))
-                {
-                    ArgumentConstraints[facd.Function].Add(facd);
-                }
-                else
-                {
-                    var constrains = new List<FunctionArgumentConditionDefinition>
-                    {
-                        facd
-                    };
-
-                    ArgumentConstraints.Add(facd.Function, constrains);
-                }
-
-                return facd;
-            }
-
-            return fdef;
         }
 
         private static CodeObject BindUseStatement(UseStatement useStmt)

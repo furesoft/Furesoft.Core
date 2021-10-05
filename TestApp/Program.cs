@@ -49,8 +49,7 @@ namespace TestApp
             //ToDo: allow alias for module function: alias geometry.areaCircle as circle;
 
             //ToDo: add semantic check
-            //ToDo: allow custom operators? operator ^(x, y) : 500 = x**y;
-            // CustomOperatorNode -> Binding: Parser.AddOperatorPoint and on usage replace with function call
+            //ToDo: implement fakultät operator
 
             //ToDo: eigene mengen definieren, diese können dann als eigener zahlenraum verwendet werden
             // Wertebereich aller Primzahlen

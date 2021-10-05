@@ -63,7 +63,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             UseStatement.AddParsePoints();
             ModuleStatement.AddParsePoints();
             AliasNode.AddParsePoints();
-            OperatorNode.AddParsePoints();
+            FacultyOperator.AddParsePoints();
         }
 
         public void AddModule(string name, Scope scope)
