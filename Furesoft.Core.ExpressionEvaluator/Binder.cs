@@ -4,9 +4,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
@@ -24,11 +21,11 @@ namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Binder
     {
-        public static Dictionary<string, List<FunctionArgumentConditionDefinition>> ArgumentConstraints = new();
+        public Dictionary<string, List<FunctionArgumentConditionDefinition>> ArgumentConstraints = new();
 
-        public static ExpressionParser ExpressionParser { get; set; }
+        public ExpressionParser ExpressionParser { get; set; }
 
-        public static Expression BindExpression(Expression expr, Scope scope)
+        public Expression BindExpression(Expression expr, Scope scope)
         {
             if (expr is BinaryOperator op)
             {
@@ -85,7 +82,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             return expr;
         }
 
-        public static List<CodeObject> BindTree(Block tree, ExpressionParser expressionParser)
+        public List<CodeObject> BindTree(Block tree, ExpressionParser expressionParser)
         {
             var boundTree = new List<CodeObject>();
 
@@ -99,7 +96,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             return boundTree;
         }
 
-        public static CodeObject BindUnrecognized(CodeObject fdef, Scope scope, ExpressionParser expressionParser = null)
+        public CodeObject BindUnrecognized(CodeObject fdef, Scope scope, ExpressionParser expressionParser = null)
         {
             if (expressionParser != null)
             {
@@ -108,7 +105,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             if (fdef is IBindable b)
             {
-                return b.Bind(ExpressionParser);
+                return b.Bind(ExpressionParser, this);
             }
             else if (fdef is Unrecognized u)
             {
@@ -136,44 +133,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 return BindUseStatement(useStmt);
             }
-            else if (fdef is FunctionArgumentConditionDefinition facd)
-            {
-                if (facd.Condition is RelationalOperator rel)
-                {
-                    facd.Condition = BindConstainCondition(rel);
-                }
-                else if (facd.Condition is And an)
-                {
-                    if (an.Left is RelationalOperator l)
-                    {
-                        an.Left = BindConstainCondition(l);
-                    }
-                    if (an.Right is RelationalOperator r)
-                    {
-                        an.Right = BindConstainCondition(r);
-                    }
-                }
-                else if (facd.Condition is IntervalExpression interval)
-                {
-                    facd.Condition = BindInterval(interval, facd.Parameter);
-                }
-
-                if (ArgumentConstraints.ContainsKey(facd.Function))
-                {
-                    ArgumentConstraints[facd.Function].Add(facd);
-                }
-                else
-                {
-                    var constrains = new List<FunctionArgumentConditionDefinition>
-                    {
-                        facd
-                    };
-
-                    ArgumentConstraints.Add(facd.Function, constrains);
-                }
-
-                return facd;
-            }
 
             return fdef;
         }
@@ -190,72 +149,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
-        private static Expression BindConstainCondition(RelationalOperator condition)
-        {
-            if (condition.Left is RelationalOperator l && condition.Right is Literal)
-            {
-                if (condition.Symbol == "<")
-                {
-                    if (l.Left is UnresolvedRef)
-                    {
-                        condition.Right = new LessThan(l.Left, condition.Right);
-                    }
-                    else if (l.Right is UnresolvedRef)
-                    {
-                        condition.Right = new LessThan(l.Right, condition.Right);
-                    }
-                }
-                else if (condition.Symbol == ">")
-                {
-                    if (l.Left is UnresolvedRef)
-                    {
-                        condition.Right = new GreaterThan(l.Left, condition.Right);
-                    }
-                    else if (l.Right is UnresolvedRef)
-                    {
-                        condition.Right = new GreaterThan(l.Right, condition.Right);
-                    }
-                }
-                else if (condition.Symbol == "<=")
-                {
-                    if (l.Left is UnresolvedRef)
-                    {
-                        condition.Right = new LessThanEqual(l.Left, condition.Right);
-                    }
-                    else if (l.Right is UnresolvedRef)
-                    {
-                        condition.Right = new LessThanEqual(l.Right, condition.Right);
-                    }
-                }
-                else if (condition.Symbol == ">=")
-                {
-                    if (l.Left is UnresolvedRef)
-                    {
-                        condition.Right = new GreaterThanEqual(l.Left, condition.Right);
-                    }
-                    else if (l.Right is UnresolvedRef)
-                    {
-                        condition.Right = new GreaterThanEqual(l.Right, condition.Right);
-                    }
-                }
-                else if (condition.Symbol == "!=")
-                {
-                    if (l.Left is UnresolvedRef)
-                    {
-                        condition.Right = new NotEqual(l.Left, condition.Right);
-                    }
-                    else if (l.Right is UnresolvedRef)
-                    {
-                        condition.Right = new NotEqual(l.Right, condition.Right);
-                    }
-                }
-
-                return new And(condition.Left, condition.Right);
-            }
-
-            return condition;
-        }
-
         private static CodeObject BindFunction(Call c, Expression right)
         {
             var md = new FunctionDefinition(c.Expression._AsString);
@@ -268,67 +161,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             return md;
         }
 
-        private static Expression BindInterval(IntervalExpression interval, Expression variable)
-        {
-            return new And(BindMinimum(interval, variable), BindMaximum(interval, variable));
-        }
-
-        private static Expression BindMaximum(IntervalExpression interval, Expression variable)
-        {
-            if (interval.IsMaximumInclusive)
-            {
-                return new LessThanEqual(variable, interval.Maximum);
-            }
-            else
-            {
-                return new LessThan(variable, interval.Maximum);
-            }
-        }
-
-        private static Expression BindMinimum(IntervalExpression interval, Expression variable)
-        {
-            if (interval.IsMinimumInclusive)
-            {
-                if (interval.Minimum is Negative neg && neg.Expression is InfinityRef)
-                {
-                    interval.Minimum = BindNegInfinity((FunctionArgumentConditionDefinition)interval.Parent);
-                }
-                if (interval.Maximum is InfinityRef)
-                {
-                    interval.Maximum = BindPosInfinity((FunctionArgumentConditionDefinition)interval.Parent);
-                }
-
-                return new GreaterThanEqual(variable, interval.Minimum);
-            }
-            else
-            {
-                return new GreaterThan(variable, interval.Minimum);
-            }
-        }
-
-        private static Expression BindNegInfinity(FunctionArgumentConditionDefinition facd)
-        {
-            return facd.NumberRoom switch
-            {
-                "N" => uint.MinValue,
-                "Z" => int.MinValue,
-                "R" => double.MinValue,
-                _ => false,
-            };
-        }
-
-        private static Expression BindPosInfinity(FunctionArgumentConditionDefinition facd)
-        {
-            return facd.NumberRoom switch
-            {
-                "N" => uint.MaxValue,
-                "Z" => int.MaxValue,
-                "R" => double.MaxValue,
-                _ => false,
-            };
-        }
-
-        private static CodeObject BindUseStatement(UseStatement useStmt)
+        private CodeObject BindUseStatement(UseStatement useStmt)
         {
             if (useStmt.Module is UnresolvedRef uref)
             {

@@ -21,7 +21,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             Parser.AddParsePoint("alias", Parse);
         }
 
-        public CodeObject Bind(ExpressionParser ep)
+        public CodeObject Bind(ExpressionParser ep, Binder binder)
         {
             if (Name is UnresolvedRef nameRef)
             {
