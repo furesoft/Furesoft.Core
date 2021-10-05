@@ -14,7 +14,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Symbols;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator
@@ -129,10 +128,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 return BindExpression(expr, scope);
             }
-            else if (fdef is UseStatement useStmt)
-            {
-                return BindUseStatement(useStmt);
-            }
 
             return fdef;
         }
@@ -159,64 +154,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             md.Body.Add(right);
 
             return md;
-        }
-
-        private CodeObject BindUseStatement(UseStatement useStmt)
-        {
-            if (useStmt.Module is UnresolvedRef uref)
-            {
-                if (ExpressionParser.Modules.ContainsKey(uref.Reference.ToString()))
-                {
-                    useStmt.Module = new ModuleRef(ExpressionParser.Modules[uref.Reference.ToString()]);
-                }
-                else
-                {
-                    useStmt.AttachMessage($"'{useStmt.Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
-                }
-            }
-            else if (useStmt.Module is Literal)
-            {
-                var filename = useStmt.Module._AsString.ToString().Replace("\"", "");
-
-                if (File.Exists(filename))
-                {
-                    var content = File.ReadAllText(filename);
-
-                    var ep = new ExpressionParser();
-                    var contentResult = ep.Evaluate(content);
-
-                    if (contentResult.Errors.Count > 0)
-                    {
-                        foreach (var msg in contentResult.Errors)
-                        {
-                            useStmt.AttachMessage(msg.Text, msg.Severity, msg.Source);
-                        }
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(contentResult.ModuleName))
-                        {
-                            useStmt.Module = new ModuleRef(ep.RootScope);
-                        }
-                        else
-                        {
-                            ExpressionParser.AddModule(contentResult.ModuleName, ep.RootScope);
-
-                            useStmt.Module = new ModuleRef(ExpressionParser.Modules[contentResult.ModuleName]);
-                        }
-                    }
-                }
-                else
-                {
-                    useStmt.AttachMessage($"File {useStmt.Module._AsString} does not exist", MessageSeverity.Error, MessageSource.Resolve);
-                }
-            }
-            else
-            {
-                useStmt.AttachMessage($"'{useStmt.Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
-            }
-
-            return useStmt;
         }
     }
 }
