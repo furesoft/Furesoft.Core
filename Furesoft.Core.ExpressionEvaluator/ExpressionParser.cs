@@ -63,7 +63,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             UseStatement.AddParsePoints();
             ModuleStatement.AddParsePoints();
             AliasNode.AddParsePoints();
-            FacultyOperator.AddParsePoints();
+            FactorialOperator.AddParsePoints();
         }
 
         public void AddModule(string name, Scope scope)
@@ -351,6 +351,10 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 return scope.GetVariable(uref.Reference.ToString());
             }
+            else if (expr is FactorialOperator fac && fac.Expression is Literal l)
+            {
+                return Factorial(int.Parse(l.Text));
+            }
             else
             {
                 return 0;
@@ -446,6 +450,11 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
 
             return null;
+        }
+
+        private double Factorial(int n)
+        {
+            return Enumerable.Range(1, n).Aggregate(1, (p, item) => p * item);
         }
     }
 }
