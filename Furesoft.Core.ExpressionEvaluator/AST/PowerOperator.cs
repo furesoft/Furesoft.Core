@@ -1,10 +1,11 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
 using Furesoft.Core.CodeDom.Parsing;
+using System;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
-    internal class PowerOperator : BinaryArithmeticOperator
+    internal class PowerOperator : BinaryArithmeticOperator, IEvaluatableExpression
     {
         private const int Precedence = 2;
 
@@ -24,6 +25,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             if (parser.HasUnusedExpression)
                 return new PowerOperator(parser, parent);
             return null;
+        }
+
+        public double Evaluate(ExpressionParser ep, Scope scope)
+        {
+            return Math.Pow(ep.EvaluateExpression(Left, scope), ep.EvaluateExpression(Right, scope));
         }
 
         public override int GetPrecedence()

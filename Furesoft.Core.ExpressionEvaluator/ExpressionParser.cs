@@ -121,6 +121,95 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
+        internal double EvaluateExpression(Expression expr, Scope scope)
+        {
+            if (expr is IEvaluatableExpression e)
+            {
+                return e.Evaluate(this, scope);
+            }
+
+            if (expr is Add add)
+            {
+                return EvaluateExpression(add.Left, scope) + EvaluateExpression(add.Right, scope);
+            }
+            else if (expr is Multiply mul)
+            {
+                return EvaluateExpression(mul.Left, scope) * EvaluateExpression(mul.Right, scope);
+            }
+            else if (expr is Subtract sub)
+            {
+                return EvaluateExpression(sub.Left, scope) - EvaluateExpression(sub.Right, scope);
+            }
+            else if (expr is Divide div)
+            {
+                return EvaluateExpression(div.Left, scope) / EvaluateExpression(div.Right, scope);
+            }
+            else if (expr is Mod mod)
+            {
+                return EvaluateExpression(mod.Left, scope) % EvaluateExpression(mod.Right, scope);
+            }
+            else if (expr is Literal lit)
+            {
+                return double.Parse(lit.Text.Replace("d", ""), CultureInfo.InvariantCulture);
+            }
+            else if (expr is Negative neg)
+            {
+                return -EvaluateExpression(neg.Expression, scope);
+            }
+            else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
+            {
+                string fnName = nameRef.Reference.ToString();
+                string mangledName = fnName + ":" + call.ArgumentCount;
+
+                if (RootScope.Functions.TryGetValue(mangledName, out var fn))
+                {
+                    return EvaluateFunction(scope, call, fnName, fn);
+                }
+                else if (RootScope.ImportedFunctions.TryGetValue(mangledName, out var importedFn))
+                {
+                    return EvaluateImportedFunction(scope, call, fnName, importedFn);
+                }
+
+                return 0;
+            }
+            else if (expr is ModuleFunctionRef funcRef && funcRef.Reference is Module m)
+            {
+                Scope s = Scope.CreateScope(RootScope);
+                if (funcRef.Call.Expression is UnresolvedRef nr)
+                {
+                    string fnName = nr.Reference.ToString();
+                    string mangledName = fnName + ":" + funcRef.Call.ArgumentCount;
+
+                    if (m.Scope.Functions.TryGetValue(mangledName, out var fn))
+                    {
+                        return EvaluateFunction(s, funcRef.Call, fnName, fn);
+                    }
+                    else if (m.Scope.ImportedFunctions.TryGetValue(mangledName, out var importedFn))
+                    {
+                        return EvaluateImportedFunction(scope, funcRef.Call, fnName, importedFn);
+                    }
+                }
+
+                return 0;
+            }
+            else if (expr is Assignment ass && ass.Left is UnresolvedRef ureff)
+            {
+                var name = ureff.Reference.ToString();
+
+                scope.Variables.Add(name, EvaluateExpression(ass.Right, scope));
+
+                return 0;
+            }
+            else if (expr is UnresolvedRef uref)
+            {
+                return scope.GetVariable(uref.Reference.ToString());
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
         private static bool EvaluateNumberRoom(FunctionArgumentConditionDefinition cond, double value)
         {
             return cond.NumberRoom switch
@@ -206,7 +295,13 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         private double? Evaluate(CodeObject obj)
         {
-            if (obj is Block blk)
+            if (obj is IEvaluatableStatement e)
+            {
+                e.Evaluate(this);
+
+                return null;
+            }
+            else if (obj is Block blk)
             {
                 foreach (var cn in blk)
                 {
@@ -216,22 +311,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             else if (obj is Expression expr)
             {
                 return EvaluateExpression(expr, RootScope);
-            }
-            else if (obj is UseStatement useStmt)
-            {
-                return EvaluateUseStatement(useStmt);
-            }
-            else if (obj is FunctionDefinition funcDef)
-            {
-                string mangledName = funcDef.Name + ":" + funcDef.ParameterCount;
-
-                RootScope.Functions.Add(mangledName, funcDef);
-
-                return null;
-            }
-            else if (obj is FunctionArgumentConditionDefinition)
-            {
-                return null;
             }
 
             return null;
@@ -262,102 +341,6 @@ namespace Furesoft.Core.ExpressionEvaluator
                     Equal => left == right,
                     _ => false,
                 };
-            }
-        }
-
-        private double EvaluateExpression(Expression expr, Scope scope)
-        {
-            if (expr is Add add)
-            {
-                return EvaluateExpression(add.Left, scope) + EvaluateExpression(add.Right, scope);
-            }
-            else if (expr is Multiply mul)
-            {
-                return EvaluateExpression(mul.Left, scope) * EvaluateExpression(mul.Right, scope);
-            }
-            else if (expr is Subtract sub)
-            {
-                return EvaluateExpression(sub.Left, scope) - EvaluateExpression(sub.Right, scope);
-            }
-            else if (expr is Divide div)
-            {
-                return EvaluateExpression(div.Left, scope) / EvaluateExpression(div.Right, scope);
-            }
-            else if (expr is PowerOperator pow)
-            {
-                return Math.Pow(EvaluateExpression(pow.Left, scope), EvaluateExpression(pow.Right, scope));
-            }
-            else if (expr is Mod mod)
-            {
-                return EvaluateExpression(mod.Left, scope) % EvaluateExpression(mod.Right, scope);
-            }
-            else if (expr is AbsoluteValueExpression val)
-            {
-                return Math.Abs(EvaluateExpression(val.Expression, scope));
-            }
-            else if (expr is Literal lit)
-            {
-                return double.Parse(lit.Text.Replace("d", ""), CultureInfo.InvariantCulture);
-            }
-            else if (expr is Negative neg)
-            {
-                return -EvaluateExpression(neg.Expression, scope);
-            }
-            else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
-            {
-                string fnName = nameRef.Reference.ToString();
-                string mangledName = fnName + ":" + call.ArgumentCount;
-
-                if (RootScope.Functions.TryGetValue(mangledName, out var fn))
-                {
-                    return EvaluateFunction(scope, call, fnName, fn);
-                }
-                else if (RootScope.ImportedFunctions.TryGetValue(mangledName, out var importedFn))
-                {
-                    return EvaluateImportedFunction(scope, call, fnName, importedFn);
-                }
-
-                return 0;
-            }
-            else if (expr is ModuleFunctionRef funcRef && funcRef.Reference is Module m)
-            {
-                Scope s = Scope.CreateScope(RootScope);
-                if (funcRef.Call.Expression is UnresolvedRef nr)
-                {
-                    string fnName = nr.Reference.ToString();
-                    string mangledName = fnName + ":" + funcRef.Call.ArgumentCount;
-
-                    if (m.Scope.Functions.TryGetValue(mangledName, out var fn))
-                    {
-                        return EvaluateFunction(s, funcRef.Call, fnName, fn);
-                    }
-                    else if (m.Scope.ImportedFunctions.TryGetValue(mangledName, out var importedFn))
-                    {
-                        return EvaluateImportedFunction(scope, funcRef.Call, fnName, importedFn);
-                    }
-                }
-
-                return 0;
-            }
-            else if (expr is Assignment ass && ass.Left is UnresolvedRef ureff)
-            {
-                var name = ureff.Reference.ToString();
-
-                scope.Variables.Add(name, EvaluateExpression(ass.Right, scope));
-
-                return 0;
-            }
-            else if (expr is UnresolvedRef uref)
-            {
-                return scope.GetVariable(uref.Reference.ToString());
-            }
-            else if (expr is FactorialOperator fac && fac.Expression is Literal l)
-            {
-                return Factorial(int.Parse(l.Text));
-            }
-            else
-            {
-                return 0;
             }
         }
 
@@ -433,28 +416,6 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 return 0;
             }
-        }
-
-        private double? EvaluateUseStatement(UseStatement useStmt)
-        {
-            if (useStmt.Module is ModuleRef modRef)
-            {
-                if (modRef.Reference is Module mod)
-                {
-                    RootScope.ImportScope(mod.Scope);
-                }
-                else if (modRef.Reference is Scope scope)
-                {
-                    RootScope.ImportScope(scope);
-                }
-            }
-
-            return null;
-        }
-
-        private double Factorial(int n)
-        {
-            return Enumerable.Range(1, n).Aggregate(1, (p, item) => p * item);
         }
     }
 }

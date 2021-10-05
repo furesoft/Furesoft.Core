@@ -2,10 +2,11 @@
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
+using System;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
-    public class AbsoluteValueExpression : Expression
+    public class AbsoluteValueExpression : Expression, IEvaluatableExpression
     {
         public AbsoluteValueExpression(Parser parser, CodeObject parent) : base(parser, parent)
         {
@@ -34,6 +35,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
+        }
+
+        public double Evaluate(ExpressionParser ep, Scope scope)
+        {
+            return Math.Abs(ep.EvaluateExpression(Expression, scope));
         }
     }
 }

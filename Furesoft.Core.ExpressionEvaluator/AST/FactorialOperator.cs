@@ -1,10 +1,12 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.Parsing;
+using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
-    internal class FactorialOperator : PostUnaryOperator
+    internal class FactorialOperator : PostUnaryOperator, IEvaluatableExpression
     {
         private const int Precedence = 2;
 
@@ -26,9 +28,24 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             return null;
         }
 
+        public double Evaluate(ExpressionParser ep, Scope scope)
+        {
+            if (Expression is Literal l)
+            {
+                return Factorial(int.Parse(l.Text));
+            }
+
+            return 0;
+        }
+
         public override int GetPrecedence()
         {
             return Precedence;
+        }
+
+        private double Factorial(int n)
+        {
+            return Enumerable.Range(1, n).Aggregate(1, (p, item) => p * item);
         }
     }
 }

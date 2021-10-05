@@ -106,7 +106,11 @@ namespace Furesoft.Core.ExpressionEvaluator
                 ExpressionParser = expressionParser;
             }
 
-            if (fdef is Unrecognized u)
+            if (fdef is IBindable b)
+            {
+                return b.Bind(ExpressionParser);
+            }
+            else if (fdef is Unrecognized u)
             {
                 foreach (var expr in u.Expressions)
                 {
@@ -131,10 +135,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             else if (fdef is UseStatement useStmt)
             {
                 return BindUseStatement(useStmt);
-            }
-            else if (fdef is AliasNode aliasNode)
-            {
-                return BindAlias(aliasNode);
             }
             else if (fdef is FunctionArgumentConditionDefinition facd)
             {
@@ -176,25 +176,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
 
             return fdef;
-        }
-
-        private static CodeObject BindAlias(AliasNode aliasNode)
-        {
-            if (aliasNode.Name is UnresolvedRef nameRef)
-            {
-                string name = nameRef.Reference.ToString();
-
-                if (!ExpressionParser.RootScope.Aliases.ContainsKey(name))
-                {
-                    ExpressionParser.RootScope.Aliases.Add(name, aliasNode.Value);
-                }
-                else
-                {
-                    aliasNode.AttachMessage($"Alias '{name}' already exists.", MessageSeverity.Error, MessageSource.Resolve);
-                }
-            }
-
-            return aliasNode;
         }
 
         private static CodeObject BindAssignment(Assignment a)

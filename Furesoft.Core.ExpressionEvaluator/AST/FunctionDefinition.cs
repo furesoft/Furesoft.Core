@@ -5,7 +5,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
-    public class FunctionDefinition : BlockStatement, IParameters
+    public class FunctionDefinition : BlockStatement, IParameters, IEvaluatableStatement
     {
         private ChildList<ParameterDecl> _parameters;
 
@@ -20,5 +20,12 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
         public int ParameterCount => Parameters.Count;
 
         public ChildList<ParameterDecl> Parameters => _parameters;
+
+        public void Evaluate(ExpressionParser ep)
+        {
+            string mangledName = Name + ":" + ParameterCount;
+
+            ep.RootScope.Functions.Add(mangledName, this);
+        }
     }
 }

@@ -8,4 +8,8 @@
     <ProjectReference Include="..\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Evaluation\" />
+  </ItemGroup>
+
 </Project>

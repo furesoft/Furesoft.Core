@@ -1,11 +1,13 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.Parsing;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
-    public class AliasNode : Statement
+    public class AliasNode : Statement, IBindable
     {
         public AliasNode(Parser parser, CodeObject parent) : base(parser, parent)
         {
@@ -17,6 +19,25 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
         public static void AddParsePoints()
         {
             Parser.AddParsePoint("alias", Parse);
+        }
+
+        public CodeObject Bind(ExpressionParser ep)
+        {
+            if (Name is UnresolvedRef nameRef)
+            {
+                string name = nameRef.Reference.ToString();
+
+                if (!ep.RootScope.Aliases.ContainsKey(name))
+                {
+                    ep.RootScope.Aliases.Add(name, Value);
+                }
+                else
+                {
+                    AttachMessage($"Alias '{name}' already exists.", MessageSeverity.Error, MessageSource.Resolve);
+                }
+            }
+
+            return this;
         }
 
         private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
