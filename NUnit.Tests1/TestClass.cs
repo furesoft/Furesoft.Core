@@ -1,5 +1,9 @@
 ﻿// NUnit 3 tests
 // See documentation : https://github.com/nunit/docs/wiki/NUnit-Documentation
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator;
 using Furesoft.Core.ExpressionEvaluator.Library;
 using NUnit.Framework;
@@ -52,6 +56,8 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0;set MP in P = x < 100;f: y in MP; f(y) = y; f(2);", 2);
                 yield return new TestCaseData("set P in N = {2,4,6,8}; f: y in P; f(y) = y; f(2);", 2);
                 yield return new TestCaseData("set P in N = {2,4,6,8,9}; f: y in P; f(y) = y; f(2);", 2);
+                yield return new TestCaseData("rename(round, rndm);rndm(3.14);", 3);
+                yield return new TestCaseData("rename(round(2), rndm);rndm(3.14, 1);", 3.1);
             }
         }
 
@@ -78,6 +84,8 @@ namespace NUnit.Tests1
             ep.RootScope.Import(typeof(Math));
             ep.RootScope.Import(typeof(Core));
 
+            ep.RootScope.Macros.Add("rename", new Func<Expression, Expression, Scope, Expression>(RenameFunction));
+
             ep.Import(typeof(Geometry));
 
             var result = ep.Evaluate(input);
@@ -92,6 +100,34 @@ namespace NUnit.Tests1
             {
                 Assert.Fail(result.Errors.First().Text);
             }
+        }
+
+        private static Expression RenameFunction(Expression func, Expression newName, Scope scope)
+        {
+            if (func is UnresolvedRef oldRef && oldRef.Reference is string oldName && newName is UnresolvedRef nameref && nameref.Reference is string newNameString)
+            {
+                return RenameInternal(scope, oldName, newNameString);
+            }
+            else if (func is Call c && c.ArgumentCount == 1 && c.Arguments[0] is Literal l && int.TryParse(l.Text, out var argCount))
+            {
+                if (c.Expression is UnresolvedRef oldRef1 && oldRef1.Reference is string oldName1 && newName is UnresolvedRef nameref1 && nameref1.Reference is string newNameString1)
+                {
+                    return RenameInternal(scope, oldName1, newNameString1, argCount);
+                }
+            }
+
+            return func;
+        }
+
+        private static Expression RenameInternal(Scope scope, string oldName, string newNameString, int argumentCount = 1)
+        {
+            var funcRef = scope.GetImportedFunctionForName(oldName + ":" + argumentCount, out var mangledName);
+
+            scope.ImportedFunctions.Remove(mangledName);
+
+            scope.ImportedFunctions.Add(newNameString + ":" + mangledName.Split(':')[1], funcRef);
+
+            return new TempExpr();
         }
     }
 }

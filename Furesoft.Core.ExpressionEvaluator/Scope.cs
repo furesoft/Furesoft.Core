@@ -12,6 +12,7 @@ namespace Furesoft.Core.ExpressionEvaluator
         public Dictionary<string, Expression> Aliases = new();
         public Dictionary<string, FunctionDefinition> Functions = new();
         public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
+        public Dictionary<string, Delegate> Macros = new();
         public Dictionary<string, Expression> SetDefinitions = new();
         public Dictionary<string, double> Variables = new();
         public Scope Parent { get; set; }
@@ -28,6 +29,40 @@ namespace Furesoft.Core.ExpressionEvaluator
             ep.Evaluate(content);
 
             ImportScope(ep.RootScope);
+        }
+
+        public FunctionDefinition GetFunctionForName(string name, out string mangledName)
+        {
+            foreach (var iF in Functions)
+            {
+                if (iF.Key.StartsWith(name))
+                {
+                    mangledName = iF.Key;
+
+                    return iF.Value;
+                }
+            }
+
+            mangledName = null;
+
+            return null;
+        }
+
+        public Func<double[], double> GetImportedFunctionForName(string name, out string mangledName)
+        {
+            foreach (var iF in ImportedFunctions)
+            {
+                if (iF.Key.StartsWith(name))
+                {
+                    mangledName = iF.Key;
+
+                    return iF.Value;
+                }
+            }
+
+            mangledName = null;
+
+            return null;
         }
 
         public double GetVariable(string name)
@@ -107,6 +142,10 @@ namespace Furesoft.Core.ExpressionEvaluator
             foreach (var importedFunction in scope.ImportedFunctions)
             {
                 ImportedFunctions.Add(importedFunction.Key, importedFunction.Value);
+            }
+            foreach (var macro in scope.Macros)
+            {
+                Macros.Add(macro.Key, macro.Value);
             }
             foreach (var aliasDefinition in scope.Aliases)
             {

@@ -62,13 +62,27 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (expr is Call c)
             {
-                if (c.Expression is UnresolvedRef unresolved)
+                if (c.Expression is UnresolvedRef unresolved && unresolved.Reference is string s)
                 {
-                    if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
+                    if (ExpressionParser.RootScope.Aliases.ContainsKey(s))
                     {
-                        c.Expression = ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()];
+                        c.Expression = ExpressionParser.RootScope.Aliases[s];
 
                         return BindExpression(c, scope);
+                    }
+                    else if (ExpressionParser.RootScope.Macros.ContainsKey(s))
+                    {
+                        var arguments = c.Arguments.Select(_ => (object)_).ToList();
+
+                        var macro = ExpressionParser.RootScope.Macros[s];
+
+                        if (macro.Method.GetParameters()
+                            .Last().ParameterType.IsAssignableFrom(typeof(Scope)))
+                        {
+                            arguments.Add(scope);
+                        }
+
+                        return (Expression)macro.DynamicInvoke(arguments.ToArray());
                     }
                 }
 
