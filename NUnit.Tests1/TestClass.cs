@@ -50,6 +50,8 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0; set MP in P = x < 100;", 0);
                 yield return new TestCaseData("set D = {0,1,2,3,4,5,6};", 0);
                 yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0;set MP in P = x < 100;f: y in MP; f(y) = y; f(2);", 2);
+                yield return new TestCaseData("set P in N = {2,4,6,8}; f: y in P; f(y) = y; f(2);", 2);
+                yield return new TestCaseData("set P in N = {2,4,6,8,9}; f: y in P; f(y) = y; f(2);", 2);
             }
         }
 

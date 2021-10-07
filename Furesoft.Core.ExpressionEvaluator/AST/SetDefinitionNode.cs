@@ -2,6 +2,8 @@
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.Parsing;
@@ -38,6 +40,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
                     if (!ep.RootScope.SetDefinitions.ContainsKey(name))
                     {
+                        if (Value is SetDefinitionExpression setExpr)
+                        {
+                            Value = BindSetDefinitionExpression(setExpr);
+                        }
+
                         ep.RootScope.SetDefinitions.Add(name, new And(Value, Condition));
                     }
                     else
@@ -78,6 +85,31 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             node.Value = Expression.Parse(parser, node);
 
             return node;
+        }
+
+        private Expression BindSetDefinitionExpression(SetDefinitionExpression setExpr)
+        {
+            if (setExpr.Value is ChildList<Expression> nodes)
+            {
+                return BindSetList(nodes);
+            }
+
+            return setExpr;
+        }
+
+        private Expression BindSetList(ChildList<Expression> nodes)
+        {
+            var reference = new UnresolvedRef("x");
+
+            if (nodes.Count > 0)
+            {
+                var value = nodes[0];
+                nodes.RemoveAt(0);
+
+                return new Or(new Equal(reference, value), BindSetList(nodes));
+            }
+
+            return new And(new Literal(1), new Literal(2));
         }
     }
 }
