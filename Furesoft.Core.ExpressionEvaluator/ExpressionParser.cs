@@ -224,9 +224,12 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             if (obj is Call call)
             {
-                foreach (var arg in call.Arguments)
+                if (call.Arguments != null)
                 {
-                    result.AddRange(GetMessagesOfCall(arg));
+                    foreach (var arg in call.Arguments)
+                    {
+                        result.AddRange(GetMessagesOfCall(arg));
+                    }
                 }
             }
             else if (obj is Negative neg)
@@ -348,7 +351,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                 return 0;
             }
 
-            var argumentAssignments = call.Arguments.Count(_ => _ is Assignment);
+            var argumentAssignments = call.Arguments?.Count(_ => _ is Assignment);
 
             if (argumentAssignments > 0)
             {

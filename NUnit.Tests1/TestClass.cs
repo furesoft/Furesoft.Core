@@ -62,6 +62,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("f(x, y) = x * y; f(x=2, y=3);", 6);
                 yield return new TestCaseData("f(x, y) = x * y; f(1, y=3);", 3);
                 yield return new TestCaseData("f(x, y) = x * y; f(y=3, 2);", 6);
+                yield return new TestCaseData("getx() = resolve(x ^ 2 + 12 = 48, x); getx();", 6);
             }
         }
 

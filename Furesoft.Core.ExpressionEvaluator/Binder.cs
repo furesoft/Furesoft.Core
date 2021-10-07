@@ -84,9 +84,13 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                         return (Expression)macro.DynamicInvoke(arguments.ToArray());
                     }
+                    else
+                    {
+                        c.AttachMessage($"Macro or Alias '{s}' not found on call {c._AsString}", MessageSeverity.Error, MessageSource.Resolve);
+                    }
                 }
 
-                for (int i = 0; i < c.Arguments.Count; i++)
+                for (int i = 0; i < c.Arguments?.Count; i++)
                 {
                     Expression arg = BindExpression(c.Arguments[i], scope);
 
@@ -161,7 +165,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                 {
                     if (expr is Assignment a)
                     {
-                        return BindAssignment(a);
+                        return BindAssignment(a, scope);
                     }
                     else
                     {
@@ -171,7 +175,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (fdef is Assignment a)
             {
-                return BindAssignment(a);
+                return BindAssignment(a, scope);
             }
             else if (fdef is Expression expr)
             {
@@ -181,28 +185,18 @@ namespace Furesoft.Core.ExpressionEvaluator
             return fdef;
         }
 
-        private static CodeObject BindAssignment(Assignment a)
+        private CodeObject BindAssignment(Assignment a, Scope scope)
         {
             if (a.Left is Call c)
             {
+                a.Right = BindExpression(a.Right, scope);
+
                 return BindFunction(c, a.Right);
             }
             else
             {
                 return a;
             }
-        }
-
-        private static CodeObject BindFunction(Call c, Expression right)
-        {
-            var md = new FunctionDefinition(c.Expression._AsString);
-
-            md.Parameters.AddRange(c.Arguments.Select(_ =>
-                new ParameterDecl(_.AsString(), new TypeRef(typeof(int)))));
-
-            md.Body.Add(right);
-
-            return md;
         }
 
         private Expression BindConditionParameter(Expression expr, UnresolvedRef reference)
@@ -219,6 +213,18 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
 
             return expr;
+        }
+
+        private CodeObject BindFunction(Call c, Expression right)
+        {
+            var md = new FunctionDefinition(c.Expression._AsString);
+
+            md.Parameters.AddRange(c.Arguments?.Select(_ =>
+                new ParameterDecl(_.AsString(), new TypeRef(typeof(int)))));
+
+            md.Body.Add(right);
+
+            return md;
         }
 
         private int GetMacroContextIndex(System.Reflection.ParameterInfo[] parameterInfos)
