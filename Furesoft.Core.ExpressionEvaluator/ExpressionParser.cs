@@ -64,6 +64,9 @@ namespace Furesoft.Core.ExpressionEvaluator
             ModuleStatement.AddParsePoints();
             AliasNode.AddParsePoints();
             FactorialOperator.AddParsePoints();
+
+            SetDefinitionNode.AddParsePoints();
+            SetDefinitionExpression.AddParsePoints();
         }
 
         public void AddModule(string name, Scope scope)
@@ -208,17 +211,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 return 0;
             }
-        }
-
-        private static bool EvaluateNumberRoom(FunctionArgumentConditionDefinition cond, double value)
-        {
-            return cond.NumberRoom switch
-            {
-                "N" => value is > 0 and < uint.MaxValue,
-                "Z" => value is > int.MinValue and < int.MaxValue,
-                "R" => value is > double.MinValue and < double.MaxValue,
-                _ => false,
-            };
         }
 
         private static IEnumerable<Message> GetMessagesOfCall(CodeObject obj)
@@ -416,6 +408,17 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 return 0;
             }
+        }
+
+        private bool EvaluateNumberRoom(FunctionArgumentConditionDefinition cond, double value)
+        {
+            return cond.NumberRoom switch
+            {
+                "N" => value is > 0 and < uint.MaxValue,
+                "Z" => value is > int.MinValue and < int.MaxValue,
+                "R" => value is > double.MinValue and < double.MaxValue,
+                _ => RootScope.SetDefinitions.ContainsKey(cond.NumberRoom),
+            };
         }
     }
 }

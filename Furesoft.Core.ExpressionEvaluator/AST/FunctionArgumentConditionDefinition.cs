@@ -79,6 +79,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
                 Condition = BindInterval(interval, Parameter);
             }
 
+            if (ep.RootScope.SetDefinitions.ContainsKey(NumberRoom))
+            {
+                Condition = binder.BindNumberRoom(new UnresolvedRef(NumberRoom), (UnresolvedRef)Parameter);
+            }
+
             if (binder.ArgumentConstraints.ContainsKey(Function))
             {
                 binder.ArgumentConstraints[Function].Add(this);

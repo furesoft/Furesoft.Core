@@ -12,6 +12,7 @@ namespace Furesoft.Core.ExpressionEvaluator
         public Dictionary<string, Expression> Aliases = new();
         public Dictionary<string, FunctionDefinition> Functions = new();
         public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
+        public Dictionary<string, Expression> SetDefinitions = new();
         public Dictionary<string, double> Variables = new();
         public Scope Parent { get; set; }
 
@@ -95,21 +96,25 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public void ImportScope(Scope scope)
         {
-            foreach (var item in scope.Variables)
+            foreach (var variableDefinition in scope.Variables)
             {
-                Variables.Add(item.Key, item.Value);
+                Variables.Add(variableDefinition.Key, variableDefinition.Value);
             }
-            foreach (var item in scope.Functions)
+            foreach (var functionDefinition in scope.Functions)
             {
-                Functions.Add(item.Key, item.Value);
+                Functions.Add(functionDefinition.Key, functionDefinition.Value);
             }
-            foreach (var item in scope.ImportedFunctions)
+            foreach (var importedFunction in scope.ImportedFunctions)
             {
-                ImportedFunctions.Add(item.Key, item.Value);
+                ImportedFunctions.Add(importedFunction.Key, importedFunction.Value);
             }
-            foreach (var item in scope.Aliases)
+            foreach (var aliasDefinition in scope.Aliases)
             {
-                Aliases.Add(item.Key, item.Value);
+                Aliases.Add(aliasDefinition.Key, aliasDefinition.Value);
+            }
+            foreach (var setDefinition in scope.SetDefinitions)
+            {
+                SetDefinitions.Add(setDefinition.Key, setDefinition.Value);
             }
         }
     }

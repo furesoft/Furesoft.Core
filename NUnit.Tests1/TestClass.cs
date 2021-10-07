@@ -32,6 +32,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("areaTriangle(width, height) = width * height / 2; areaTriangle(5,10);", 25);
                 yield return new TestCaseData("use \"geometry.math\"; geometry.areaRectangle(5, 3);", 15);
                 yield return new TestCaseData("g: x in N [5, INFINITY];g(x) = x*x; g(6);", 36);
+                yield return new TestCaseData("g: x in N;g(x) = x*x; g(6);", 36);
                 yield return new TestCaseData("|-4^2|;", 16);
                 yield return new TestCaseData("-|4^2|;", -16);
                 yield return new TestCaseData("use \"geometry.math\"; -geometry.areaRectangle(5, 3);", -15);
@@ -45,6 +46,10 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("alias round as rnd; rnd(2.345, 1)", 2.3);
                 yield return new TestCaseData("alias geometry.circumference as umfang; round(umfang(1), 5);", 2 * Math.PI);
                 yield return new TestCaseData("5!", 120);
+                yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0;", 0);
+                yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0; set MP in P = x < 100;", 0);
+                yield return new TestCaseData("set D = {0,1,2,3,4,5,6};", 0);
+                yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0;set MP in P = x < 100;f: y in MP; f(y) = y; f(2);", 2);
             }
         }
 
@@ -76,7 +81,10 @@ namespace NUnit.Tests1
             var result = ep.Evaluate(input);
             if (result.Errors.Count == 0)
             {
-                Assert.That(result.Values, Does.Contain(Math.Round(expected, 5)), "Calculation is wrong");
+                if (result.Values.Any())
+                {
+                    Assert.That(result.Values, Does.Contain(Math.Round(expected, 5)), "Calculation is wrong");
+                }
             }
             else
             {

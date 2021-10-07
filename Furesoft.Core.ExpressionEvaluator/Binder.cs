@@ -4,6 +4,8 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
@@ -21,6 +23,13 @@ namespace Furesoft.Core.ExpressionEvaluator
     public class Binder
     {
         public Dictionary<string, List<FunctionArgumentConditionDefinition>> ArgumentConstraints = new();
+
+        public Dictionary<string, (object min, object max)> NumberRooms = new()
+        {
+            ["N"] = (uint.MinValue, uint.MaxValue),
+            ["Z"] = (int.MinValue, int.MaxValue),
+            ["R"] = (double.MinValue, double.MaxValue),
+        };
 
         public ExpressionParser ExpressionParser { get; set; }
 
@@ -75,6 +84,32 @@ namespace Furesoft.Core.ExpressionEvaluator
                 if (ExpressionParser.RootScope.Aliases.ContainsKey(unresolved.Reference.ToString()))
                 {
                     return ExpressionParser.RootScope.Aliases[unresolved.Reference.ToString()];
+                }
+            }
+
+            return expr;
+        }
+
+        public Expression BindNumberRoom(Expression expr, UnresolvedRef reference = null)
+        {
+            if (expr is UnresolvedRef uref && uref.Reference is string name)
+            {
+                if (ExpressionParser.RootScope.SetDefinitions.ContainsKey(name))
+                {
+                    return BindConditionParameter(ExpressionParser.RootScope.SetDefinitions[name], reference);
+                }
+                else if (NumberRooms.ContainsKey(name))
+                {
+                    // $x > min && $x < max
+
+                    if (reference == null)
+                    {
+                        reference = new("$x");
+                    }
+
+                    var numberRoom = NumberRooms[name];
+
+                    return BindConditionParameter(new And(new GreaterThan(reference, new Literal(numberRoom.min)), new LessThan(reference, new Literal(numberRoom.max))), reference);
                 }
             }
 
@@ -154,6 +189,22 @@ namespace Furesoft.Core.ExpressionEvaluator
             md.Body.Add(right);
 
             return md;
+        }
+
+        private Expression BindConditionParameter(Expression expr, UnresolvedRef reference)
+        {
+            if (expr is BinaryOperator and)
+            {
+                and.Left = BindConditionParameter(and.Left, reference ?? new UnresolvedRef("$x"));
+
+                and.Right = BindConditionParameter(and.Right, reference ?? new UnresolvedRef("$x"));
+            }
+            else if (expr is UnresolvedRef)
+            {
+                return reference;
+            }
+
+            return expr;
         }
     }
 }

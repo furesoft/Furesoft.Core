@@ -46,10 +46,8 @@ namespace TestApp
             //ToDo: implement custom measurements
             //ToDo: add comments
 
-            //ToDo: allow alias for module function: alias geometry.areaCircle as circle;
-
             //ToDo: add semantic check
-            //ToDo: implement fakultät operator
+            //ToDo: implement macro system
 
             //ToDo: eigene mengen definieren, diese können dann als eigener zahlenraum verwendet werden
             // Wertebereich aller Primzahlen
