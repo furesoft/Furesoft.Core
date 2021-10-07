@@ -51,7 +51,6 @@ namespace TestApp
             //ToDo: add boolean logic
             //ToDo: Macrosystem:
             //add macro-class with macro context
-            //- generate-symbol
             //- rename-function
             //- rename-imported
             //- rename-module
