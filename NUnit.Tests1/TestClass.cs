@@ -58,6 +58,10 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("set P in N = {2,4,6,8,9}; f: y in P; f(y) = y; f(2);", 2);
                 yield return new TestCaseData("rename(round, rndm);rndm(3.14);", 3);
                 yield return new TestCaseData("rename(round(2), rndm);rndm(3.14, 1);", 3.1);
+                yield return new TestCaseData("f(x) = x * 2; f(x=2);", 4);
+                yield return new TestCaseData("f(x, y) = x * y; f(x=2, y=3);", 6);
+                yield return new TestCaseData("f(x, y) = x * y; f(1, y=3);", 3);
+                yield return new TestCaseData("f(x, y) = x * y; f(y=3, 2);", 6);
             }
         }
 
@@ -84,7 +88,7 @@ namespace NUnit.Tests1
             ep.RootScope.Import(typeof(Math));
             ep.RootScope.Import(typeof(Core));
 
-            ep.RootScope.Macros.Add("rename", new Func<Expression, Expression, Scope, Expression>(RenameFunction));
+            ep.RootScope.Macros.Add("rename", new Func<MacroContext, Expression, Expression, Expression>(RenameFunction));
 
             ep.Import(typeof(Geometry));
 
@@ -102,30 +106,30 @@ namespace NUnit.Tests1
             }
         }
 
-        private static Expression RenameFunction(Expression func, Expression newName, Scope scope)
+        private static Expression RenameFunction(MacroContext mc, Expression func, Expression newName)
         {
             if (func is UnresolvedRef oldRef && oldRef.Reference is string oldName && newName is UnresolvedRef nameref && nameref.Reference is string newNameString)
             {
-                return RenameInternal(scope, oldName, newNameString);
+                return RenameInternal(mc, oldName, newNameString);
             }
             else if (func is Call c && c.ArgumentCount == 1 && c.Arguments[0] is Literal l && int.TryParse(l.Text, out var argCount))
             {
                 if (c.Expression is UnresolvedRef oldRef1 && oldRef1.Reference is string oldName1 && newName is UnresolvedRef nameref1 && nameref1.Reference is string newNameString1)
                 {
-                    return RenameInternal(scope, oldName1, newNameString1, argCount);
+                    return RenameInternal(mc, oldName1, newNameString1, argCount);
                 }
             }
 
             return func;
         }
 
-        private static Expression RenameInternal(Scope scope, string oldName, string newNameString, int argumentCount = 1)
+        private static Expression RenameInternal(MacroContext mc, string oldName, string newNameString, int argumentCount = 1)
         {
-            var funcRef = scope.GetImportedFunctionForName(oldName + ":" + argumentCount, out var mangledName);
+            var funcRef = mc.GetImportedFunctionForName(oldName + ":" + argumentCount, out var mangledName);
 
-            scope.ImportedFunctions.Remove(mangledName);
+            mc.Scope.ImportedFunctions.Remove(mangledName);
 
-            scope.ImportedFunctions.Add(newNameString + ":" + mangledName.Split(':')[1], funcRef);
+            mc.Scope.ImportedFunctions.Add(newNameString + ":" + mangledName.Split(':')[1], funcRef);
 
             return new TempExpr();
         }

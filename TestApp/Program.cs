@@ -1,7 +1,4 @@
 ﻿using Furesoft.Core.CLI;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator;
 using Furesoft.Core.ExpressionEvaluator.Library;
 using System;
@@ -23,10 +20,6 @@ namespace TestApp
             var geometryScope = new Scope();
             geometryScope.ImportedFunctions.Add("areaRectangle", new Func<double[], double>((x) => { return x[0] * x[1]; }));
             geometryScope.Evaluate("areaTriangle(width, height) = width * height / 2;");
-
-            ep.RootScope.Macros.Add("rename", new Func<Expression, Expression, Scope, Expression>(RenameFunction));
-
-            var rename = ep.Evaluate("rename(round, rndm);rndm(3.14);");
 
             // ep.AddModule("geometry", geometryScope);
 
@@ -64,27 +57,9 @@ namespace TestApp
             //- rename-module
             //- rename-variable
 
-            //named arguments?
-            //f(x, y) = 2 * (x + y);
-            //f(y: 12, x: 42);
+            //ToDo: named arguments: mixed mode - differenz bilden und dann scope mit rest befüllen
 
             return App.Current.Run();
-        }
-
-        private static Expression RenameFunction(Expression func, Expression newName, Scope scope)
-        {
-            if (func is UnresolvedRef oldRef && oldRef.Reference is string oldName && newName is UnresolvedRef nameref && nameref.Reference is string newNameString)
-            {
-                var funcRef = scope.GetImportedFunctionForName(oldName, out var mangledName);
-
-                scope.ImportedFunctions.Remove(mangledName);
-
-                scope.ImportedFunctions.Add(newNameString + ":" + mangledName.Split(':')[1], funcRef);
-
-                return new TempExpr();
-            }
-
-            return func;
         }
     }
 }

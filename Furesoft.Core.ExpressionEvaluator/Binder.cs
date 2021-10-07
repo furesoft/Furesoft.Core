@@ -77,9 +77,9 @@ namespace Furesoft.Core.ExpressionEvaluator
                         var macro = ExpressionParser.RootScope.Macros[s];
 
                         if (macro.Method.GetParameters()
-                            .Last().ParameterType.IsAssignableFrom(typeof(Scope)))
+                            .Any(_ => _.ParameterType.IsAssignableFrom(typeof(MacroContext))))
                         {
-                            arguments.Add(scope);
+                            arguments.Insert(GetMacroContextIndex(macro.Method.GetParameters()), new MacroContext(scope, c.Parent));
                         }
 
                         return (Expression)macro.DynamicInvoke(arguments.ToArray());
@@ -219,6 +219,21 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
 
             return expr;
+        }
+
+        private int GetMacroContextIndex(System.Reflection.ParameterInfo[] parameterInfos)
+        {
+            for (int i = 0; i < parameterInfos.Length; i++)
+            {
+                var pi = parameterInfos[i];
+
+                if (pi.ParameterType == typeof(MacroContext))
+                {
+                    return i;
+                }
+            }
+
+            return 0;
         }
     }
 }

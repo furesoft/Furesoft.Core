@@ -31,40 +31,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             ImportScope(ep.RootScope);
         }
 
-        public FunctionDefinition GetFunctionForName(string name, out string mangledName)
-        {
-            foreach (var iF in Functions)
-            {
-                if (iF.Key.StartsWith(name))
-                {
-                    mangledName = iF.Key;
-
-                    return iF.Value;
-                }
-            }
-
-            mangledName = null;
-
-            return null;
-        }
-
-        public Func<double[], double> GetImportedFunctionForName(string name, out string mangledName)
-        {
-            foreach (var iF in ImportedFunctions)
-            {
-                if (iF.Key.StartsWith(name))
-                {
-                    mangledName = iF.Key;
-
-                    return iF.Value;
-                }
-            }
-
-            mangledName = null;
-
-            return null;
-        }
-
         public double GetVariable(string name)
         {
             Scope currentScope = this;

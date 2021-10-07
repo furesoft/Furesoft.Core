@@ -348,10 +348,41 @@ namespace Furesoft.Core.ExpressionEvaluator
                 return 0;
             }
 
-            for (int i = 0; i < fn.ParameterCount; i++)
+            var argumentAssignments = call.Arguments.Count(_ => _ is Assignment);
+
+            if (argumentAssignments > 0)
             {
-                fnScope.Variables.Add(fn.Parameters[i].Name, EvaluateExpression(call.Arguments[i], scope));
+                if (argumentAssignments == call.ArgumentCount)
+                {
+                    var namedArguments = call.Arguments.Select(TransformNamedArgument);
+
+                    foreach (var arg in namedArguments)
+                    {
+                        fnScope.Variables.Add(arg.Item1, EvaluateExpression(arg.Item2, scope));
+                    }
+                }
+                else
+                {
+                    call.AttachMessage($"Named Arguments are not valid at {call.AsText()}", MessageSeverity.Error, MessageSource.Resolve);
+
+                    return 0;
+                }
             }
+            else
+            {
+                for (int i = 0; i < fn.ParameterCount; i++)
+                {
+                    fnScope.Variables.Add(fn.Parameters[i].Name, EvaluateExpression(call.Arguments[i], scope));
+                }
+            }
+
+            //f(y = 2, x = 5)
+
+            //überprüfen ob arguments Assignment enthält
+            //alle unresolvedreferences mit deren werten extrahieren
+            //reihenfolge der funktion herausfinden
+            //argumente des calls in reihenfolde der funktion übersetzen
+            //argumente in scope übernehmen
 
             if (Binder.ArgumentConstraints.ContainsKey(fn.Name))
             {
@@ -419,6 +450,18 @@ namespace Furesoft.Core.ExpressionEvaluator
                 "R" => value is > double.MinValue and < double.MaxValue,
                 _ => RootScope.SetDefinitions.ContainsKey(cond.NumberRoom),
             };
+        }
+
+        private (string, Expression) TransformNamedArgument(Expression arg)
+        {
+            if (arg is Assignment assignment
+                && assignment.Left is UnresolvedRef argRef
+                && argRef.Reference is string argName)
+            {
+                return (argName, assignment.Right);
+            }
+
+            return ("", null);
         }
     }
 }
