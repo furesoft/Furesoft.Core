@@ -1,7 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
@@ -28,14 +28,17 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             return null;
         }
 
+        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+        {
+            Expression.AsTextExpression(writer, flags);
+            writer.Write("!");
+        }
+
         public double Evaluate(ExpressionParser ep, Scope scope)
         {
-            if (Expression is Literal l)
-            {
-                return Factorial(int.Parse(l.Text));
-            }
+            var expr = ep.EvaluateExpression(Expression, scope);
 
-            return 0;
+            return Factorial(expr);
         }
 
         public override int GetPrecedence()
@@ -43,9 +46,9 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             return Precedence;
         }
 
-        private double Factorial(int n)
+        private double Factorial(double n)
         {
-            return Enumerable.Range(1, n).Aggregate(1, (p, item) => p * item);
+            return Enumerable.Range(1, (int)n).Aggregate(1, (p, item) => p * item);
         }
     }
 }

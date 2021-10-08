@@ -84,10 +84,6 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                         return (Expression)macro.DynamicInvoke(arguments.ToArray());
                     }
-                    else
-                    {
-                        c.AttachMessage($"Macro or Alias '{s}' not found on call {c._AsString}", MessageSeverity.Error, MessageSource.Resolve);
-                    }
                 }
 
                 for (int i = 0; i < c.Arguments?.Count; i++)

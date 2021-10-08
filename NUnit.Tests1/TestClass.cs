@@ -50,6 +50,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("alias round as rnd; rnd(2.345, 1)", 2.3);
                 yield return new TestCaseData("alias geometry.circumference as umfang; round(umfang(1), 5);", 2 * Math.PI);
                 yield return new TestCaseData("5!", 120);
+                yield return new TestCaseData("(5+1)!", 720);
                 yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0;", 0);
                 yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0; set MP in P = x < 100;", 0);
                 yield return new TestCaseData("set D = {0,1,2,3,4,5,6};", 0);
@@ -62,7 +63,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("f(x, y) = x * y; f(x=2, y=3);", 6);
                 yield return new TestCaseData("f(x, y) = x * y; f(1, y=3);", 3);
                 yield return new TestCaseData("f(x, y) = x * y; f(y=3, 2);", 6);
-                yield return new TestCaseData("getx() = resolve(x ^ 2 + 12 = 48, x); getx();", 6);
+                yield return new TestCaseData("x = resolve(x ^ 2 + 12 = 48, x); x", 6);
             }
         }
 

@@ -35,6 +35,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
+            writer.Write("|");
+
+            Expression.AsTextExpression(writer, flags);
+
+            writer.Write("|");
         }
 
         public double Evaluate(ExpressionParser ep, Scope scope)

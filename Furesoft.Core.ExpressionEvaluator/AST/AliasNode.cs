@@ -4,6 +4,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
@@ -38,6 +39,17 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             }
 
             return this;
+        }
+
+        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+        {
+            writer.Write("alias ");
+
+            Name.AsTextExpression(writer, flags);
+
+            writer.Write(" as ");
+
+            Value.AsTextExpression(writer, flags);
         }
 
         private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
