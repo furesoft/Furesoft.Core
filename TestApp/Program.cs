@@ -55,6 +55,12 @@ namespace TestApp
             //- rename-imported
             //- rename-module
             //- rename-variable
+            //add ExpressionEvaluator available to use
+
+            //ability to define rules for
+            //rulefor(resolve, ...);
+            //benötigt möglichkeit zum pattern matchin:
+            // x * y -> x
 
             //ToDo: named arguments: mixed mode - differenz bilden und dann scope mit rest befüllen
 
