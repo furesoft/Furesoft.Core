@@ -79,7 +79,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                         if (macro.Method.GetParameters()
                             .Any(_ => _.ParameterType.IsAssignableFrom(typeof(MacroContext))))
                         {
-                            arguments.Insert(GetMacroContextIndex(macro.Method.GetParameters()), new MacroContext(scope, c.Parent));
+                            arguments.Insert(GetMacroContextIndex(macro.Method.GetParameters()), new MacroContext(ExpressionParser, c.Parent, scope));
                         }
 
                         return (Expression)macro.DynamicInvoke(arguments.ToArray());

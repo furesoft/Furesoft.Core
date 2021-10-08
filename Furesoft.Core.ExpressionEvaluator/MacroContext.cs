@@ -12,12 +12,14 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         private Random _random = new();
 
-        public MacroContext(Scope scope, CodeObject parentCallNode)
+        public MacroContext(ExpressionParser expressionParser, CodeObject parentCallNode, Scope scope)
         {
-            Scope = scope;
+            ExpressionParser = expressionParser;
             ParentCallNode = parentCallNode;
+            Scope = scope;
         }
 
+        public ExpressionParser ExpressionParser { get; set; }
         public CodeObject ParentCallNode { get; }
         public Scope Scope { get; }
 

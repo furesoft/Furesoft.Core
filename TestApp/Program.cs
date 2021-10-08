@@ -55,7 +55,6 @@ namespace TestApp
             //- rename-imported
             //- rename-module
             //- rename-variable
-            //add ExpressionEvaluator available to use
 
             //ability to define rules for
             //rulefor(resolve, ...);

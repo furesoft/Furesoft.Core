@@ -75,7 +75,7 @@ namespace NUnit.Tests1
         [Test]
         public void GenerateSymbol_Should_Pass()
         {
-            MacroContext mc = new(null, null);
+            MacroContext mc = new(null, null, null);
 
             var symbol = mc.GenerateSymbol();
             var symbolText = symbol.Reference.ToString();
