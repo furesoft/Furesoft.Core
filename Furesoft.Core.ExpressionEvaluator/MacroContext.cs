@@ -70,5 +70,32 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             return null;
         }
+
+        public void RenameFunction(string oldName, int argumentCount, string newName)
+        {
+            var funcRef = GetFunctionForName(oldName + ":" + argumentCount, out var mangledName);
+
+            Scope.Functions.Remove(mangledName);
+
+            Scope.Functions.Add(newName + ":" + mangledName.Split(':')[1], funcRef);
+        }
+
+        public void RenameImportedFunction(string oldName, int argumentCount, string newName)
+        {
+            var funcRef = GetImportedFunctionForName(oldName + ":" + argumentCount, out var mangledName);
+
+            Scope.ImportedFunctions.Remove(mangledName);
+
+            Scope.ImportedFunctions.Add(newName + ":" + mangledName.Split(':')[1], funcRef);
+        }
+
+        public void RenameVariable(string oldName, string newName)
+        {
+            var value = Scope.Variables[oldName];
+
+            Scope.Variables.Remove(oldName);
+
+            Scope.Variables.Add(newName, value);
+        }
     }
 }

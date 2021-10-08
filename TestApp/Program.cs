@@ -51,15 +51,11 @@ namespace TestApp
             //ToDo: add boolean logic
             //ToDo: Macrosystem:
             //add macro-class with macro context
-            //- rename-function
-            //- rename-imported
-            //- rename-module
-            //- rename-variable
 
             //ability to define rules for
-            //rulefor(resolve, ...);
-            //benötigt möglichkeit zum pattern matchin:
-            // x * y -> x
+            //rulefor(resolve, "coefficient", ...);
+            //benötigt möglichkeit zum pattern matching:
+            //a*_+b*_+c erstellt temporären scope mit den entsprechenden werten im argument.
 
             //ToDo: named arguments: mixed mode - differenz bilden und dann scope mit rest befüllen
 
