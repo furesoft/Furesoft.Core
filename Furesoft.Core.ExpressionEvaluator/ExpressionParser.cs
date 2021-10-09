@@ -13,6 +13,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
+using Furesoft.Core.ExpressionEvaluator.Macros;
 using Furesoft.Core.ExpressionEvaluator.Symbols;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,12 @@ namespace Furesoft.Core.ExpressionEvaluator
         public Dictionary<string, Module> Modules = new();
         public Scope RootScope = Scope.CreateScope();
         private readonly Binder Binder = new();
+
+        public ExpressionParser()
+        {
+            RootScope.AddMacro<RuleForMacro>();
+            RootScope.AddMacro<ResolveMacro>();
+        }
 
         public static void Init()
         {

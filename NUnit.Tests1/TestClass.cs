@@ -63,7 +63,8 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("f(x, y) = x * y; f(x=2, y=3);", 6);
                 yield return new TestCaseData("f(x, y) = x * y; f(1, y=3);", 3);
                 yield return new TestCaseData("f(x, y) = x * y; f(y=3, 2);", 6);
-                yield return new TestCaseData("x = resolve(x ^ 2 + 12 = 48, x); x", 6);
+                yield return new TestCaseData("rulefor(resolve, \"coefficient\", 1);", 0);
+                yield return new TestCaseData("rulefor(resolve, \"coefficient\", 1);x = resolve(x ^ 2 + 12 = 48, x); x", 6);
             }
         }
 
@@ -102,7 +103,7 @@ namespace NUnit.Tests1
             ep.RootScope.Import(typeof(Math));
             ep.RootScope.Import(typeof(Core));
 
-            ep.RootScope.Macros.Add("rename", new Func<MacroContext, Expression, Expression, Expression>(RenameFunction));
+            ep.RootScope.AddMacro<RenameMacro>();
 
             ep.Import(typeof(Geometry));
 
@@ -120,32 +121,42 @@ namespace NUnit.Tests1
             }
         }
 
-        private static Expression RenameFunction(MacroContext mc, Expression func, Expression newName)
+        private class RenameMacro : Macro
         {
-            if (func is UnresolvedRef oldRef && oldRef.Reference is string oldName && newName is UnresolvedRef nameref && nameref.Reference is string newNameString)
+            public override string Name => "rename";
+
+            public override Expression Invoke(MacroContext context, params Expression[] arguments)
             {
-                return RenameInternal(mc, oldName, newNameString);
+                return RenameFunction(context, arguments[0], arguments[1]);
             }
-            else if (func is Call c && c.ArgumentCount == 1 && c.Arguments[0] is Literal l && int.TryParse(l.Text, out var argCount))
+
+            private static Expression RenameFunction(MacroContext mc, Expression func, Expression newName)
             {
-                if (c.Expression is UnresolvedRef oldRef1 && oldRef1.Reference is string oldName1 && newName is UnresolvedRef nameref1 && nameref1.Reference is string newNameString1)
+                if (func is UnresolvedRef oldRef && oldRef.Reference is string oldName && newName is UnresolvedRef nameref && nameref.Reference is string newNameString)
                 {
-                    return RenameInternal(mc, oldName1, newNameString1, argCount);
+                    return RenameInternal(mc, oldName, newNameString);
                 }
+                else if (func is Call c && c.ArgumentCount == 1 && c.Arguments[0] is Literal l && int.TryParse(l.Text, out var argCount))
+                {
+                    if (c.Expression is UnresolvedRef oldRef1 && oldRef1.Reference is string oldName1 && newName is UnresolvedRef nameref1 && nameref1.Reference is string newNameString1)
+                    {
+                        return RenameInternal(mc, oldName1, newNameString1, argCount);
+                    }
+                }
+
+                return func;
             }
 
-            return func;
-        }
+            private static Expression RenameInternal(MacroContext mc, string oldName, string newNameString, int argumentCount = 1)
+            {
+                var funcRef = mc.GetImportedFunctionForName(oldName + ":" + argumentCount, out var mangledName);
 
-        private static Expression RenameInternal(MacroContext mc, string oldName, string newNameString, int argumentCount = 1)
-        {
-            var funcRef = mc.GetImportedFunctionForName(oldName + ":" + argumentCount, out var mangledName);
+                mc.Scope.ImportedFunctions.Remove(mangledName);
 
-            mc.Scope.ImportedFunctions.Remove(mangledName);
+                mc.Scope.ImportedFunctions.Add(newNameString + ":" + mangledName.Split(':')[1], funcRef);
 
-            mc.Scope.ImportedFunctions.Add(newNameString + ":" + mangledName.Split(':')[1], funcRef);
-
-            return new TempExpr();
+                return new TempExpr();
+            }
         }
     }
 }
