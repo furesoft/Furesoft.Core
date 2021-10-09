@@ -1,7 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
 using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
 using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
@@ -12,6 +11,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public FactorialOperator(Parser parser, CodeObject parent) : base(parser, parent)
         {
+        }
+
+        public override string Symbol
+        {
+            get { return "!"; }
         }
 
         public static new void AddParsePoints()
@@ -26,12 +30,6 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             if (parser.HasUnusedExpression)
                 return new FactorialOperator(parser, parent);
             return null;
-        }
-
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            Expression.AsTextExpression(writer, flags);
-            writer.Write("!");
         }
 
         public double Evaluate(ExpressionParser ep, Scope scope)

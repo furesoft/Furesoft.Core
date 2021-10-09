@@ -13,6 +13,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
         {
         }
 
+        public override string Symbol
+        {
+            get { return "^"; }
+        }
+
         public static new void AddParsePoints()
         {
             Parser.AddOperatorParsePoint("^", Precedence, true, false, Parse);

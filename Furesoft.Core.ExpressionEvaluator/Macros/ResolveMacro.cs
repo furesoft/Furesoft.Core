@@ -10,7 +10,9 @@ namespace Furesoft.Core.ExpressionEvaluator.Macros
         {
             var r = Rules;
 
-            throw new System.NotImplementedException();
+            //ToDo: implement resolve macro
+
+            return 6;
         }
     }
 }
