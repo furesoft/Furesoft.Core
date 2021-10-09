@@ -21,6 +21,7 @@ namespace Furesoft.Core.ExpressionEvaluator
         }
 
         public ExpressionParser ExpressionParser { get; set; }
+        public bool IsSyntaxContext { get; }
         public CodeObject ParentCallNode { get; }
         public Scope Scope { get; }
 

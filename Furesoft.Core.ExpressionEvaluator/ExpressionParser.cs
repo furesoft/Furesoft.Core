@@ -27,7 +27,7 @@ namespace Furesoft.Core.ExpressionEvaluator
     {
         public Dictionary<string, Module> Modules = new();
         public Scope RootScope = Scope.CreateScope();
-        private readonly Binder Binder = new();
+        public readonly Binder Binder = new();
 
         public ExpressionParser()
         {

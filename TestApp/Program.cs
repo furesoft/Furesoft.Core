@@ -50,12 +50,20 @@ namespace TestApp
 
             //ToDo: add boolean logic
             //ToDo: Macrosystem:
-            //add macro-class with macro context
+            //ToDo: add macros that can affect the syntax:
+            // macro fraction() on begin of script
+            // if unrecognized node try fraction macro, that can translate to real node Div
+            //macro has to be registered as syntax receiver and can be used like this:
+            //use syntax fraction; half = 1 over 2;
+            //will be converted to half = 1/2;
 
             //ability to define rules for
             //rulefor(resolve, "coefficient", ...);
             //benötigt möglichkeit zum pattern matching:
             //a*_+b*_+c erstellt temporären scope mit den entsprechenden werten im argument.
+
+            //verschiedene werttypen. beispiel vektoren/brüche
+            //operator überladung
 
             //ToDo: named arguments: mixed mode - differenz bilden und dann scope mit rest befüllen
 

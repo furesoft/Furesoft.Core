@@ -76,7 +76,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                         var macro = ExpressionParser.RootScope.Macros[s];
 
-                        var mc = new MacroContext(ExpressionParser, c.Parent, scope);
+                        var mc = new MacroContext(ExpressionParser, c.Parent, scope, false);
 
                         return macro.Invoke(mc, arguments.ToArray());
                     }

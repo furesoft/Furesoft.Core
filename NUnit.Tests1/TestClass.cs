@@ -65,6 +65,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("f(x, y) = x * y; f(y=3, 2);", 6);
                 yield return new TestCaseData("rulefor(resolve, \"coefficient\", 1);", 0);
                 yield return new TestCaseData("rulefor(resolve, \"coefficient\", 1);x = resolve(x ^ 2 + 12 = 48, x); x", 6);
+                yield return new TestCaseData("resolve(1 over 1+2)", 1);
             }
         }
 
