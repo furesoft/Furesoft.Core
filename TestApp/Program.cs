@@ -50,12 +50,8 @@ namespace TestApp
 
             //ToDo: add boolean logic
             //ToDo: Macrosystem:
-            //ToDo: add macros that can affect the syntax:
-            // macro fraction() on begin of script
-            // if unrecognized node try fraction macro, that can translate to real node Div
-            //macro has to be registered as syntax receiver and can be used like this:
-            //use syntax fraction; half = 1 over 2;
-            //will be converted to half = 1/2;
+            //ToDo: add ISyntaxReceiver
+            //Macro can register for syntax to do something or rebind node
 
             //ability to define rules for
             //rulefor(resolve, "coefficient", ...);

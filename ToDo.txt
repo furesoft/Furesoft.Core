@@ -1,15 +1,6 @@
-- AST:
-	[ ] Add Symbol-Struct and replace possibly strings in nodes 
-	[ ] TokenNode??
-	[ ] Add NodeStyle {Int, Decimal, String, Hexadecimal, Binary, Brackets, Paranthesis}
-	[ ] Add WithStyle-Extension
-	- Printer:
-		[ ] Printer - implement different printing of NodeStyle
-
 - StringEncoder
 	[ ] implement different Checksum algorythms
 
-[ ] Add parser framework
 [-] Add CLI App Framework
 	[ ] Commandline Parser
 	[-] OOP Based Commands
