@@ -12,7 +12,8 @@ namespace Furesoft.Core.ExpressionEvaluator
         public Dictionary<string, Expression> Aliases = new();
         public Dictionary<string, FunctionDefinition> Functions = new();
         public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
-        public Dictionary<string, Delegate> Macros = new();
+        public Dictionary<string, Macro> Macros = new();
+
         public Dictionary<string, Expression> SetDefinitions = new();
         public Dictionary<string, double> Variables = new();
         public Scope Parent { get; set; }
@@ -20,6 +21,13 @@ namespace Furesoft.Core.ExpressionEvaluator
         public static Scope CreateScope(Scope parent = null)
         {
             return new Scope { Parent = parent };
+        }
+
+        public void AddMacro<T>() where T : Macro, new()
+        {
+            var instance = new T();
+
+            Macros.Add(instance.Name, instance);
         }
 
         public void Evaluate(string content)

@@ -1,4 +1,4 @@
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
@@ -72,17 +72,13 @@ namespace Furesoft.Core.ExpressionEvaluator
                     }
                     else if (ExpressionParser.RootScope.Macros.ContainsKey(s))
                     {
-                        var arguments = c.Arguments.Select(_ => (object)_).ToList();
+                        var arguments = c.Arguments;
 
                         var macro = ExpressionParser.RootScope.Macros[s];
 
-                        if (macro.Method.GetParameters()
-                            .Any(_ => _.ParameterType.IsAssignableFrom(typeof(MacroContext))))
-                        {
-                            arguments.Insert(GetMacroContextIndex(macro.Method.GetParameters()), new MacroContext(ExpressionParser, c.Parent, scope));
-                        }
+                        var mc = new MacroContext(ExpressionParser, c.Parent, scope);
 
-                        return (Expression)macro.DynamicInvoke(arguments.ToArray());
+                        return macro.Invoke(mc, arguments.ToArray());
                     }
                 }
 
