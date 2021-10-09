@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using System;
@@ -22,6 +23,16 @@ namespace Furesoft.Core.ExpressionEvaluator
         public ExpressionParser ExpressionParser { get; set; }
         public CodeObject ParentCallNode { get; }
         public Scope Scope { get; }
+
+        public void AddRule(string macroName, ChildList<Expression> arguments)
+        {
+            if (Scope.Macros.ContainsKey(macroName))
+            {
+                var macro = Scope.Macros[macroName];
+
+                macro.Rules.Add(arguments);
+            }
+        }
 
         public UnresolvedRef GenerateSymbol()
         {
