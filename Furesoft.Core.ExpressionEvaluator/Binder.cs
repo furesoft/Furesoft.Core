@@ -1,4 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
@@ -191,6 +191,8 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else
             {
+                a.Right = BindExpression(a.Right, scope);
+
                 return a;
             }
         }
