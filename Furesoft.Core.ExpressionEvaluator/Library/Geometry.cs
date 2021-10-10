@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using System;
+using System.Diagnostics;
 
 namespace Furesoft.Core.ExpressionEvaluator.Library
 {
@@ -33,6 +35,14 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         public static double Circumference(double radius)
         {
             return 2 * radius * Math.PI;
+        }
+
+        [Macro(IsInitializer = true)]
+        public static Expression MacroTest(MacroContext context, Expression[] args)
+        {
+            Debug.WriteLine(42);
+
+            return 0;
         }
     }
 }

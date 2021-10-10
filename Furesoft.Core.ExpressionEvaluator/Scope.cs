@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.ExpressionEvaluator.AST;
+using Furesoft.Core.ExpressionEvaluator.Macros;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public Dictionary<string, Expression> SetDefinitions = new();
         public Dictionary<string, double> Variables = new();
+        public Macro Initializer { get; set; }
         public Scope Parent { get; set; }
 
         public static Scope CreateScope(Scope parent = null)
@@ -27,6 +29,11 @@ namespace Furesoft.Core.ExpressionEvaluator
         {
             var instance = new T();
 
+            AddMacro(instance);
+        }
+
+        public void AddMacro(Macro instance)
+        {
             if (!Macros.ContainsKey(instance.Name))
             {
                 Macros.Add(instance.Name, instance);
@@ -63,31 +70,60 @@ namespace Furesoft.Core.ExpressionEvaluator
         {
             foreach (var mi in t.GetMethods())
             {
-                if (mi.IsStatic && !mi.GetParameters().Select(_ => _.ParameterType).Any(_ => _ != typeof(double)))
+                if (mi.IsStatic)
                 {
                     string funcName = mi.Name.ToLower();
                     var attr = mi.GetCustomAttribute<FunctionNameAttribute>();
+                    var macroAttr = mi.GetCustomAttribute<MacroAttribute>();
 
                     if (attr != null)
                     {
                         funcName = attr.Name;
                     }
 
-                    string mangledName = funcName + ":" + mi.GetParameters().Length;
-                    if (!ImportedFunctions.ContainsKey(mangledName))
+                    if (macroAttr != null)
                     {
-                        ImportedFunctions.Add(mangledName, new Func<double[], double>(args =>
+                        var m = new ReflectionMacro(funcName, new Func<MacroContext, Expression[], Expression>((c, args) =>
                         {
-                            return (double)mi.Invoke(null, args.Cast<object>().ToArray());
+                            var na = new List<object>();
+                            na.Add(c);
+                            na.AddRange(args);
+
+                            if (args.Length == 0)
+                            {
+                                na.Add(Array.Empty<Expression>());
+                            }
+
+                            return (Expression)mi.Invoke(null, na.ToArray());
                         }));
+
+                        if (macroAttr.IsInitializer)
+                        {
+                            Initializer = m;
+                        }
+                        else
+                        {
+                            AddMacro(m);
+                        }
                     }
                     else
                     {
-                        //override registered function
-                        ImportedFunctions[mangledName] = new Func<double[], double>(args =>
+                        string mangledName = funcName + ":" + mi.GetParameters().Length;
+                        if (!ImportedFunctions.ContainsKey(mangledName))
                         {
-                            return (double)mi.Invoke(null, args.Cast<object>().ToArray());
-                        });
+                            ImportedFunctions.Add(mangledName, new Func<double[], double>(args =>
+                            {
+                                return (double)mi.Invoke(null, args.Cast<object>().ToArray());
+                            }));
+                        }
+                        else
+                        {
+                            //override registered function
+                            ImportedFunctions[mangledName] = new Func<double[], double>(args =>
+                            {
+                                return (double)mi.Invoke(null, args.Cast<object>().ToArray());
+                            });
+                        }
                     }
                 }
             }
@@ -143,6 +179,11 @@ namespace Furesoft.Core.ExpressionEvaluator
             foreach (var setDefinition in scope.SetDefinitions)
             {
                 SetDefinitions.Add(setDefinition.Key, setDefinition.Value);
+            }
+
+            if (scope.Initializer != null)
+            {
+                scope.Initializer.Invoke(new MacroContext(null, null, this));
             }
         }
     }

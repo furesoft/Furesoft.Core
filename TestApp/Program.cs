@@ -21,7 +21,7 @@ namespace TestApp
             geometryScope.ImportedFunctions.Add("areaRectangle", new Func<double[], double>((x) => { return x[0] * x[1]; }));
             geometryScope.Evaluate("areaTriangle(width, height) = width * height / 2;");
 
-            // ep.AddModule("geometry", geometryScope);
+            ep.AddModule("geometry", geometryScope);
 
             var module = ep.Evaluate("use \"geometry.math\"; geometry.areaRectangle(5, 3);");
 
@@ -65,7 +65,8 @@ namespace TestApp
             //ToDo: implement enumerations
             //valueset quadrat, kreis
             //wert ist der index
-            //implement variable reference from module: geometry.circle
+            //ToDo: implement RuleFor clr methods: generate pattern
+            //ToDo: add macro what executes when importing module
 
             return App.Current.Run();
         }
