@@ -27,7 +27,10 @@ namespace Furesoft.Core.ExpressionEvaluator
         {
             var instance = new T();
 
-            Macros.Add(instance.Name, instance);
+            if (!Macros.ContainsKey(instance.Name))
+            {
+                Macros.Add(instance.Name, instance);
+            }
         }
 
         public void Evaluate(string content)
@@ -119,7 +122,10 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             foreach (var macro in scope.Macros)
             {
-                Macros.Add(macro.Key, macro.Value);
+                if (!Macros.ContainsKey(macro.Key))
+                {
+                    Macros.Add(macro.Key, macro.Value);
+                }
             }
             foreach (var aliasDefinition in scope.Aliases)
             {

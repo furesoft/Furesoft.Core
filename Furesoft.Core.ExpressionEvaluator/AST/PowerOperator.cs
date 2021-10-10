@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
 using Furesoft.Core.CodeDom.Parsing;
 using System;
@@ -10,6 +11,10 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
         private const int Precedence = 2;
 
         public PowerOperator(Parser parser, CodeObject parent) : base(parser, parent)
+        {
+        }
+
+        public PowerOperator(Expression left, Expression right) : base(left, right)
         {
         }
 
