@@ -35,6 +35,11 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public Expression BindExpression(Expression expr, Scope scope)
         {
+            if (expr is IBindable b)
+            {
+                return (Expression)b.Bind(ExpressionParser, this);
+            }
+
             if (expr is BinaryOperator op)
             {
                 op.Left = BindExpression(op.Left, scope);

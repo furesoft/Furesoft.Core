@@ -25,9 +25,9 @@ namespace Furesoft.Core.ExpressionEvaluator
 {
     public class ExpressionParser
     {
+        public readonly Binder Binder = new();
         public Dictionary<string, Module> Modules = new();
         public Scope RootScope = Scope.CreateScope();
-        public readonly Binder Binder = new();
 
         public ExpressionParser()
         {
@@ -63,6 +63,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             InfinityRef.AddParsePoints();
 
             PowerOperator.AddParsePoints();
+            FunctionCompositorOperator.AddParsePoints();
             AbsoluteValueExpression.AddParsePoints();
 
             Dot.AddParsePoints();
@@ -179,6 +180,10 @@ namespace Furesoft.Core.ExpressionEvaluator
                 {
                     return EvaluateImportedFunction(scope, call, fnName, importedFn);
                 }
+                else
+                {
+                    call.AttachMessage($"{nameRef._AsString} is not defined", MessageSeverity.Error, MessageSource.Resolve);
+                }
 
                 return 0;
             }
@@ -238,6 +243,10 @@ namespace Furesoft.Core.ExpressionEvaluator
                         result.AddRange(GetMessagesOfCall(arg));
                     }
                 }
+            }
+            else if (obj is FunctionDefinition f && f.Body.First().HasAnnotations)
+            {
+                result.AddRange(GetMessagesOfCall(f.Body.First()));
             }
             else if (obj is Negative neg)
             {
