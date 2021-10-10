@@ -34,7 +34,7 @@ namespace TestApp
             ep.RootScope.ImportedFunctions.Add("display", new Func<double[], double>((x) => { Console.WriteLine(x[0]); return 0; }));
 
             var result = ep.Evaluate("f: x in N 2 <= x < 20 && x % 2 == 0; f(x) = 2*x; f(2); f(3); f(4);  display(-f(6));|-4**2|");
-            var aliasCall = ep.Evaluate("geometry.areaTriangle(2, 6);");
+            var aliasCall = ep.Evaluate("geometry.circle;");
 
             //ToDo: add standard library
 
@@ -62,6 +62,10 @@ namespace TestApp
             //operator überladung
 
             //ToDo: named arguments: mixed mode - differenz bilden und dann scope mit rest befüllen
+            //ToDo: implement enumerations
+            //valueset quadrat, kreis
+            //wert ist der index
+            //implement variable reference from module: geometry.circle
 
             return App.Current.Run();
         }

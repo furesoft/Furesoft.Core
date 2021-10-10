@@ -102,6 +102,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                 }
             }
 
+            //Bind Variable from Module: module.variable
             if (expr is Dot d && d.Left is UnresolvedRef lef && lef.Reference is string left
                 && d.Right is UnresolvedRef r && r.Reference is string right)
             {
@@ -234,21 +235,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             md.Body.Add(right);
 
             return md;
-        }
-
-        private int GetMacroContextIndex(System.Reflection.ParameterInfo[] parameterInfos)
-        {
-            for (int i = 0; i < parameterInfos.Length; i++)
-            {
-                var pi = parameterInfos[i];
-
-                if (pi.ParameterType == typeof(MacroContext))
-                {
-                    return i;
-                }
-            }
-
-            return 0;
         }
     }
 }
