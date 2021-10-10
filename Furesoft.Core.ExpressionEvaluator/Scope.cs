@@ -68,7 +68,11 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public void Import(Type t)
         {
-            foreach (var mi in t.GetMethods())
+            var methods = t.GetMethods().Where(_ =>
+            _.GetParameters().Any(_ => _.ParameterType == typeof(double))
+            || _.GetParameters().Any(_ => _.ParameterType == typeof(MacroContext)));
+
+            foreach (var mi in methods)
             {
                 if (mi.IsStatic)
                 {
