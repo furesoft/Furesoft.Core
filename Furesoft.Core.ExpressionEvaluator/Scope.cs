@@ -94,7 +94,16 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             foreach (var field in t.GetFields())
             {
-                if (field.IsStatic)
+                if (!field.IsStatic)
+                {
+                    continue;
+                }
+
+                if (t.IsEnum)
+                {
+                    Variables.Add(field.Name.ToLower(), (int)field.GetValue(null));
+                }
+                else
                 {
                     Variables.Add(field.Name.ToUpper(), (double)field.GetValue(null));
                 }

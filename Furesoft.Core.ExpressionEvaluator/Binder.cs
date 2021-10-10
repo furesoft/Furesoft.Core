@@ -102,6 +102,16 @@ namespace Furesoft.Core.ExpressionEvaluator
                 }
             }
 
+            if (expr is Dot d && d.Left is UnresolvedRef lef && lef.Reference is string left
+                && d.Right is UnresolvedRef r && r.Reference is string right)
+            {
+                var s = ExpressionParser.Modules[left].Scope;
+                if (s.Variables.ContainsKey(right))
+                {
+                    return s.Variables[right];
+                }
+            }
+
             return expr;
         }
 

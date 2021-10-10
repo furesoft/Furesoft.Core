@@ -2,7 +2,7 @@
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum)]
     public class ModuleAttribute : Attribute
     {
         public ModuleAttribute(string name)
