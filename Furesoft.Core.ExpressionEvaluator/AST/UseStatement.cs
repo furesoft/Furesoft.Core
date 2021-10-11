@@ -1,6 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
@@ -26,6 +27,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public CodeObject Bind(ExpressionParser ep, Binder binder)
         {
+            if (Module is Dot dot)
+            {
+                Module = new UnresolvedRef(dot._AsString);
+            }
+
             if (Module is UnresolvedRef uref)
             {
                 if (ep.Modules.ContainsKey(uref.Reference.ToString()))

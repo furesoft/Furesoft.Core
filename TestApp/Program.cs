@@ -66,7 +66,6 @@ namespace TestApp
             //valueset quadrat, kreis
             //wert ist der index
             //ToDo: implement RuleFor clr methods: generate pattern
-            //ToDo: add macro what executes when importing module
 
             return App.Current.Run();
         }

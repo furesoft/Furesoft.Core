@@ -70,6 +70,8 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("f(x) = 2 * x; g(x) = x^x; h(x) = f @ g; h(2);", 8);
                 yield return new TestCaseData("geometry.parallelogram;", 1);
                 yield return new TestCaseData("use geometry; parallelogram;", 1);
+                yield return new TestCaseData("use geometry.volume; round(volumePyramide(2, 5), 5);", 3.33333);
+                yield return new TestCaseData("round(geometry.volume.volumePyramide(2, 5), 5);", 3.33333);
             }
         }
 
@@ -111,6 +113,7 @@ namespace NUnit.Tests1
             ep.RootScope.AddMacro<RenameMacro>();
 
             ep.Import(typeof(Geometry));
+            ep.Import(typeof(GeometryVolume));
             ep.Import(typeof(GeometryTypes));
 
             var result = ep.Evaluate(input);

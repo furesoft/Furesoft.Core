@@ -19,10 +19,10 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             return width * width;
         }
 
-        [FunctionName("areaSquare")]
-        public static double AreaSquare(double width, double height)
+        [FunctionName("areaTrapezoide")]
+        public static double AreaTrapezoide(double a, double c, double height)
         {
-            return width * height;
+            return 0.5 * (a + c) * height;
         }
 
         [FunctionName("areaTriangle")]
@@ -38,11 +38,27 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         }
 
         [Macro(IsInitializer = true)]
-        public static Expression MacroTest(MacroContext context, Expression[] args)
+        public static Expression InitializerTest(MacroContext context, Expression[] args)
         {
             Debug.WriteLine(42);
 
             return 0;
+        }
+
+        [FunctionName("volumePyramide")]
+        public static double VolumePyramide(double ground, double height)
+        {
+            return 1 / 3 * ground * height;
+        }
+    }
+
+    [Module("geometry.volume")]
+    public class GeometryVolume
+    {
+        [FunctionName("volumePyramide")]
+        public static double VolumePyramide(double ground, double height)
+        {
+            return ground * height / 3;
         }
     }
 }

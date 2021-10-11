@@ -51,6 +51,11 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (expr is Call call && call.Expression is Dot dot)
             {
+                if (dot.Left is Dot)
+                {
+                    dot.Left = new UnresolvedRef(dot.Left._AsString);
+                }
+
                 var moduleRef = (SymbolicRef)dot.Left;
                 var funcRef = dot.Right;
 
