@@ -7,6 +7,8 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
     [Module("geometry")]
     public static class Geometry
     {
+        public static GeometryVolume Volume = new GeometryVolume();
+
         [FunctionName("areaRectangle")]
         public static double AreaRectangle(double width, double height)
         {

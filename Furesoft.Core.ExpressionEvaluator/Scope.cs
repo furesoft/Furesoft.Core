@@ -66,7 +66,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             return 0;
         }
 
-        public void Import(Type t)
+        public void Import(Type t, ExpressionParser parser = null)
         {
             var methods = t.GetMethods().Where(_ =>
             _.GetParameters().Any(_ => _.ParameterType == typeof(double))
@@ -143,9 +143,14 @@ namespace Furesoft.Core.ExpressionEvaluator
                 {
                     Variables.Add(field.Name.ToLower(), (int)field.GetValue(null));
                 }
-                else
+                else if (field.FieldType == typeof(double))
                 {
                     Variables.Add(field.Name.ToUpper(), (double)field.GetValue(null));
+                }
+                else
+                {
+                    //import submodule
+                    parser.Import(field.FieldType);
                 }
             }
         }

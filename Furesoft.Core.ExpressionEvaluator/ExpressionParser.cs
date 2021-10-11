@@ -122,7 +122,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             if (attr != null)
             {
                 var scope = new Scope();
-                scope.Import(type);
+                scope.Import(type, this);
 
                 AddModule(attr.Name, scope);
             }

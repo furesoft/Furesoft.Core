@@ -113,7 +113,6 @@ namespace NUnit.Tests1
             ep.RootScope.AddMacro<RenameMacro>();
 
             ep.Import(typeof(Geometry));
-            ep.Import(typeof(GeometryVolume));
             ep.Import(typeof(GeometryTypes));
 
             var result = ep.Evaluate(input);
