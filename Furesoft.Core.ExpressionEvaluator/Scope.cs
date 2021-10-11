@@ -1,4 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Macros;
 using System;
@@ -107,7 +107,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                         }
                         else
                         {
-                            AddMacro(m);
+                            parser.RootScope.AddMacro(m);
                         }
                     }
                     else

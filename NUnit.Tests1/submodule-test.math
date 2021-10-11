@@ -1,0 +1,3 @@
+module geometry.hello; 
+
+areaRectangle(a, b) = a * b;

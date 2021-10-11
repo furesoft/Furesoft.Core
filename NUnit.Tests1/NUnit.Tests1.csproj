@@ -16,6 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="submodule-test.math">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="geometry.math">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

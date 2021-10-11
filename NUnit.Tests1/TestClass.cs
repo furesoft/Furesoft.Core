@@ -40,6 +40,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("|-4^2|;", 16);
                 yield return new TestCaseData("-|4^2|;", -16);
                 yield return new TestCaseData("use \"geometry.math\"; -geometry.areaRectangle(5, 3);", -15);
+                yield return new TestCaseData("use \"submodule-test.math\"; -geometry.hello.areaRectangle(5, 3);", -15);
                 yield return new TestCaseData("use geometry; round(circumference(5), 5);", 31.4159265359);
                 yield return new TestCaseData("round(geometry.circumference(5), 5);", 31.4159265359);
                 yield return new TestCaseData("module trignonomic; b(p) = 2 * PI / p; b(PI);", 2);
@@ -72,6 +73,8 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("use geometry; parallelogram;", 1);
                 yield return new TestCaseData("use geometry.volume; round(volumePyramide(2, 5), 5);", 3.33333);
                 yield return new TestCaseData("round(geometry.volume.volumePyramide(2, 5), 5);", 3.33333);
+                yield return new TestCaseData("unpackBinominal((4 + 3) ^ 2);", 16 + 9 + 2 * 4 * 3);
+                yield return new TestCaseData("unpackBinominal((4 - 3) ^ 2);", 16 + 9 - 2 * 4 * 3);
             }
         }
 
@@ -114,6 +117,7 @@ namespace NUnit.Tests1
 
             ep.Import(typeof(Geometry));
             ep.Import(typeof(GeometryTypes));
+            ep.Import(typeof(Formulars));
 
             var result = ep.Evaluate(input);
             if (result.Errors.Count == 0)
