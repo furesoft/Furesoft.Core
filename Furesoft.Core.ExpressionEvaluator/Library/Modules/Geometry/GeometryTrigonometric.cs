@@ -2,7 +2,7 @@
 
 namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Geometry
 {
-    [Module("geometry.trinonometric")]
+    [Module("geometry.trigonometric")]
     public class GeometryTrigonometric
     {
         [FunctionName("period")]
