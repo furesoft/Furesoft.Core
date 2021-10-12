@@ -9,6 +9,9 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 {
     public static class Core
     {
+        public static double False = 0;
+        public static double True = 1;
+
         [FunctionName("average")]
         [Macro]
         public static Expression Average(MacroContext mc, Expression[] args)
