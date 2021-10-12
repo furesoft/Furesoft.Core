@@ -41,15 +41,15 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("-|4^2|;", -16);
                 yield return new TestCaseData("use \"geometry.math\"; -geometry.areaRectangle(5, 3);", -15);
                 yield return new TestCaseData("use \"submodule-test.math\"; -geometry.hello.areaRectangle(5, 3);", -15);
-                yield return new TestCaseData("use geometry; round(circumference(5), 5);", 31.4159265359);
-                yield return new TestCaseData("round(geometry.circumference(5), 5);", 31.4159265359);
+                yield return new TestCaseData("use geometry.*; round(circumference(5), 5);", 31.4159265359);
+                yield return new TestCaseData("round(geometry.planes.circumference(5), 5);", 31.4159265359);
                 yield return new TestCaseData("module trignonomic; b(p) = 2 * PI / p; b(PI);", 2);
                 yield return new TestCaseData("-(2+3+4)", -9);
                 yield return new TestCaseData("f: x in N 2 <= x < 20; f(x) = 2*x; f(5);", 10);
                 yield return new TestCaseData("f: x in N; f(x) = 2*x; f(5);", 10);
                 yield return new TestCaseData("h(x) = x^2; h(x, y) = x ^ y; h(4, 2)", 16);
                 yield return new TestCaseData("alias round as rnd; rnd(2.345, 1)", 2.3);
-                yield return new TestCaseData("alias geometry.circumference as umfang; round(umfang(1), 5);", 2 * Math.PI);
+                yield return new TestCaseData("alias geometry.planes.circumference as umfang; round(umfang(1), 5);", 2 * Math.PI);
                 yield return new TestCaseData("5!", 120);
                 yield return new TestCaseData("(5+1)!", 720);
                 yield return new TestCaseData("set P in N = 1 < x && x % 1 == 0 && x % x == 0;", 0);
@@ -75,6 +75,12 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("round(geometry.volume.volumePyramide(2, 5), 5);", 3.33333);
                 yield return new TestCaseData("unpackBinominal((4 + 3) ^ 2);", 16 + 9 + 2 * 4 * 3);
                 yield return new TestCaseData("unpackBinominal((4 - 3) ^ 2);", 16 + 9 - 2 * 4 * 3);
+                yield return new TestCaseData("unpackBinominal((3+4)*(3-4));", 9 - 16);
+                yield return new TestCaseData("inverse(2);", 0.5);
+                yield return new TestCaseData("inverse(0.5);", 2);
+                yield return new TestCaseData("use geometry.*; round(volumePyramide(2, 5), 5);", 3.33333);
+                yield return new TestCaseData("root(2, 16)", 4);
+                yield return new TestCaseData("root(3, 125)", 5);
             }
         }
 

@@ -21,6 +21,10 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             {
                 return UnpackFirstCases(formular);
             }
+            else if (IsLastCase(formular))
+            {
+                return UnpackLastCase(formular);
+            }
 
             return new TempExpr();
         }
@@ -32,6 +36,18 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 
             return argument is PowerOperator pow && pow.Right._AsString == "2"
                 && pow.Left is BinaryOperator bin && (bin.Symbol == "+" || bin.Symbol == "-") && bin.HasParens;
+        }
+
+        private static bool IsLastCase(Expression formular)
+        {
+            ///(a+b)*(a-b)
+
+            return formular is Multiply multiply
+                && multiply.Left is Add add
+                && multiply.Right is Subtract subtract
+                && add.HasParens && subtract.HasParens
+                && add.Left._AsString == subtract.Left._AsString
+                && add.Right._AsString == subtract.Right._AsString;
         }
 
         private static Expression UnpackFirstCases(Expression argument)
@@ -57,6 +73,18 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
                 {
                     return new TempExpr();
                 }
+            }
+
+            return new TempExpr();
+        }
+
+        private static Expression UnpackLastCase(Expression formular)
+        {
+            if (formular is Multiply multiply && multiply.Left is Add add && multiply.Right is Subtract subtract)
+            {
+                //a^2-b^2
+
+                return new Subtract(new PowerOperator(add.Left, new Literal(2)), new PowerOperator(add.Right, new Literal(2)));
             }
 
             return new TempExpr();

@@ -66,8 +66,6 @@ namespace TestApp
             //valueset quadrat, kreis
             //wert ist der index
             //ToDo: implement RuleFor clr methods: generate pattern
-            //ToDo: implement useing all submodules: use geometry.*;
-            //ToDo: implement useing all submodules: use geometry.submodule.*;
 
             return App.Current.Run();
         }

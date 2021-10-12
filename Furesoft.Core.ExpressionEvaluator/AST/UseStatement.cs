@@ -8,6 +8,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.ExpressionEvaluator.Symbols;
 using System.IO;
+using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
@@ -32,11 +33,23 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
                 Module = new UnresolvedRef(dot._AsString);
             }
 
-            if (Module is UnresolvedRef uref)
+            if (Module is UnresolvedRef uref && uref.Reference is string name)
             {
-                if (ep.Modules.ContainsKey(uref.Reference.ToString()))
+                if (ep.Modules.ContainsKey(name))
                 {
-                    Module = new ModuleRef(ep.Modules[uref.Reference.ToString()]);
+                    Module = new ModuleRef(ep.Modules[name]);
+                }
+                else if (name.EndsWith("*") && ep.Modules.Keys.Any(_ => _.StartsWith(name.Substring(0, name.Length - 1))))
+                {
+                    var tmpModule = new Module();
+                    tmpModule.Scope = Scope.CreateScope();
+
+                    foreach (var module in ep.Modules.Where(_ => _.Key.StartsWith(name.Substring(0, name.Length - 1))))
+                    {
+                        tmpModule.Scope.ImportScope(module.Value.Scope);
+                    }
+
+                    Module = new ModuleRef(tmpModule);
                 }
                 else
                 {

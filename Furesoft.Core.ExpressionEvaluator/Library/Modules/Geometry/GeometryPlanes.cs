@@ -1,7 +1,9 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Geometry
+﻿using System;
+
+namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Geometry
 {
-    [Module("geometry.area")]
-    public class GeometryArea
+    [Module("geometry.planes")]
+    public class GeometryPlanes
     {
         [FunctionName("areaRectangle")]
         public static double AreaRectangle(double width, double height)
@@ -25,6 +27,12 @@
         public static double AreaTriangle(double width, double height)
         {
             return width * height / 2;
+        }
+
+        [FunctionName("circumference")]
+        public static double Circumference(double radius)
+        {
+            return 2 * radius * Math.PI;
         }
     }
 }

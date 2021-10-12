@@ -107,7 +107,14 @@ namespace Furesoft.Core.ExpressionEvaluator
                         }
                         else
                         {
-                            parser.RootScope.AddMacro(m);
+                            if (parser != null)
+                            {
+                                parser.RootScope.AddMacro(m);
+                            }
+                            else
+                            {
+                                AddMacro(m);
+                            }
                         }
                     }
                     else
