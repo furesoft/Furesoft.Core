@@ -17,6 +17,30 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             return evaluatedArgs.Sum() / args.Length;
         }
 
+        [FunctionName("displayValueTable")]
+        [Macro]
+        public static Expression DisplayValueTable(MacroContext mc,
+            Expression minimum, Expression maximum, Expression step, Expression function)
+        {
+            Console.WriteLine("ValueTable for f(x) = " + function._AsString);
+
+            double stepEvaluated = mc.ExpressionParser.EvaluateExpression(step, mc.Scope);
+            double minimumEvaluated = mc.ExpressionParser.EvaluateExpression(minimum, mc.Scope);
+            double maximumEvaluated = mc.ExpressionParser.EvaluateExpression(maximum, mc.Scope);
+
+            for (double i = minimumEvaluated; i < maximumEvaluated; i += stepEvaluated)
+            {
+                var scope = Scope.CreateScope();
+                scope.Variables.Add("x", i);
+
+                var result = mc.ExpressionParser.EvaluateExpression(function, scope);
+
+                Console.WriteLine($"f({i}) = " + result);
+            }
+
+            return 0;
+        }
+
         [Macro]
         [FunctionName("inverse")]
         public static Expression Inverse(MacroContext mc, Expression value)
