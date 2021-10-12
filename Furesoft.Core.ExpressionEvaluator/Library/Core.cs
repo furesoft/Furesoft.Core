@@ -1,5 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using System;
 using System.Linq;
@@ -15,6 +16,24 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             var evaluatedArgs = args.Select(_ => mc.ExpressionParser.EvaluateExpression(_, mc.Scope));
 
             return evaluatedArgs.Sum() / args.Length;
+        }
+
+        [FunctionName("displayTree")]
+        [Macro]
+        public static Expression DisplayTree(MacroContext mc, Expression[] args)
+        {
+            if (args.Length == 2 && mc.ExpressionParser.EvaluateExpression(args[1], mc.Scope) == 1)
+            {
+                var binded = mc.ExpressionParser.Binder.BindExpression(args[0], mc.Scope);
+
+                Console.WriteLine(binded.AsText());
+            }
+            else
+            {
+                Console.WriteLine(args[0].AsText());
+            }
+
+            return new TempExpr();
         }
 
         [FunctionName("displayValueTable")]

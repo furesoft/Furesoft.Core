@@ -17,8 +17,10 @@ namespace TestApp
             ep.RootScope.Import(typeof(Math));
             ep.Import(typeof(Geometry));
             ep.Import(typeof(Core));
+            ep.Import(typeof(Formulars));
 
             var aliasCall = ep.Evaluate("displayValueTable(1, 10, 1, x ^ 2);");
+            var displayTree = ep.Evaluate("use formulars; displayTree(unpackBinominal((1+2)^2), 1);");
 
             //ToDo: add standard library
 
@@ -53,6 +55,7 @@ namespace TestApp
             //ToDo: implement RuleFor clr methods: generate pattern
 
             //ToDo: displayValueTable: function mit funktionsname übergeben oder assignment und argumentname an scope übergeben
+            //ToDo: check initializer macro call
 
             return App.Current.Run();
         }
