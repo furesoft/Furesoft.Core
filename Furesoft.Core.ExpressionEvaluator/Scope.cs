@@ -91,7 +91,17 @@ namespace Furesoft.Core.ExpressionEvaluator
                         {
                             var na = new List<object>();
                             na.Add(c);
-                            na.AddRange(args);
+
+                            var parameters = mi.GetParameters();
+
+                            if (parameters.Skip(1).First().ParameterType == typeof(Expression[]))
+                            {
+                                na.Add(args);
+                            }
+                            else
+                            {
+                                na.AddRange(args);
+                            }
 
                             if (args.Length == 0)
                             {

@@ -59,6 +59,7 @@ namespace TestApp
             //a*_+b*_+c erstellt temporären scope mit den entsprechenden werten im argument.
 
             //verschiedene werttypen. beispiel vektoren/brüche
+            //tuples
             //operator überladung
 
             //ToDo: named arguments: mixed mode - differenz bilden und dann scope mit rest befüllen

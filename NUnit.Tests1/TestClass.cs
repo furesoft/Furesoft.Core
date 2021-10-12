@@ -81,6 +81,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("use geometry.*; round(volumePyramide(2, 5), 5);", 3.33333);
                 yield return new TestCaseData("root(2, 16)", 4);
                 yield return new TestCaseData("root(3, 125)", 5);
+                yield return new TestCaseData("average(1,2,3,4,5,5,4,3,2,1)", 3);
             }
         }
 

@@ -9,6 +9,8 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
     {
         public static GeometryFigure Figure = new();
         public static GeometryPlanes Planes = new();
+        public static GeometryPolinomal Polinomal = new();
+        public static GeometryTrigonometric Trigonometric = new();
 
         [Macro(IsInitializer = true)]
         public static Expression InitializerTest(MacroContext context, Expression[] args)

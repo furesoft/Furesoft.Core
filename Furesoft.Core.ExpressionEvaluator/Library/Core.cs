@@ -2,11 +2,21 @@
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using System;
+using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.Library
 {
-    public class Core
+    public static class Core
     {
+        [FunctionName("average")]
+        [Macro]
+        public static Expression Average(MacroContext mc, Expression[] args)
+        {
+            var evaluatedArgs = args.Select(_ => mc.ExpressionParser.EvaluateExpression(_, mc.Scope));
+
+            return evaluatedArgs.Sum() / args.Length;
+        }
+
         [Macro]
         [FunctionName("inverse")]
         public static Expression Inverse(MacroContext mc, Expression value)
