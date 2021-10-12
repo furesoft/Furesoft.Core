@@ -16,25 +16,9 @@ namespace TestApp
             ep.AddVariable("x", 42);
             ep.RootScope.Import(typeof(Math));
             ep.Import(typeof(Geometry));
+            ep.Import(typeof(Core));
 
-            var geometryScope = new Scope();
-            geometryScope.ImportedFunctions.Add("areaRectangle", new Func<double[], double>((x) => { return x[0] * x[1]; }));
-            geometryScope.Evaluate("areaTriangle(width, height) = width * height / 2;");
-
-            ep.AddModule("geometry", geometryScope);
-
-            var module = ep.Evaluate("use \"geometry.math\"; geometry.areaRectangle(5, 3);");
-
-            var floorPi = ep.Evaluate("floor(PI);");
-            ep.Evaluate("g(x) = x*x");
-            //[1, 5]
-            var gres = ep.Evaluate("g: x in N [5, INFINITY];g(4);");
-            //ToDo: fix ]1, 5] condition null
-
-            ep.RootScope.ImportedFunctions.Add("display", new Func<double[], double>((x) => { Console.WriteLine(x[0]); return 0; }));
-
-            var result = ep.Evaluate("f: x in N 2 <= x < 20 && x % 2 == 0; f(x) = 2*x; f(2); f(3); f(4);  display(-f(6));|-4**2|");
-            var aliasCall = ep.Evaluate("geometry.circle;");
+            var aliasCall = ep.Evaluate("displayValueTable(1, 10, 1, x ^ 2);");
 
             //ToDo: add standard library
 
@@ -67,6 +51,8 @@ namespace TestApp
             //valueset quadrat, kreis
             //wert ist der index
             //ToDo: implement RuleFor clr methods: generate pattern
+
+            //ToDo: displayValueTable: function mit funktionsname übergeben oder assignment und argumentname an scope übergeben
 
             return App.Current.Run();
         }

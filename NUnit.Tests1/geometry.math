@@ -1,3 +1,3 @@
-module geometry; 
+module test; 
 
-areaRectangle(a, b) = a * b;
+tester(a, b) = a * b;

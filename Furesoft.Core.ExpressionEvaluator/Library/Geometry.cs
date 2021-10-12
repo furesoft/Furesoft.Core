@@ -1,6 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.ExpressionEvaluator.Library.Modules.Geometry;
-using System.Diagnostics;
+﻿using Furesoft.Core.ExpressionEvaluator.Library.Modules.Geometry;
 
 namespace Furesoft.Core.ExpressionEvaluator.Library
 {
@@ -11,13 +9,5 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         public static GeometryPlanes Planes = new();
         public static GeometryPolinomal Polinomal = new();
         public static GeometryTrigonometric Trigonometric = new();
-
-        [Macro(IsInitializer = true)]
-        public static Expression InitializerTest(MacroContext context, Expression[] args)
-        {
-            Debug.WriteLine(42);
-
-            return 0;
-        }
     }
 }
