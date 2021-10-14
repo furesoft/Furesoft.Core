@@ -15,6 +15,10 @@ name(arg1, arg2) = arg1 * arg2;
 name(1, 2 * 3);
 ```
 
+```
+f(x = 1, y = 2 * 3);
+```
+
 ## Function Argument Constraint
 ```
 name: arg1 is N 0 < x < 100;
