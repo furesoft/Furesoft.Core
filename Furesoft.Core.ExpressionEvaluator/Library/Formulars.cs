@@ -1,15 +1,55 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.Library
 {
     [Module("formulars")]
     public static class Formulars
     {
+        [Macro]
+        [FunctionName("gauß")]
+        public static Expression Gauß(MacroContext mc, Expression[] equations)
+        {
+            var matrix = new GaußMatrix();
+
+            foreach (var eq in equations)
+            {
+                if (eq is Assignment a)
+                {
+                    var coefficients = GetCoefficients(a.Left).Select(_ => mc.ExpressionParser.EvaluateExpression(_, mc.Scope)).ToList();
+                    if (coefficients.Count == 2)
+                    {
+                        coefficients.Add(0);
+                    }
+
+                    if (a.Right is Literal result)
+                    {
+                        coefficients.Add(mc.ExpressionParser.EvaluateExpression(result, mc.Scope));
+                    }
+                    else if (a.Right is Negative n)
+                    {
+                        coefficients.Add(mc.ExpressionParser.EvaluateExpression(n, mc.Scope));
+                    }
+
+                    matrix.Add(coefficients.ToArray());
+                }
+            }
+
+            var r = matrix.Solve();
+
+            return new TempExpr();
+        }
+
         [Macro]
         [FunctionName("unpackBinominal")]
         public static Expression UnpackBinominal(MacroContext context, Expression formular)
@@ -27,6 +67,54 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             }
 
             return new TempExpr();
+        }
+
+        private static IEnumerable<Literal> GetCoefficients(Expression expr)
+        {
+            var result = new List<Literal>();
+            //2*x+y+3*z
+            if (expr is BinaryArithmeticOperator op)
+            {
+                if (op.Left is BinaryArithmeticOperator addsub)
+                {
+                    if (addsub.Left is Multiply lm)
+                    {
+                        if (lm.Left is Literal lit)
+                        {
+                            result.Add(lit);
+                        }
+                        if (lm.Left is Negative neg && neg.Expression is Literal ll)
+                        {
+                            result.Add(new Literal(double.Parse("-" + ll.Text)));
+                        }
+                    }
+                    else if (addsub.Left is UnresolvedRef)
+                    {
+                        result.Add(new Literal(1));
+                    }
+                    else if (addsub.Left is Negative)
+                    {
+                        result.Add(new Literal(-1));
+                    }
+                    if (addsub.Right is Multiply rm)
+                    {
+                        if (rm.Left is Literal lit)
+                        {
+                            result.Add(lit);
+                        }
+                    }
+                }
+                if (op.Left is Literal l)
+                {
+                    result.Add(l);
+                }
+                if (op.Right is BinaryArithmeticOperator o)
+                {
+                    result.AddRange(GetCoefficients(o));
+                }
+            }
+
+            return result;
         }
 
         private static bool IsFirstCases(Expression argument)
