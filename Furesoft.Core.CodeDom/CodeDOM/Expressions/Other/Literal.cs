@@ -246,6 +246,16 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             Parser.AddParsePoint(ParseTokenFalse, Parse);
         }
 
+        public static implicit operator Literal(int v)
+        {
+            return new(v);
+        }
+
+        public static implicit operator Literal(double v)
+        {
+            return new(v);
+        }
+
         /// <summary>
         /// Parse a <see cref="Literal"/>.
         /// </summary>

@@ -1,7 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using System;
 using System.Linq;
 
@@ -67,7 +65,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         [FunctionName("inverse")]
         public static Expression Inverse(MacroContext mc, Expression value)
         {
-            return new Divide(new Literal(1), value);
+            return 1 / value;
         }
 
         [FunctionName("root")]

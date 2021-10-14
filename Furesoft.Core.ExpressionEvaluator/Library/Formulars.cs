@@ -3,6 +3,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
@@ -122,7 +123,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             //(a+b)^2 = a^2+b^+2*qb
             //(a-b)^2 = a^2+b^-2*qb
 
-            return argument is PowerOperator pow && pow.Right._AsString == "2"
+            return argument is BitwiseXor pow && pow.Right._AsString == "2"
                 && pow.Left is BinaryOperator bin && (bin.Symbol == "+" || bin.Symbol == "-") && bin.HasParens;
         }
 
@@ -140,22 +141,20 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 
         private static Expression UnpackFirstCases(Expression argument)
         {
-            if (argument is PowerOperator pow && pow.Right._AsString == "2"
+            if (argument is BitwiseXor pow && pow.Right._AsString == "2"
                 && pow.Left is BinaryOperator bin)
             {
-                PowerOperator a2 = new PowerOperator(bin.Left, new Literal(2));
-                PowerOperator b2 = new PowerOperator(bin.Right, new Literal(2));
-                Multiply ab2 = new Multiply(new Literal(2), new Multiply(bin.Left, bin.Right));
+                var a2 = new PowerOperator(bin.Left, 2);
+                var b2 = new PowerOperator(bin.Right, 2);
+                var ab2 = 2 * bin.Left * bin.Right;
 
                 if (bin.Symbol == "+")
                 {
-                    return new Add(a2,
-                        new Add(b2, ab2));
+                    return a2 + b2 + ab2;
                 }
                 else if (bin.Symbol == "-")
                 {
-                    return new Add(a2,
-                        new Subtract(b2, ab2));
+                    return a2 + b2 - ab2;
                 }
                 else
                 {
@@ -168,11 +167,11 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 
         private static Expression UnpackLastCase(Expression formular)
         {
-            if (formular is Multiply multiply && multiply.Left is Add add && multiply.Right is Subtract subtract)
+            if (formular is Multiply multiply && multiply.Left is Add add && multiply.Right is Subtract)
             {
                 //a^2-b^2
 
-                return new Subtract(new PowerOperator(add.Left, new Literal(2)), new PowerOperator(add.Right, new Literal(2)));
+                return new PowerOperator(add.Left, 2) - new PowerOperator(add.Right, 2);
             }
 
             return new TempExpr();

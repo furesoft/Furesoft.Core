@@ -1,6 +1,7 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
@@ -27,15 +28,15 @@ namespace Furesoft.Core.ExpressionEvaluator.Macros
         {
             if (left is Add add)
             {
-                a.Right = new Subtract(a.Right, add.Right);
+                a.Right = a.Right - add.Right;
                 a.Left = add.Left;
             }
             if (left is Subtract sub)
             {
-                a.Right = new Add(a.Right, sub.Right);
+                a.Right = a.Right + sub.Right;
                 a.Left = sub.Left;
             }
-            else if (left is PowerOperator pow)
+            else if (left is BitwiseXor pow)
             {
                 a.Right = new Call(new UnresolvedRef("sqrt"), a.Right);
                 a.Left = pow.Left;

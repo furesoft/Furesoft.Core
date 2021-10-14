@@ -1,28 +1,28 @@
-﻿using System;
-using System.Collections;
-using System.Reflection;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using static Furesoft.Core.CodeDom.Parsing.Parser;
-using Furesoft.Core.CodeDom.CodeDOM;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.CompilerDirectives.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Properties;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Variables;
-using Index = Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Index;
+using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System;
+using System.Collections;
+using System.Reflection;
+using static Furesoft.Core.CodeDom.Parsing.Parser;
+using Index = Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Index;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
 {
@@ -376,6 +376,31 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
         public static implicit operator Expression(decimal value)
         {
             return new Literal(value);
+        }
+
+        public static Expression operator -(Expression l, Expression r)
+        {
+            return new Subtract(l, r);
+        }
+
+        public static Expression operator -(Expression expr)
+        {
+            return new Negative(expr);
+        }
+
+        public static Expression operator *(Expression l, Expression r)
+        {
+            return new Multiply(l, r);
+        }
+
+        public static Expression operator /(Expression l, Expression r)
+        {
+            return new Divide(l, r);
+        }
+
+        public static Expression operator +(Expression l, Expression r)
+        {
+            return new Add(l, r);
         }
 
         /// <summary>
