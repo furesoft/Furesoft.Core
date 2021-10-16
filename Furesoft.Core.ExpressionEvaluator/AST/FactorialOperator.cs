@@ -1,7 +1,6 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
 using Furesoft.Core.CodeDom.Parsing;
-using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
@@ -36,17 +35,12 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
         {
             var expr = ep.EvaluateExpression(Expression, scope);
 
-            return Factorial(expr);
+            return MathNet.Numerics.SpecialFunctions.Factorial((int)expr);
         }
 
         public override int GetPrecedence()
         {
             return Precedence;
-        }
-
-        private double Factorial(double n)
-        {
-            return Enumerable.Range(1, (int)n).Aggregate(1, (p, item) => p * item);
         }
     }
 }
