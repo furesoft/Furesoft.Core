@@ -56,6 +56,8 @@ namespace TestApp
 
             //ToDo: check initializer macro call
             //ToDo: implement Delete Expression and apply on LGS3: x = delete; f(x) = delete;
+            //ToDo: implement different value types:
+            //  double, Matrix
 
             return App.Current.Run();
         }
