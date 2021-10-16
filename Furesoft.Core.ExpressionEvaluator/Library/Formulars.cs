@@ -1,14 +1,12 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
+using MathNet.Numerics.LinearAlgebra;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,35 +16,40 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
     public static class Formulars
     {
         [Macro]
-        [FunctionName("gauß")]
-        public static Expression Gauß(MacroContext mc, Expression[] equations)
+        [FunctionName("lgs3")]
+        public static Expression LGS3(MacroContext mc, Expression[] matrices)
         {
-            var matrix = new GaußMatrix();
+            var rights = new List<double>();
 
-            foreach (var eq in equations)
+            Matrix<double> A = null;
+            Vector<double> b = null;
+
+            if (matrices[0] is MatrixExpression m && matrices[1] is MatrixExpression v && v.Storage.Count == 3 && m.Storage.Count == 9)
             {
-                if (eq is Assignment a)
-                {
-                    var coefficients = GetCoefficients(a.Left).Select(_ => mc.ExpressionParser.EvaluateExpression(_, mc.Scope)).ToList();
-                    if (coefficients.Count == 2)
-                    {
-                        coefficients.Add(0);
-                    }
+                double[] storage = m.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope())).ToArray();
 
-                    if (a.Right is Literal result)
-                    {
-                        coefficients.Add(mc.ExpressionParser.EvaluateExpression(result, mc.Scope));
-                    }
-                    else if (a.Right is Negative n)
-                    {
-                        coefficients.Add(mc.ExpressionParser.EvaluateExpression(n, mc.Scope));
-                    }
+                var rows = new List<double[]>();
+                rows.Add(storage.Take(3).ToArray());
+                rows.Add(storage.Skip(3).Take(3).ToArray());
+                rows.Add(storage.Skip(6).Take(3).ToArray());
 
-                    matrix.Add(coefficients.ToArray());
-                }
+                A = Matrix<double>.Build.DenseOfRowArrays(rows);
+                b = Vector<double>.Build.Dense(v.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope())).ToArray());
             }
 
-            var r = matrix.Solve();
+            var x = A.Solve(b);
+
+            for (int i = 0; i < x.Count; i++)
+            {
+                if (mc.ParentCallNode is Assignment a && a.Left is UnresolvedRef u && u.Reference is string s)
+                {
+                    mc.ExpressionParser.RootScope.Variables.Add(s + i, x[i]);
+                }
+                else
+                {
+                    mc.ExpressionParser.RootScope.Variables.Add("x" + i, x[i]);
+                }
+            }
 
             return new TempExpr();
         }
@@ -68,54 +71,6 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             }
 
             return new TempExpr();
-        }
-
-        private static IEnumerable<Literal> GetCoefficients(Expression expr)
-        {
-            var result = new List<Literal>();
-            //2*x+y+3*z
-            if (expr is BinaryArithmeticOperator op)
-            {
-                if (op.Left is BinaryArithmeticOperator addsub)
-                {
-                    if (addsub.Left is Multiply lm)
-                    {
-                        if (lm.Left is Literal lit)
-                        {
-                            result.Add(lit);
-                        }
-                        if (lm.Left is Negative neg && neg.Expression is Literal ll)
-                        {
-                            result.Add(new Literal(double.Parse("-" + ll.Text)));
-                        }
-                    }
-                    else if (addsub.Left is UnresolvedRef)
-                    {
-                        result.Add(new Literal(1));
-                    }
-                    else if (addsub.Left is Negative)
-                    {
-                        result.Add(new Literal(-1));
-                    }
-                    if (addsub.Right is Multiply rm)
-                    {
-                        if (rm.Left is Literal lit)
-                        {
-                            result.Add(lit);
-                        }
-                    }
-                }
-                if (op.Left is Literal l)
-                {
-                    result.Add(l);
-                }
-                if (op.Right is BinaryArithmeticOperator o)
-                {
-                    result.AddRange(GetCoefficients(o));
-                }
-            }
-
-            return result;
         }
 
         private static bool IsFirstCases(Expression argument)
@@ -141,7 +96,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 
         private static Expression UnpackFirstCases(Expression argument)
         {
-            if (argument is BitwiseXor pow && pow.Right._AsString == "2"
+            if (argument is PowerOperator pow && pow.Right._AsString == "2"
                 && pow.Left is BinaryOperator bin)
             {
                 var a2 = new PowerOperator(bin.Left, 2);

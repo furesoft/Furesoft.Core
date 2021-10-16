@@ -54,8 +54,8 @@ namespace TestApp
             //wert ist der index
             //ToDo: implement RuleFor clr methods: generate pattern
 
-            //ToDo: displayValueTable: function mit funktionsname übergeben oder assignment und argumentname an scope übergeben
             //ToDo: check initializer macro call
+            //ToDo: implement Delete Expression and apply on LGS3: x = delete; f(x) = delete;
 
             return App.Current.Run();
         }

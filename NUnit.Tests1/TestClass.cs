@@ -82,7 +82,7 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("root(2, 16)", 4);
                 yield return new TestCaseData("root(3, 125)", 5);
                 yield return new TestCaseData("average(1,2,3,4,5,5,4,3,2,1)", 3);
-                yield return new TestCaseData("gauß(7*x+3*y-5*z=-12, -x - 2 * y + 4 * z = 5, -4 * x + y - 3 * z = 1);", 3);
+                yield return new TestCaseData("s = lgs3([3, 2, -1, 2, -2, 4, -1, 0.5, -1], [1, -2, 0]);", 0);
             }
         }
 

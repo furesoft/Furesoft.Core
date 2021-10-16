@@ -37,6 +37,8 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public static void Init()
         {
+            Negative.AddParsePoints();
+
             Add.AddParsePoints();
             Multiply.AddParsePoints();
             Divide.AddParsePoints();
@@ -56,10 +58,10 @@ namespace Furesoft.Core.ExpressionEvaluator
             And.AddParsePoints();
             Or.AddParsePoints();
 
-            Negative.AddParsePoints();
             Mod.AddParsePoints();
 
             IntervalExpression.AddParsePoints();
+            MatrixExpression.AddParsePoints();
             InfinityRef.AddParsePoints();
 
             PowerOperator.AddParsePoints();
