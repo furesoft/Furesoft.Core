@@ -210,10 +210,6 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 return 0;
             }
-            else if (expr is Assignment a && a.Right is DeleteExpression d)
-            {
-                return d.Evaluate(this, scope);
-            }
             else if (expr is Assignment ass && ass.Left is UnresolvedRef ureff)
             {
                 var name = ureff.Reference.ToString();
