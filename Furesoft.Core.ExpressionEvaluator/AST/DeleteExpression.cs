@@ -8,7 +8,7 @@ using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
-    public class DeleteExpression : Expression, IEvaluatableExpression
+    public class DeleteExpression : Expression, IEvaluatableStatement
     {
         public DeleteExpression(Parser parser, CodeObject parent) : base(parser, parent)
         {
@@ -23,27 +23,26 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
         {
-            writer.Write("delete");
+            writer.Write("delete ");
+            Expression.AsTextExpression(writer, flags);
         }
 
-        public double Evaluate(ExpressionParser ep, Scope scope)
+        public void Evaluate(ExpressionParser ep)
         {
             if (Expression is UnresolvedRef u && u.Reference is string s)
             {
-                if (!scope.Variables.Remove(s))
+                if (!ep.RootScope.Variables.Remove(s))
                 {
                     AttachMessage($"Variable '{s}' not found", MessageSeverity.Error, MessageSource.Resolve);
                 }
             }
             else if (Expression is Call c && c.Expression is UnresolvedRef uc && uc.Reference is string sc)
             {
-                if (!scope.Functions.Remove(sc + ":" + c.ArgumentCount))
+                if (!ep.RootScope.Functions.Remove(sc + ":" + c.ArgumentCount))
                 {
                     AttachMessage($"Function '{c._AsString}' not found", MessageSeverity.Error, MessageSource.Resolve);
                 }
             }
-
-            return 0;
         }
 
         private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
