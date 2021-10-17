@@ -70,6 +70,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             Dot.AddParsePoints();
             DeleteExpression.AddParsePoints();
+            ValueSetNode.AddParsePoints();
 
             UseStatement.AddParsePoints();
             ModuleStatement.AddParsePoints();

@@ -49,9 +49,7 @@ namespace TestApp
             //operator überladung
 
             //ToDo: named arguments: mixed mode - differenz bilden und dann scope mit rest befüllen
-            //ToDo: implement enumerations
-            //valueset quadrat, kreis
-            //wert ist der index
+
             //ToDo: implement RuleFor clr methods: generate pattern
 
             //ToDo: check initializer macro call
