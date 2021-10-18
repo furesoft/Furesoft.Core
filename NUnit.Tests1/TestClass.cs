@@ -86,6 +86,9 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("delete E;", 0);
                 yield return new TestCaseData("g(x) = x*x; delete g(x);", 0);
                 yield return new TestCaseData("valueset quadrat, kreis;kreis;", 1);
+                yield return new TestCaseData("sum(10, k = 1, k);", 55);
+                yield return new TestCaseData("sum(5, k = 1, k^2);", 55);
+                yield return new TestCaseData("product(5, k = 1, k);", 120);
             }
         }
 

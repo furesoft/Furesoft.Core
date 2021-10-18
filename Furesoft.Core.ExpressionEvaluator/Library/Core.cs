@@ -1,5 +1,8 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using System;
 using System.Linq;
 
@@ -68,6 +71,27 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             return 1 / value;
         }
 
+        [FunctionName("product")]
+        [Macro]
+        public static Expression Product(MacroContext mc, Expression end, Expression def, Expression func)
+        {
+            double sum = 1;
+            if (end is Literal l && def is Assignment a && a.Left is UnresolvedRef nameRef && nameRef.Reference is string name)
+            {
+                double endRange = mc.ExpressionParser.EvaluateExpression(end, mc.Scope);
+
+                for (int i = (int)mc.ExpressionParser.EvaluateExpression(a.Right, mc.Scope); i <= endRange; i++)
+                {
+                    var s = Scope.CreateScope(mc.Scope);
+                    s.Variables.Add(name, i);
+
+                    sum *= mc.ExpressionParser.EvaluateExpression(func, s);
+                }
+            }
+
+            return sum;
+        }
+
         [FunctionName("root")]
         public static double Root(double exponent, double @base)
         {
@@ -78,6 +102,27 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         public static double Round(double value, double decimals)
         {
             return Math.Round(value, (int)decimals);
+        }
+
+        [FunctionName("sum")]
+        [Macro]
+        public static Expression Sum(MacroContext mc, Expression end, Expression def, Expression func)
+        {
+            double sum = 0;
+            if (end is Literal l && def is Assignment a && a.Left is UnresolvedRef nameRef && nameRef.Reference is string name)
+            {
+                double endRange = mc.ExpressionParser.EvaluateExpression(end, mc.Scope);
+
+                for (int i = (int)mc.ExpressionParser.EvaluateExpression(a.Right, mc.Scope); i <= endRange; i++)
+                {
+                    var s = Scope.CreateScope(mc.Scope);
+                    s.Variables.Add(name, i);
+
+                    sum += mc.ExpressionParser.EvaluateExpression(func, s);
+                }
+            }
+
+            return sum;
         }
     }
 }
