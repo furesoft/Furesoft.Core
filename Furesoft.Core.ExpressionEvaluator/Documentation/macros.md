@@ -74,3 +74,30 @@ Example:
 ```
 average(2, 1, 5, 4, 5);
 ```
+
+
+## Sum
+Calculate the sum with iteration variable "Sigma"
+
+
+```
+sum(start, definition, funktion);
+```
+
+Example:
+```
+sum(1, k = 9, k);
+```
+
+## Product
+Calculate the product with iteration variable "PI"
+
+
+```
+product(start, definition, funktion);
+```
+
+Example:
+```
+product(1, k = 5, k);
+```

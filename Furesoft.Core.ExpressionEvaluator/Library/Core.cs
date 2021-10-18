@@ -3,6 +3,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using Furesoft.Core.ExpressionEvaluator.AST;
 using System;
 using System.Linq;
 
@@ -93,9 +94,17 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         }
 
         [FunctionName("root")]
-        public static double Root(double exponent, double @base)
+        [Macro]
+        public static Expression Root(MacroContext mc, Expression exponent, Expression @base)
         {
-            return Math.Pow(@base, 1 / exponent);
+            if (@base is PowerOperator pow)
+            {
+                return new PowerOperator(mc.ExpressionParser.EvaluateExpression(pow.Left, mc.Scope), mc.ExpressionParser.EvaluateExpression(pow.Right, mc.Scope) / exponent);
+            }
+            else
+            {
+                return new PowerOperator(mc.ExpressionParser.EvaluateExpression(@base, mc.Scope), 1 / exponent);
+            }
         }
 
         [FunctionName("round")]

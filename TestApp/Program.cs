@@ -20,7 +20,7 @@ namespace TestApp
             ep.Import(typeof(Formulars));
 
             var aliasCall = ep.Evaluate("displayValueTable(1, 10, 1, x ^ 2);");
-            var displayTree = ep.Evaluate("use formulars; displayTree(unpackBinominal((1+2)^2), TRUE);");
+            var displayTree = ep.Evaluate("use formulars; displayTree(root(2, 125^2), TRUE);");
 
             //ToDo: add standard library
 
