@@ -18,9 +18,10 @@ namespace TestApp
             ep.Import(typeof(Geometry));
             ep.Import(typeof(Core));
             ep.Import(typeof(Formulars));
+            ep.Import(typeof(Physics));
 
             var aliasCall = ep.Evaluate("displayValueTable(1, 10, 1, x ^ 2);");
-            var displayTree = ep.Evaluate("use formulars; displayTree(root(2, 125^2), TRUE);");
+            var displayTree = ep.Evaluate("use physics.*; G = 0.5; Fg(2);");
 
             //ToDo: add standard library
 

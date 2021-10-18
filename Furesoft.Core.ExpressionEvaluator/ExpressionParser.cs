@@ -128,6 +128,14 @@ namespace Furesoft.Core.ExpressionEvaluator
                 var scope = new Scope();
                 scope.Import(type, this);
 
+                if (attr.Dependencies != null)
+                {
+                    foreach (var dep in attr.Dependencies)
+                    {
+                        scope.ImportScope(Modules[dep].Scope);
+                    }
+                }
+
                 AddModule(attr.Name, scope);
             }
             else
@@ -215,7 +223,14 @@ namespace Furesoft.Core.ExpressionEvaluator
             {
                 var name = ureff.Reference.ToString();
 
-                scope.Variables.Add(name, EvaluateExpression(ass.Right, scope));
+                if (!scope.Variables.ContainsKey(name))
+                {
+                    scope.Variables.Add(name, EvaluateExpression(ass.Right, scope));
+                }
+                else
+                {
+                    scope.Variables[name] = EvaluateExpression(ass.Right, scope);
+                }
 
                 return 0;
             }

@@ -11,5 +11,6 @@ namespace Furesoft.Core.ExpressionEvaluator
         }
 
         public string Name { get; set; }
+        public string[] Dependencies { get; set; }
     }
 }
