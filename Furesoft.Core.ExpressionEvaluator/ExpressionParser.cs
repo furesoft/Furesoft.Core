@@ -309,6 +309,8 @@ namespace Furesoft.Core.ExpressionEvaluator
             var returnValues = new List<double>();
             var errors = new List<Message>();
 
+            if (boundTree == null) return new();
+
             string moduleName = "";
             foreach (var node in boundTree)
             {
@@ -370,6 +372,8 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else
             {
+                if (expr == null || (expr.Left is null || expr.Right is null)) return false;
+
                 var left = EvaluateExpression(expr.Left, scope);
                 var right = EvaluateExpression(expr.Right, scope);
 

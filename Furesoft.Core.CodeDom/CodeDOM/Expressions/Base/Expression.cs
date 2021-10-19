@@ -600,7 +600,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
             if (expression != null)
             {
                 // Get any EOL comments
-                if (parser.LastToken.HasTrailingComments)
+                if (parser.LastToken != null && parser.LastToken.HasTrailingComments)
                     expression.MoveEOLComment(parser.LastToken);
 
                 // Set the parent starting token to the beginning of the expression

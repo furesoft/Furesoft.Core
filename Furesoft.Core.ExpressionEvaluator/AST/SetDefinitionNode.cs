@@ -27,10 +27,8 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public CodeObject Bind(ExpressionParser ep, Binder binder)
         {
-            if (Name is UnresolvedRef nameRef)
+            if (Name is UnresolvedRef nameRef && nameRef.Reference is string name)
             {
-                string name = nameRef.Reference.ToString();
-
                 if (name == name.ToUpper())
                 {
                     if (Condition != null)
@@ -45,7 +43,14 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
                             Value = BindSetDefinitionExpression(setExpr);
                         }
 
-                        ep.RootScope.SetDefinitions.Add(name, new And(Value, Condition));
+                        if (Condition != null)
+                        {
+                            ep.RootScope.SetDefinitions.Add(name, new And(Value, Condition));
+                        }
+                        else
+                        {
+                            ep.RootScope.SetDefinitions.Add(name, Value);
+                        }
                     }
                     else
                     {

@@ -34,6 +34,17 @@ namespace DigitalRune.Windows.SampleEditor
             // Some random variables and methods are returned as completion data.
 
             List<ICompletionData> completionData = new List<ICompletionData>();
+
+            foreach (var mod in evaluator.Modules)
+            {
+                completionData.Add(new DefaultCompletionData(mod.Key, "", 0));
+            }
+
+            foreach (var k in new[] { "in", "set", "valueset", "INFINITY", "module", "alias", "use" })
+            {
+                completionData.Add(new DefaultCompletionData(k, "", 0));
+            }
+
             FillFromScope(completionData);
 
             return completionData.ToArray();

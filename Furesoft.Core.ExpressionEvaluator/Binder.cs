@@ -149,6 +149,8 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public List<CodeObject> BindTree(Block tree, ExpressionParser expressionParser)
         {
+            if (tree == null) return null;
+
             var boundTree = new List<CodeObject>();
 
             ExpressionParser = expressionParser;

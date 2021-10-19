@@ -1299,12 +1299,14 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                             FlushUnrecognized(parser, ref unrecognized);
 
                             // Flush the non-Expression code object (such as a CompilerDirective or Comment)
-                            UnusedCodeObject unusedCodeObject = (UnusedCodeObject)unused;
-                            CodeObject codeObject = unusedCodeObject.CodeObject;
-                            AddInternalNoFormatting(codeObject);
-                            if (codeObject is CommentBase)
-                                AdjustCommentIndentation((CommentBase)codeObject);
-                            AddTrailingComments(unusedCodeObject.LastToken);  // Add skipped Comment objects
+
+                            if (unused is UnusedCodeObject unusedCodeObject && unusedCodeObject.CodeObject is CodeObject codeObject)
+                            {
+                                AddInternalNoFormatting(codeObject);
+                                if (codeObject is CommentBase)
+                                    AdjustCommentIndentation((CommentBase)codeObject);
+                                AddTrailingComments(unusedCodeObject.LastToken);  // Add skipped Comment objects
+                            }
                         }
                     }
 
