@@ -24,7 +24,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             Matrix<double> A = null;
             Vector<double> b = null;
 
-            if (matrices[0] is MatrixExpression m && matrices[1] is MatrixExpression v && v.Storage.Count == 3 && m.Storage.Count == 9)
+            if (matrices.Length == 2 && matrices[0] is MatrixExpression m && matrices[1] is MatrixExpression v && v.Storage != null && v.Storage.Count == 3 && m.Storage.Count == 9)
             {
                 double[] storage = m.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope())).ToArray();
 
@@ -35,19 +35,19 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 
                 A = Matrix<double>.Build.DenseOfRowArrays(rows);
                 b = Vector<double>.Build.Dense(v.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope())).ToArray());
-            }
 
-            var x = A.Solve(b);
+                var x = A.Solve(b);
 
-            for (int i = 0; i < x.Count; i++)
-            {
-                if (mc.ParentCallNode is Assignment a && a.Left is UnresolvedRef u && u.Reference is string s)
+                for (int i = 0; i < x.Count; i++)
                 {
-                    mc.ExpressionParser.RootScope.Variables.Add(s + i, x[i]);
-                }
-                else
-                {
-                    mc.ExpressionParser.RootScope.Variables.Add("x" + i, x[i]);
+                    if (mc.ParentCallNode is Assignment a && a.Left is UnresolvedRef u && u.Reference is string s)
+                    {
+                        mc.ExpressionParser.RootScope.Variables.Add(s + i, x[i]);
+                    }
+                    else
+                    {
+                        mc.ExpressionParser.RootScope.Variables.Add("x" + i, x[i]);
+                    }
                 }
             }
 

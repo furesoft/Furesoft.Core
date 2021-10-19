@@ -45,6 +45,11 @@ namespace DigitalRune.Windows.SampleEditor
                 completionData.Add(new DefaultCompletionData(k, "", 0));
             }
 
+            foreach (var set in evaluator.RootScope.SetDefinitions)
+            {
+                completionData.Add(new DefaultCompletionData(set.Key, "", 0));
+            }
+
             FillFromScope(completionData);
 
             return completionData.ToArray();
