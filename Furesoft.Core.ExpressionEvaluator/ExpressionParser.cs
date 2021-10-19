@@ -275,7 +275,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                     }
                 }
             }
-            else if (obj is FunctionDefinition f && f.Body.First().HasAnnotations)
+            else if (obj is FunctionDefinition f && f.Body.First() is CodeObject n && n.HasAnnotations)
             {
                 result.AddRange(GetMessagesOfCall(f.Body.First()));
             }

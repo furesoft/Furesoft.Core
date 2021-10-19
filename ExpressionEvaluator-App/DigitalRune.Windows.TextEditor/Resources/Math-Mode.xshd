@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!-- syntaxdefinition for C# 2000 by Mike Krueger -->
+
+<SyntaxDefinition name = "Math" extensions = ".math">
+
+  <Environment>
+    <Custom name="TypeReference" bold="false" italic="false" color="#04ABAB" />
+    <Custom name="UnknownEntity" bold="false" italic="false" color="#AB0404" />
+  </Environment>
+
+  <Properties>
+    <Property name="LineComment" value="//" />
+    <Property name="BlockCommentBegin" value="/*" />
+    <Property name="BlockCommentEnd" value="*/" />
+  </Properties>
+
+  <Digits name = "Digits" bold = "false" italic = "false" color = "DarkRed" />
+
+  <RuleSets>
+    <RuleSet ignorecase="false">
+      <Delimiters>&amp;&lt;&gt;~!%^*()-+=|\/{}[]:;"' ,	.?</Delimiters>
+
+      <Span name = "String" bold = "false" italic = "false" color = "DarkRed" stopateol = "true" escapecharacter="\">
+        <Begin>"</Begin>
+        <End>"</End>
+      </Span>
+
+      <MarkPrevious bold = "false" italic = "false" color = "DarkCyan">(</MarkPrevious>
+
+      <KeyWords name = "Punctuation" bold = "false" italic = "false" color = "Black">
+        <Key word = "?" />
+        <Key word = "," />
+        <Key word = "." />
+        <Key word = ";" />
+        <Key word = "(" />
+        <Key word = ")" />
+        <Key word = "[" />
+        <Key word = "]" />
+        <Key word = "{" />
+        <Key word = "}" />
+        <Key word = "+" />
+        <Key word = "-" />
+        <Key word = "/" />
+        <Key word = "%" />
+        <Key word = "*" />
+        <Key word = "&lt;" />
+        <Key word = "&gt;" />
+        <Key word = "^" />
+        <Key word = "=" />
+        <Key word = "~" />
+        <Key word = "!" />
+        <Key word = "|" />
+        <Key word = "&amp;" />
+      </KeyWords>
+
+      <KeyWords name = "Keywords" bold="false" italic="false" color="Blue">
+        <Key word = "use" />
+        <Key word = "is" />
+        <Key word = "in" />
+        <Key word = "alias" />
+        <Key word = "module" />
+        <Key word = "set" />
+        <Key word = "valueset" />
+      </KeyWords>
+
+      <KeyWords name = "Literals" bold="false" italic="false" color="Blue">
+        <Key word = "TRUE" />
+        <Key word = "FALSE" />
+        <Key word = "INFINITY" />
+      </KeyWords>
+    </RuleSet>
+  </RuleSets>
+</SyntaxDefinition>

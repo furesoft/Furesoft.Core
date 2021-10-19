@@ -26,13 +26,16 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public void Evaluate(ExpressionParser ep)
         {
-            for (int i = 0; i < Items.Count; i++)
+            if (Items != null)
             {
-                Expression item = Items[i];
-
-                if (item is UnresolvedRef uref && uref.Reference is string s)
+                for (int i = 0; i < Items.Count; i++)
                 {
-                    ep.RootScope.Variables.Add(s, i);
+                    Expression item = Items[i];
+
+                    if (item is UnresolvedRef uref && uref.Reference is string s)
+                    {
+                        ep.RootScope.Variables.Add(s, i);
+                    }
                 }
             }
         }
