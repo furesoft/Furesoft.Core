@@ -39,6 +39,11 @@ namespace DigitalRune.Windows.SampleEditor
             return completionData.ToArray();
         }
 
+        public override CompletionDataProviderKeyResult ProcessKey(char key)
+        {
+            return key == '\t' ? CompletionDataProviderKeyResult.InsertionKey : CompletionDataProviderKeyResult.NormalKey;
+        }
+
         private void FillFromScope(List<ICompletionData> completionData)
         {
             foreach (var variable in evaluator.RootScope.Variables)

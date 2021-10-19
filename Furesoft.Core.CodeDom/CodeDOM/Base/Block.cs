@@ -508,6 +508,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                     CodeObject lastObj = null;
                     foreach (CodeObject obj in _codeObjects)
                     {
+                        if (obj == null) continue;
+
                         if (value)
                             obj.NewLines = 0;
                         else if (!obj.IsFirstOnLine)
