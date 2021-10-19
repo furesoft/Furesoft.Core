@@ -95,7 +95,10 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             }
             else
             {
-                AttachMessage($"'{Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
+                if (Module != null)
+                {
+                    AttachMessage($"'{Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
+                }
             }
 
             return this;

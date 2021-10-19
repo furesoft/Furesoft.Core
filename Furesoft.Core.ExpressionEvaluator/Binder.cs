@@ -82,7 +82,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                     }
                     else if (ExpressionParser.RootScope.Macros.ContainsKey(s))
                     {
-                        var arguments = c.Arguments;
+                        var arguments = c.CreateArguments();
 
                         var macro = ExpressionParser.RootScope.Macros[s];
 

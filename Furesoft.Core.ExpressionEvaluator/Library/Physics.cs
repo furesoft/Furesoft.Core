@@ -8,5 +8,6 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         public static PhysicsForces Forces = new();
         public static double g = 9.81;
         public static PhysicsGravityAccelerations GravityAccelerations = new();
+        public static PhysicsMechanics Mechanics = new();
     }
 }

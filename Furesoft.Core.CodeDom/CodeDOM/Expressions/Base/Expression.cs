@@ -730,15 +730,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
                 {
                     lastCommaFirstOnLine = parser.Token.IsFirstOnLine;
                     parser.NextToken();  // Move past ',' (or ';')
-                    if (expression != null)
-                    {
-                        // Move any EOL comment, and any regular comments as Post comments
-                        expression.MoveEOLComment(parser.LastToken, false, false);
-
-                        // Move any following regular comments as Post comments if on a line by themselves
-                        if (parser.Token.IsFirstOnLine)
-                            expression.MoveCommentsAsPost(parser.LastToken);
-                    }
                 }
                 else
                     break;

@@ -134,7 +134,14 @@ namespace Furesoft.Core.ExpressionEvaluator
                         {
                             ImportedFunctions.Add(mangledName, new Func<double[], double>(args =>
                             {
-                                return (double)mi.Invoke(null, args.Cast<object>().ToArray());
+                                try
+                                {
+                                    return (double)mi.Invoke(null, args.Cast<object>().ToArray());
+                                }
+                                catch
+                                {
+                                    return 1;
+                                }
                             }));
                         }
                         else
@@ -160,9 +167,9 @@ namespace Furesoft.Core.ExpressionEvaluator
                 {
                     Variables.Add(field.Name.ToLower(), (int)field.GetValue(null));
                 }
-                else if (field.FieldType == typeof(double))
+                else if (field.FieldType.Name is "Double" or "Single" or "Float")
                 {
-                    Variables.Add(field.Name.ToUpper(), (double)field.GetValue(null));
+                    Variables.Add(field.Name.ToUpper(), (double)Convert.ChangeType(field.GetValue(null), typeof(double)));
                 }
                 else
                 {

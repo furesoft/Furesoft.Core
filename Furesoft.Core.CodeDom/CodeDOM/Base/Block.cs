@@ -1366,7 +1366,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
         protected void AddInsertFormattingCheck(int index, CodeObject codeObject)
         {
             // Default the # of newlines for the object if it wasn't already explicitly specified
-            if (!codeObject.IsNewLinesSet)
+            if (codeObject != null && !codeObject.IsNewLinesSet)
             {
                 int newLines;
 

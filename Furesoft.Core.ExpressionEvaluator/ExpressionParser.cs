@@ -113,6 +113,9 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         public EvaluationResult Evaluate(string src)
         {
+            if (string.IsNullOrEmpty(src)) return null;
+            if (string.IsNullOrWhiteSpace(src)) return null;
+
             var tree = CodeUnit.LoadFragment(src, "expr").Body;
             var boundTree = Binder.BindTree(tree, this);
 
@@ -234,9 +237,18 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 return 0;
             }
-            else if (expr is UnresolvedRef uref)
+            else if (expr is UnresolvedRef uref && uref.Reference is string name)
             {
-                return scope.GetVariable(uref.Reference.ToString());
+                if (scope.Variables.ContainsKey(name))
+                {
+                    return scope.GetVariable(name);
+                }
+                else
+                {
+                    expr.AttachMessage($"Variable '{name}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
+
+                    return 0;
+                }
             }
             else
             {
@@ -475,6 +487,10 @@ namespace Furesoft.Core.ExpressionEvaluator
                 call.AttachMessage($"Argument Count Mismatch. Expected {importedFn.Method.GetParameters().Length} given {args.Length} on {fnName}",
                     MessageSeverity.Error, MessageSource.Resolve);
 
+                return 0;
+            }
+            catch
+            {
                 return 0;
             }
         }
