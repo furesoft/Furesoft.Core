@@ -1,10 +1,14 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.Macros
 {
+    [Description("Define a rule for a macro to change its behavior or add features")]
+    [ParameterDescriptionAttribute("macro", "The macro to affect")]
+    [ParameterDescriptionAttribute("rule", "The rule definitions")]
     public class RuleForMacro : Macro
     {
         public override string Name => "rulefor";

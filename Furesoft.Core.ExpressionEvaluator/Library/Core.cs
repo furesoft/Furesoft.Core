@@ -5,6 +5,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using System;
+using System.ComponentModel;
 using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.Library
@@ -16,6 +17,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 
         [FunctionName("average")]
         [Macro]
+        [Description("Calculate the arithmetic average")]
         public static Expression Average(MacroContext mc, Expression[] args)
         {
             var evaluatedArgs = args.Select(_ => mc.ExpressionParser.EvaluateExpression(_, mc.Scope));
