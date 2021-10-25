@@ -530,7 +530,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("*", (m, scalar) => m.Multiply(scalar));
             RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("+", (m, scalar) => m.Add(scalar));
             RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("-", (m, scalar) => m.Subtract(scalar));
-            RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("/", (m, scalar) => m.Divide(scalar));
+            RootScope.AddOperatorOverload<DenseMatrix, double>("/", (m, scalar) => m.Divide(scalar));
 
             RootScope.AddOperatorOverload<double>("-", (l) => -l);
         }
