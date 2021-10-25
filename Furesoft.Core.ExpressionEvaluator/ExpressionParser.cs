@@ -4,23 +4,25 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
+using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Macros;
 using Furesoft.Core.ExpressionEvaluator.Symbols;
-using Maki;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
+
+using ValueType = Maki.Variant<double>;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
@@ -34,6 +36,8 @@ namespace Furesoft.Core.ExpressionEvaluator
         {
             RootScope.AddMacro<RuleForMacro>();
             RootScope.AddMacro<ResolveMacro>();
+
+            InitOperatorOverloads();
         }
 
         public static void Init()
@@ -148,40 +152,23 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
-        internal Variant<double> EvaluateExpression(Expression expr, Scope scope)
+        internal ValueType EvaluateExpression(Expression expr, Scope scope)
         {
             if (expr is IEvaluatableExpression e)
             {
                 return e.Evaluate(this, scope);
             }
-
-            if (expr is Add add)
+            else if (expr is BinaryArithmeticOperator o)
             {
-                return EvaluateExpression(add.Left, scope).Get<double>() + EvaluateExpression(add.Right, scope).Get<double>();
+                return EvaluateOperator(o.Symbol, EvaluateExpression(o.Left, scope), EvaluateExpression(o.Right, scope));
             }
-            else if (expr is Multiply mul)
+            else if (expr is UnaryOperator unary)
             {
-                return EvaluateExpression(mul.Left, scope).Get<double>() * EvaluateExpression(mul.Right, scope).Get<double>();
-            }
-            else if (expr is Subtract sub)
-            {
-                return EvaluateExpression(sub.Left, scope).Get<double>() - EvaluateExpression(sub.Right, scope).Get<double>();
-            }
-            else if (expr is Divide div)
-            {
-                return EvaluateExpression(div.Left, scope).Get<double>() / EvaluateExpression(div.Right, scope).Get<double>();
-            }
-            else if (expr is Mod mod)
-            {
-                return EvaluateExpression(mod.Left, scope).Get<double>() % EvaluateExpression(mod.Right, scope).Get<double>();
+                return EvaluateOperator(unary.Symbol, EvaluateExpression(unary.Expression, scope), null);
             }
             else if (expr is Literal lit)
             {
-                return double.Parse(lit.Text.Replace("d", ""), CultureInfo.InvariantCulture);
-            }
-            else if (expr is Negative neg)
-            {
-                return -EvaluateExpression(neg.Expression, scope).Get<double>();
+                return (double)lit.Value;
             }
             else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
             {
@@ -307,7 +294,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         private EvaluationResult Evaluate(List<CodeObject> boundTree)
         {
-            var returnValues = new List<Variant<double>>();
+            var returnValues = new List<ValueType>();
             var errors = new List<Message>();
 
             if (boundTree == null) return new();
@@ -338,7 +325,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             return new() { Values = returnValues, Errors = errors, ModuleName = moduleName };
         }
 
-        private Variant<double> Evaluate(CodeObject obj)
+        private ValueType Evaluate(CodeObject obj)
         {
             if (obj is IEvaluatableStatement e)
             {
@@ -391,7 +378,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
-        private Variant<double> EvaluateFunction(Scope scope, Call call, string fnName, FunctionDefinition fn)
+        private ValueType EvaluateFunction(Scope scope, Call call, string fnName, FunctionDefinition fn)
         {
             Scope fnScope = Scope.CreateScope(RootScope);
 
@@ -509,6 +496,50 @@ namespace Furesoft.Core.ExpressionEvaluator
                 "R" => value is > double.MinValue and < double.MaxValue,
                 _ => RootScope.SetDefinitions.ContainsKey(cond.NumberRoom),
             };
+        }
+
+        private ValueType EvaluateOperator(string symbol, ValueType left, ValueType right)
+        {
+            if (RootScope.OperatorOverloads.ContainsKey(symbol))
+            {
+                var lobjType = left.Get().GetType();
+                var robjType = right == null ? typeof(object) : right.Get().GetType();
+
+                var opList = RootScope.OperatorOverloads[symbol];
+
+                if (OpMatchOverload(opList, lobjType, robjType, out var operatorOverload))
+                {
+                    return operatorOverload.Invoker(left, right);
+                }
+            }
+
+            return null;
+        }
+
+        private void InitOperatorOverloads()
+        {
+            RootScope.AddOperatorOverload<double, double>("+", (l, r) => l + r);
+            RootScope.AddOperatorOverload<double, double>("*", (l, r) => l * r);
+            RootScope.AddOperatorOverload<double, double>("-", (l, r) => l - r);
+            RootScope.AddOperatorOverload<double, double>("/", (l, r) => l / r);
+            RootScope.AddOperatorOverload<double, double>("%", (l, r) => l % r);
+
+            RootScope.AddOperatorOverload<double>("-", (l) => -l);
+        }
+
+        private bool OpMatchOverload(List<OperatorOverload> opList, Type lobjType, Type robjType, out OperatorOverload operatorOverload)
+        {
+            foreach (var op in opList)
+            {
+                if (op.Left == lobjType && op.Right == robjType || op.Left == lobjType && op.Right == null)
+                {
+                    operatorOverload = op;
+                    return true;
+                }
+            }
+
+            operatorOverload = null;
+            return false;
         }
 
         private (string, Expression) TransformNamedArgument(Expression arg)

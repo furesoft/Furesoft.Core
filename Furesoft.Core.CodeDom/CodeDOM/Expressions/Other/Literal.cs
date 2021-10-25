@@ -3,6 +3,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
+using System.Globalization;
 using System.Text;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
@@ -50,6 +51,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
                 Text = text;
             else
                 _text = "\"" + text + "\"";
+
+            Value = text;
         }
 
         /// <summary>
@@ -65,6 +68,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(char value)
         {
             _text = "'" + value + "'";
+            Value = value;
         }
 
         /// <summary>
@@ -73,6 +77,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(int value)
         {
             _text = value.ToString();
+            Value = value;
         }
 
         /// <summary>
@@ -81,6 +86,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(uint value)
         {
             _text = value.ToString();
+            Value = value;
         }
 
         /// <summary>
@@ -89,6 +95,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(long value)
         {
             _text = value.ToString();
+            Value = value;
         }
 
         /// <summary>
@@ -97,6 +104,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(ulong value)
         {
             _text = value.ToString();
+            Value = value;
         }
 
         /// <summary>
@@ -105,6 +113,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(bool value)
         {
             _text = (value ? ParseTokenTrue : ParseTokenFalse);
+            Value = value;
         }
 
         /// <summary>
@@ -113,6 +122,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(float value)
         {
             _text = value + "f";
+            Value = value;
         }
 
         /// <summary>
@@ -124,6 +134,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             // value of "1", which will be treated as an int.  We can't just force or add the ".0" on the end, because
             // this won't work for all possible types of double values, such as exponential ones.
             _text = value + "d";
+            Value = value;
         }
 
         /// <summary>
@@ -132,6 +143,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public Literal(decimal value)
         {
             _text = value + "m";
+            Value = value;
         }
 
         /// <summary>
@@ -139,6 +151,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         /// </summary>
         public Literal(object obj, bool hexFormat)
         {
+            Value = obj;
+
             if (obj == null)
                 _text = ParseTokenNull;
             else if (obj is bool)
@@ -179,6 +193,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
                 }
                 else
                     _text = obj.ToString();
+
+                Value = obj;
             }
         }
 
@@ -197,6 +213,13 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         {
             Text = parser.TokenText;
             parser.NextToken();  // Move past token
+
+            var r = double.Parse(Text, CultureInfo.InvariantCulture);
+
+            if (r != double.NaN)
+            {
+                Value = r;
+            }
 
             // Move any trailing EOL or inline comment to the expression as an EOL comment
             MoveEOLComment(parser.LastToken);
@@ -233,6 +256,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
                     _text = @"'""'";  // Change '\"' to '"'
             }
         }
+
+        public object Value { get; set; }
 
         public static new void AddParsePoints()
         {

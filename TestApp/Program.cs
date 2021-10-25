@@ -56,6 +56,8 @@ namespace TestApp
             //ToDo: check initializer macro call
             //ToDo: implement different value types:
             //  double, Matrix
+            //add operator overloads for double
+            //rootscope.addooperatoroverload<double, double>("+", (l, r)=> l + r);
 
             return App.Current.Run();
         }

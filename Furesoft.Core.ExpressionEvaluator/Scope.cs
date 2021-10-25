@@ -1,11 +1,12 @@
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Macros;
-using Maki;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+
+using ValueType = Maki.Variant<double>;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
@@ -16,9 +17,11 @@ namespace Furesoft.Core.ExpressionEvaluator
         public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
         public Dictionary<string, Macro> Macros = new();
 
+        public Dictionary<string, List<OperatorOverload>> OperatorOverloads = new();
         public Dictionary<string, Expression> SetDefinitions = new();
-        public Dictionary<string, Variant<double>> Variables = new();
+        public Dictionary<string, ValueType> Variables = new();
         public Macro Initializer { get; set; }
+
         public Scope Parent { get; set; }
 
         public static Scope CreateScope(Scope parent = null)
@@ -41,6 +44,48 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
+        public void AddOperatorOverload<TLeft, TRight>(string symbol, Func<TLeft, TRight, ValueType> invoker)
+        {
+            var opOverload = new OperatorOverload();
+            opOverload.Symbol = symbol;
+            opOverload.Invoker = (l, r) =>
+            invoker.Invoke((TLeft)((ValueType)l).Get(), (TRight)((ValueType)r).Get());
+            opOverload.Left = typeof(TLeft);
+            opOverload.Right = typeof(TRight);
+
+            if (OperatorOverloads.ContainsKey(symbol))
+            {
+                OperatorOverloads[symbol].Add(opOverload);
+            }
+            else
+            {
+                var l = new List<OperatorOverload>();
+                l.Add(opOverload);
+
+                OperatorOverloads.Add(symbol, l);
+            }
+        }
+
+        public void AddOperatorOverload<TLeft>(string symbol, Func<TLeft, ValueType> invoker)
+        {
+            var opOverload = new OperatorOverload();
+            opOverload.Symbol = symbol;
+            opOverload.Invoker = (l, r) => invoker.Invoke((TLeft)((ValueType)l).Get());
+            opOverload.Left = typeof(TLeft);
+
+            if (OperatorOverloads.ContainsKey(symbol))
+            {
+                OperatorOverloads[symbol].Add(opOverload);
+            }
+            else
+            {
+                var l = new List<OperatorOverload>();
+                l.Add(opOverload);
+
+                OperatorOverloads.Add(symbol, l);
+            }
+        }
+
         public void Evaluate(string content)
         {
             var ep = new ExpressionParser();
@@ -50,7 +95,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             ImportScope(ep.RootScope);
         }
 
-        public Variant<double> GetVariable(string name)
+        public ValueType GetVariable(string name)
         {
             Scope currentScope = this;
 
