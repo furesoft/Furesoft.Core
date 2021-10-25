@@ -20,6 +20,8 @@ namespace TestApp
             ep.Import(typeof(Formulars));
             ep.Import(typeof(Physics));
 
+            var mscalar = ep.Evaluate("[1,2,3]*2");
+
             var aliasCall = ep.Evaluate("displayValueTable(1, 10, 1, x ^ 2);");
             var displayTree = ep.Evaluate("use physics.*; G = 0.5; Fg(2);");
 

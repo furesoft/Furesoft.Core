@@ -2,10 +2,13 @@
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
+using MathNet.Numerics.LinearAlgebra;
+using System.Linq;
+using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
-    public class MatrixExpression : Expression
+    public class MatrixExpression : Expression, IEvaluatableExpression
     {
         public MatrixExpression(Parser parser, CodeObject parent) : base(parser, parent)
         {
@@ -43,6 +46,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             }
 
             writer.Write("]");
+        }
+
+        public ValueType Evaluate(ExpressionParser ep, Scope scope)
+        {
+            return Matrix<double>.Build.Dense(1, Storage.Count, Storage.Select(_ => ep.EvaluateExpression(_, scope).Get<double>()).ToArray());
         }
     }
 }

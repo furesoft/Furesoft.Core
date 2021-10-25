@@ -4,6 +4,8 @@ using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
 using System;
 
+using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
+
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     public class AbsoluteValueExpression : Expression, IEvaluatableExpression
@@ -42,7 +44,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             writer.Write("|");
         }
 
-        public double Evaluate(ExpressionParser ep, Scope scope)
+        public ValueType Evaluate(ExpressionParser ep, Scope scope)
         {
             return Math.Abs(ep.EvaluateExpression(Expression, scope).Get<double>());
         }

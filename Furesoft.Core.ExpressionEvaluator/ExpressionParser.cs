@@ -17,12 +17,13 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Macros;
 using Furesoft.Core.ExpressionEvaluator.Symbols;
+using MathNet.Numerics.LinearAlgebra.Double;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using ValueType = Maki.Variant<double>;
+using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
@@ -168,7 +169,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (expr is Literal lit)
             {
-                return (double)lit.Value;
+                return (double)Convert.ChangeType(lit.Value, typeof(double));
             }
             else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
             {
@@ -523,6 +524,13 @@ namespace Furesoft.Core.ExpressionEvaluator
             RootScope.AddOperatorOverload<double, double>("-", (l, r) => l - r);
             RootScope.AddOperatorOverload<double, double>("/", (l, r) => l / r);
             RootScope.AddOperatorOverload<double, double>("%", (l, r) => l % r);
+            RootScope.AddOperatorOverload<double, double>("^", (l, r) => Math.Pow(l, r));
+
+            RootScope.AddOperatorOverload<DenseMatrix, double>("*", (m, scalar) => m.Multiply(scalar));
+            RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("*", (m, scalar) => m.Multiply(scalar));
+            RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("+", (m, scalar) => m.Add(scalar));
+            RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("-", (m, scalar) => m.Subtract(scalar));
+            RootScope.AddOperatorOverload<DenseMatrix, DenseMatrix>("/", (m, scalar) => m.Divide(scalar));
 
             RootScope.AddOperatorOverload<double>("-", (l) => -l);
         }

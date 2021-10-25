@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using ValueType = Maki.Variant<double>;
+using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {

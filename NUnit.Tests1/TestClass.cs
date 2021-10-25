@@ -116,6 +116,7 @@ namespace NUnit.Tests1
         [TestCase("(3+4)*5", 35)]
         [TestCase("2", 2)]
         [TestCase("-2", -2)]
+        [TestCase("2^2", 4)]
         [TestCase("round(PI*2, 5)", Math.PI * 2)]
         [TestCase("x = 5; -x", -5)]
         public void SimpleExpressions_Should_Pass(string input, double expected)

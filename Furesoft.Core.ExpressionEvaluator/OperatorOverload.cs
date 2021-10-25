@@ -1,5 +1,5 @@
 ﻿using System;
-using ValueType = Maki.Variant<double>;
+using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {
