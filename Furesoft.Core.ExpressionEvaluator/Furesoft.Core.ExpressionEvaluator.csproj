@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Maki" Version="1.2.0" />
     <PackageReference Include="MathNet.Numerics" Version="4.15.0" />
   </ItemGroup>
 

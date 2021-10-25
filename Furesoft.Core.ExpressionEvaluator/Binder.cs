@@ -114,7 +114,7 @@ namespace Furesoft.Core.ExpressionEvaluator
                 var s = ExpressionParser.Modules[left].Scope;
                 if (s.Variables.ContainsKey(right))
                 {
-                    return s.Variables[right];
+                    return new Literal(s.Variables[right]);
                 }
             }
 

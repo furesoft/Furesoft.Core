@@ -26,7 +26,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
 
             if (matrices.Length == 2 && matrices[0] is MatrixExpression m && matrices[1] is MatrixExpression v && v.Storage != null && v.Storage.Count == 3 && m.Storage.Count == 9)
             {
-                double[] storage = m.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope())).ToArray();
+                double[] storage = m.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope()).Get<double>()).ToArray();
 
                 var rows = new List<double[]>();
                 rows.Add(storage.Take(3).ToArray());
@@ -34,7 +34,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
                 rows.Add(storage.Skip(6).Take(3).ToArray());
 
                 A = Matrix<double>.Build.DenseOfRowArrays(rows);
-                b = Vector<double>.Build.Dense(v.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope())).ToArray());
+                b = Vector<double>.Build.Dense(v.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope()).Get<double>()).ToArray());
 
                 var x = A.Solve(b);
 

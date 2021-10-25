@@ -44,7 +44,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public double Evaluate(ExpressionParser ep, Scope scope)
         {
-            return Math.Abs(ep.EvaluateExpression(Expression, scope));
+            return Math.Abs(ep.EvaluateExpression(Expression, scope).Get<double>());
         }
     }
 }

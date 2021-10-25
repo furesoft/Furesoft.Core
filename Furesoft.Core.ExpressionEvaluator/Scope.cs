@@ -1,6 +1,7 @@
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Macros;
+using Maki;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace Furesoft.Core.ExpressionEvaluator
         public Dictionary<string, Macro> Macros = new();
 
         public Dictionary<string, Expression> SetDefinitions = new();
-        public Dictionary<string, double> Variables = new();
+        public Dictionary<string, Variant<double>> Variables = new();
         public Macro Initializer { get; set; }
         public Scope Parent { get; set; }
 
@@ -49,7 +50,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             ImportScope(ep.RootScope);
         }
 
-        public double GetVariable(string name)
+        public Variant<double> GetVariable(string name)
         {
             Scope currentScope = this;
 

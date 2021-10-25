@@ -39,7 +39,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public double Evaluate(ExpressionParser ep, Scope scope)
         {
-            return Math.Pow(ep.EvaluateExpression(Left, scope), ep.EvaluateExpression(Right, scope));
+            return Math.Pow(ep.EvaluateExpression(Left, scope).Get<double>(), ep.EvaluateExpression(Right, scope).Get<double>());
         }
 
         public override int GetPrecedence()

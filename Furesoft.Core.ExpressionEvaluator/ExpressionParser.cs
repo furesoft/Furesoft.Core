@@ -15,6 +15,7 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.ExpressionEvaluator.AST;
 using Furesoft.Core.ExpressionEvaluator.Macros;
 using Furesoft.Core.ExpressionEvaluator.Symbols;
+using Maki;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -147,7 +148,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
-        internal double EvaluateExpression(Expression expr, Scope scope)
+        internal Variant<double> EvaluateExpression(Expression expr, Scope scope)
         {
             if (expr is IEvaluatableExpression e)
             {
@@ -156,23 +157,23 @@ namespace Furesoft.Core.ExpressionEvaluator
 
             if (expr is Add add)
             {
-                return EvaluateExpression(add.Left, scope) + EvaluateExpression(add.Right, scope);
+                return EvaluateExpression(add.Left, scope).Get<double>() + EvaluateExpression(add.Right, scope).Get<double>();
             }
             else if (expr is Multiply mul)
             {
-                return EvaluateExpression(mul.Left, scope) * EvaluateExpression(mul.Right, scope);
+                return EvaluateExpression(mul.Left, scope).Get<double>() * EvaluateExpression(mul.Right, scope).Get<double>();
             }
             else if (expr is Subtract sub)
             {
-                return EvaluateExpression(sub.Left, scope) - EvaluateExpression(sub.Right, scope);
+                return EvaluateExpression(sub.Left, scope).Get<double>() - EvaluateExpression(sub.Right, scope).Get<double>();
             }
             else if (expr is Divide div)
             {
-                return EvaluateExpression(div.Left, scope) / EvaluateExpression(div.Right, scope);
+                return EvaluateExpression(div.Left, scope).Get<double>() / EvaluateExpression(div.Right, scope).Get<double>();
             }
             else if (expr is Mod mod)
             {
-                return EvaluateExpression(mod.Left, scope) % EvaluateExpression(mod.Right, scope);
+                return EvaluateExpression(mod.Left, scope).Get<double>() % EvaluateExpression(mod.Right, scope).Get<double>();
             }
             else if (expr is Literal lit)
             {
@@ -180,7 +181,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
             else if (expr is Negative neg)
             {
-                return -EvaluateExpression(neg.Expression, scope);
+                return -EvaluateExpression(neg.Expression, scope).Get<double>();
             }
             else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
             {
@@ -306,7 +307,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         private EvaluationResult Evaluate(List<CodeObject> boundTree)
         {
-            var returnValues = new List<double>();
+            var returnValues = new List<Variant<double>>();
             var errors = new List<Message>();
 
             if (boundTree == null) return new();
@@ -325,7 +326,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 if (result != null)
                 {
-                    returnValues.Add(result.Value);
+                    returnValues.Add(result);
                 }
             }
 
@@ -337,7 +338,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             return new() { Values = returnValues, Errors = errors, ModuleName = moduleName };
         }
 
-        private double? Evaluate(CodeObject obj)
+        private Variant<double> Evaluate(CodeObject obj)
         {
             if (obj is IEvaluatableStatement e)
             {
@@ -379,10 +380,10 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                 return expr switch
                 {
-                    LessThan => left < right,
-                    GreaterThan => left > right,
-                    LessThanEqual => left <= right,
-                    GreaterThanEqual => left >= right,
+                    LessThan => left.Get<double>() < right.Get<double>(),
+                    GreaterThan => left.Get<double>() > right.Get<double>(),
+                    LessThanEqual => left.Get<double>() <= right.Get<double>(),
+                    GreaterThanEqual => left.Get<double>() >= right.Get<double>(),
                     NotEqual => left != right,
                     Equal => left == right,
                     _ => false,
@@ -390,7 +391,7 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
-        private double EvaluateFunction(Scope scope, Call call, string fnName, FunctionDefinition fn)
+        private Variant<double> EvaluateFunction(Scope scope, Call call, string fnName, FunctionDefinition fn)
         {
             Scope fnScope = Scope.CreateScope(RootScope);
 
@@ -449,7 +450,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
                     foreach (var arg in fnScope.Variables)
                     {
-                        if (EvaluateNumberRoom(c, arg.Value))
+                        if (EvaluateNumberRoom(c, arg.Value.Get<double>()))
                         {
                             if (condition == null)
                                 continue;
@@ -480,7 +481,7 @@ namespace Furesoft.Core.ExpressionEvaluator
 
         private double EvaluateImportedFunction(Scope scope, Call call, string fnName, Func<double[], double> importedFn)
         {
-            double[] args = call.Arguments.Select(_ => EvaluateExpression(_, scope)).ToArray();
+            double[] args = call.Arguments.Select(_ => EvaluateExpression(_, scope).Get<double>()).ToArray();
 
             try
             {

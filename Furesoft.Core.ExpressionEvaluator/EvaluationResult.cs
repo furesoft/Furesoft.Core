@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using Maki;
 using System.Collections.Generic;
 
 namespace Furesoft.Core.ExpressionEvaluator
@@ -7,6 +8,6 @@ namespace Furesoft.Core.ExpressionEvaluator
     {
         public List<Message> Errors { get; set; } = new();
         public string ModuleName { get; internal set; }
-        public List<double> Values { get; set; } = new();
+        public List<Variant<double>> Values { get; set; } = new();
     }
 }

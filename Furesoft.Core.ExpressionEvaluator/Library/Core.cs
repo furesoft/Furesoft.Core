@@ -20,7 +20,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         [Description("Calculate the arithmetic average")]
         public static Expression Average(MacroContext mc, Expression[] args)
         {
-            var evaluatedArgs = args.Select(_ => mc.ExpressionParser.EvaluateExpression(_, mc.Scope));
+            var evaluatedArgs = args.Select(_ => mc.ExpressionParser.EvaluateExpression(_, mc.Scope).Get<double>());
 
             return evaluatedArgs.Sum() / args.Length;
         }
@@ -29,7 +29,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         [Macro]
         public static Expression DisplayTree(MacroContext mc, Expression[] args)
         {
-            if (args.Length == 2 && mc.ExpressionParser.EvaluateExpression(args[1], mc.Scope) == 1)
+            if (args.Length == 2 && mc.ExpressionParser.EvaluateExpression(args[1], mc.Scope).Get<double>() == 1)
             {
                 var binded = mc.ExpressionParser.Binder.BindExpression(args[0], mc.Scope);
 
@@ -50,9 +50,9 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         {
             Console.WriteLine("ValueTable for f(x) = " + function._AsString);
 
-            double stepEvaluated = mc.ExpressionParser.EvaluateExpression(step, mc.Scope);
-            double minimumEvaluated = mc.ExpressionParser.EvaluateExpression(minimum, mc.Scope);
-            double maximumEvaluated = mc.ExpressionParser.EvaluateExpression(maximum, mc.Scope);
+            double stepEvaluated = mc.ExpressionParser.EvaluateExpression(step, mc.Scope).Get<double>();
+            double minimumEvaluated = mc.ExpressionParser.EvaluateExpression(minimum, mc.Scope).Get<double>();
+            double maximumEvaluated = mc.ExpressionParser.EvaluateExpression(maximum, mc.Scope).Get<double>();
 
             for (double i = minimumEvaluated; i < maximumEvaluated; i += stepEvaluated)
             {
@@ -81,14 +81,14 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             double sum = 1;
             if (end is Literal l && def is Assignment a && a.Left is UnresolvedRef nameRef && nameRef.Reference is string name)
             {
-                double endRange = mc.ExpressionParser.EvaluateExpression(end, mc.Scope);
+                double endRange = mc.ExpressionParser.EvaluateExpression(end, mc.Scope).Get<double>();
 
                 for (int i = (int)mc.ExpressionParser.EvaluateExpression(a.Right, mc.Scope); i <= endRange; i++)
                 {
                     var s = Scope.CreateScope(mc.Scope);
                     s.Variables.Add(name, i);
 
-                    sum *= mc.ExpressionParser.EvaluateExpression(func, s);
+                    sum *= mc.ExpressionParser.EvaluateExpression(func, s).Get<double>();
                 }
             }
 
@@ -101,11 +101,11 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
         {
             if (@base is PowerOperator pow)
             {
-                return new PowerOperator(mc.ExpressionParser.EvaluateExpression(pow.Left, mc.Scope), mc.ExpressionParser.EvaluateExpression(pow.Right, mc.Scope) / exponent);
+                return new PowerOperator(mc.ExpressionParser.EvaluateExpression(pow.Left, mc.Scope).Get<double>(), mc.ExpressionParser.EvaluateExpression(pow.Right, mc.Scope).Get<double>() / exponent);
             }
             else
             {
-                return new PowerOperator(mc.ExpressionParser.EvaluateExpression(@base, mc.Scope), 1 / exponent);
+                return new PowerOperator(mc.ExpressionParser.EvaluateExpression(@base, mc.Scope).Get<double>(), 1 / exponent);
             }
         }
 
@@ -122,14 +122,14 @@ namespace Furesoft.Core.ExpressionEvaluator.Library
             double sum = 0;
             if (end is Literal l && def is Assignment a && a.Left is UnresolvedRef nameRef && nameRef.Reference is string name)
             {
-                double endRange = mc.ExpressionParser.EvaluateExpression(end, mc.Scope);
+                double endRange = mc.ExpressionParser.EvaluateExpression(end, mc.Scope).Get<double>();
 
                 for (int i = (int)mc.ExpressionParser.EvaluateExpression(a.Right, mc.Scope); i <= endRange; i++)
                 {
                     var s = Scope.CreateScope(mc.Scope);
                     s.Variables.Add(name, i);
 
-                    sum += mc.ExpressionParser.EvaluateExpression(func, s);
+                    sum += mc.ExpressionParser.EvaluateExpression(func, s).Get<double>();
                 }
             }
 

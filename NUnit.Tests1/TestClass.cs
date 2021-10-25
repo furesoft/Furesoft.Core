@@ -71,8 +71,8 @@ namespace NUnit.Tests1
                 yield return new TestCaseData("f(x) = 2 * x; g(x) = x^x; h(x) = f @ g; h(2);", 8);
                 yield return new TestCaseData("geometry.parallelogram;", 1);
                 yield return new TestCaseData("use geometry; parallelogram;", 1);
-                yield return new TestCaseData("use geometry.volume; round(volumePyramide(2, 5), 5);", 3.33333);
-                yield return new TestCaseData("round(geometry.volume.volumePyramide(2, 5), 5);", 3.33333);
+                yield return new TestCaseData("use geometry.figure; round(volumePyramide(2, 5), 5);", 3.33333);
+                yield return new TestCaseData("round(geometry.figure.volumePyramide(2, 5), 5);", 3.33333);
                 yield return new TestCaseData("unpackBinominal((4 + 3) ^ 2);", 16 + 9 + 2 * 4 * 3);
                 yield return new TestCaseData("unpackBinominal((4 - 3) ^ 2);", 16 + 9 - 2 * 4 * 3);
                 yield return new TestCaseData("unpackBinominal((3+4)*(3-4));", 9 - 16);
@@ -139,7 +139,7 @@ namespace NUnit.Tests1
             {
                 if (result.Values.Any())
                 {
-                    Assert.That(result.Values, Does.Contain(Math.Round(expected, 5)), "Calculation is wrong");
+                    Assert.That(result.Values.Select(_ => _.Get<double>()), Does.Contain(Math.Round(expected, 5)), "Calculation is wrong");
                 }
             }
             else
