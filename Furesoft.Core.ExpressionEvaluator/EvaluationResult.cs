@@ -1,12 +1,11 @@
 ﻿
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
-namespace Furesoft.Core.ExpressionEvaluator
+namespace Furesoft.Core.ExpressionEvaluator;
+
+public class EvaluationResult
 {
-    public class EvaluationResult
-    {
-        public List<Message> Errors { get; set; } = new();
-        public string ModuleName { get; internal set; }
-        public List<ValueType> Values { get; set; } = new();
-    }
+    public List<Message> Errors { get; set; } = new();
+    public string ModuleName { get; internal set; }
+    public List<ValueType> Values { get; set; } = new();
 }

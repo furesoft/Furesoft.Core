@@ -1,23 +1,22 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator.Symbols
+﻿namespace Furesoft.Core.ExpressionEvaluator.Symbols;
+
+public class InfinityRef : SymbolicRef
 {
-    public class InfinityRef : SymbolicRef
+    public InfinityRef(Parser parser, CodeObject parent) : base(parser, parent)
     {
-        public InfinityRef(Parser parser, CodeObject parent) : base(parser, parent)
-        {
-        }
+    }
 
-        public static new void AddParsePoints()
-        {
-            Parser.AddParsePoint("INFINITY", Parse);
-        }
+    public static new void AddParsePoints()
+    {
+        Parser.AddParsePoint("INFINITY", Parse);
+    }
 
-        public static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            var result = new InfinityRef(parser, parent);
+    public static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        var result = new InfinityRef(parser, parent);
 
-            parser.NextToken();
+        parser.NextToken();
 
-            return result;
-        }
+        return result;
     }
 }

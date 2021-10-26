@@ -1,13 +1,12 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Physics
+﻿namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Physics;
+
+[Module("physics.forces")]
+public class PhysicsForces
 {
-    [Module("physics.forces")]
-    public class PhysicsForces
+    [FunctionName("Fg")]
+    [Macro]
+    public static Expression GravityForce(MacroContext mc, Expression mass)
     {
-        [FunctionName("Fg")]
-        [Macro]
-        public static Expression GravityForce(MacroContext mc, Expression mass)
-        {
-            return mass * new UnresolvedRef("G");
-        }
+        return mass * new UnresolvedRef("G");
     }
 }

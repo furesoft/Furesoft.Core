@@ -1,13 +1,12 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator
-{
-    [AttributeUsage(AttributeTargets.Method)]
-    public class FunctionNameAttribute : Attribute
-    {
-        public FunctionNameAttribute(string name)
-        {
-            Name = name;
-        }
+﻿namespace Furesoft.Core.ExpressionEvaluator;
 
-        public string Name { get; set; }
+[AttributeUsage(AttributeTargets.Method)]
+public class FunctionNameAttribute : Attribute
+{
+    public FunctionNameAttribute(string name)
+    {
+        Name = name;
     }
+
+    public string Name { get; set; }
 }

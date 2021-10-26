@@ -1,7 +1,6 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator;
+
+public interface IBindable
 {
-    public interface IBindable
-    {
-        CodeObject Bind(ExpressionParser ep, Binder binder);
-    }
+    CodeObject Bind(ExpressionParser ep, Binder binder);
 }

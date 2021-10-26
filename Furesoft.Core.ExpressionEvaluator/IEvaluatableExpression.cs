@@ -1,9 +1,8 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator
-{
-    using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
+﻿namespace Furesoft.Core.ExpressionEvaluator;
 
-    public interface IEvaluatableExpression
-    {
-        ValueType Evaluate(ExpressionParser ep, Scope scope);
-    }
+using ValueType = ValueType;
+
+public interface IEvaluatableExpression
+{
+    ValueType Evaluate(ExpressionParser ep, Scope scope);
 }

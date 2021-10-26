@@ -1,8 +1,7 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator;
+
+public class Module
 {
-    public class Module
-    {
-        public string Name { get; set; }
-        public Scope Scope { get; set; }
-    }
+    public string Name { get; set; }
+    public Scope Scope { get; set; }
 }

@@ -1,7 +1,6 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator;
+
+public interface IEvaluatableStatement
 {
-    public interface IEvaluatableStatement
-    {
-        void Evaluate(ExpressionParser ep);
-    }
+    void Evaluate(ExpressionParser ep);
 }

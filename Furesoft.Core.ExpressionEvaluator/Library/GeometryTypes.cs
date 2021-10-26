@@ -1,12 +1,11 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator.Library
+﻿namespace Furesoft.Core.ExpressionEvaluator.Library;
+
+[Module("geometry")]
+public enum GeometryTypes
 {
-    [Module("geometry")]
-    public enum GeometryTypes
-    {
-        Circle,
-        Parallelogram,
-        Triangle,
-        Trapezoid,
-        Rhombus,
-    }
+    Circle,
+    Parallelogram,
+    Triangle,
+    Trapezoid,
+    Rhombus,
 }
