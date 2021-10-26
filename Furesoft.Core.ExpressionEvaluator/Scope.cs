@@ -56,6 +56,13 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
 
+        public void AddOperatorOverload<T>()
+            where T : INumber<T>
+        {
+            AddOperatorOverload<T, T>("+", (l, r) => (double)Convert.ChangeType(l + r, typeof(double)));
+            AddOperatorOverload<T, T>("-", (l, r) => (double)Convert.ChangeType(l - r, typeof(double)));
+        }
+
         public void AddOperatorOverload<TLeft>(string symbol, Func<TLeft, ValueType> invoker)
         {
             var opOverload = new OperatorOverload();
@@ -256,4 +263,6 @@ namespace Furesoft.Core.ExpressionEvaluator
             }
         }
     }
+
+   
 }
