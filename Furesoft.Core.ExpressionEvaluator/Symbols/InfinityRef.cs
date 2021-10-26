@@ -1,8 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-using Furesoft.Core.CodeDom.Parsing;
-
-namespace Furesoft.Core.ExpressionEvaluator.Symbols
+﻿namespace Furesoft.Core.ExpressionEvaluator.Symbols
 {
     public class InfinityRef : SymbolicRef
     {

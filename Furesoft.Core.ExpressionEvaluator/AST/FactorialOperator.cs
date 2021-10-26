@@ -1,10 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
-using Furesoft.Core.CodeDom.Parsing;
-
-using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
-
-namespace Furesoft.Core.ExpressionEvaluator.AST
+﻿namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     internal class FactorialOperator : PostUnaryOperator, IEvaluatableExpression
     {

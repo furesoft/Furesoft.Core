@@ -1,8 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 
 namespace Furesoft.Core.ExpressionEvaluator.Macros
 {

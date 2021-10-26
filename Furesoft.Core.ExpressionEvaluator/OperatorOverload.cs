@@ -1,7 +1,4 @@
-﻿using System;
-using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
-
-namespace Furesoft.Core.ExpressionEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator
 {
     public class OperatorOverload
     {

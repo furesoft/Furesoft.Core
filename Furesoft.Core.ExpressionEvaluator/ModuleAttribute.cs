@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.ExpressionEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Enum)]
     public class ModuleAttribute : Attribute

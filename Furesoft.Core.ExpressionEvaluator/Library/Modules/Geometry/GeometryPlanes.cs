@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Geometry
+﻿namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Geometry
 {
     [Module("geometry.planes")]
     public class GeometryPlanes

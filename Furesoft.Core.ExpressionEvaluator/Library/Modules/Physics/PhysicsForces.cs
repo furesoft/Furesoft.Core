@@ -1,7 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-
-namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Physics
+﻿namespace Furesoft.Core.ExpressionEvaluator.Library.Modules.Physics
 {
     [Module("physics.forces")]
     public class PhysicsForces

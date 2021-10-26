@@ -1,14 +1,5 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.ExpressionEvaluator.AST;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise;
 using MathNet.Numerics.LinearAlgebra;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Furesoft.Core.ExpressionEvaluator.Library
 {

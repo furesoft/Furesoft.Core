@@ -1,10 +1,6 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
+﻿
+
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {

@@ -1,13 +1,3 @@
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.ExpressionEvaluator.AST;
-using Furesoft.Core.ExpressionEvaluator.Macros;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
-using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
-
 namespace Furesoft.Core.ExpressionEvaluator
 {
     public class Scope

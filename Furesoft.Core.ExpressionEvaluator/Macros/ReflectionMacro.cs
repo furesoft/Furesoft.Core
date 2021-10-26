@@ -1,7 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using System;
-
-namespace Furesoft.Core.ExpressionEvaluator.Macros
+﻿namespace Furesoft.Core.ExpressionEvaluator.Macros
 {
     public class ReflectionMacro : Macro
     {

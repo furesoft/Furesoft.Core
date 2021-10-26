@@ -1,29 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM;
-using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Conditional;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.ExpressionEvaluator.AST;
-using Furesoft.Core.ExpressionEvaluator.Macros;
-using Furesoft.Core.ExpressionEvaluator.Symbols;
-using MathNet.Numerics.LinearAlgebra.Double;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
-using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {

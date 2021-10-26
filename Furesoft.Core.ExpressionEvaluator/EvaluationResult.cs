@@ -1,7 +1,5 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
-using System.Collections.Generic;
-
-using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
+﻿
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {

@@ -1,6 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
-
-namespace Furesoft.Core.ExpressionEvaluator.Symbols
+﻿namespace Furesoft.Core.ExpressionEvaluator.Symbols
 {
     public class ModuleRef : SymbolicRef
     {

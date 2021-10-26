@@ -1,9 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.ExpressionEvaluator.AST;
-using System;
-using System.Text;
+﻿using System.Text;
 
 namespace Furesoft.Core.ExpressionEvaluator
 {

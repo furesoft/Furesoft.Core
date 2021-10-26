@@ -1,9 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Arithmetic.Base;
-using Furesoft.Core.CodeDom.Parsing;
-
-namespace Furesoft.Core.ExpressionEvaluator.AST
+﻿namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     internal class PowerOperator : BinaryArithmeticOperator
     {

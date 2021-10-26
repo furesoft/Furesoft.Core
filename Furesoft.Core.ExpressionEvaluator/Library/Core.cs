@@ -1,12 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Assignments;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Other;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
-using Furesoft.Core.ExpressionEvaluator.AST;
-using System;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 
 namespace Furesoft.Core.ExpressionEvaluator.Library
 {

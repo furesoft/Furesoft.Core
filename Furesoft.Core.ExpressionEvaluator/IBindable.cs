@@ -1,6 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-
-namespace Furesoft.Core.ExpressionEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator
 {
     public interface IBindable
     {

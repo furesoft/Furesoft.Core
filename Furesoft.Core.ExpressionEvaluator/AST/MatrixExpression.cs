@@ -1,10 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using MathNet.Numerics.LinearAlgebra;
-using System.Linq;
-using ValueType = Maki.Variant<double, MathNet.Numerics.LinearAlgebra.Matrix<double>>;
+﻿
 
 namespace Furesoft.Core.ExpressionEvaluator.AST
 {

@@ -1,12 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Relational;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Unary;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.ExpressionEvaluator.Symbols;
-
-namespace Furesoft.Core.ExpressionEvaluator.AST
+﻿namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     public class IntervalExpression : Expression
     {

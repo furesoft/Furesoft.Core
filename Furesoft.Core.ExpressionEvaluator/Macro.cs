@@ -1,8 +1,4 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
-using System.Collections.Generic;
-
-namespace Furesoft.Core.ExpressionEvaluator
+﻿namespace Furesoft.Core.ExpressionEvaluator
 {
     public delegate Expression MacroInvokeDelegate(MacroContext context, params Expression[] arguments);
 
