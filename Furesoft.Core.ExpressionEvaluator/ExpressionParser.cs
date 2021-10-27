@@ -12,6 +12,7 @@ public class ExpressionParser
     {
         RootScope.AddMacro<RuleForMacro>();
         RootScope.AddMacro<ResolveMacro>();
+        RootScope.AddMacro<PlotMacro>();
 
         InitOperatorOverloads();
     }
