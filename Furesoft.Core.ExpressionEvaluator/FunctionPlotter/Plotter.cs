@@ -137,7 +137,7 @@ namespace Furesoft.Core.ExpressionEvaluator.FunctionPlotter
             // generate points and draw points
             Functions.ForEach(graph =>
             {
-                var xs = Range(xMin, xMax, 0.001);
+                var xs = Range(xMin, xMax, 0.0001);
                 var ys = xs.Select(graph.Function);
                 xs = xs.Select(x => ScaleX(x));
                 ys = ys.Select(y => ScaleY(y));

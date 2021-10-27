@@ -70,7 +70,7 @@ public class Binder
 
                     var macro = ExpressionParser.RootScope.Macros[s];
 
-                    var mc = new MacroContext(ExpressionParser, c.Parent, scope);
+                    var mc = new MacroContext(ExpressionParser, c, scope);
 
                     return macro.Invoke(mc, arguments.ToArray());
                 }

@@ -14,7 +14,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Macros
         public override Expression Invoke(MacroContext mc, params Expression[] arguments)
         {
 
-            if (arguments.Length == 1)
+            if (arguments.Length == 1 && mc.ParentCallNode is Expression e && !e.HasMessages)
             {
                 var function = arguments[0];
 
