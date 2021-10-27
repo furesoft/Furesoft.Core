@@ -36,7 +36,7 @@ namespace Furesoft.Core.ExpressionEvaluator.Macros
 
                 OutputChannel.Send(plotter.Plot);
                 
-                plotter.Plot.Save("plot.png", System.Drawing.Imaging.ImageFormat.Png);
+               // plotter.Plot.Save("plot.png", System.Drawing.Imaging.ImageFormat.Png);
             }
 
             return new TempExpr();
