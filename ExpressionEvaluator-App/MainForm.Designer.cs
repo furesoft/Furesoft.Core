@@ -33,17 +33,29 @@ partial class MainForm
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.loadToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.runToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
             // 
             // textEditorControl
             // 
             this.textEditorControl.ConvertTabsToSpaces = true;
             this.textEditorControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textEditorControl.EnableFolding = false;
+            this.textEditorControl.IndentStyle = DigitalRune.Windows.TextEditor.Properties.IndentStyle.None;
             this.textEditorControl.Location = new System.Drawing.Point(0, 28);
-            this.textEditorControl.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.textEditorControl.Margin = new System.Windows.Forms.Padding(5);
             this.textEditorControl.Name = "textEditorControl";
-            this.textEditorControl.ShowHRuler = true;
+            this.textEditorControl.ShowLineNumbers = false;
+            this.textEditorControl.ShowVRuler = false;
             this.textEditorControl.Size = new System.Drawing.Size(1045, 840);
             this.textEditorControl.TabIndent = 2;
             this.textEditorControl.TabIndex = 0;
@@ -53,10 +65,10 @@ partial class MainForm
             // 
             // richTextBox1
             // 
-            this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.richTextBox1.Location = new System.Drawing.Point(876, 28);
+            this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.richTextBox1.Location = new System.Drawing.Point(3, 3);
             this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(169, 840);
+            this.richTextBox1.Size = new System.Drawing.Size(1031, 739);
             this.richTextBox1.TabIndex = 1;
             this.richTextBox1.Text = "";
             // 
@@ -65,7 +77,8 @@ partial class MainForm
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.loadToolStripMenuItem,
-            this.saveToolStripMenuItem});
+            this.saveToolStripMenuItem,
+            this.runToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(1045, 28);
@@ -84,12 +97,61 @@ partial class MainForm
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(54, 24);
             this.saveToolStripMenuItem.Text = "Save";
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox1.Location = new System.Drawing.Point(3, 3);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(1031, 739);
+            this.pictureBox1.TabIndex = 3;
+            this.pictureBox1.TabStop = false;
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.tabControl1.Location = new System.Drawing.Point(0, 90);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(1045, 778);
+            this.tabControl1.TabIndex = 4;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.richTextBox1);
+            this.tabPage1.Location = new System.Drawing.Point(4, 29);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(1037, 745);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Result";
+            this.tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.pictureBox1);
+            this.tabPage2.Location = new System.Drawing.Point(4, 29);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(1037, 745);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Plot";
+            this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // runToolStripMenuItem
+            // 
+            this.runToolStripMenuItem.Name = "runToolStripMenuItem";
+            this.runToolStripMenuItem.Size = new System.Drawing.Size(48, 24);
+            this.runToolStripMenuItem.Text = "Run";
+            this.runToolStripMenuItem.Click += new System.EventHandler(this.runToolStripMenuItem_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1045, 868);
-            this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.textEditorControl);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -98,6 +160,10 @@ partial class MainForm
             this.Text = "Mathematik Expression Editor";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
+            this.tabPage2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -110,5 +176,10 @@ partial class MainForm
     private System.Windows.Forms.MenuStrip menuStrip1;
     private System.Windows.Forms.ToolStripMenuItem loadToolStripMenuItem;
     private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
+    private System.Windows.Forms.PictureBox pictureBox1;
+    private System.Windows.Forms.TabControl tabControl1;
+    private System.Windows.Forms.TabPage tabPage1;
+    private System.Windows.Forms.TabPage tabPage2;
+    private System.Windows.Forms.ToolStripMenuItem runToolStripMenuItem;
 }
 
