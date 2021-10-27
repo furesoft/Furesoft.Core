@@ -1,8 +1,6 @@
 ﻿using Furesoft.Core.ExpressionEvaluator.FunctionPlotter;
 using System.ComponentModel;
 
-using static System.Math;
-
 namespace Furesoft.Core.ExpressionEvaluator.Macros
 {
     [Description("Plot the function to an image file")]
@@ -35,6 +33,8 @@ namespace Furesoft.Core.ExpressionEvaluator.Macros
                 var plotter = new Plotter(execute, -10, 10, -10, 10);
                 
                 plotter.Draw();
+
+                OutputChannel.Send(plotter.Plot);
                 
                 plotter.Plot.Save("plot.png", System.Drawing.Imaging.ImageFormat.Png);
             }

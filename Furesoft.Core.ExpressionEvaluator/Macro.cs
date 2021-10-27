@@ -9,4 +9,6 @@ public abstract class Macro
     public abstract string Name { get; }
 
     public abstract Expression Invoke(MacroContext context, params Expression[] arguments);
+
+    public static Channel OutputChannel { get; } = new();
 }
