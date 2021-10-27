@@ -5,87 +5,86 @@ using Furesoft.Core.ExpressionEvaluator;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-namespace DigitalRune.Windows.SampleEditor
+namespace Nardole;
+
+internal class CodeCompletionDataProvider : AbstractCompletionDataProvider
 {
-    internal class CodeCompletionDataProvider : AbstractCompletionDataProvider
+    private readonly ImageList _imageList;
+    private ExpressionParser evaluator;
+
+    public CodeCompletionDataProvider(ExpressionParser evaluator)
     {
-        private readonly ImageList _imageList;
-        private ExpressionParser evaluator;
+        this.evaluator = evaluator;
 
-        public CodeCompletionDataProvider(ExpressionParser evaluator)
+        _imageList = new ImageList();
+        _imageList.Images.Add(Resources.TextFile);
+        _imageList.Images.Add(Resources.field);
+        _imageList.Images.Add(Resources.method);
+        _imageList.Images.Add(Resources.macro);
+    }
+
+    public override ImageList ImageList
+    {
+        get { return _imageList; }
+    }
+
+    public override ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
+    {
+        // This class provides the data for the Code-Completion-Window.
+        // Some random variables and methods are returned as completion data.
+
+        List<ICompletionData> completionData = new List<ICompletionData>();
+
+        foreach (var mod in evaluator.Modules)
         {
-            this.evaluator = evaluator;
-
-            _imageList = new ImageList();
-            _imageList.Images.Add(Resources.TextFile);
-            _imageList.Images.Add(Resources.field);
-            _imageList.Images.Add(Resources.method);
-            _imageList.Images.Add(Resources.macro);
+            completionData.Add(new DefaultCompletionData(mod.Key, "", 0));
         }
 
-        public override ImageList ImageList
+        foreach (var k in new[] { "in", "set", "valueset", "INFINITY", "module", "alias", "use" })
         {
-            get { return _imageList; }
+            completionData.Add(new DefaultCompletionData(k, "", 0));
         }
 
-        public override ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
+        foreach (var set in evaluator.RootScope.SetDefinitions)
         {
-            // This class provides the data for the Code-Completion-Window.
-            // Some random variables and methods are returned as completion data.
-
-            List<ICompletionData> completionData = new List<ICompletionData>();
-
-            foreach (var mod in evaluator.Modules)
-            {
-                completionData.Add(new DefaultCompletionData(mod.Key, "", 0));
-            }
-
-            foreach (var k in new[] { "in", "set", "valueset", "INFINITY", "module", "alias", "use" })
-            {
-                completionData.Add(new DefaultCompletionData(k, "", 0));
-            }
-
-            foreach (var set in evaluator.RootScope.SetDefinitions)
-            {
-                completionData.Add(new DefaultCompletionData(set.Key, "", 0));
-            }
-
-            FillFromScope(completionData);
-
-            return completionData.ToArray();
+            completionData.Add(new DefaultCompletionData(set.Key, "", 0));
         }
 
-        public override CompletionDataProviderKeyResult ProcessKey(char key)
+        FillFromScope(completionData);
+
+        return completionData.ToArray();
+    }
+
+    public override CompletionDataProviderKeyResult ProcessKey(char key)
+    {
+        return key == '\t' ? CompletionDataProviderKeyResult.InsertionKey : CompletionDataProviderKeyResult.NormalKey;
+    }
+
+    private void FillFromScope(List<ICompletionData> completionData)
+    {
+        foreach (var variable in evaluator.RootScope.Variables)
         {
-            return key == '\t' ? CompletionDataProviderKeyResult.InsertionKey : CompletionDataProviderKeyResult.NormalKey;
+            completionData.Add(new DefaultCompletionData(variable.Key, "", 1));
         }
 
-        private void FillFromScope(List<ICompletionData> completionData)
+        foreach (var macro in evaluator.RootScope.Macros)
         {
-            foreach (var variable in evaluator.RootScope.Variables)
-            {
-                completionData.Add(new DefaultCompletionData(variable.Key, "", 1));
-            }
-
-            foreach (var macro in evaluator.RootScope.Macros)
-            {
-                completionData.Add(new DefaultCompletionData(macro.Key, "", 3));
-            }
-
-            foreach (var func in evaluator.RootScope.Functions)
-            {
-                completionData.Add(new DefaultCompletionData(Umangle(func.Key), "", 2));
-            }
-
-            foreach (var func in evaluator.RootScope.ImportedFunctions)
-            {
-                completionData.Add(new DefaultCompletionData(Umangle(func.Key), "", 2));
-            }
+            completionData.Add(new DefaultCompletionData(macro.Key, "", 3));
         }
 
-        private string Umangle(string name)
+        foreach (var func in evaluator.RootScope.Functions)
         {
-            return name.Split(":")[0];
+            completionData.Add(new DefaultCompletionData(Umangle(func.Key), "", 2));
         }
+
+        foreach (var func in evaluator.RootScope.ImportedFunctions)
+        {
+            completionData.Add(new DefaultCompletionData(Umangle(func.Key), "", 2));
+        }
+    }
+
+    private string Umangle(string name)
+    {
+        return name.Split(":")[0];
     }
 }
