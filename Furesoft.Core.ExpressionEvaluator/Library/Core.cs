@@ -25,6 +25,7 @@ public static class Core
         {
             var binded = mc.ExpressionParser.Binder.BindExpression(args[0], mc.Scope);
 
+            
             Console.WriteLine(binded.AsText());
         }
         else

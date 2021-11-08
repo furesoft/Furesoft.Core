@@ -419,7 +419,7 @@ public class ExpressionParser
                         if (condition == null)
                             continue;
 
-                        if (EvaluateCondition((BinaryBooleanOperator)condition, fnScope))
+                        if (EvaluateCondition((BinaryOperator)condition, fnScope))
                         {
                             continue;
                         }
