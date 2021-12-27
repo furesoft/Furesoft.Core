@@ -47,6 +47,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
         public const string ParseTokenStart = ParameterDecl.ParseTokenStart;
 
         protected Block _body;
+
         protected ChildList<ParameterDecl> _parameters;
 
         /// <summary>
@@ -184,7 +185,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
             get { return _parameters; }
         }
 
-        public static new void AddParsePoints()
+        public new static void AddParsePoints()
         {
             // Use a parse-priority of 100 (DelegateDecl uses 0)
             Parser.AddParsePoint(ParseToken, 100, Parse);
@@ -196,6 +197,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.AnonymousMethods
         public static AnonymousMethod Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new AnonymousMethod(parser, parent);
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         /// <summary>

@@ -1,11 +1,10 @@
-﻿using System;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
 {
@@ -114,6 +113,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Exceptions
         public static Throw Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new Throw(parser, parent);
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         /// <summary>

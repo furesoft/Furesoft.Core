@@ -1,13 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base
 {
@@ -92,6 +90,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base
                     break;
             }
             return constraint;
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)

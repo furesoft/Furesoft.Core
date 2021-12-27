@@ -2261,5 +2261,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
                 }
             }
         }
+
+        public abstract T Accept<T>(VisitorBase<T> visitor);
     }
 }

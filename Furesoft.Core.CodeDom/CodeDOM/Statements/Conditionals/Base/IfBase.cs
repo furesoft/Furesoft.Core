@@ -1,10 +1,8 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base
 {
@@ -18,7 +16,8 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base
     public class IfBase : BlockStatement
     {
         protected Expression _conditional;
-        protected BlockStatement _elsePart;  // Must be an Else or an ElseIf
+
+        protected BlockStatement _elsePart;
 
         protected IfBase(Expression conditional, CodeObject body)
             : base(body, false)  // Don't allow null body for If/ElseIf
@@ -26,6 +25,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base
             Conditional = conditional;
         }
 
+        // Must be an Else or an ElseIf
         protected IfBase(Expression conditional, CodeObject body, Else @else)
             : this(conditional, body)
         {
@@ -129,6 +129,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Conditionals.Base
                     _elsePart.IsSingleLine = value;
                 }
             }
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         /// <summary>

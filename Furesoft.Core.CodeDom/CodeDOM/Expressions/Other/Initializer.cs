@@ -176,7 +176,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             }
         }
 
-        public static new void AddParsePoints()
+        public new static void AddParsePoints()
         {
             // Use a parse-priority of 400 (GenericMethodDecl uses 0, UnresolvedRef uses 100, PropertyDeclBase uses 200, BlockDecl uses 300)
             Parser.AddParsePoint(ParseTokenStart, 400, Parse);
@@ -188,6 +188,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public static Initializer Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new Initializer(parser, parent);
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)

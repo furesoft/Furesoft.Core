@@ -3,7 +3,6 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.Rendering;
-using System.Globalization;
 using System.Text;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
@@ -214,13 +213,6 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
             Text = parser.TokenText;
             parser.NextToken();  // Move past token
 
-            var r = double.Parse(Text, CultureInfo.InvariantCulture);
-
-            if (r != double.NaN)
-            {
-                Value = r;
-            }
-
             // Move any trailing EOL or inline comment to the expression as an EOL comment
             MoveEOLComment(parser.LastToken);
         }
@@ -259,7 +251,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
 
         public object Value { get; set; }
 
-        public static new void AddParsePoints()
+        public new static void AddParsePoints()
         {
             // NOTE: No parse-points are installed for string, char, or numeric literals - instead, the parser
             //       calls the parsing constructor directly based upon the token type.  This is because we want
@@ -287,6 +279,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
         public static Literal Parse(Parser parser, CodeObject parent, ParseFlags flags)
         {
             return new Literal(parser, parent);
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)

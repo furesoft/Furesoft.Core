@@ -1,6 +1,4 @@
-﻿
-
-namespace Furesoft.Core.ExpressionEvaluator.AST
+﻿namespace Furesoft.Core.ExpressionEvaluator.AST
 {
     public class MatrixExpression : Expression, IEvaluatableExpression
     {
@@ -10,7 +8,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public ChildList<Expression> Storage { get; set; }
 
-        public static new void AddParsePoints()
+        public new static void AddParsePoints()
         {
             Parser.AddParsePoint("[", 1, Parse);
         }
@@ -27,6 +25,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
                 return null;
 
             return result;
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)

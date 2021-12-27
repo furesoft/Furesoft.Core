@@ -10,9 +10,14 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
 
         public Expression Expression { get; set; }
 
-        public static new void AddParsePoints()
+        public new static void AddParsePoints()
         {
             Parser.AddParsePoint("delete", 1, Parse);
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)

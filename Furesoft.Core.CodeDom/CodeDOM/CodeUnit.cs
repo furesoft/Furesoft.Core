@@ -48,6 +48,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM
     /// </remarks>
     public class CodeUnit : BlockStatement, INamedCodeObject, IComparable
     {
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         #region /* STATIC FIELDS */
 
         /// <summary>

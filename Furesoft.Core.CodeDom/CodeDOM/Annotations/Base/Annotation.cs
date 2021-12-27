@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+using System;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Base
 {
@@ -135,6 +135,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Base
         {
             get { return AsString(); }
             set { throw new Exception("Can't set Text on this type!"); }
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         protected internal void SetAnnotationFlag(AnnotationFlags flag, bool value)

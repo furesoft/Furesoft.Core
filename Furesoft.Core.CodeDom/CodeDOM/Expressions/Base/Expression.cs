@@ -781,6 +781,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Base
             return expression;
         }
 
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         /// <summary>
         /// Determine if the specified comment should be associated with the current code object during parsing.
         /// </summary>

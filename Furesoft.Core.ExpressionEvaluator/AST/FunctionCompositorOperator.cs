@@ -19,7 +19,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             get { return "@"; }
         }
 
-        public static new void AddParsePoints()
+        public new static void AddParsePoints()
         {
             Parser.AddOperatorParsePoint("@", Precedence, true, false, Parse);
         }
@@ -31,6 +31,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             if (parser.HasUnusedExpression)
                 return new FunctionCompositorOperator(parser, parent);
             return null;
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public CodeObject Bind(ExpressionParser ep, Binder binder)

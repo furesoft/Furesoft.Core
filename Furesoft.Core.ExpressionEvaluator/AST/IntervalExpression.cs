@@ -7,13 +7,18 @@
         }
 
         public bool IsMaximumInclusive { get; set; }
+
         public bool IsMinimumInclusive { get; set; }
+
         public Token Left { get; set; }
+
         public Expression Maximum { get; set; }
+
         public Expression Minimum { get; set; }
+
         public Token Right { get; set; }
 
-        public static new void AddParsePoints()
+        public new static void AddParsePoints()
         {
             Parser.AddParsePoint("[", Parse, typeof(FunctionArgumentConditionDefinition));
             Parser.AddParsePoint("]", Parse, typeof(FunctionArgumentConditionDefinition));
@@ -43,6 +48,11 @@
             parser.NextToken();
 
             return result;
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override void AsTextExpression(CodeWriter writer, RenderFlags flags)

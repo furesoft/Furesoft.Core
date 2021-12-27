@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Furesoft.Core.CodeDom.Rendering;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
-using Furesoft.Core.CodeDom.CodeDOM.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
@@ -12,6 +8,9 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Namespaces;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Types.Base;
+using Furesoft.Core.CodeDom.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
 {
@@ -156,6 +155,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Namespaces
                 input = "";
             }
             return prefix;
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         /// <summary>

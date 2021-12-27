@@ -227,7 +227,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base
             {
                 Token equalsToken = parser.Token;
                 parser.NextToken();  // Move past the '='
-                SetField(ref _initialization, Expression.Parse(parser, this), false);
+                SetField(ref _initialization, Expression.Parse(parser, parent), false);
                 if (_initialization != null)
                 {
                     // Move any newlines on the '=' to the initialization expression instead

@@ -748,6 +748,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Base
             }
         }
 
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         /// <summary>
         /// Add a code object to the <see cref="Block"/>.
         /// </summary>

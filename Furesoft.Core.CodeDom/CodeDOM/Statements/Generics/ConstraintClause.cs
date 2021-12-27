@@ -1,12 +1,11 @@
-﻿using Furesoft.Core.CodeDom.Rendering;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Other;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
-using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
+using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using Furesoft.Core.CodeDom.Rendering;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
 {
@@ -36,6 +35,7 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
         public const string ParseTokenSeparator = ":";
 
         protected ChildList<TypeParameterConstraint> _constraints;
+
         protected SymbolicRef _typeParameter;
 
         /// <summary>
@@ -165,6 +165,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics
                 constraints.Add(new ConstraintClause(parser, parent));
             }
             return constraints;
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
 
         public override void AsText(CodeWriter writer, RenderFlags flags)

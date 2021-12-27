@@ -17,6 +17,11 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
             Parser.AddParsePoint("use", Parse);
         }
 
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
+        }
+
         public CodeObject Bind(ExpressionParser ep, Binder binder)
         {
             if (Module is Dot dot)

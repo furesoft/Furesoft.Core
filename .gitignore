@@ -354,3 +354,5 @@ MigrationBackup/
 TestApp/obj/
 
 Furesoft.Core/obj/
+
+.idea/.idea.Furesoft.Core/.idea/
