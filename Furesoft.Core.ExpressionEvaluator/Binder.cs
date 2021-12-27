@@ -1,4 +1,5 @@
-﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+﻿using System.Linq;
+using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 

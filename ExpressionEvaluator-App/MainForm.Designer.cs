@@ -47,7 +47,7 @@ partial class MainForm
             // textEditorControl
             // 
             this.textEditorControl.ConvertTabsToSpaces = true;
-            this.textEditorControl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.textEditorControl.Dock = System.Windows.Forms.DockStyle.Top;
             this.textEditorControl.EnableFolding = false;
             this.textEditorControl.IndentStyle = DigitalRune.Windows.TextEditor.Properties.IndentStyle.None;
             this.textEditorControl.Location = new System.Drawing.Point(0, 28);
@@ -55,7 +55,7 @@ partial class MainForm
             this.textEditorControl.Name = "textEditorControl";
             this.textEditorControl.ShowLineNumbers = false;
             this.textEditorControl.ShowVRuler = false;
-            this.textEditorControl.Size = new System.Drawing.Size(1045, 840);
+            this.textEditorControl.Size = new System.Drawing.Size(1045, 137);
             this.textEditorControl.TabIndent = 2;
             this.textEditorControl.TabIndex = 0;
             this.textEditorControl.CompletionRequest += new System.EventHandler<DigitalRune.Windows.TextEditor.Completion.CompletionEventArgs>(this.CompletionRequest);

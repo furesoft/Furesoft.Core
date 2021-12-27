@@ -1,8 +1,8 @@
+using Furesoft.Core.CodeDom.Compiler.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {

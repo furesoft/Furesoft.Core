@@ -1,14 +1,13 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
@@ -45,10 +44,33 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         }
 
         /// <summary>
-        /// Gets the lattice-based analysis used to perform constant propagation.
+        /// An enumeration of status lattice cells can have.
         /// </summary>
-        /// <value>The constant propagation analysis.</value>
-        private Analysis Analyzer { get; set; }
+        private enum LatticeCellKind
+        {
+            /// <summary>
+            /// Indicates that the cell has not been marked live yet.
+            /// </summary>
+            Top,
+
+            /// <summary>
+            /// Indicates that a constant has been assigned to the cell.
+            /// </summary>
+            Constant,
+
+            /// <summary>
+            /// Indicates that the cell is live and value that is
+            /// definitely not <c>null</c>.
+            /// </summary>
+            NonNull,
+
+            /// <summary>
+            /// Indicates that the cell is live but does not have a
+            /// constant value. The cell may or may not have a <c>null</c>
+            /// value.
+            /// </summary>
+            Bottom
+        }
 
         /// <summary>
         /// Evaluates an instruction that takes a list of constant arguments.
@@ -56,6 +78,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// </summary>
         public Func<InstructionPrototype, IReadOnlyList<Constant>, Constant> Evaluate
             => Analyzer.EvaluateAsConstant;
+
+        /// <summary>
+        /// Gets the lattice-based analysis used to perform constant propagation.
+        /// </summary>
+        /// <value>The constant propagation analysis.</value>
+        private Analysis Analyzer { get; set; }
 
         /// <summary>
         /// The default constant instruction evaluation function.
@@ -192,7 +220,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         }
 
         /// <summary>
-        /// Simplify switch flows in the 
+        /// Simplify switch flows in the
         /// </summary>
         /// <param name="graphBuilder">
         /// A mutable control flow graph.
@@ -257,6 +285,116 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         }
 
         /// <summary>
+        /// A cell in the sparse conditional constant propagation lattice.
+        /// </summary>
+        private struct LatticeCell : IEquatable<LatticeCell>
+        {
+            private LatticeCell(LatticeCellKind kind, Constant value)
+            {
+                this.Kind = kind;
+                this.Value = value;
+            }
+
+            public static LatticeCell Bottom =>
+                            new(LatticeCellKind.Bottom, null);
+
+            public static LatticeCell NonNull =>
+                            new(LatticeCellKind.NonNull, null);
+
+            public static LatticeCell Top =>
+                            new(LatticeCellKind.Top, null);
+
+            public bool IsConstant => Kind == LatticeCellKind.Constant;
+
+            /// <summary>
+            /// Gets this cell's status.
+            /// </summary>
+            public LatticeCellKind Kind { get; private set; }
+
+            /// <summary>
+            /// Gets this cell's constant value, if any.
+            /// </summary>
+            public Constant Value { get; private set; }
+
+            public static LatticeCell Constant(Constant value) =>
+                new(LatticeCellKind.Constant, value);
+
+            public bool Equals(LatticeCell other)
+            {
+                return Kind == other.Kind
+                    && Value == other.Value;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is LatticeCell && Equals((LatticeCell)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                if (Value == null)
+                {
+                    return Kind.GetHashCode();
+                }
+                else
+                {
+                    return Kind.GetHashCode() ^ Value.GetHashCode();
+                }
+            }
+
+            public LatticeCell Meet(LatticeCell other)
+            {
+                if (other.Kind == LatticeCellKind.Top)
+                {
+                    return this;
+                }
+
+                switch (Kind)
+                {
+                    case LatticeCellKind.Top:
+                        return other;
+
+                    case LatticeCellKind.Constant:
+                        if (other.Kind == LatticeCellKind.Constant
+                            && Value.Equals(other.Value))
+                        {
+                            return this;
+                        }
+                        else
+                        {
+                            return Bottom;
+                        }
+
+                    case LatticeCellKind.NonNull:
+                        if (other.Kind == LatticeCellKind.NonNull)
+                        {
+                            return this;
+                        }
+                        else
+                        {
+                            return Bottom;
+                        }
+
+                    case LatticeCellKind.Bottom:
+                    default:
+                        return this;
+                }
+            }
+
+            public override string ToString()
+            {
+                if (Kind == LatticeCellKind.Constant)
+                {
+                    return $"constant({Value})";
+                }
+                else
+                {
+                    return Kind.ToString().ToLowerInvariant();
+                }
+            }
+        }
+
+        /// <summary>
         /// The lattice-based analysis that underpins the constant propagation optimization.
         /// </summary>
         private sealed class Analysis : LatticeAnalysis<LatticeCell>
@@ -267,6 +405,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 this.EvaluateAsConstant = evaluateAsConstant;
             }
 
+            public override LatticeCell Bottom => LatticeCell.Bottom;
+
             /// <summary>
             /// Evaluates an instruction that takes a list of constant arguments.
             /// Returns <c>null</c> if the instruction cannot be evaluated.
@@ -274,8 +414,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             public Func<InstructionPrototype, IReadOnlyList<Constant>, Constant> EvaluateAsConstant { get; private set; }
 
             public override LatticeCell Top => LatticeCell.Top;
-
-            public override LatticeCell Bottom => LatticeCell.Bottom;
 
             public override LatticeCell Evaluate(
                 NamedInstruction instruction,
@@ -346,11 +484,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 }
             }
 
-            public override LatticeCell Meet(LatticeCell first, LatticeCell second)
-            {
-                return first.Meet(second);
-            }
-
             public override IEnumerable<Branch> GetLiveBranches(
                 BlockFlow flow,
                 IReadOnlyDictionary<ValueTag, LatticeCell> cells,
@@ -400,6 +533,11 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 }
             }
 
+            public override LatticeCell Meet(LatticeCell first, LatticeCell second)
+            {
+                return first.Meet(second);
+            }
+
             /// <summary>
             /// Evaluates an instruction that has a non-constant value to
             /// a lattice cell.
@@ -422,145 +560,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 else
                 {
                     return LatticeCell.Bottom;
-                }
-            }
-        }
-
-        /// <summary>
-        /// An enumeration of status lattice cells can have.
-        /// </summary>
-        private enum LatticeCellKind
-        {
-            /// <summary>
-            /// Indicates that the cell has not been marked live yet.
-            /// </summary>
-            Top,
-
-            /// <summary>
-            /// Indicates that a constant has been assigned to the cell.
-            /// </summary>
-            Constant,
-
-            /// <summary>
-            /// Indicates that the cell is live and value that is
-            /// definitely not <c>null</c>.
-            /// </summary>
-            NonNull,
-
-            /// <summary>
-            /// Indicates that the cell is live but does not have a
-            /// constant value. The cell may or may not have a <c>null</c>
-            /// value.
-            /// </summary>
-            Bottom
-        }
-
-        /// <summary>
-        /// A cell in the sparse conditional constant propagation lattice.
-        /// </summary>
-        private struct LatticeCell : IEquatable<LatticeCell>
-        {
-            private LatticeCell(LatticeCellKind kind, Constant value)
-            {
-                this.Kind = kind;
-                this.Value = value;
-            }
-
-            /// <summary>
-            /// Gets this cell's status.
-            /// </summary>
-            public LatticeCellKind Kind { get; private set; }
-
-            /// <summary>
-            /// Gets this cell's constant value, if any.
-            /// </summary>
-            public Constant Value { get; private set; }
-
-            public bool IsConstant => Kind == LatticeCellKind.Constant;
-
-            public LatticeCell Meet(LatticeCell other)
-            {
-                if (other.Kind == LatticeCellKind.Top)
-                {
-                    return this;
-                }
-
-                switch (Kind)
-                {
-                    case LatticeCellKind.Top:
-                        return other;
-
-                    case LatticeCellKind.Constant:
-                        if (other.Kind == LatticeCellKind.Constant
-                            && Value.Equals(other.Value))
-                        {
-                            return this;
-                        }
-                        else
-                        {
-                            return Bottom;
-                        }
-
-                    case LatticeCellKind.NonNull:
-                        if (other.Kind == LatticeCellKind.NonNull)
-                        {
-                            return this;
-                        }
-                        else
-                        {
-                            return Bottom;
-                        }
-
-                    case LatticeCellKind.Bottom:
-                    default:
-                        return this;
-                }
-            }
-
-            public override string ToString()
-            {
-                if (Kind == LatticeCellKind.Constant)
-                {
-                    return $"constant({Value})";
-                }
-                else
-                {
-                    return Kind.ToString().ToLowerInvariant();
-                }
-            }
-
-            public static LatticeCell Top =>
-                new(LatticeCellKind.Top, null);
-
-            public static LatticeCell Bottom =>
-                new(LatticeCellKind.Bottom, null);
-
-            public static LatticeCell NonNull =>
-                new(LatticeCellKind.NonNull, null);
-
-            public static LatticeCell Constant(Constant value) =>
-                new(LatticeCellKind.Constant, value);
-
-            public bool Equals(LatticeCell other)
-            {
-                return Kind == other.Kind
-                    && Value == other.Value;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is LatticeCell && Equals((LatticeCell)obj);
-            }
-
-            public override int GetHashCode()
-            {
-                if (Value == null)
-                {
-                    return Kind.GetHashCode();
-                }
-                else
-                {
-                    return Kind.GetHashCode() ^ Value.GetHashCode();
                 }
             }
         }

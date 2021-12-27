@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+using System;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core.Names
 {
@@ -38,12 +34,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Names
         public PointerKind Kind { get; private set; }
 
         /// <inheritdoc/>
-        public override string ToString()
-        {
-            return ElementName.ToString() + " " + Kind.ToString() + "*";
-        }
-
-        /// <inheritdoc/>
         public bool Equals(PointerName other)
         {
             return ElementName.Equals(other.ElementName)
@@ -60,6 +50,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Names
         public override int GetHashCode()
         {
             return (ElementName.GetHashCode() << 2) ^ Kind.GetHashCode();
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return ElementName.ToString() + " " + Kind.ToString() + "*";
         }
     }
 }

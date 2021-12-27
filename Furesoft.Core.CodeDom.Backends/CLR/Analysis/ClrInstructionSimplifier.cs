@@ -1,7 +1,7 @@
-using System;
-using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
 {
@@ -12,38 +12,9 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
     /// </summary>
     public static class ClrInstructionSimplifier
     {
-        /// <summary>
-        /// Tries to "simplify" an instruction by decomposing
-        /// it into its parts.
-        /// </summary>
-        /// <param name="instruction">The instruction to simplify.</param>
-        /// <param name="body">The method body that defines the instruction.</param>
-        /// <param name="simplified">The simplified instruction.</param>
-        /// <returns>
-        /// <c>true</c> if the instruction can be simplified;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        public static bool TrySimplify(
-            Instruction instruction,
-            MethodBody body,
-            out IEnumerable<Instruction> simplified)
-        {
-            Rewriter rewrite;
-            if (rewritePatterns.TryGetValue(instruction.OpCode, out rewrite))
-            {
-                simplified = rewrite(instruction, body);
-                return true;
-            }
-            else
-            {
-                simplified = null;
-                return false;
-            }
-        }
-
         private static Dictionary<OpCode, Rewriter> rewritePatterns =
-            new Dictionary<OpCode, Rewriter>()
-        {
+                    new Dictionary<OpCode, Rewriter>()
+                {
             // Conditional branches based on comparison instructions.
             { OpCodes.Beq, CreateConditionalBranchRewriter(OpCodes.Ceq, OpCodes.Brtrue) },
             { OpCodes.Blt, CreateConditionalBranchRewriter(OpCodes.Clt, OpCodes.Brtrue) },
@@ -152,89 +123,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
             { OpCodes.Stind_R4, CreatePrimitiveInjectingRewriter(OpCodes.Stobj, typeSystem => typeSystem.Single) },
             { OpCodes.Stind_R8, CreatePrimitiveInjectingRewriter(OpCodes.Stobj, typeSystem => typeSystem.Double) },
             { OpCodes.Stind_Ref, CreatePrimitiveInjectingRewriter(OpCodes.Stobj, typeSystem => typeSystem.Object) }
-        };
-
-        private static Rewriter CreatePrimitiveInjectingRewriter(
-            OpCode newOpcode,
-            Func<Mono.Cecil.TypeSystem, Mono.Cecil.TypeReference> getType)
-        {
-            return (instruction, body) => new[]
-            {
-                Instruction.Create(
-                    newOpcode,
-                    getType(body.Method.Module.TypeSystem))
-            };
-        }
-
-        private static Rewriter CreateConditionalBranchRewriter(
-            OpCode comparisonOpCode,
-            OpCode simpleBranchOpCode)
-        {
-            return (instruction, body) => new[]
-            {
-                Instruction.Create(comparisonOpCode),
-                Instruction.Create(
-                    simpleBranchOpCode,
-                    (Instruction)instruction.Operand)
-            };
-        }
-
-        private static Rewriter CreateShortBranchInstructionRewriter(
-            OpCode longOpCode)
-        {
-            return (instruction, body) =>
-            {
-                var result = Instruction.Create(longOpCode, (Instruction)instruction.Operand);
-                return new[] { result };
-            };
-        }
-
-        private static Rewriter CreateShortArgInstructionRewriter(
-            OpCode longOpCode)
-        {
-            return (instruction, body) =>
-            {
-                var result = Instruction.Create(longOpCode, (ParameterDefinition)instruction.Operand);
-                return new [] { result };
-            };
-        }
-
-        private static Rewriter CreateShortLocalInstructionRewriter(
-            OpCode longOpCode)
-        {
-            return (instruction, body) =>
-            {
-                var result = Instruction.Create(longOpCode, (VariableDefinition)instruction.Operand);
-                return new [] { result };
-            };
-        }
-
-        private static Rewriter CreateConstantRewriter(
-            Instruction result)
-        {
-            var resultArray = new[] { result };
-            return (instruction, body) => resultArray;
-        }
-
-        private static Rewriter CreateArgumentAccessRewriter(
-            OpCode opCode,
-            int parameterIndex)
-        {
-            return (instruction, body) => new[]
-            {
-                Instruction.Create(opCode, body.GetParameter(parameterIndex))
-            };
-        }
-
-        private static Rewriter CreateLocalAccessRewriter(
-            OpCode opCode,
-            int localIndex)
-        {
-            return (instruction, body) => new[]
-            {
-                Instruction.Create(opCode, body.Variables[localIndex])
-            };
-        }
+                };
 
         /// <summary>
         /// Gets the parameter at index <paramref name="index" /> of a method body.
@@ -265,6 +154,117 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
                 return null;
 
             return parameters[index];
+        }
+
+        /// <summary>
+        /// Tries to "simplify" an instruction by decomposing
+        /// it into its parts.
+        /// </summary>
+        /// <param name="instruction">The instruction to simplify.</param>
+        /// <param name="body">The method body that defines the instruction.</param>
+        /// <param name="simplified">The simplified instruction.</param>
+        /// <returns>
+        /// <c>true</c> if the instruction can be simplified;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        public static bool TrySimplify(
+            Instruction instruction,
+            MethodBody body,
+            out IEnumerable<Instruction> simplified)
+        {
+            Rewriter rewrite;
+            if (rewritePatterns.TryGetValue(instruction.OpCode, out rewrite))
+            {
+                simplified = rewrite(instruction, body);
+                return true;
+            }
+            else
+            {
+                simplified = null;
+                return false;
+            }
+        }
+
+        private static Rewriter CreateArgumentAccessRewriter(
+            OpCode opCode,
+            int parameterIndex)
+        {
+            return (instruction, body) => new[]
+            {
+                Instruction.Create(opCode, body.GetParameter(parameterIndex))
+            };
+        }
+
+        private static Rewriter CreateConditionalBranchRewriter(
+            OpCode comparisonOpCode,
+            OpCode simpleBranchOpCode)
+        {
+            return (instruction, body) => new[]
+            {
+                Instruction.Create(comparisonOpCode),
+                Instruction.Create(
+                    simpleBranchOpCode,
+                    (Instruction)instruction.Operand)
+            };
+        }
+
+        private static Rewriter CreateConstantRewriter(
+            Instruction result)
+        {
+            var resultArray = new[] { result };
+            return (instruction, body) => resultArray;
+        }
+
+        private static Rewriter CreateLocalAccessRewriter(
+            OpCode opCode,
+            int localIndex)
+        {
+            return (instruction, body) => new[]
+            {
+                Instruction.Create(opCode, body.Variables[localIndex])
+            };
+        }
+
+        private static Rewriter CreatePrimitiveInjectingRewriter(
+                                            OpCode newOpcode,
+            Func<Mono.Cecil.TypeSystem, Mono.Cecil.TypeReference> getType)
+        {
+            return (instruction, body) => new[]
+            {
+                Instruction.Create(
+                    newOpcode,
+                    getType(body.Method.Module.TypeSystem))
+            };
+        }
+
+        private static Rewriter CreateShortArgInstructionRewriter(
+            OpCode longOpCode)
+        {
+            return (instruction, body) =>
+            {
+                var result = Instruction.Create(longOpCode, (ParameterDefinition)instruction.Operand);
+                return new[] { result };
+            };
+        }
+
+        private static Rewriter CreateShortBranchInstructionRewriter(
+                    OpCode longOpCode)
+        {
+            return (instruction, body) =>
+            {
+                var result = Instruction.Create(longOpCode, (Instruction)instruction.Operand);
+                return new[] { result };
+            };
+        }
+
+        private static Rewriter CreateShortLocalInstructionRewriter(
+            OpCode longOpCode)
+        {
+            return (instruction, body) =>
+            {
+                var result = Instruction.Create(longOpCode, (VariableDefinition)instruction.Operand);
+                return new[] { result };
+            };
         }
     }
 }

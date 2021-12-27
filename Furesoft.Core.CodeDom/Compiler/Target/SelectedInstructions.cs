@@ -1,137 +1,9 @@
-using System;
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Target;
 
 namespace Furesoft.Core.CodeDom.Compiler.Target
 {
-    /// <summary>
-    /// A collection of selected instructions for a value.
-    /// </summary>
-    /// <typeparam name="TInstruction">
-    /// The type of a target instruction.
-    /// </typeparam>
-    public struct SelectedInstructions<TInstruction>
-    {
-        /// <summary>
-        /// Creates a selected instruction container.
-        /// </summary>
-        /// <param name="instructions">
-        /// The instructions selected for a particular value.
-        /// </param>
-        /// <param name="dependencies">
-        /// The list of values the selected instructions
-        /// depend on.
-        /// </param>
-        public SelectedInstructions(
-            IReadOnlyList<TInstruction> instructions,
-            IReadOnlyList<ValueTag> dependencies)
-        {
-            this.Instructions = instructions;
-            this.Dependencies = dependencies;
-        }
-
-        /// <summary>
-        /// Creates a selected instruction container from a single
-        /// instruction and a variable number of dependencies.
-        /// </summary>
-        /// <param name="instruction">
-        /// The instruction selected for a particular value.
-        /// </param>
-        /// <param name="dependencies">
-        /// The list of values the selected instructions
-        /// depend on.
-        /// </param>
-        public SelectedInstructions(
-            TInstruction instruction,
-            params ValueTag[] dependencies)
-            : this(new[] { instruction }, dependencies)
-        { }
-
-        /// <summary>
-        /// Gets the list of instructions in this container.
-        /// </summary>
-        /// <value>A list of instructions.</value>
-        public IReadOnlyList<TInstruction> Instructions { get; private set; }
-
-        /// <summary>
-        /// Gets the list of values these selected instructions depend on.
-        /// </summary>
-        /// <value>A list of values.</value>
-        public IReadOnlyList<ValueTag> Dependencies { get; private set; }
-
-        /// <summary>
-        /// Prepends a sequence of instructions to these selected instructions,
-        /// returning the new selected instructions as a new object.
-        /// </summary>
-        /// <param name="prefix">The selected instructions to prepend.</param>
-        /// <returns>
-        /// A collection of selected instructions that is identical to these, but
-        /// with <paramref name="prefix"/> prepended to the instructions.
-        /// </returns>
-        public SelectedInstructions<TInstruction> Prepend(IReadOnlyList<TInstruction> prefix)
-        {
-            return new SelectedInstructions<TInstruction>(
-                prefix.Concat(Instructions).ToArray(),
-                Dependencies);
-        }
-    }
-
-    /// <summary>
-    /// A collection of selected instructions for a value.
-    /// </summary>
-    public static class SelectedInstructions
-    {
-        /// <summary>
-        /// Creates a selected instruction container.
-        /// </summary>
-        /// <param name="instructions">
-        /// The instructions selected for a particular value.
-        /// </param>
-        /// <param name="dependencies">
-        /// The list of values the selected instructions
-        /// depend on.
-        /// </param>
-        public static SelectedInstructions<TInstruction> Create<TInstruction>(
-            IReadOnlyList<TInstruction> instructions,
-            IReadOnlyList<ValueTag> dependencies)
-        {
-            return new SelectedInstructions<TInstruction>(instructions, dependencies);
-        }
-
-        /// <summary>
-        /// Creates a selected instruction container from a single
-        /// instruction and a variable number of dependencies.
-        /// </summary>
-        /// <param name="instruction">
-        /// The instruction selected for a particular value.
-        /// </param>
-        /// <param name="dependencies">
-        /// The list of values the selected instructions
-        /// depend on.
-        /// </param>
-        public static SelectedInstructions<TInstruction> Create<TInstruction>(
-            TInstruction instruction,
-            params ValueTag[] dependencies)
-        {
-            return new SelectedInstructions<TInstruction>(instruction, dependencies);
-        }
-
-        /// <summary>
-        /// Creates a selected instruction container from a sequence of instructions
-        /// and no dependencies.
-        /// </summary>
-        /// <param name="instructions">
-        /// A sequence of instructions as selected for a particular value.
-        /// </param>
-        public static SelectedInstructions<TInstruction> Create<TInstruction>(
-            IReadOnlyList<TInstruction> instructions)
-        {
-            return new SelectedInstructions<TInstruction>(instructions, EmptyArray<ValueTag>.Value);
-        }
-    }
-
     /// <summary>
     /// A collection of selected instructions for block flow.
     /// </summary>
@@ -237,6 +109,78 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
     }
 
     /// <summary>
+    /// A collection of selected instructions for a value.
+    /// </summary>
+    /// <typeparam name="TInstruction">
+    /// The type of a target instruction.
+    /// </typeparam>
+    public struct SelectedInstructions<TInstruction>
+    {
+        /// <summary>
+        /// Creates a selected instruction container.
+        /// </summary>
+        /// <param name="instructions">
+        /// The instructions selected for a particular value.
+        /// </param>
+        /// <param name="dependencies">
+        /// The list of values the selected instructions
+        /// depend on.
+        /// </param>
+        public SelectedInstructions(
+            IReadOnlyList<TInstruction> instructions,
+            IReadOnlyList<ValueTag> dependencies)
+        {
+            this.Instructions = instructions;
+            this.Dependencies = dependencies;
+        }
+
+        /// <summary>
+        /// Creates a selected instruction container from a single
+        /// instruction and a variable number of dependencies.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction selected for a particular value.
+        /// </param>
+        /// <param name="dependencies">
+        /// The list of values the selected instructions
+        /// depend on.
+        /// </param>
+        public SelectedInstructions(
+            TInstruction instruction,
+            params ValueTag[] dependencies)
+            : this(new[] { instruction }, dependencies)
+        { }
+
+        /// <summary>
+        /// Gets the list of values these selected instructions depend on.
+        /// </summary>
+        /// <value>A list of values.</value>
+        public IReadOnlyList<ValueTag> Dependencies { get; private set; }
+
+        /// <summary>
+        /// Gets the list of instructions in this container.
+        /// </summary>
+        /// <value>A list of instructions.</value>
+        public IReadOnlyList<TInstruction> Instructions { get; private set; }
+
+        /// <summary>
+        /// Prepends a sequence of instructions to these selected instructions,
+        /// returning the new selected instructions as a new object.
+        /// </summary>
+        /// <param name="prefix">The selected instructions to prepend.</param>
+        /// <returns>
+        /// A collection of selected instructions that is identical to these, but
+        /// with <paramref name="prefix"/> prepended to the instructions.
+        /// </returns>
+        public SelectedInstructions<TInstruction> Prepend(IReadOnlyList<TInstruction> prefix)
+        {
+            return new SelectedInstructions<TInstruction>(
+                prefix.Concat(Instructions).ToArray(),
+                Dependencies);
+        }
+    }
+
+    /// <summary>
     /// A collection of selected instructions for block flow.
     /// </summary>
     public static class SelectedFlowInstructions
@@ -288,6 +232,60 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                 SelectedInstructions.Create<TInstruction>(
                     instructions,
                     EmptyArray<ValueTag>.Value));
+        }
+    }
+
+    /// <summary>
+    /// A collection of selected instructions for a value.
+    /// </summary>
+    public static class SelectedInstructions
+    {
+        /// <summary>
+        /// Creates a selected instruction container.
+        /// </summary>
+        /// <param name="instructions">
+        /// The instructions selected for a particular value.
+        /// </param>
+        /// <param name="dependencies">
+        /// The list of values the selected instructions
+        /// depend on.
+        /// </param>
+        public static SelectedInstructions<TInstruction> Create<TInstruction>(
+            IReadOnlyList<TInstruction> instructions,
+            IReadOnlyList<ValueTag> dependencies)
+        {
+            return new SelectedInstructions<TInstruction>(instructions, dependencies);
+        }
+
+        /// <summary>
+        /// Creates a selected instruction container from a single
+        /// instruction and a variable number of dependencies.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction selected for a particular value.
+        /// </param>
+        /// <param name="dependencies">
+        /// The list of values the selected instructions
+        /// depend on.
+        /// </param>
+        public static SelectedInstructions<TInstruction> Create<TInstruction>(
+            TInstruction instruction,
+            params ValueTag[] dependencies)
+        {
+            return new SelectedInstructions<TInstruction>(instruction, dependencies);
+        }
+
+        /// <summary>
+        /// Creates a selected instruction container from a sequence of instructions
+        /// and no dependencies.
+        /// </summary>
+        /// <param name="instructions">
+        /// A sequence of instructions as selected for a particular value.
+        /// </param>
+        public static SelectedInstructions<TInstruction> Create<TInstruction>(
+            IReadOnlyList<TInstruction> instructions)
+        {
+            return new SelectedInstructions<TInstruction>(instructions, EmptyArray<ValueTag>.Value);
         }
     }
 }

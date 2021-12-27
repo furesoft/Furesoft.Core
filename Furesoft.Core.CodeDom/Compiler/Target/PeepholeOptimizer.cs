@@ -1,11 +1,95 @@
+using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Furesoft.Core.CodeDom.Compiler.Core.Collections;
-using Furesoft.Core.CodeDom.Compiler.Target;
 
 namespace Furesoft.Core.CodeDom.Compiler.Target
 {
+    /// <summary>
+    /// A rewrite rule as used by a peephole optimizer.
+    /// </summary>
+    /// <typeparam name="TInstruction">
+    /// The type of target-specific instruction to rewrite.
+    /// </typeparam>
+    public struct PeepholeRewriteRule<TInstruction>
+    {
+        /// <summary>
+        /// Creates a peephole rewrite rule.
+        /// </summary>
+        /// <param name="pattern">
+        /// The pattern to match on, specified as a list
+        /// of predicates. The rewrite rule is considered to
+        /// be applicable if and only if every pattern in the
+        /// list is a match.
+        /// </param>
+        /// <param name="rewrite">
+        /// A function that rewrites instructions that match
+        /// the pattern.
+        /// </param>
+        public PeepholeRewriteRule(
+            IReadOnlyList<Predicate<TInstruction>> pattern,
+            Func<IReadOnlyList<TInstruction>, IReadOnlyList<TInstruction>> rewrite)
+            : this(pattern, seq => true, rewrite)
+        { }
+
+        /// <summary>
+        /// Creates a peephole rewrite rule.
+        /// </summary>
+        /// <param name="pattern">
+        /// The pattern to match on, specified as a list
+        /// of predicates. The rewrite rule only considered to
+        /// be applicable if every pattern in the list is a match.
+        /// list is a match.
+        /// </param>
+        /// <param name="macroPattern">
+        /// A "macro-pattern" that decides if a sequence of
+        /// instructions can be rewritten by the rewrite rule,
+        /// assuming that every instruction in the sequence
+        /// already adheres to <paramref name="pattern"/>.
+        /// </param>
+        /// <param name="rewrite">
+        /// A function that rewrites instructions that match
+        /// the pattern.
+        /// </param>
+        public PeepholeRewriteRule(
+            IReadOnlyList<Predicate<TInstruction>> pattern,
+            Predicate<IReadOnlyList<TInstruction>> macroPattern,
+            Func<IReadOnlyList<TInstruction>, IReadOnlyList<TInstruction>> rewrite)
+        {
+            this.Pattern = pattern;
+            this.MacroPattern = macroPattern;
+            this.Rewrite = rewrite;
+        }
+
+        /// <summary>
+        /// Gets a "macro-pattern" that decides if a sequence of
+        /// instructions can be rewritten by the rewrite rule,
+        /// assuming that every instruction in the sequence
+        /// already adheres to the pattern.
+        /// </summary>
+        /// <value>A predicate on a sequence of instructions.</value>
+        public Predicate<IReadOnlyList<TInstruction>> MacroPattern { get; private set; }
+
+        /// <summary>
+        /// Gets the pattern to match on, specified as a list
+        /// of predicates. The rewrite rule is only considered to
+        /// be applicable if every pattern in the list is a match.
+        /// </summary>
+        /// <value>
+        /// A list of instruction-matching predicates.
+        /// </value>
+        public IReadOnlyList<Predicate<TInstruction>> Pattern { get; private set; }
+
+        /// <summary>
+        /// Rewrites a list of instructions matching the pattern
+        /// specified by this rewrite rule.
+        /// </summary>
+        /// <value>
+        /// A function that rewrites instructions.
+        /// </value>
+        public Func<IReadOnlyList<TInstruction>, IReadOnlyList<TInstruction>> Rewrite { get; private set; }
+    }
+
     /// <summary>
     /// A target-specific peephole optimizer: an optimizer that walks
     /// through a linear sequence of target-specific instructions,
@@ -39,74 +123,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
         /// A list of rewrite rules.
         /// </value>
         public IReadOnlyList<PeepholeRewriteRule<TInstruction>> Rules { get; private set; }
-
-        /// <summary>
-        /// Gets a list of all instructions to which a particular instruction
-        /// may branch.
-        /// </summary>
-        /// <param name="instruction">
-        /// An instruction that may branch to other instructions.
-        /// </param>
-        /// <returns>
-        /// A list of branch targets.
-        /// </returns>
-        protected virtual IEnumerable<TInstruction> GetBranchTargets(
-            TInstruction instruction)
-        {
-            return EmptyArray<TInstruction>.Value;
-        }
-
-        /// <summary>
-        /// Gets a list of all instructions referenced by a particular
-        /// external instruction reference.
-        /// </summary>
-        /// <param name="externalRef">The external reference to examine.</param>
-        /// <returns>A list of referenced instructions.</returns>
-        protected virtual IEnumerable<TInstruction> GetInstructionReferences(
-            TExternalRef externalRef)
-        {
-            return EmptyArray<TInstruction>.Value;
-        }
-
-        /// <summary>
-        /// Rewrites an instruction's branch targets.
-        /// </summary>
-        /// <param name="instruction">
-        /// The instruction to rewrite.
-        /// </param>
-        /// <param name="branchTargetMap">
-        /// A mapping of old branch target instructions to new
-        /// branch target instructions.
-        /// </param>
-        /// <returns>
-        /// A modified or new instruction.
-        /// </returns>
-        protected virtual TInstruction RewriteBranchTargets(
-            TInstruction instruction,
-            IReadOnlyDictionary<TInstruction, TInstruction> branchTargetMap)
-        {
-            return instruction;
-        }
-
-        /// <summary>
-        /// Rewrites an external reference's referenced instructions.
-        /// </summary>
-        /// <param name="externalRef">
-        /// The reference to rewrite.
-        /// </param>
-        /// <param name="referenceMap">
-        /// A mapping of old referenced instructions to new
-        /// referenced instructions.
-        /// </param>
-        /// <returns>
-        /// A modified or new external reference.
-        /// </returns>
-        protected virtual TExternalRef RewriteInstructionReferences(
-            TExternalRef externalRef,
-            IReadOnlyDictionary<TInstruction, TInstruction> referenceMap)
-        {
-            return externalRef;
-        }
 
         /// <summary>
         /// Optimizes a linear sequence of instructions by applying
@@ -215,46 +231,72 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                 .ToArray();
         }
 
-
         /// <summary>
-        /// Tries to apply the longest rule applicable to
-        /// a sequence of instructions starting at a
-        /// given instruction.
+        /// Gets a list of all instructions to which a particular instruction
+        /// may branch.
         /// </summary>
-        /// <param name="first">
-        /// The first instruction of the sequence of instructions
-        /// to rewrite.
-        /// </param>
-        /// <param name="newFirst">
-        /// The new node pointing to the first instruction.
-        /// </param>
-        /// <param name="instructionArray">
-        /// A temporary array for storing instructions. Must be at least
-        /// as large as the longest pattern.
-        /// </param>
-        /// <param name="replacedBranchTargets">
-        /// A mapping of new branch target instructions to the
-        /// branch target instructions they replace.
+        /// <param name="instruction">
+        /// An instruction that may branch to other instructions.
         /// </param>
         /// <returns>
-        /// <c>true</c> if a rewrite rule is applied;
-        /// otherwise, <c>false</c>.
+        /// A list of branch targets.
         /// </returns>
-        private bool TryApplyRule(
-            LinkedListNode<TInstruction> first,
-            out LinkedListNode<TInstruction> newFirst,
-            TInstruction[] instructionArray,
-            Dictionary<TInstruction, HashSet<TInstruction>> replacedBranchTargets)
+        protected virtual IEnumerable<TInstruction> GetBranchTargets(
+            TInstruction instruction)
         {
-            foreach (var rule in Rules)
-            {
-                if (TryApplyRule(rule, first, out newFirst, instructionArray, replacedBranchTargets))
-                {
-                    return true;
-                }
-            }
-            newFirst = first;
-            return false;
+            return EmptyArray<TInstruction>.Value;
+        }
+
+        /// <summary>
+        /// Gets a list of all instructions referenced by a particular
+        /// external instruction reference.
+        /// </summary>
+        /// <param name="externalRef">The external reference to examine.</param>
+        /// <returns>A list of referenced instructions.</returns>
+        protected virtual IEnumerable<TInstruction> GetInstructionReferences(
+            TExternalRef externalRef)
+        {
+            return EmptyArray<TInstruction>.Value;
+        }
+
+        /// <summary>
+        /// Rewrites an instruction's branch targets.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction to rewrite.
+        /// </param>
+        /// <param name="branchTargetMap">
+        /// A mapping of old branch target instructions to new
+        /// branch target instructions.
+        /// </param>
+        /// <returns>
+        /// A modified or new instruction.
+        /// </returns>
+        protected virtual TInstruction RewriteBranchTargets(
+            TInstruction instruction,
+            IReadOnlyDictionary<TInstruction, TInstruction> branchTargetMap)
+        {
+            return instruction;
+        }
+
+        /// <summary>
+        /// Rewrites an external reference's referenced instructions.
+        /// </summary>
+        /// <param name="externalRef">
+        /// The reference to rewrite.
+        /// </param>
+        /// <param name="referenceMap">
+        /// A mapping of old referenced instructions to new
+        /// referenced instructions.
+        /// </param>
+        /// <returns>
+        /// A modified or new external reference.
+        /// </returns>
+        protected virtual TExternalRef RewriteInstructionReferences(
+            TExternalRef externalRef,
+            IReadOnlyDictionary<TInstruction, TInstruction> referenceMap)
+        {
+            return externalRef;
         }
 
         /// <summary>
@@ -383,90 +425,46 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
 
             return true;
         }
-    }
-
-    /// <summary>
-    /// A rewrite rule as used by a peephole optimizer.
-    /// </summary>
-    /// <typeparam name="TInstruction">
-    /// The type of target-specific instruction to rewrite.
-    /// </typeparam>
-    public struct PeepholeRewriteRule<TInstruction>
-    {
-        /// <summary>
-        /// Creates a peephole rewrite rule.
-        /// </summary>
-        /// <param name="pattern">
-        /// The pattern to match on, specified as a list
-        /// of predicates. The rewrite rule is considered to
-        /// be applicable if and only if every pattern in the
-        /// list is a match.
-        /// </param>
-        /// <param name="rewrite">
-        /// A function that rewrites instructions that match
-        /// the pattern.
-        /// </param>
-        public PeepholeRewriteRule(
-            IReadOnlyList<Predicate<TInstruction>> pattern,
-            Func<IReadOnlyList<TInstruction>, IReadOnlyList<TInstruction>> rewrite)
-            : this(pattern, seq => true, rewrite)
-        { }
 
         /// <summary>
-        /// Creates a peephole rewrite rule.
+        /// Tries to apply the longest rule applicable to
+        /// a sequence of instructions starting at a
+        /// given instruction.
         /// </summary>
-        /// <param name="pattern">
-        /// The pattern to match on, specified as a list
-        /// of predicates. The rewrite rule only considered to
-        /// be applicable if every pattern in the list is a match.
-        /// list is a match.
+        /// <param name="first">
+        /// The first instruction of the sequence of instructions
+        /// to rewrite.
         /// </param>
-        /// <param name="macroPattern">
-        /// A "macro-pattern" that decides if a sequence of
-        /// instructions can be rewritten by the rewrite rule,
-        /// assuming that every instruction in the sequence
-        /// already adheres to <paramref name="pattern"/>.
+        /// <param name="newFirst">
+        /// The new node pointing to the first instruction.
         /// </param>
-        /// <param name="rewrite">
-        /// A function that rewrites instructions that match
-        /// the pattern.
+        /// <param name="instructionArray">
+        /// A temporary array for storing instructions. Must be at least
+        /// as large as the longest pattern.
         /// </param>
-        public PeepholeRewriteRule(
-            IReadOnlyList<Predicate<TInstruction>> pattern,
-            Predicate<IReadOnlyList<TInstruction>> macroPattern,
-            Func<IReadOnlyList<TInstruction>, IReadOnlyList<TInstruction>> rewrite)
+        /// <param name="replacedBranchTargets">
+        /// A mapping of new branch target instructions to the
+        /// branch target instructions they replace.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if a rewrite rule is applied;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        private bool TryApplyRule(
+            LinkedListNode<TInstruction> first,
+            out LinkedListNode<TInstruction> newFirst,
+            TInstruction[] instructionArray,
+            Dictionary<TInstruction, HashSet<TInstruction>> replacedBranchTargets)
         {
-            this.Pattern = pattern;
-            this.MacroPattern = macroPattern;
-            this.Rewrite = rewrite;
+            foreach (var rule in Rules)
+            {
+                if (TryApplyRule(rule, first, out newFirst, instructionArray, replacedBranchTargets))
+                {
+                    return true;
+                }
+            }
+            newFirst = first;
+            return false;
         }
-
-        /// <summary>
-        /// Gets the pattern to match on, specified as a list
-        /// of predicates. The rewrite rule is only considered to
-        /// be applicable if every pattern in the list is a match.
-        /// </summary>
-        /// <value>
-        /// A list of instruction-matching predicates.
-        /// </value>
-        public IReadOnlyList<Predicate<TInstruction>> Pattern { get; private set; }
-
-        /// <summary>
-        /// Gets a "macro-pattern" that decides if a sequence of
-        /// instructions can be rewritten by the rewrite rule,
-        /// assuming that every instruction in the sequence
-        /// already adheres to the pattern.
-        /// </summary>
-        /// <value>A predicate on a sequence of instructions.</value>
-        public Predicate<IReadOnlyList<TInstruction>> MacroPattern { get; private set; }
-
-        /// <summary>
-        /// Rewrites a list of instructions matching the pattern
-        /// specified by this rewrite rule.
-        /// </summary>
-        /// <value>
-        /// A function that rewrites instructions.
-        /// </value>
-        public Func<IReadOnlyList<TInstruction>, IReadOnlyList<TInstruction>> Rewrite { get; private set; }
     }
 }

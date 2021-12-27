@@ -1,4 +1,3 @@
-using Furesoft.Core.CodeDom.Compiler.Pipeline;
 namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
     /// <summary>
@@ -13,7 +12,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
         string Name { get; }
 
         /// <summary>
-        /// Compiles an assembly content description to a target assembly. 
+        /// Compiles an assembly content description to a target assembly.
         /// </summary>
         /// <param name="contents">
         /// An assembly content description.

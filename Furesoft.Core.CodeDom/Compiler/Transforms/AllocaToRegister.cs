@@ -1,10 +1,9 @@
-using System.Collections.Generic;
-using System.Linq;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
@@ -15,13 +14,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
     /// </summary>
     public sealed class AllocaToRegister : IntraproceduralOptimization
     {
-        private AllocaToRegister()
-        { }
-
         /// <summary>
         /// An instance of the alloca-to-register transform.
         /// </summary>
         public static readonly AllocaToRegister Instance = new();
+
+        private AllocaToRegister()
+        { }
 
         // This transform is based on the algorithm described by M. Braun et al
         // in Simple and Efficient Construction of Static Single Assignment Form
@@ -141,8 +140,22 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
 
         private struct SSAConstructionAlgorithm
         {
+            private Dictionary<ValueTag, Dictionary<BasicBlockTag, ValueTag>> currentDef;
+
+            private HashSet<ValueTag> eligibleAllocas;
+
+            private HashSet<BasicBlockTag> filledBlocks;
+
+            private FlowGraphBuilder graphBuilder;
+
+            private Dictionary<BasicBlockTag, Dictionary<ValueTag, BlockParameter>> incompletePhis;
+
+            private BasicBlockPredecessors predecessors;
+
+            private HashSet<BasicBlockTag> processedBlocks;
+
             public SSAConstructionAlgorithm(
-                FlowGraphBuilder graphBuilder,
+                                                                                                    FlowGraphBuilder graphBuilder,
                 HashSet<ValueTag> eligibleAllocas)
             {
                 this.graphBuilder = graphBuilder;
@@ -162,14 +175,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     this.incompletePhis[tag] = new Dictionary<ValueTag, BlockParameter>();
                 }
             }
-
-            private FlowGraphBuilder graphBuilder;
-            private HashSet<ValueTag> eligibleAllocas;
-            private Dictionary<ValueTag, Dictionary<BasicBlockTag, ValueTag>> currentDef;
-            private Dictionary<BasicBlockTag, Dictionary<ValueTag, BlockParameter>> incompletePhis;
-            private HashSet<BasicBlockTag> filledBlocks;
-            private HashSet<BasicBlockTag> processedBlocks;
-            private BasicBlockPredecessors predecessors;
 
             /// <summary>
             /// Runs the SSA construction algorithm.
@@ -280,14 +285,42 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 }
             }
 
-            /// <summary>
-            /// Checks if the given block has been filled yet. A block is called
-            /// 'filled' when the SSA construction has been applied to its
-            /// instructions.
-            /// </summary>
-            private bool IsFilled(BasicBlockTag tag)
+            private ValueTag AddPhiOperands(
+                            ValueTag variable,
+                            BasicBlockTag block,
+                            ValueTag phi,
+                            IType type)
             {
-                return filledBlocks.Contains(tag);
+                // Define a block parameter.
+                var blockBuilder = graphBuilder.GetBasicBlock(block);
+                var blockParam = new BlockParameter(type, phi);
+                blockBuilder.AppendParameter(blockParam);
+
+                // Add an argument to all blocks that refer to the block.
+                foreach (var pred in predecessors.GetPredecessorsOf(block))
+                {
+                    var predBlock = graphBuilder.GetBasicBlock(pred);
+                    var modifiedBranches = new List<Branch>();
+                    foreach (var branch in predBlock.Flow.Branches)
+                    {
+                        if (branch.Target == block)
+                        {
+                            modifiedBranches.Add(
+                                branch.AddArgument(
+                                    ReadVariable(variable, pred, type)));
+                        }
+                        else
+                        {
+                            modifiedBranches.Add(branch);
+                        }
+                    }
+                    predBlock.Flow = predBlock.Flow.WithBranches(modifiedBranches);
+                }
+
+                // The original algorithm states that we should
+                // remove trivial phis here, but maybe that's best
+                // left to a separate copy propagation pass.
+                return phi;
             }
 
             /// <summary>
@@ -303,20 +336,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     }
                 }
                 return true;
-            }
-
-            /// <summary>
-            /// Seals all blocks that can be sealed at this time.
-            /// </summary>
-            private void SealAllSealableBlocks()
-            {
-                foreach (var block in graphBuilder.BasicBlockTags)
-                {
-                    if (CanSealBlock(block))
-                    {
-                        SealBlock(block);
-                    }
-                }
             }
 
             /// <summary>
@@ -379,6 +398,95 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             }
 
             /// <summary>
+            /// Checks if the given block has been filled yet. A block is called
+            /// 'filled' when the SSA construction has been applied to its
+            /// instructions.
+            /// </summary>
+            private bool IsFilled(BasicBlockTag tag)
+            {
+                return filledBlocks.Contains(tag);
+            }
+
+            /// <summary>
+            /// Tells if a block has been sealed yet.
+            /// </summary>
+            /// <param name="block">
+            /// The block to check for sealedness.
+            /// </param>
+            /// <returns>
+            /// <c>true</c> if the block has been sealed; otherwise, <c>false</c>.
+            /// </returns>
+            private bool IsSealed(BasicBlockTag block)
+            {
+                return !incompletePhis.ContainsKey(block);
+            }
+
+            /// <summary>
+            /// Gets the value assigned to a variable.
+            /// </summary>
+            /// <param name="variable">
+            /// The variable to read from.
+            /// </param>
+            /// <param name="block">
+            /// The block that reads from the variable.
+            /// </param>
+            /// <param name="type">
+            /// The variable's type.
+            /// </param>
+            /// <returns>
+            /// The value stored in the variable.
+            /// </returns>
+            private ValueTag ReadVariable(
+                ValueTag variable,
+                BasicBlockTag block,
+                IType type)
+            {
+                if (currentDef[variable].TryGetValue(block, out ValueTag value))
+                {
+                    return value;
+                }
+                else
+                {
+                    return ReadVariableRecursive(variable, block, type);
+                }
+            }
+
+            private ValueTag ReadVariableRecursive(
+                            ValueTag variable,
+                            BasicBlockTag block,
+                            IType type)
+            {
+                if (!IsSealed(block))
+                {
+                    // The block reading the variable has not been
+                    // sealed yet. That's fine. Just add an entry to
+                    // the list of incomplete phis.
+                    var val = new ValueTag(variable.Name + ".phi");
+                    incompletePhis[block][variable] = new BlockParameter(type, val);
+                    WriteVariable(variable, block, val);
+                    return val;
+                }
+
+                var preds = predecessors.GetPredecessorsOf(block).ToArray();
+                if (preds.Length == 1)
+                {
+                    // There's just one predecessor, so we definitely
+                    // won't be needing a block parameter/phi here.
+                    return ReadVariable(variable, preds[0], type);
+                }
+                else
+                {
+                    // Create a parameter/phi, then figure out what
+                    // its arguments are.
+                    var val = new ValueTag(variable.Name + ".phi");
+                    WriteVariable(variable, block, val);
+                    val = AddPhiOperands(variable, block, val, type);
+                    WriteVariable(variable, block, val);
+                    return val;
+                }
+            }
+
+            /// <summary>
             /// Rewrites an instruction in a basic block.
             /// </summary>
             /// <param name="instruction">The instruction to rewrite.</param>
@@ -420,6 +528,20 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             }
 
             /// <summary>
+            /// Seals all blocks that can be sealed at this time.
+            /// </summary>
+            private void SealAllSealableBlocks()
+            {
+                foreach (var block in graphBuilder.BasicBlockTags)
+                {
+                    if (CanSealBlock(block))
+                    {
+                        SealBlock(block);
+                    }
+                }
+            }
+
+            /// <summary>
             /// Seals the given block. A block can be sealed when all of its
             /// predecessors have been filled.
             /// </summary>
@@ -441,20 +563,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             }
 
             /// <summary>
-            /// Tells if a block has been sealed yet.
-            /// </summary>
-            /// <param name="block">
-            /// The block to check for sealedness.
-            /// </param>
-            /// <returns>
-            /// <c>true</c> if the block has been sealed; otherwise, <c>false</c>.
-            /// </returns>
-            private bool IsSealed(BasicBlockTag block)
-            {
-                return !incompletePhis.ContainsKey(block);
-            }
-
-            /// <summary>
             /// States that a variable is written to.
             /// </summary>
             /// <param name="variable">
@@ -469,109 +577,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             private void WriteVariable(ValueTag variable, BasicBlockTag block, ValueTag value)
             {
                 currentDef[variable][block] = value;
-            }
-
-            /// <summary>
-            /// Gets the value assigned to a variable.
-            /// </summary>
-            /// <param name="variable">
-            /// The variable to read from.
-            /// </param>
-            /// <param name="block">
-            /// The block that reads from the variable.
-            /// </param>
-            /// <param name="type">
-            /// The variable's type.
-            /// </param>
-            /// <returns>
-            /// The value stored in the variable.
-            /// </returns>
-            private ValueTag ReadVariable(
-                ValueTag variable,
-                BasicBlockTag block,
-                IType type)
-            {
-                if (currentDef[variable].TryGetValue(block, out ValueTag value))
-                {
-                    return value;
-                }
-                else
-                {
-                    return ReadVariableRecursive(variable, block, type);
-                }
-            }
-
-            private ValueTag ReadVariableRecursive(
-                ValueTag variable,
-                BasicBlockTag block,
-                IType type)
-            {
-                if (!IsSealed(block))
-                {
-                    // The block reading the variable has not been
-                    // sealed yet. That's fine. Just add an entry to
-                    // the list of incomplete phis.
-                    var val = new ValueTag(variable.Name + ".phi");
-                    incompletePhis[block][variable] = new BlockParameter(type, val);
-                    WriteVariable(variable, block, val);
-                    return val;
-                }
-
-                var preds = predecessors.GetPredecessorsOf(block).ToArray();
-                if (preds.Length == 1)
-                {
-                    // There's just one predecessor, so we definitely
-                    // won't be needing a block parameter/phi here.
-                    return ReadVariable(variable, preds[0], type);
-                }
-                else
-                {
-                    // Create a parameter/phi, then figure out what
-                    // its arguments are.
-                    var val = new ValueTag(variable.Name + ".phi");
-                    WriteVariable(variable, block, val);
-                    val = AddPhiOperands(variable, block, val, type);
-                    WriteVariable(variable, block, val);
-                    return val;
-                }
-            }
-
-            private ValueTag AddPhiOperands(
-                ValueTag variable,
-                BasicBlockTag block,
-                ValueTag phi,
-                IType type)
-            {
-                // Define a block parameter.
-                var blockBuilder = graphBuilder.GetBasicBlock(block);
-                var blockParam = new BlockParameter(type, phi);
-                blockBuilder.AppendParameter(blockParam);
-
-                // Add an argument to all blocks that refer to the block.
-                foreach (var pred in predecessors.GetPredecessorsOf(block))
-                {
-                    var predBlock = graphBuilder.GetBasicBlock(pred);
-                    var modifiedBranches = new List<Branch>();
-                    foreach (var branch in predBlock.Flow.Branches)
-                    {
-                        if (branch.Target == block)
-                        {
-                            modifiedBranches.Add(
-                                branch.AddArgument(
-                                    ReadVariable(variable, pred, type)));
-                        }
-                        else
-                        {
-                            modifiedBranches.Add(branch);
-                        }
-                    }
-                    predBlock.Flow = predBlock.Flow.WithBranches(modifiedBranches);
-                }
-
-                // The original algorithm states that we should
-                // remove trivial phis here, but maybe that's best
-                // left to a separate copy propagation pass.
-                return phi;
             }
         }
     }

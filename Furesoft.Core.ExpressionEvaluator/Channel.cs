@@ -1,18 +1,21 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator;
-
-public class Channel
+﻿namespace Furesoft.Core.ExpressionEvaluator
 {
-    public string Name { get; set; }
 
-    public Action<object> OnReceive;
-    
-    public void Send<T>(T value)
-    {
-        OnReceive?.Invoke(value);
-    }
 
-    public void Subscribe(Action<object> callback)
+    public class Channel
     {
-        OnReceive += callback;
+        public string Name { get; set; }
+
+        public Action<object> OnReceive;
+
+        public void Send<T>(T value)
+        {
+            OnReceive?.Invoke(value);
+        }
+
+        public void Subscribe(Action<object> callback)
+        {
+            OnReceive += callback;
+        }
     }
 }

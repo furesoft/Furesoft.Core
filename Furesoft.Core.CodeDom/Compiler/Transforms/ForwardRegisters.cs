@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
@@ -14,13 +13,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
     /// </summary>
     public sealed class ForwardRegisters : IntraproceduralOptimization
     {
-        private ForwardRegisters()
-        { }
-
         /// <summary>
         /// An instance of the register forwarding form construction transform.
         /// </summary>
         public static readonly ForwardRegisters Instance = new();
+
+        private ForwardRegisters()
+        { }
 
         /// <inheritdoc/>
         public override FlowGraph Apply(FlowGraph graph)

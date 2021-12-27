@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
@@ -29,8 +27,11 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             this.FieldType = fieldType;
         }
 
-        /// <inheritdoc/>
-        public IType ParentType { get; private set; }
+        /// <summary>
+        /// Gets or sets the type of value stored in this field.
+        /// </summary>
+        /// <returns>The type of value stored in this field.</returns>
+        public IType FieldType { get; set; }
 
         /// <summary>
         /// Gets or sets a Boolean value that tells if this field is static.
@@ -40,10 +41,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </returns>
         public bool IsStatic { get; set; }
 
-        /// <summary>
-        /// Gets or sets the type of value stored in this field.
-        /// </summary>
-        /// <returns>The type of value stored in this field.</returns>
-        public IType FieldType { get; set; }
+        /// <inheritdoc/>
+        public IType ParentType { get; private set; }
     }
 }

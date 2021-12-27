@@ -1,11 +1,9 @@
+using Furesoft.Core.CodeDom.Compiler.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Pipeline;
 
 namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
@@ -17,6 +15,40 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
     /// </summary>
     public class OnDemandOptimizer : Optimizer
     {
+        /// <summary>
+        /// A mapping whose keys are all methods that are actively being
+        /// optimized and whose values are the methods that need to be
+        /// optimized for the keys' optimization process to proceed.
+        /// </summary>
+        private Dictionary<IMethod, HashSet<IMethod>> dependencies;
+
+        /// <summary>
+        /// A function that finds the initial method body for a method.
+        /// </summary>
+        private Func<IMethod, MethodBody> getInitMethodBody;
+
+        /// <summary>
+        /// A lock object.
+        /// </summary>
+        private object graphLock;
+
+        /// <summary>
+        /// A mapping of method definitions to the method body holders that
+        /// hold their method bodies.
+        /// </summary>
+        private ConcurrentDictionary<IMethod, MethodBodyHolder> holders;
+
+        /// <summary>
+        /// The pass pipeline to apply to method bodies.
+        /// </summary>
+        private IReadOnlyList<Optimization> pipeline;
+
+        /// <summary>
+        /// A mapping of methods to task completion sources that
+        /// are updated when the methods are fully optimized.
+        /// </summary>
+        private Dictionary<IMethod, TaskCompletionSource<MethodBody>> results;
+
         /// <summary>
         /// Creates a method body optimizer.
         /// </summary>
@@ -53,67 +85,27 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
         }
 
         /// <summary>
-        /// The pass pipeline to apply to method bodies.
+        /// Gets an initial method body for a method using the default
+        /// mechanism of checking if the method is a body method and
+        /// requesting its method body if so.
         /// </summary>
-        private IReadOnlyList<Optimization> pipeline;
-
-        /// <summary>
-        /// A function that finds the initial method body for a method.
-        /// </summary>
-        private Func<IMethod, MethodBody> getInitMethodBody;
-
-        /// <summary>
-        /// A mapping of method definitions to the method body holders that
-        /// hold their method bodies.
-        /// </summary>
-        private ConcurrentDictionary<IMethod, MethodBodyHolder> holders;
-
-        /// <summary>
-        /// A lock object.
-        /// </summary>
-        private object graphLock;
-
-        /// <summary>
-        /// A mapping of methods to task completion sources that
-        /// are updated when the methods are fully optimized.
-        /// </summary>
-        private Dictionary<IMethod, TaskCompletionSource<MethodBody>> results;
-
-        /// <summary>
-        /// A mapping whose keys are all methods that are actively being
-        /// optimized and whose values are the methods that need to be
-        /// optimized for the keys' optimization process to proceed.
-        /// </summary>
-        private Dictionary<IMethod, HashSet<IMethod>> dependencies;
-
-        /// <summary>
-        /// Tells if a method's body is currently being optimized.
-        /// </summary>
-        /// <param name="requested">
-        /// A method to query.
+        /// <param name="method">
+        /// The recursive generic method declaration to inspect.
         /// </param>
         /// <returns>
-        /// <c>true</c> if the method's optimization has started but not finished yet;
-        /// otherwise, <c>false</c>.
+        /// A method body if one can be found; otherwise <c>null</c>.
         /// </returns>
-        private bool IsActive(IMethod requested)
+        public static MethodBody GetInitialMethodBodyDefault(IMethod method)
         {
-            return dependencies.ContainsKey(requested);
-        }
-
-        /// <summary>
-        /// Tells if a method's body has been fully optimized.
-        /// </summary>
-        /// <param name="requested">
-        /// A method to query.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if the method has been optimized fully; otherwise, <c>false</c>.
-        /// </returns>
-        private bool IsComplete(IMethod requested)
-        {
-            return results.ContainsKey(requested)
-                && !dependencies.ContainsKey(requested);
+            var bodyMethod = method as IBodyMethod;
+            if (bodyMethod == null)
+            {
+                return null;
+            }
+            else
+            {
+                return bodyMethod.Body;
+            }
         }
 
         /// <inheritdoc/>
@@ -147,8 +139,113 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
             return holder.GetSpecializationBody(requested);
         }
 
-        private Task<MethodBody> OptimizeBodyOrWaitAsync(
+        private void CollectDependencies(
+                    IMethod method,
+                    HashSet<IMethod> results)
+        {
+            if (!results.Add(method))
+            {
+                return;
+            }
+
+            if (dependencies.TryGetValue(method, out HashSet<IMethod> depends))
+            {
+                foreach (var item in depends)
+                {
+                    CollectDependencies(item, results);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Marks a method body as being finished with regard to its optimization.
+        /// </summary>
+        /// <param name="method">
+        /// The method that is finished.
+        /// </param>
+        /// <param name="body">
+        /// <paramref name="method"/>'s fully optimized body.
+        /// </param>
+        private void Complete(IMethod method, MethodBody body)
+        {
+            lock (graphLock)
+            {
+                results[method].SetResult(body);
+                dependencies.Remove(method);
+            }
+        }
+
+        private MethodBodyHolder CreateMethodBodyHolder(IMethod method)
+        {
+            var initialBody = getInitMethodBody(method);
+            return initialBody == null ? null : new MethodBodyHolder(initialBody);
+        }
+
+        /// <summary>
+        /// Tells if a method's body is currently being optimized.
+        /// </summary>
+        /// <param name="requested">
+        /// A method to query.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the method's optimization has started but not finished yet;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsActive(IMethod requested)
+        {
+            return dependencies.ContainsKey(requested);
+        }
+
+        /// <summary>
+        /// Tells if a method's body has been fully optimized.
+        /// </summary>
+        /// <param name="requested">
+        /// A method to query.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the method has been optimized fully; otherwise, <c>false</c>.
+        /// </returns>
+        private bool IsComplete(IMethod requested)
+        {
+            return results.ContainsKey(requested)
+                && !dependencies.ContainsKey(requested);
+        }
+
+        private bool IsDependentOn(IMethod dependent, IMethod dependency)
+        {
+            var depends = new HashSet<IMethod>();
+            CollectDependencies(dependent, depends);
+            return depends.Contains(dependency);
+        }
+
+        private async Task<MethodBody> OptimizeBodyAsync(
             IMethod requestedDef,
+            MethodBodyHolder requestedHolder)
+        {
+            // Get the method's initial body.
+            var body = requestedHolder.Body;
+
+            // Create optimization state.
+            var state = new OptimizationState(requestedDef, this);
+
+            // Apply passes from the pipeline until we're done.
+            foreach (var pass in pipeline)
+            {
+                body = await pass.ApplyAsync(body, state);
+                if (pass.IsCheckpoint)
+                {
+                    // Update the method body for the method if we've
+                    // reached a checkpoint.
+                    requestedHolder.Body = body;
+                }
+            }
+            requestedHolder.Body = body;
+            Complete(requestedDef, body);
+            return body;
+        }
+
+        private Task<MethodBody> OptimizeBodyOrWaitAsync(
+                            IMethod requestedDef,
             IMethod requestingDef,
             MethodBodyHolder requestedHolder)
         {
@@ -235,57 +332,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
             return OptimizeBodyAsync(requestedDef, requestedHolder);
         }
 
-        private async Task<MethodBody> OptimizeBodyAsync(
-            IMethod requestedDef,
-            MethodBodyHolder requestedHolder)
-        {
-            // Get the method's initial body.
-            var body = requestedHolder.Body;
-
-            // Create optimization state.
-            var state = new OptimizationState(requestedDef, this);
-
-            // Apply passes from the pipeline until we're done.
-            foreach (var pass in pipeline)
-            {
-                body = await pass.ApplyAsync(body, state);
-                if (pass.IsCheckpoint)
-                {
-                    // Update the method body for the method if we've
-                    // reached a checkpoint.
-                    requestedHolder.Body = body;
-                }
-            }
-            requestedHolder.Body = body;
-            Complete(requestedDef, body);
-            return body;
-        }
-
-        private bool IsDependentOn(IMethod dependent, IMethod dependency)
-        {
-            var depends = new HashSet<IMethod>();
-            CollectDependencies(dependent, depends);
-            return depends.Contains(dependency);
-        }
-
-        private void CollectDependencies(
-            IMethod method,
-            HashSet<IMethod> results)
-        {
-            if (!results.Add(method))
-            {
-                return;
-            }
-
-            if (dependencies.TryGetValue(method, out HashSet<IMethod> depends))
-            {
-                foreach (var item in depends)
-                {
-                    CollectDependencies(item, results);
-                }
-            }
-        }
-
         /// <summary>
         /// Hints that a method is being optimized now.
         /// </summary>
@@ -300,54 +346,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
                 dependencies[method] = new HashSet<IMethod>();
             }
             return source.Task;
-        }
-
-        /// <summary>
-        /// Marks a method body as being finished with regard to its optimization.
-        /// </summary>
-        /// <param name="method">
-        /// The method that is finished.
-        /// </param>
-        /// <param name="body">
-        /// <paramref name="method"/>'s fully optimized body.
-        /// </param>
-        private void Complete(IMethod method, MethodBody body)
-        {
-            lock (graphLock)
-            {
-                results[method].SetResult(body);
-                dependencies.Remove(method);
-            }
-        }
-
-        private MethodBodyHolder CreateMethodBodyHolder(IMethod method)
-        {
-            var initialBody = getInitMethodBody(method);
-            return initialBody == null ? null : new MethodBodyHolder(initialBody);
-        }
-
-        /// <summary>
-        /// Gets an initial method body for a method using the default
-        /// mechanism of checking if the method is a body method and
-        /// requesting its method body if so.
-        /// </summary>
-        /// <param name="method">
-        /// The recursive generic method declaration to inspect.
-        /// </param>
-        /// <returns>
-        /// A method body if one can be found; otherwise <c>null</c>.
-        /// </returns>
-        public static MethodBody GetInitialMethodBodyDefault(IMethod method)
-        {
-            var bodyMethod = method as IBodyMethod;
-            if (bodyMethod == null)
-            {
-                return null;
-            }
-            else
-            {
-                return bodyMethod.Body;
-            }
         }
     }
 

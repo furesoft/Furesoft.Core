@@ -1,6 +1,5 @@
-using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
@@ -10,13 +9,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
     /// </summary>
     public sealed class DeadBlockElimination : IntraproceduralOptimization
     {
-        private DeadBlockElimination()
-        { }
-
         /// <summary>
         /// An instance of the dead block elimination transform.
         /// </summary>
         public static readonly DeadBlockElimination Instance = new();
+
+        private DeadBlockElimination()
+        { }
 
         /// <summary>
         /// Removes dead blocks from a particular graph.

@@ -1,9 +1,7 @@
-using System;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Pipeline;
 
 namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
@@ -61,31 +59,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
         public IMethod Method { get; private set; }
 
         /// <summary>
-        /// Gets the optimizer that triggered the optimization. 
+        /// Gets the optimizer that triggered the optimization.
         /// </summary>
         /// <returns>A method optimizer.</returns>
         public Optimizer Optimizer { get; private set; }
-
-        /// <summary>
-        /// Asynchronously requests a method's body.
-        /// </summary>
-        /// <param name="method">The method whose body is requested.</param>
-        /// <returns>The method's body.</returns>
-        /// <remarks>
-        /// The optimizer is free to return any method body that is
-        /// semantically equivalent to <paramref name="method"/>'s body.
-        /// This ranges from <paramref name="method"/>'s initial method
-        /// body to its final optimized body.
-        ///
-        /// Which version of <paramref name="method"/>'s body is returned
-        /// depends on the optimizer. The optimizer is expected to return
-        /// a method body that is as optimized as possible given the
-        /// constraints imposed by the optimizer's implementation.
-        /// </remarks>
-        public Task<MethodBody> GetBodyAsync(IMethod method)
-        {
-            return Optimizer.GetBodyAsync(method, this.Method);
-        }
 
         /// <summary>
         /// Asynchronously requests a series of method bodies. The requests may
@@ -107,6 +84,27 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
                 mapping[methodArray[i]] = bodyArray[i];
             }
             return mapping;
+        }
+
+        /// <summary>
+        /// Asynchronously requests a method's body.
+        /// </summary>
+        /// <param name="method">The method whose body is requested.</param>
+        /// <returns>The method's body.</returns>
+        /// <remarks>
+        /// The optimizer is free to return any method body that is
+        /// semantically equivalent to <paramref name="method"/>'s body.
+        /// This ranges from <paramref name="method"/>'s initial method
+        /// body to its final optimized body.
+        ///
+        /// Which version of <paramref name="method"/>'s body is returned
+        /// depends on the optimizer. The optimizer is expected to return
+        /// a method body that is as optimized as possible given the
+        /// constraints imposed by the optimizer's implementation.
+        /// </remarks>
+        public Task<MethodBody> GetBodyAsync(IMethod method)
+        {
+            return Optimizer.GetBodyAsync(method, this.Method);
         }
     }
 }

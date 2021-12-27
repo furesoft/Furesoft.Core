@@ -1,7 +1,7 @@
-﻿using System.Reflection;
-using Furesoft.Core.CodeDom.Parsing;
-using Furesoft.Core.CodeDom.CodeDOM.Base;
+﻿using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
+using Furesoft.Core.CodeDom.Parsing;
+using System.Reflection;
 
 namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints
 {
@@ -41,6 +41,11 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints
         public override string ConstraintText
         {
             get { return ParseToken; }
+        }
+
+        public override T Accept<T>(VisitorBase<T> visitor)
+        {
+            return visitor.Visit(this);
         }
     }
 }

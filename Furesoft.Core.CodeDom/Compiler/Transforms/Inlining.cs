@@ -1,14 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 using Furesoft.Core.CodeDom.Compiler.Pipeline;
-using Furesoft.Core.CodeDom.Compiler.Transforms;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
@@ -19,17 +17,17 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
     public class Inlining : Optimization
     {
         /// <summary>
-        /// Creates an instance of the inlining optimization.
-        /// </summary>
-        protected Inlining()
-        { }
-
-        /// <summary>
         /// An instance of the inlining transformation.
         /// </summary>
         /// <value>A call-inlining transform.</value>
         public static readonly Inlining Instance
             = new();
+
+        /// <summary>
+        /// Creates an instance of the inlining optimization.
+        /// </summary>
+        protected Inlining()
+        { }
 
         /// <inheritdoc/>
         public override bool IsCheckpoint => false;
@@ -68,124 +66,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             }
 
             return body.WithImplementation(graph.ToImmutable());
-        }
-
-        private void TryInlineCall(InstructionBuilder instruction, MethodBody calleeBody)
-        {
-            var graph = instruction.Graph;
-            var proto = instruction.Prototype;
-            if (proto is CallPrototype)
-            {
-                if (ShouldInline(calleeBody, instruction.Arguments, graph.ImmutableGraph))
-                {
-                    instruction.ReplaceInstruction(calleeBody.Implementation, instruction.Arguments);
-                }
-            }
-            else if (proto is NewObjectPrototype)
-            {
-                graph.TryForkAndMerge(builder =>
-                {
-                    // Synthesize a sequence of instructions that creates a zero-filled
-                    // object of the right type.
-                    var builderInsn = builder.GetInstruction(instruction);
-                    var elementType = ((NewObjectPrototype)proto).Constructor.ParentType;
-                    var defaultConst = builderInsn.InsertBefore(
-                        Instruction.CreateConstant(DefaultConstant.Instance, elementType));
-                    var objInstance = builderInsn.InsertBefore(
-                        Instruction.CreateBox(elementType, defaultConst));
-
-                    var allArgs = new ValueTag[] { objInstance }.Concat(builderInsn.Arguments).ToArray();
-                    if (ShouldInline(calleeBody, allArgs, builder.ImmutableGraph))
-                    {
-                        // Actually inline the newobj call. To do so, we'll rewrite all 'return'
-                        // flows in the callee to return the 'this' pointer and then inline that
-                        // like a regular method call.
-                        var modifiedImpl = calleeBody.Implementation.ToBuilder();
-                        foreach (var block in modifiedImpl.BasicBlocks)
-                        {
-                            if (block.Flow is ReturnFlow)
-                            {
-                                block.Flow = new ReturnFlow(
-                                    Instruction.CreateCopy(
-                                        modifiedImpl.EntryPoint.Parameters[0].Type,
-                                        modifiedImpl.EntryPoint.Parameters[0].Tag));
-                            }
-                        }
-                        builderInsn.ReplaceInstruction(modifiedImpl.ToImmutable(), allArgs);
-                        return true;
-                    }
-                    else
-                    {
-                        // We won't be inlining after all. Nix our changes.
-                        return false;
-                    }
-                });
-            }
-        }
-
-        private bool TryGetCallee(InstructionBuilder instruction, out IMethod callee)
-        {
-            var proto = instruction.Prototype;
-            if (proto is CallPrototype callProto)
-            {
-                if (callProto.Lookup == MethodLookup.Static)
-                {
-                    callee = callProto.Callee;
-                    return true;
-                }
-            }
-            else if (proto is NewObjectPrototype newObjproto)
-            {
-                callee = newObjproto.Constructor;
-                return true;
-            }
-
-            callee = null;
-            return false;
-        }
-
-        // The methods and properties below constitute the inlining heuristic to use.
-        // To implement a custom inlining heuristic, inherit from this class and
-        // override them.
-
-        /// <summary>
-        /// Tells if a method should be considered for inlining.
-        /// </summary>
-        /// <param name="callee">A method that might be inlined.</param>
-        /// <param name="caller">
-        /// A method that calls <paramref name="callee"/>; it's not sure if it
-        /// should consider inlining <paramref name="callee"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if inlining may proceed; otherwise, <c>false</c>.
-        /// </returns>
-        protected virtual bool ShouldConsider(IMethod callee, IMethod caller)
-        {
-            // Don't inline recursive calls. We have the infrastructure to do
-            // so, but inlining recursive calls if often pointless.
-            callee = callee.GetRecursiveGenericDeclaration();
-            if (callee == caller)
-            {
-                return false;
-            }
-
-            // By default, we don't want to inline methods across assemblies
-            // because doing so anyway introduces dependencies on implementation
-            // details in external dependencies that may be notice to change.
-            var calleeAsm = callee.GetDefiningAssemblyOrNull();
-            if (calleeAsm == null)
-            {
-                return true;
-            }
-            var callerAsm = caller.GetDefiningAssemblyOrNull();
-            if (callerAsm == null)
-            {
-                return true;
-            }
-            else
-            {
-                return calleeAsm == callerAsm;
-            }
         }
 
         /// <summary>
@@ -229,29 +109,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 }
             }
             return true;
-        }
-
-        /// <summary>
-        /// Determines if a method body is worth inlining.
-        /// </summary>
-        /// <param name="body">
-        /// The method body to inline.
-        /// </param>
-        /// <param name="arguments">
-        /// The list of arguments to feed to <paramref name="body"/>.
-        /// </param>
-        /// <param name="caller">
-        /// The control-flow graph of the caller, which defines the arguments.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if the method body should be inlined; otherwise, <c>false,</c>.
-        /// </returns>
-        protected bool ShouldInline(
-            MethodBody body,
-            IReadOnlyList<ValueTag> arguments,
-            FlowGraph caller)
-        {
-            return GetInlineCost(body) <= GetInlineGain(body, arguments, caller);
         }
 
         /// <summary>
@@ -313,6 +170,72 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             return gain;
         }
 
+        /// <summary>
+        /// Tells if a method should be considered for inlining.
+        /// </summary>
+        /// <param name="callee">A method that might be inlined.</param>
+        /// <param name="caller">
+        /// A method that calls <paramref name="callee"/>; it's not sure if it
+        /// should consider inlining <paramref name="callee"/>.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if inlining may proceed; otherwise, <c>false</c>.
+        /// </returns>
+        protected virtual bool ShouldConsider(IMethod callee, IMethod caller)
+        {
+            // Don't inline recursive calls. We have the infrastructure to do
+            // so, but inlining recursive calls if often pointless.
+            callee = callee.GetRecursiveGenericDeclaration();
+            if (callee == caller)
+            {
+                return false;
+            }
+
+            // By default, we don't want to inline methods across assemblies
+            // because doing so anyway introduces dependencies on implementation
+            // details in external dependencies that may be notice to change.
+            var calleeAsm = callee.GetDefiningAssemblyOrNull();
+            if (calleeAsm == null)
+            {
+                return true;
+            }
+            var callerAsm = caller.GetDefiningAssemblyOrNull();
+            if (callerAsm == null)
+            {
+                return true;
+            }
+            else
+            {
+                return calleeAsm == callerAsm;
+            }
+        }
+
+        // The methods and properties below constitute the inlining heuristic to use.
+        // To implement a custom inlining heuristic, inherit from this class and
+        // override them.
+        /// <summary>
+        /// Determines if a method body is worth inlining.
+        /// </summary>
+        /// <param name="body">
+        /// The method body to inline.
+        /// </param>
+        /// <param name="arguments">
+        /// The list of arguments to feed to <paramref name="body"/>.
+        /// </param>
+        /// <param name="caller">
+        /// The control-flow graph of the caller, which defines the arguments.
+        /// </param>
+        /// <returns>
+        /// <c>true</c> if the method body should be inlined; otherwise, <c>false,</c>.
+        /// </returns>
+        protected bool ShouldInline(
+            MethodBody body,
+            IReadOnlyList<ValueTag> arguments,
+            FlowGraph caller)
+        {
+            return GetInlineCost(body) <= GetInlineGain(body, arguments, caller);
+        }
+
         private static int EstimateTypeSize(IType type)
         {
             var intSpec = type.GetIntegerSpecOrNull();
@@ -330,6 +253,80 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     .Select(field => field.FieldType)
                     .Select(EstimateTypeSize)
                     .Sum();
+            }
+        }
+
+        private bool TryGetCallee(InstructionBuilder instruction, out IMethod callee)
+        {
+            var proto = instruction.Prototype;
+            if (proto is CallPrototype callProto)
+            {
+                if (callProto.Lookup == MethodLookup.Static)
+                {
+                    callee = callProto.Callee;
+                    return true;
+                }
+            }
+            else if (proto is NewObjectPrototype newObjproto)
+            {
+                callee = newObjproto.Constructor;
+                return true;
+            }
+
+            callee = null;
+            return false;
+        }
+
+        private void TryInlineCall(InstructionBuilder instruction, MethodBody calleeBody)
+        {
+            var graph = instruction.Graph;
+            var proto = instruction.Prototype;
+            if (proto is CallPrototype)
+            {
+                if (ShouldInline(calleeBody, instruction.Arguments, graph.ImmutableGraph))
+                {
+                    instruction.ReplaceInstruction(calleeBody.Implementation, instruction.Arguments);
+                }
+            }
+            else if (proto is NewObjectPrototype)
+            {
+                graph.TryForkAndMerge(builder =>
+                {
+                    // Synthesize a sequence of instructions that creates a zero-filled
+                    // object of the right type.
+                    var builderInsn = builder.GetInstruction(instruction);
+                    var elementType = ((NewObjectPrototype)proto).Constructor.ParentType;
+                    var defaultConst = builderInsn.InsertBefore(
+                        Instruction.CreateConstant(DefaultConstant.Instance, elementType));
+                    var objInstance = builderInsn.InsertBefore(
+                        Instruction.CreateBox(elementType, defaultConst));
+
+                    var allArgs = new ValueTag[] { objInstance }.Concat(builderInsn.Arguments).ToArray();
+                    if (ShouldInline(calleeBody, allArgs, builder.ImmutableGraph))
+                    {
+                        // Actually inline the newobj call. To do so, we'll rewrite all 'return'
+                        // flows in the callee to return the 'this' pointer and then inline that
+                        // like a regular method call.
+                        var modifiedImpl = calleeBody.Implementation.ToBuilder();
+                        foreach (var block in modifiedImpl.BasicBlocks)
+                        {
+                            if (block.Flow is ReturnFlow)
+                            {
+                                block.Flow = new ReturnFlow(
+                                    Instruction.CreateCopy(
+                                        modifiedImpl.EntryPoint.Parameters[0].Type,
+                                        modifiedImpl.EntryPoint.Parameters[0].Tag));
+                            }
+                        }
+                        builderInsn.ReplaceInstruction(modifiedImpl.ToImmutable(), allArgs);
+                        return true;
+                    }
+                    else
+                    {
+                        // We won't be inlining after all. Nix our changes.
+                        return false;
+                    }
+                });
             }
         }
     }
