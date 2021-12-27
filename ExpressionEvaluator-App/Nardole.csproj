@@ -1,40 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
-    <RootNamespace>ExpressionEvaluator_App</RootNamespace>
-    <UseWindowsForms>true</UseWindowsForms>
+	<OutputType>WinExe</OutputType>
+	<TargetFramework>net6.0-windows</TargetFramework>
+	<RootNamespace>ExpressionEvaluator_App</RootNamespace>
+	<UseWindowsForms>true</UseWindowsForms>
+	<LangVersion>preview</LangVersion>
+	<EnablePreviewFeatures>True</EnablePreviewFeatures>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DigitalRune.Windows.TextEditor\**" />
-    <EmbeddedResource Remove="DigitalRune.Windows.TextEditor\**" />
-    <None Remove="DigitalRune.Windows.TextEditor\**" />
+	<Compile Remove="DigitalRune.Windows.TextEditor\**" />
+	<EmbeddedResource Remove="DigitalRune.Windows.TextEditor\**" />
+	<None Remove="DigitalRune.Windows.TextEditor\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="5.0.2" />
+	<PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj" />
-    <ProjectReference Include="DigitalRune.Windows.TextEditor\DigitalRune.Windows.TextEditor.csproj" />
+	<ProjectReference Include="..\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj" />
+	<ProjectReference Include="DigitalRune.Windows.TextEditor\DigitalRune.Windows.TextEditor.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
+	<Compile Update="Properties\Resources.Designer.cs">
+	  <DesignTime>True</DesignTime>
+	  <AutoGen>True</AutoGen>
+	  <DependentUpon>Resources.resx</DependentUpon>
+	</Compile>
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+	<EmbeddedResource Update="Properties\Resources.resx">
+	  <Generator>ResXFileCodeGenerator</Generator>
+	  <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+	</EmbeddedResource>
   </ItemGroup>
 
 </Project>
