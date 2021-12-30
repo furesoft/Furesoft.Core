@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
+using System.Globalization;
 
 namespace Furesoft.Core.ExpressionEvaluator;
 
@@ -13,6 +14,7 @@ public class ExpressionParser
         RootScope.AddMacro<RuleForMacro>();
         RootScope.AddMacro<ResolveMacro>();
         RootScope.AddMacro<PlotMacro>();
+        RootScope.AddMacro<DeriveMacro>();
 
         InitOperatorOverloads();
     }
@@ -61,6 +63,8 @@ public class ExpressionParser
 
         SetDefinitionNode.AddParsePoints();
         SetDefinitionExpression.AddParsePoints();
+
+        GoesToOperator.AddParsePoints();
     }
 
     public void AddModule(string name, Scope scope)
@@ -145,7 +149,7 @@ public class ExpressionParser
         }
         else if (expr is Literal lit)
         {
-            return (double)Convert.ChangeType(lit.Value, typeof(double));
+            return double.Parse(lit.Text, CultureInfo.InvariantCulture);
         }
         else if (expr is Call call && call.Expression is UnresolvedRef nameRef)
         {

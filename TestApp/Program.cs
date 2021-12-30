@@ -25,6 +25,8 @@ namespace TestApp
             var aliasCall = ep.Evaluate("displayValueTable(1, 10, 1, x ^ 2);");
             var displayTree = ep.Evaluate("use physics.*; G = 0.5; Fg(2);");
 
+            var derivative = ep.Evaluate("rulefor(derive, X ^ Y -> Y * X ^ (Y - 1)); derive(2 ^ 3);");
+
             //ToDo: add standard library
 
             //ToDo: add constrain for return value?
