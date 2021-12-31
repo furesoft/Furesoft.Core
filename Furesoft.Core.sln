@@ -24,6 +24,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nardole", "ExpressionEvalua
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigitalRune.Windows.TextEditor", "ExpressionEvaluator-App\DigitalRune.Windows.TextEditor\DigitalRune.Windows.TextEditor.csproj", "{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furesoft.CodeDom.Generator", "Furesoft.CodeDom.Generator\Furesoft.CodeDom.Generator.csproj", "{394ABC09-DB1F-4EDF-A623-CBD5BA2A7A7A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GeneratorTest", "GeneratorTest\GeneratorTest.csproj", "{EF9E194C-9B3A-4E90-8A93-747098E36A2B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furesoft.Core.CodeDom.Compiler", "Furesoft.Core.CodeDom.Compiler\Furesoft.Core.CodeDom.Compiler.csproj", "{61637205-1E90-485B-BAAB-2FA3698A627E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +68,18 @@ Global
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{394ABC09-DB1F-4EDF-A623-CBD5BA2A7A7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{394ABC09-DB1F-4EDF-A623-CBD5BA2A7A7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{394ABC09-DB1F-4EDF-A623-CBD5BA2A7A7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{394ABC09-DB1F-4EDF-A623-CBD5BA2A7A7A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF9E194C-9B3A-4E90-8A93-747098E36A2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF9E194C-9B3A-4E90-8A93-747098E36A2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF9E194C-9B3A-4E90-8A93-747098E36A2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF9E194C-9B3A-4E90-8A93-747098E36A2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{61637205-1E90-485B-BAAB-2FA3698A627E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{61637205-1E90-485B-BAAB-2FA3698A627E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{61637205-1E90-485B-BAAB-2FA3698A627E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{61637205-1E90-485B-BAAB-2FA3698A627E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+	  <TargetFramework>netstandard2.1</TargetFramework>
+	  <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Version>1.0.5</Version>
     <Description>Parsing and Tree: https://www.codeproject.com/Articles/492466/Object-Oriented-Parsing-Breaking-With-Tradition-Pa</Description>

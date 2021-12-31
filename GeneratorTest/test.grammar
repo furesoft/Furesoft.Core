@@ -1,0 +1,37 @@
+﻿program        -> declaration* EOF ;
+declaration    -> varDecl
+               | statement ;
+varDecl        -> "var" IDENTIFIER ( "=" expression )? ";" ;
+statement      -> exprStmt
+               | ifStmt
+               | whileStmt
+               | forStmt
+               | breakStmt
+               | continueStmt
+               | printStmt
+               | block ;
+exprStmt       -> expression ";" ;
+ifStmt         -> "if" "(" expression ")" statement ( "else" statement )? ;
+whileStmt      -> "while" "(" expression ")" statement ;
+forStmt        -> "for" "(" ( varDecl | exprStmt | ";" ) expression? ";" expression? ")" statement ;
+breakStmt      -> "break" ";" ;
+continueStmt   -> "continue" ";" ;
+printStmt      -> "print" expression ";" ;
+block          -> "{" declaration* "}" ;
+expression     -> assignment ;
+assignment     -> IDENTIFIER "=" assignment
+               | sequence ;
+sequence       -> conditional ( "," conditional)* ;
+conditional    -> logical_or ( "?" expression ":" conditional )? ;
+logical_or     -> logical_and ( "or" logical_and )* ;
+logical_and    -> equality ( "and" equality )* ;
+equality       -> comparison ( ( "!=" | "==" ) comparison )* ;
+comparison     -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+term           -> factor ( ( "-" | "+" ) factor )* ;
+factor         -> unary ( ( "/" | "*" ) unary )* ;
+unary          -> ( "!" | "-" ) unary
+               | primary ;
+primary        -> "true" | "false" | "nil"
+               | NUMBER | STRING
+               | "(" expression ")"
+               | IDENTIFIER ;
