@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net6.0</TargetFramework>
+	<EnablePreviewFeatures>True</EnablePreviewFeatures>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Furesoft.CodeDom\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj" />
+    <ProjectReference Include="..\..\Furesoft.CodeDom\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj" />
+    <ProjectReference Include="..\..\Furesoft.Core\Furesoft.Core.csproj" />
+  </ItemGroup>
+
+</Project>

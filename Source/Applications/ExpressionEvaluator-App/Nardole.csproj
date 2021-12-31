@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj" />
+	<ProjectReference Include="..\..\Furesoft.CodeDom\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj" />
 	<ProjectReference Include="DigitalRune.Windows.TextEditor\DigitalRune.Windows.TextEditor.csproj" />
   </ItemGroup>
 

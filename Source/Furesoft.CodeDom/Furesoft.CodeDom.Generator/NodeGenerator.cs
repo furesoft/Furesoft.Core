@@ -18,7 +18,7 @@ namespace HelloWorldGenerated
   {
     public static void SayHello()
     {
-      Console.WriteLine(""The following syntax trees existed in the compilation that created this program:"");
+      Console.WriteLine(""Files:"");
 ");
 
             // Get a list of syntax trees (.cs files)

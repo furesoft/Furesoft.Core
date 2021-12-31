@@ -8,7 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <ProjectReference Include="..\Furesoft.CodeDom.Generator\Furesoft.CodeDom.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	  <ProjectReference Include="..\..\Furesoft.CodeDom\Furesoft.CodeDom.Generator\Furesoft.CodeDom.Generator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+	  <ProjectReference Include="..\..\Furesoft.CodeDom\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj" />
   </ItemGroup>
 
 	<ItemGroup>

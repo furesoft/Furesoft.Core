@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Furesoft.Core.CodeDom.Compiler\Furesoft.Core.CodeDom.Compiler.csproj" />
     <ProjectReference Include="..\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj" />
   </ItemGroup>
 
