@@ -9,7 +9,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 	/// </summary>
 	internal sealed class CountAction : AbstractQueryFieldAction
 	{
-		private static readonly decimal one = new decimal(1);
+		private static readonly decimal one = new(1);
 
 		private decimal _count;
 

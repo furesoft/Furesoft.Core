@@ -49,7 +49,7 @@ namespace Furesoft.Core.Measure
         /// </summary>
         /// <param name="q">Quantity to multiply.</param>
         /// <returns>The resulting quantity.</returns>
-        public Quantity Multiply( Quantity q ) => new Quantity( Value * q.Value, Unit * q.Unit );
+        public Quantity Multiply( Quantity q ) => new( Value * q.Value, Unit * q.Unit );
 
 
         /// <summary>
@@ -58,21 +58,21 @@ namespace Furesoft.Core.Measure
         /// </summary>
         /// <param name="q">Quantity divisor.</param>
         /// <returns>The resulting quantity.</returns>
-        public Quantity DivideBy( Quantity q ) => new Quantity( Value / q.Value, Unit / q.Unit );
+        public Quantity DivideBy( Quantity q ) => new( Value / q.Value, Unit / q.Unit );
 
         /// <summary>
         /// Inverts this quantity.
         /// The result' value is 1/<see cref="Value"/> and its <see cref="Unit"/> is <see cref="MeasureUnit.Invert"/>.
         /// </summary>
         /// <returns>The inverse quantity.</returns>
-        public Quantity Invert() => new Quantity( 1.0 / Value, Unit.Invert() );
+        public Quantity Invert() => new( 1.0 / Value, Unit.Invert() );
 
         /// <summary>
         /// Elevates this quantity to a given power.
         /// </summary>
         /// <param name="exp">The exponent.</param>
         /// <returns>The resulting quantity.</returns>
-        public Quantity Power( int exp ) => new Quantity( Math.Pow( Value, exp ), Unit.Power( exp ) );
+        public Quantity Power( int exp ) => new( Math.Pow( Value, exp ), Unit.Power( exp ) );
 
         /// <summary>
         /// Checks whether another quantity can be added to this one.
@@ -100,7 +100,7 @@ namespace Furesoft.Core.Measure
         /// Negates this quantity: it is the negated <see cref="Value"/> with the same <see cref="Unit"/>.
         /// </summary>
         /// <returns>The negated quantity.</returns>
-        public Quantity Negate() => new Quantity( -Value, Unit );
+        public Quantity Negate() => new( -Value, Unit );
 
         /// <summary>
         /// Checks whether this quantity can be converted into a quantity with a different <see cref="Unit"/>.
@@ -147,10 +147,10 @@ namespace Furesoft.Core.Measure
         public static Quantity operator /( Quantity o1, Quantity o2 ) => o1.DivideBy( o2 );
         public static Quantity operator *( Quantity o1, Quantity o2 ) => o1.Multiply( o2 );
         public static Quantity operator ^( Quantity o, int exp ) => o.Power( exp );
-        public static Quantity operator /( Quantity o, double v ) => new Quantity( o.Value / v, o.Unit );
-        public static Quantity operator *( Quantity o, double v ) => new Quantity( o.Value * v, o.Unit );
-        public static Quantity operator /( double v, Quantity o ) => new Quantity( v / o.Value, o.Unit.Invert() );
-        public static Quantity operator *( double v, Quantity o ) => new Quantity( o.Value * v, o.Unit );
+        public static Quantity operator /( Quantity o, double v ) => new( o.Value / v, o.Unit );
+        public static Quantity operator *( Quantity o, double v ) => new( o.Value * v, o.Unit );
+        public static Quantity operator /( double v, Quantity o ) => new( v / o.Value, o.Unit.Invert() );
+        public static Quantity operator *( double v, Quantity o ) => new( o.Value * v, o.Unit );
         public static Quantity operator +( Quantity o1, Quantity o2 ) => o1.Add( o2 );
         public static Quantity operator -( Quantity o ) => o.Negate();
         public static Quantity operator -( Quantity o1, Quantity o2 ) => o1.Add( o2.Negate() );

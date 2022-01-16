@@ -28,7 +28,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
         IStackInstructionSelector<CilCodegenInstruction>
     {
         private static Dictionary<string, OpCode[]> checkedSignedArithmeticBinaries =
-                    new Dictionary<string, OpCode[]>()
+                    new()
                 {
             { ArithmeticIntrinsics.Operators.Add, new[] { OpCodes.Add_Ovf } },
             { ArithmeticIntrinsics.Operators.Subtract, new[] { OpCodes.Sub_Ovf } },
@@ -36,7 +36,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<string, OpCode[]> checkedUnsignedArithmeticBinaries =
-                    new Dictionary<string, OpCode[]>()
+                    new()
                 {
             { ArithmeticIntrinsics.Operators.Add, new[] { OpCodes.Add_Ovf_Un } },
             { ArithmeticIntrinsics.Operators.Subtract, new[] { OpCodes.Sub_Ovf_Un } },
@@ -44,7 +44,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<IntegerSpec, Tuple<OpCode, OpCode, OpCode>> intConversionOps =
-                    new Dictionary<IntegerSpec, Tuple<OpCode, OpCode, OpCode>>()
+                    new()
                 {
             { IntegerSpec.Int8, Tuple.Create(OpCodes.Conv_I1, OpCodes.Conv_Ovf_I1, OpCodes.Conv_Ovf_I1_Un) },
             { IntegerSpec.Int16, Tuple.Create(OpCodes.Conv_I2, OpCodes.Conv_Ovf_I2, OpCodes.Conv_Ovf_I2_Un) },
@@ -57,7 +57,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<IntegerSpec, OpCode> integerLdelemOps =
-                    new Dictionary<IntegerSpec, OpCode>()
+                    new()
                 {
             { IntegerSpec.Int8, OpCodes.Ldelem_I1 },
             { IntegerSpec.Int16, OpCodes.Ldelem_I2 },
@@ -70,7 +70,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<IntegerSpec, OpCode> integerLdIndOps =
-                    new Dictionary<IntegerSpec, OpCode>()
+                    new()
                 {
             { IntegerSpec.Int8, OpCodes.Ldind_I1 },
             { IntegerSpec.Int16, OpCodes.Ldind_I2 },
@@ -83,7 +83,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<IntegerSpec, OpCode> integerStelemOps =
-                    new Dictionary<IntegerSpec, OpCode>()
+                    new()
                 {
             { IntegerSpec.Int8, OpCodes.Stelem_I1 },
             { IntegerSpec.Int16, OpCodes.Stelem_I2 },
@@ -96,7 +96,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<IntegerSpec, OpCode> integerStIndOps =
-                    new Dictionary<IntegerSpec, OpCode>()
+                    new()
                 {
             { IntegerSpec.Int8, OpCodes.Stind_I1 },
             { IntegerSpec.Int16, OpCodes.Stind_I2 },
@@ -109,7 +109,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<string, OpCode[]> signedArithmeticBinaries =
-                    new Dictionary<string, OpCode[]>()
+                    new()
                 {
             { ArithmeticIntrinsics.Operators.Add, new[] { OpCodes.Add } },
             { ArithmeticIntrinsics.Operators.Subtract, new[] { OpCodes.Sub } },
@@ -130,7 +130,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
                 };
 
         private static Dictionary<string, OpCode[]> unsignedArithmeticBinaries =
-                    new Dictionary<string, OpCode[]>()
+                    new()
                 {
             { ArithmeticIntrinsics.Operators.Add, new[] { OpCodes.Add } },
             { ArithmeticIntrinsics.Operators.Subtract, new[] { OpCodes.Sub } },

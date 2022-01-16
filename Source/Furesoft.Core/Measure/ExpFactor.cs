@@ -47,21 +47,21 @@ namespace Furesoft.Core.Measure
         /// </summary>
         /// <param name="p">The power.</param>
         /// <returns>This factor elevated to <paramref name="p"/>.</returns>
-        public ExpFactor Power( int p ) => new ExpFactor( Exp2 * p, Exp10 * p );
+        public ExpFactor Power( int p ) => new( Exp2 * p, Exp10 * p );
 
         /// <summary>
         /// Multplies this factor by another one.
         /// </summary>
         /// <param name="x">The factor.</param>
         /// <returns>This factor multipied by <paramref name="x"/>.</returns>
-        public ExpFactor Multiply( ExpFactor x ) => new ExpFactor( Exp2 + x.Exp2, Exp10 + x.Exp10 );
+        public ExpFactor Multiply( ExpFactor x ) => new( Exp2 + x.Exp2, Exp10 + x.Exp10 );
 
         /// <summary>
         /// Divides this factor by another one.
         /// </summary>
         /// <param name="x">The divisor.</param>
         /// <returns>This factor divided by <paramref name="x"/>.</returns>
-        public ExpFactor DivideBy( ExpFactor x ) => new ExpFactor( Exp2 - x.Exp2, Exp10 - x.Exp10 );
+        public ExpFactor DivideBy( ExpFactor x ) => new( Exp2 - x.Exp2, Exp10 - x.Exp10 );
 
         /// <summary>
         /// Computes a double value.

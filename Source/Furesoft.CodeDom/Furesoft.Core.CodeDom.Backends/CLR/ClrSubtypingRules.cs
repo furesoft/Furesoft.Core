@@ -12,7 +12,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR
         /// An instance of the CLR subtyping rules.
         /// </summary>
         public static readonly ClrSubtypingRules Instance =
-            new ClrSubtypingRules();
+            new();
 
         private ClrSubtypingRules()
         {

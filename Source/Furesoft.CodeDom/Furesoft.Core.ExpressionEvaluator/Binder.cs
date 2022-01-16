@@ -120,7 +120,7 @@ public class Binder
 
                 if (reference == null)
                 {
-                    reference = new("$x");
+                    reference = new UnresolvedRef("$x");
                 }
 
                 var numberRoom = NumberRooms[name];

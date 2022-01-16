@@ -6,7 +6,7 @@ namespace Furesoft.Core.ObjectDB.IO
 {
 	internal sealed class OdbFileStream : IOdbStream
 	{
-		private readonly object _lockObject = new object();
+		private readonly object _lockObject = new();
 		private bool _disposed;
 
 		private FileStream _fileAccess;

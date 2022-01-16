@@ -51,7 +51,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 
 		private readonly IObjectWriter _objectWriter;
 		private readonly IInternalTriggerManager _triggerManager;
-		private CurrentIdBlockInfo _currentIdBlockInfo = new CurrentIdBlockInfo();
+		private CurrentIdBlockInfo _currentIdBlockInfo = new();
 
 		private IDatabaseId _databaseId;
 		private IObjectIntrospector _objectIntrospector;

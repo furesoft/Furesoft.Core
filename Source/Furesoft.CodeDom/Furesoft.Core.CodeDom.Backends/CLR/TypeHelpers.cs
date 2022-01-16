@@ -385,7 +385,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR
         private sealed class ReferenceTypeBoxingVisitor : TypeVisitor
         {
             public static readonly ReferenceTypeBoxingVisitor Instance =
-                new ReferenceTypeBoxingVisitor();
+                new();
 
             private ReferenceTypeBoxingVisitor()
             { }

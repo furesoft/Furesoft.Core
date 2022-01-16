@@ -29,7 +29,7 @@ namespace DDPanBox
 
         bool dragging = false; //Tells us if our image has been clicked on.
 
-        Point start = new Point(); //Keep initial click for accurate panning.
+        Point start = new(); //Keep initial click for accurate panning.
 
         void panBox_MouseDown(object sender, MouseEventArgs e)
         {

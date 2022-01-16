@@ -70,7 +70,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
         /// opcode, source type is signed int) pair.
         /// </summary>
         private static Dictionary<OpCode, Tuple<OpCode, bool>> checkedConversions =
-            new Dictionary<OpCode, Tuple<OpCode, bool>>()
+            new()
         {
             { OpCodes.Conv_Ovf_I, Tuple.Create(OpCodes.Conv_I, true) },
             { OpCodes.Conv_Ovf_I_Un, Tuple.Create(OpCodes.Conv_I, false) },

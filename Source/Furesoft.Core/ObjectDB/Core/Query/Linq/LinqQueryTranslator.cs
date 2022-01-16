@@ -179,8 +179,8 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return (a, b) => a == b || mapper(a) == b;
 		}
 
-		private static readonly Dictionary<Type, Func<Type, Type>> funcMappers = new Dictionary<Type, Func<Type, Type>>
-																					 {
+		private static readonly Dictionary<Type, Func<Type, Type>> funcMappers = new()
+		{
 																						 {
 																							 typeof (LinqQueryExtensions),
 																							 MapQueryableToNDb

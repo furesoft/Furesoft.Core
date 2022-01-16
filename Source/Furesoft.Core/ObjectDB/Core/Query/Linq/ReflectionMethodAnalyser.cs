@@ -11,7 +11,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 	internal sealed class ReflectionMethodAnalyser
 	{
 		private static readonly Dictionary<MethodInfo, FieldInfo> fieldCache =
-			new Dictionary<MethodInfo, FieldInfo>();
+			new();
 
 		private static ILPattern BackingField()
 		{
@@ -20,7 +20,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 
 		private sealed class BackingFieldPattern : ILPattern
 		{
-			public static readonly object BackingFieldKey = new object();
+			public static readonly object BackingFieldKey = new();
 
 			private static readonly ILPattern pattern = Sequence(Optional(OpCodes.Nop),
 																 OpCode(OpCodes.Ldarg_0),

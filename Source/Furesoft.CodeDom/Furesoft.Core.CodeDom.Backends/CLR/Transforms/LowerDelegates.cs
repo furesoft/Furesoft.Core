@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
         /// <summary>
         /// An instance of the CIL delegate canonicalization transform.
         /// </summary>
-        public static readonly LowerDelegates Instance = new LowerDelegates();
+        public static readonly LowerDelegates Instance = new();
 
         private LowerDelegates()
         { }

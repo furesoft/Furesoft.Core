@@ -13,7 +13,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR
     public sealed class ClrModifierType : ContainerType
     {
         private static InterningCache<ClrModifierType> instanceCache
-            = new InterningCache<ClrModifierType>(
+            = new(
                 new StructuralModifierTypeComparer(),
                 InitializeInstance);
 

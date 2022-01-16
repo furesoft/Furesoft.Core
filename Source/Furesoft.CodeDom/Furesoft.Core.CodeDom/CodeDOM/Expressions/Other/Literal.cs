@@ -265,12 +265,12 @@ namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Other
 
         public static implicit operator Literal(int v)
         {
-            return new(v);
+            return new Literal(v);
         }
 
         public static implicit operator Literal(double v)
         {
-            return new(v);
+            return new Literal(v);
         }
 
         /// <summary>

@@ -11,9 +11,9 @@ namespace Furesoft.Core.CLI
 	/// </summary>
 	public class App
 	{
-		private Dictionary<string, ICliCommand> _commands = new Dictionary<string, ICliCommand>();
+		private Dictionary<string, ICliCommand> _commands = new();
 
-		public static App Current = new App();
+		public static App Current = new();
 
 		public void AddCommand(ICliCommand cmd)
 		{

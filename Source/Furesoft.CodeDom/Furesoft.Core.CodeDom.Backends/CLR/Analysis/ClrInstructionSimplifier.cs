@@ -13,7 +13,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
     public static class ClrInstructionSimplifier
     {
         private static Dictionary<OpCode, Rewriter> rewritePatterns =
-                    new Dictionary<OpCode, Rewriter>()
+                    new()
                 {
             // Conditional branches based on comparison instructions.
             { OpCodes.Beq, CreateConditionalBranchRewriter(OpCodes.Ceq, OpCodes.Brtrue) },

@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Transforms
         /// <summary>
         /// An instance of the delegate canonicalization transform.
         /// </summary>
-        public static readonly CanonicalizeDelegates Instance = new CanonicalizeDelegates();
+        public static readonly CanonicalizeDelegates Instance = new();
 
         private CanonicalizeDelegates()
         { }

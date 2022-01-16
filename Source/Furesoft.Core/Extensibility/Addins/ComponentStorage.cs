@@ -6,7 +6,7 @@
 	{
 		#region Fields
 
-		private readonly Dictionary<string, object> components = new Dictionary<string, object>();
+		private readonly Dictionary<string, object> components = new();
 
 		#endregion Fields
 

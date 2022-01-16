@@ -5,7 +5,7 @@ namespace Furesoft.Core.Commands
 	public class Command
 	{
 		public string Name { get; set; }
-		public List<object> Args { get; set; } = new List<object>();
+		public List<object> Args { get; set; } = new();
 
 		public T GetArg<T>(int index)
 		{

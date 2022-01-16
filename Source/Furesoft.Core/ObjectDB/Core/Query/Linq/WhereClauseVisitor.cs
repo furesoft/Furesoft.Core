@@ -9,7 +9,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 	internal sealed class WhereClauseVisitor : ExpressionQueryBuilder
 	{
 		private static readonly Dictionary<Expression, IQueryBuilderRecord> cache =
-			new Dictionary<Expression, IQueryBuilderRecord>();
+			new();
 
 		protected override Dictionary<Expression, IQueryBuilderRecord> GetCachingStrategy()
 		{

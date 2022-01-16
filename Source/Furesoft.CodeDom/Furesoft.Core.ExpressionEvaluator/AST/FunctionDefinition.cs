@@ -9,7 +9,7 @@ namespace Furesoft.Core.ExpressionEvaluator.AST
         public FunctionDefinition(string name)
         {
             Name = name;
-            _parameters = new();
+            _parameters = new ChildList<ParameterDecl>();
         }
 
         public bool HasParameters => ParameterCount > 0;

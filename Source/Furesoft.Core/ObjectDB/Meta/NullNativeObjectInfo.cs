@@ -8,7 +8,7 @@ namespace Furesoft.Core.ObjectDB.Meta
 	/// </summary>
 	internal sealed class NullNativeObjectInfo : NativeObjectInfo
 	{
-		private static readonly NullNativeObjectInfo instance = new NullNativeObjectInfo();
+		private static readonly NullNativeObjectInfo instance = new();
 
 		private NullNativeObjectInfo() : base(null, OdbType.Null)
 		{

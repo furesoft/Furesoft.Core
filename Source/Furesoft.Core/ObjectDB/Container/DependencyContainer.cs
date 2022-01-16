@@ -5,8 +5,8 @@ namespace Furesoft.Core.ObjectDB.Container
 {
 	internal static class DependencyContainer
 	{
-		private static readonly Dictionary<Type, Func<object>> factory = new Dictionary<Type, Func<object>>();
-		private static readonly Dictionary<Type, Func<object, object>> factoryWithArgument = new Dictionary<Type, Func<object, object>>();
+		private static readonly Dictionary<Type, Func<object>> factory = new();
+		private static readonly Dictionary<Type, Func<object, object>> factoryWithArgument = new();
 
 		internal static void Register<TInterface>(Func<object> factoryMethod)
 		{

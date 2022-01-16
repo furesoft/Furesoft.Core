@@ -4,7 +4,7 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers
 {
 	internal static class OdbRandom
 	{
-		private static readonly Random Random = new Random();
+		private static readonly Random Random = new();
 
 		internal static int GetRandomInteger()
 		{

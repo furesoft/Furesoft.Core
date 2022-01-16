@@ -77,7 +77,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
         { }
 
         public static readonly CilTryStartMarker Instance =
-            new CilTryStartMarker();
+            new();
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
         { }
 
         public static readonly CilHandlerEndMarker Instance =
-            new CilHandlerEndMarker();
+            new();
     }
 
     /// <summary>

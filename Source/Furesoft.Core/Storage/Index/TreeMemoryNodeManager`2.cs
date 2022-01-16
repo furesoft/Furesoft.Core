@@ -5,7 +5,7 @@ namespace Furesoft.Core.Storage.Index
 {
 	public class TreeMemoryNodeManager<K, V> : ITreeNodeManager<K, V>
 	{
-		private readonly Dictionary<uint, TreeNode<K, V>> _nodes = new Dictionary<uint, TreeNode<K, V>>();
+		private readonly Dictionary<uint, TreeNode<K, V>> _nodes = new();
 		private int _idCounter = 1;
 
 		public IComparer<Tuple<K, V>> EntryComparer { get; }
@@ -54,7 +54,7 @@ namespace Furesoft.Core.Storage.Index
 
 		public TreeNode<K, V> CreateNewRoot(K key, V value, uint leftNodeId, uint rightNodeId)
 		{
-			var newNode = Create(new Tuple<K, V>[] { new Tuple<K, V>(key, value) }
+			var newNode = Create(new Tuple<K, V>[] { new(key, value) }
 				, new uint[] { leftNodeId, rightNodeId }
 			);
 			RootNode = newNode;

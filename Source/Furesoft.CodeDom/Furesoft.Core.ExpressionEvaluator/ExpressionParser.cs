@@ -278,7 +278,7 @@ public class ExpressionParser
         var returnValues = new List<ValueType>();
         var errors = new List<Message>();
 
-        if (boundTree == null) return new();
+        if (boundTree == null) return new EvaluationResult();
 
         string moduleName = "";
         foreach (var node in boundTree)
@@ -303,7 +303,7 @@ public class ExpressionParser
             errors.AddRange(GetMessagesOfCall(funcs));
         }
 
-        return new() { Values = returnValues, Errors = errors, ModuleName = moduleName };
+        return new EvaluationResult { Values = returnValues, Errors = errors, ModuleName = moduleName };
     }
 
     private ValueType Evaluate(CodeObject obj)

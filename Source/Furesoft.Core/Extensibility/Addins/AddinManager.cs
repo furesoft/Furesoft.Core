@@ -6,7 +6,7 @@ namespace Furesoft.Core.Extensibility.Addins
 	{
 		#region Static Fields
 
-		public static AddinRegistry Registry = new AddinRegistry();
+		public static AddinRegistry Registry = new();
 
 		#endregion Static Fields
 

@@ -7,11 +7,11 @@ namespace Furesoft.Core.Extensibility.Addins
 	{
 		#region Fields
 
-		public List<byte[]> Dependencies = new List<byte[]>();
+		public List<byte[]> Dependencies = new();
 
 		public AppDomain Domain;
 
-		public List<ExtensionNode> ExtensionNodes = new List<ExtensionNode>();
+		public List<ExtensionNode> ExtensionNodes = new();
 
 		#endregion Fields
 

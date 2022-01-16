@@ -7,7 +7,7 @@ namespace Furesoft.Core.Platforming
 	public static class Injector
 	{
 		private static Dictionary<Type, Type> mappings
-			= new Dictionary<Type, Type>();
+			= new();
 
 		public static T Get<T>()
 		{

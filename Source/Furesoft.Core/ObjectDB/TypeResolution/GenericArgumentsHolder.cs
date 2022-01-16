@@ -16,7 +16,7 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 	/// </remarks>
 	internal sealed class GenericArgumentsHolder
 	{
-		private static readonly Regex clrPattern = new Regex(
+		private static readonly Regex clrPattern = new(
 			"^"
 			+ @"(?'name'\w[\w\d\.]+)"
 			+ @"`\d+\s*\["
@@ -27,7 +27,7 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			, RegexOptions.CultureInvariant | RegexOptions.Compiled
 			);
 
-		private static readonly Regex cSharpPattern = new Regex(
+		private static readonly Regex cSharpPattern = new(
 			"^"
 			+ @"(?'name'\w[\w\d\.]+)"
 			+ @"<"

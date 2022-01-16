@@ -6,7 +6,7 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers
 {
 	internal static class OdbString
 	{
-		private static readonly Dictionary<string, Regex> cache = new Dictionary<string, Regex>();
+		private static readonly Dictionary<string, Regex> cache = new();
 
 		internal static bool Matches(string regExp, string valueToCheck)
 		{

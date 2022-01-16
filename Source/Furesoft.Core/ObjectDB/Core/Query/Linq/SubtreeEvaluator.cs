@@ -43,7 +43,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 
 		private sealed class Nominator : ExpressionTransformer
 		{
-			private readonly HashSet<Expression> _candidates = new HashSet<Expression>();
+			private readonly HashSet<Expression> _candidates = new();
 			private readonly Func<Expression, bool> _predicate;
 			private bool _cannotBeEvaluated;
 

@@ -23,7 +23,7 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector
 	internal static class ClassIntrospector
 	{
 		private static readonly Dictionary<Type, IList<FieldInfo>> fields =
-			new Dictionary<Type, IList<FieldInfo>>();
+			new();
 
 		public static ClassInfoList Introspect(Type type, bool recursive)
 		{

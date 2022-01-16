@@ -7,7 +7,7 @@ namespace Furesoft.Core.ObjectDB.Meta
 	internal static class OdbClassNameResolver
 	{
 		private static readonly Dictionary<string, string> cacheByFullClassName =
-			new Dictionary<string, string>();
+			new();
 
 		public static string GetClassName(string fullClassName)
 		{

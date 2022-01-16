@@ -6,7 +6,7 @@ namespace Furesoft.Core.Factory
 {
 	public static class ObjectFactory
 	{
-		private static readonly Dictionary<Type, IObjectFactory> factories = new Dictionary<Type, IObjectFactory>();
+		private static readonly Dictionary<Type, IObjectFactory> factories = new();
 
 		public static T Create<T>(params object[] args)
 		{

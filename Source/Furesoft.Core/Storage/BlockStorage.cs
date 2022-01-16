@@ -7,7 +7,7 @@ namespace Furesoft.Core.Storage
 	public class BlockStorage : IBlockStorage
 	{
 		private readonly Stream stream;
-		private readonly Dictionary<uint, Block> blocks = new Dictionary<uint, Block>();
+		private readonly Dictionary<uint, Block> blocks = new();
 
 		public int DiskSectorSize { get; }
 

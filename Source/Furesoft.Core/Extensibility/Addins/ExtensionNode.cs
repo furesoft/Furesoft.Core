@@ -7,11 +7,11 @@ namespace Furesoft.Core.Extensibility.Addins
 	{
 		#region Fields
 
-		public Dictionary<string, object> Commands { get; set; } = new Dictionary<string, object>();
+		public Dictionary<string, object> Commands { get; set; } = new();
 
 		public string _path;
 
-		internal List<ExtensionCommand> _nodes = new List<ExtensionCommand>();
+		internal List<ExtensionCommand> _nodes = new();
 
 		#endregion Fields
 

@@ -6,9 +6,9 @@ namespace Furesoft.Core.Storage.Index
 	public sealed class TreeDiskNodeManager<K, V> : ITreeNodeManager<K, V>
 	{
 		private readonly IRecordStorage recordStorage;
-		private readonly Dictionary<uint, TreeNode<K, V>> _dirtyNodes = new Dictionary<uint, TreeNode<K, V>>();
-		private readonly Dictionary<uint, WeakReference<TreeNode<K, V>>> _nodeWeakRefs = new Dictionary<uint, WeakReference<TreeNode<K, V>>>();
-		private readonly Queue<TreeNode<K, V>> _nodeStrongRefs = new Queue<TreeNode<K, V>>();
+		private readonly Dictionary<uint, TreeNode<K, V>> _dirtyNodes = new();
+		private readonly Dictionary<uint, WeakReference<TreeNode<K, V>>> _nodeWeakRefs = new();
+		private readonly Queue<TreeNode<K, V>> _nodeStrongRefs = new();
 		private readonly int maxStrongNodeRefs = 200;
 		private readonly TreeDiskNodeSerializer<K, V> _serializer;
 		private readonly ushort _minEntriesPerNode = 36;
@@ -152,7 +152,7 @@ namespace Furesoft.Core.Storage.Index
 		{
 			// Create new node as normal
 			var node = Create(new Tuple<K, V>[] {
-				new Tuple<K, V> (key, value)
+				new(key, value)
 			}, new uint[] {
 				leftNodeId,
 				rightNodeId

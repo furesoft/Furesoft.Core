@@ -15,7 +15,7 @@ namespace TestApp
         private readonly Tree<Guid, uint> primaryIndex;
         private readonly Tree<Tuple<string, int>, uint> secondaryIndex;
         private readonly RecordStorage cowRecords;
-        private readonly CowSerializer cowSerializer = new CowSerializer();
+        private readonly CowSerializer cowSerializer = new();
 
         public IEnumerable<CowModel> FindAll()
         {

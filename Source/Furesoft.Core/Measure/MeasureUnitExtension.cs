@@ -11,7 +11,7 @@ namespace Furesoft.Core.Measure
         /// <param name="this">This Int32.</param>
         /// <param name="u">The unit of the measure of the quantity.</param>
         /// <returns>The quantity.</returns>
-        public static Quantity WithUnit( this int @this, MeasureUnit u ) => new Quantity( @this, u );
+        public static Quantity WithUnit( this int @this, MeasureUnit u ) => new( @this, u );
 
         /// <summary>
         /// Constructs a new <see cref="Quantity"/> from a double.
@@ -19,7 +19,7 @@ namespace Furesoft.Core.Measure
         /// <param name="this">This double.</param>
         /// <param name="u">The unit of the measure of the quantity.</param>
         /// <returns>The quantity.</returns>
-        public static Quantity WithUnit( this double @this, MeasureUnit u ) => new Quantity( @this, u );
+        public static Quantity WithUnit( this double @this, MeasureUnit u ) => new( @this, u );
 
     }
 }

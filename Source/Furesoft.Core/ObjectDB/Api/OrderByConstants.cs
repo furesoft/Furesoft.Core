@@ -14,17 +14,17 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <summary>
 		/// No order
 		/// </summary>
-		public static readonly OrderByConstants OrderByNone = new OrderByConstants(OrderByNoneType);
+		public static readonly OrderByConstants OrderByNone = new(OrderByNoneType);
 
 		/// <summary>
 		/// Descending order
 		/// </summary>
-		public static readonly OrderByConstants OrderByDesc = new OrderByConstants(OrderByDescType);
+		public static readonly OrderByConstants OrderByDesc = new(OrderByDescType);
 
 		/// <summary>
 		/// Ascending order
 		/// </summary>
-		public static readonly OrderByConstants OrderByAsc = new OrderByConstants(OrderByAscType);
+		public static readonly OrderByConstants OrderByAsc = new(OrderByAscType);
 
 		private readonly int _type;
 

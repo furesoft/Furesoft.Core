@@ -15,7 +15,7 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 		/// The cache, mapping type names (<see cref="string"/> instances) against
 		/// <see cref="System.Type"/> instances.
 		/// </summary>
-		private readonly Dictionary<string, Type> _typeCache = new Dictionary<string, Type>();
+		private readonly Dictionary<string, Type> _typeCache = new();
 
 		private readonly ITypeResolver _typeResolver;
 

@@ -166,7 +166,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR
     {
         // This cache interns all generic parameter standins.
         private static InterningCache<ClrGenericParameterStandin> instanceCache
-            = new InterningCache<ClrGenericParameterStandin>(
+            = new(
                 new ClrGenericParameterStandinComparer(),
                 InitializeInstance);
 

@@ -148,7 +148,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
         /// An instance of the CIL peephole optimizer.
         /// </summary>
         public static readonly CilPeepholeOptimizer Instance =
-            new CilPeepholeOptimizer();
+            new();
 
 
         /// <summary>

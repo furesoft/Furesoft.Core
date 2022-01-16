@@ -81,8 +81,8 @@ namespace Furesoft.Core
 	{
 		//this class have to be inherited becuase of the key which is shared with both encryption/decryption classes.
 
-		private SerialKeyConfiguration skc = new SerialKeyConfiguration();
-		private methods _a = new methods();
+		private SerialKeyConfiguration skc = new();
+		private methods _a = new();
 
 		public Validate()
 		{

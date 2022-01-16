@@ -12,7 +12,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 
 	internal sealed class NullQueryBuilderRecord : IQueryBuilderRecord
 	{
-		public static readonly NullQueryBuilderRecord Instance = new NullQueryBuilderRecord();
+		public static readonly NullQueryBuilderRecord Instance = new();
 
 		private NullQueryBuilderRecord()
 		{

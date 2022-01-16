@@ -5,8 +5,8 @@ namespace Furesoft.Core.Activation
 	public class Activator<ActivationStrategy>
 		where ActivationStrategy : IActivationStrategy, new()
 	{
-		public static Activator<ActivationStrategy> Instance = new Activator<ActivationStrategy>();
-		private readonly ActivationStrategy _strategy = new ActivationStrategy();
+		public static Activator<ActivationStrategy> Instance = new();
+		private readonly ActivationStrategy _strategy = new();
 
 		public object CreateInstance(Type type, object[] args)
 		{

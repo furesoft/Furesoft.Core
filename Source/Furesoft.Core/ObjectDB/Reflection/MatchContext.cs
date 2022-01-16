@@ -4,7 +4,7 @@ namespace Furesoft.Core.ObjectDB.Reflection
 {
 	internal sealed class MatchContext
 	{
-		private readonly Dictionary<object, object> _data = new Dictionary<object, object>();
+		private readonly Dictionary<object, object> _data = new();
 
 		internal MatchContext(Instruction instruction)
 		{

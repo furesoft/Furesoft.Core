@@ -7,7 +7,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 	internal sealed class OrderByAscendingClauseVisitor : OrderByClauseVisitorBase
 	{
 		private static readonly Dictionary<Expression, IQueryBuilderRecord> cache =
-			new Dictionary<Expression, IQueryBuilderRecord>();
+			new();
 
 		protected override Dictionary<Expression, IQueryBuilderRecord> GetCachingStrategy()
 		{

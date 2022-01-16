@@ -60,7 +60,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
                 accessor.ParentProperty.IndexerParameters
                 .Concat<Parameter>(new Parameter[]
                 {
-                    new Parameter(accessor.ParentProperty.PropertyType, "value")
+                    new(accessor.ParentProperty.PropertyType, "value")
                 }));
         }
     }

@@ -8,7 +8,7 @@
 		#region Static Fields
 
 		private static readonly Dictionary<string, IServiceProvider> providers =
-			new Dictionary<string, IServiceProvider>();
+			new();
 
 		#endregion Static Fields
 

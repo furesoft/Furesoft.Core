@@ -28,7 +28,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 		private IObjectReader _objectReader;
 		private IObjectWriter _objectWriter;
 
-		private readonly object _syncRoot = new object();
+		private readonly object _syncRoot = new();
 
 		/// <param name="objectWriter"> The object writer </param>
 		/// <param name="objectReader"> The object reader </param>

@@ -10,7 +10,7 @@ namespace Furesoft.Core.ObjectDB.Api.Triggers
 {
 	internal sealed class EnrichWithOidTrigger : SelectTrigger
 	{
-		private static readonly Dictionary<Type, FieldInfo> oidFields = new Dictionary<Type, FieldInfo>();
+		private static readonly Dictionary<Type, FieldInfo> oidFields = new();
 
 		private readonly IReflectionService _reflectionService;
 

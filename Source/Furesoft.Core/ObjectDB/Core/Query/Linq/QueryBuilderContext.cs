@@ -6,8 +6,8 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 {
 	internal sealed class QueryBuilderContext
 	{
-		private readonly Stack<IConstraint> _constraints = new Stack<IConstraint>();
-		private readonly Stack<IQuery> _descendStack = new Stack<IQuery>();
+		private readonly Stack<IConstraint> _constraints = new();
+		private readonly Stack<IQuery> _descendStack = new();
 		private readonly IQuery _root;
 
 		private Type _descendigFieldEnum;
