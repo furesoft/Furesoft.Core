@@ -256,7 +256,7 @@ public class Scope
         {
             SetDefinitions.Add(setDefinition.Key, setDefinition.Value);
         }
-        foreach(var op in scope.OperatorOverloads)
+        foreach (var op in scope.OperatorOverloads)
         {
             OperatorOverloads.Add(op.Key, op.Value);
         }
