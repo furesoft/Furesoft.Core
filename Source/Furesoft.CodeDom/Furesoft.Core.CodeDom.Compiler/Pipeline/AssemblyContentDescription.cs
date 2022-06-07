@@ -1,5 +1,6 @@
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Furesoft.Core.CodeDom.Compiler.Pipeline
 {
@@ -12,12 +13,14 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
             QualifiedName fullName,
             AttributeMap attributes,
             IAssembly assembly,
-            IMethod entryPoint)
+            IMethod entryPoint,
+            TypeEnvironment environment)
         {
             this.FullName = fullName;
             this.Attributes = attributes;
             this.Assembly = assembly;
             this.EntryPoint = entryPoint;
+            Environment = environment;
         }
 
         public IAssembly Assembly { get; }
@@ -35,6 +38,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
         /// <returns>The assembly's entry point.</returns>
         public IMethod EntryPoint { get; private set; }
 
+        public TypeEnvironment Environment { get; }
         public QualifiedName FullName { get; private set; }
     }
 }

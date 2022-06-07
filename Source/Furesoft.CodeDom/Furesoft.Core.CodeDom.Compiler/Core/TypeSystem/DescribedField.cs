@@ -33,6 +33,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <returns>The type of value stored in this field.</returns>
         public IType FieldType { get; set; }
 
+        public object InitialValue { get; set; }
+
         /// <summary>
         /// Gets or sets a Boolean value that tells if this field is static.
         /// </summary>
