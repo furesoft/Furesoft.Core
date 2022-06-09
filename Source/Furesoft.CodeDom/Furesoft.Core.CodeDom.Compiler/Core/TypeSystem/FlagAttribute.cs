@@ -44,6 +44,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             new("Static");
 
         /// <summary>
+        /// An attribute that identifies a method as overridden.
+        /// </summary>
+        public static readonly IntrinsicAttribute Override =
+            new("Override");
+
+        /// <summary>
         /// An attribute that identifies a type as special, i.e., it is
         /// a "regular" type that contains more information than its fields
         /// alone.

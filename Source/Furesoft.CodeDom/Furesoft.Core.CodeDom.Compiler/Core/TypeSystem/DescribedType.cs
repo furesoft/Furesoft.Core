@@ -47,38 +47,43 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         #region Helpers
         public bool IsReferenceType
         {
-            get { return Attributes.Contains(FlagAttribute.ReferenceType.AttributeType); }
-            set { if (value) AddAttribute(FlagAttribute.ReferenceType); else RemoveAttributes(FlagAttribute.ReferenceType); }
+            get { return Owns(FlagAttribute.ReferenceType); }
+            set { SetAttr(value, FlagAttribute.ReferenceType); }
         }
         public bool IsInterfaceType
         {
-            get { return Attributes.Contains(FlagAttribute.InterfaceType.AttributeType); }
-            set { if (value) AddAttribute(FlagAttribute.InterfaceType); else RemoveAttributes(FlagAttribute.InterfaceType); }
+            get { return Owns(FlagAttribute.InterfaceType); }
+            set { SetAttr(value, FlagAttribute.InterfaceType); }
         }
         public bool IsSpecialType
         {
-            get { return Attributes.Contains(FlagAttribute.SpecialType.AttributeType); }
-            set { if (value) AddAttribute(FlagAttribute.SpecialType); else RemoveAttributes(FlagAttribute.SpecialType); }
+            get { return Owns(FlagAttribute.SpecialType); }
+            set { SetAttr(value, FlagAttribute.SpecialType); }
         }
         public bool IsInternalCall
         {
-            get { return Attributes.Contains(FlagAttribute.InternalCall.AttributeType); }
-            set { if (value) AddAttribute(FlagAttribute.InternalCall); else RemoveAttributes(FlagAttribute.InternalCall); }
+            get { return Owns(FlagAttribute.InternalCall); }
+            set { SetAttr(value, FlagAttribute.InternalCall); }
         }
         public bool IsAbstract
         {
-            get { return Attributes.Contains(FlagAttribute.Abstract.AttributeType); }
-            set { if (value) AddAttribute(FlagAttribute.Abstract); else RemoveAttributes(FlagAttribute.Abstract); }
+            get { return Owns(FlagAttribute.Abstract); }
+            set { SetAttr(value, FlagAttribute.Abstract); }
         }
         public bool IsStatic
         {
-            get { return Attributes.Contains(FlagAttribute.Static.AttributeType); }
-            set { if (value) AddAttribute(FlagAttribute.Static); else RemoveAttributes(FlagAttribute.Static); }
+            get { return Owns(FlagAttribute.Static); }
+            set { SetAttr(value, FlagAttribute.Static); }
+        }
+        public bool IsOverride
+        {
+            get { return Owns(FlagAttribute.Override); }
+            set { SetAttr(value, FlagAttribute.Override); }
         }
         public bool IsVirtual
         {
-            get { return Attributes.Contains(FlagAttribute.Virtual.AttributeType); }
-            set { if (value) AddAttribute(FlagAttribute.Virtual); else RemoveAttributes(FlagAttribute.Virtual); }
+            get { return Owns(FlagAttribute.Virtual); }
+            set { SetAttr(value, FlagAttribute.Virtual); }
         }
         public bool IsPublic
         {
@@ -184,6 +189,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             ContractHelpers.Assert(
                 object.Equals(this, member.ParentType),
                 "A member can only be added to its defining type.");
+        }
+
+        public bool Owns(IAttribute attribute) => Attributes.Contains(attribute.AttributeType);
+
+        public void SetAttr(bool value, IAttribute attribute) {
+            if (value) AddAttribute(attribute);
+            else RemoveAttributes(attribute);
         }
 
         public AccessModifier GetAccessModifier() => AccessModifierAttribute.GetAccessModifier(this);
