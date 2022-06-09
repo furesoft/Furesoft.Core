@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
@@ -48,7 +44,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// Indicates that a member is accessible only to members defined
         /// in the declaring type.
         /// </summary>
-        Private
+        Private,
+
+        Static,
     }
 
     /// <summary>
@@ -56,6 +54,15 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     /// </summary>
     public static class AccessModifierAttribute
     {
+        /// <summary>
+        /// The attribute name for access modifier attributes.
+        /// </summary>
+        public const string AttributeName = "AccessModifier";
+
+        private static Dictionary<string, AccessModifier> invModifierNames;
+
+        private static Dictionary<AccessModifier, string> modifierNames;
+
         static AccessModifierAttribute()
         {
             modifierNames = new Dictionary<AccessModifier, string>()
@@ -66,32 +73,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
                 { AccessModifier.ProtectedAndInternal, "protected-and-internal" },
                 { AccessModifier.ProtectedOrInternal, "protected-or-internal" },
                 { AccessModifier.Public, "public" },
+                { AccessModifier.Static, "static" },
             };
             invModifierNames = new Dictionary<string, AccessModifier>();
             foreach (var pair in modifierNames)
             {
                 invModifierNames[pair.Value] = pair.Key;
             }
-        }
-
-        private static Dictionary<AccessModifier, string> modifierNames;
-        private static Dictionary<string, AccessModifier> invModifierNames;
-
-        /// <summary>
-        /// The attribute name for access modifier attributes.
-        /// </summary>
-        public const string AttributeName = "AccessModifier";
-
-        /// <summary>
-        /// Reads out an access modifier attribute as an access modifier.
-        /// </summary>
-        /// <param name="attribute">The access modifier attribute to read.</param>
-        /// <returns>The access modifier described by the attribute.</returns>
-        public static AccessModifier Read(IntrinsicAttribute attribute)
-        {
-            ContractHelpers.Assert(attribute.Name == AttributeName);
-            ContractHelpers.Assert(attribute.Arguments.Count == 1);
-            return invModifierNames[((StringConstant)attribute.Arguments[0]).Value];
         }
 
         /// <summary>
@@ -123,6 +111,18 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             {
                 return Read((IntrinsicAttribute)attr);
             }
+        }
+
+        /// <summary>
+        /// Reads out an access modifier attribute as an access modifier.
+        /// </summary>
+        /// <param name="attribute">The access modifier attribute to read.</param>
+        /// <returns>The access modifier described by the attribute.</returns>
+        public static AccessModifier Read(IntrinsicAttribute attribute)
+        {
+            ContractHelpers.Assert(attribute.Name == AttributeName);
+            ContractHelpers.Assert(attribute.Arguments.Count == 1);
+            return invModifierNames[((StringConstant)attribute.Arguments[0]).Value];
         }
     }
 
@@ -251,17 +251,17 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         }
 
         /// <summary>
-        /// Gets the subtyping rules to rely on for resolving protected members.
-        /// </summary>
-        /// <value>Subtyping rules.</value>
-        public SubtypingRules Subtyping { get; private set; }
-
-        /// <summary>
         /// Tells if a member is exported to a type, circumventing standard access
         /// rules.
         /// </summary>
         /// <value>A predicate that determines if a member is exported.</value>
         public Func<IMember, IType, bool> IsExportedTo { get; private set; }
+
+        /// <summary>
+        /// Gets the subtyping rules to rely on for resolving protected members.
+        /// </summary>
+        /// <value>Subtyping rules.</value>
+        public SubtypingRules Subtyping { get; private set; }
 
         /// <inheritdoc/>
         public override bool CanAccess(IType accessor, ITypeMember accessed)

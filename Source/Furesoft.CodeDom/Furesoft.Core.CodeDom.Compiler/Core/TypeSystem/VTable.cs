@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
@@ -10,6 +7,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     /// </summary>
     internal sealed class VTable
     {
+        // This cache interns all VTables.
+        private static ConditionalWeakTable<IType, VTable> instanceCache
+            = new();
+
+        private Dictionary<IMethod, IMethod> implementations;
+
         private VTable(IType type)
         {
             var impls = new Dictionary<IMethod, IMethod>();
@@ -31,7 +34,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             this.implementations = impls;
         }
 
-        private Dictionary<IMethod, IMethod> implementations;
+        public static VTable Get(IType type)
+        {
+            return instanceCache.GetValue(type, t => new VTable(t));
+        }
 
         public IMethod GetImplementation(IMethod method)
         {
@@ -43,15 +49,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             {
                 return method;
             }
-        }
-
-        // This cache interns all VTables.
-        private static ConditionalWeakTable<IType, VTable> instanceCache
-            = new();
-
-        public static VTable Get(IType type)
-        {
-            return instanceCache.GetValue(type, t => new VTable(t));
         }
     }
 }
