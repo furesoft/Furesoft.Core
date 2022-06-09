@@ -51,7 +51,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 
         private static ConcurrentDictionary<string, IType> attrTypes = new();
 
-        private static IType SynthesizeAttributeType(string name)
+        public static IType SynthesizeAttributeType(string name)
         {
             return new DescribedType(new SimpleName(name).Qualify(), null);
         }

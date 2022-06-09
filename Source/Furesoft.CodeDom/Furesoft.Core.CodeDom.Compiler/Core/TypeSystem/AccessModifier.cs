@@ -57,6 +57,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         public const string AttributeName = "AccessModifier";
 
+        public static readonly IType AttributeType = IntrinsicAttribute.SynthesizeAttributeType(AttributeName);
+
         private static Dictionary<string, AccessModifier> invModifierNames;
 
         private static Dictionary<AccessModifier, string> modifierNames;

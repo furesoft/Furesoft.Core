@@ -48,52 +48,52 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public bool IsReferenceType
         {
             get { return Attributes.Contains(FlagAttribute.ReferenceType.AttributeType); }
-            set { AddAttribute(FlagAttribute.ReferenceType); }
+            set { if (value) AddAttribute(FlagAttribute.ReferenceType); else RemoveAttributes(FlagAttribute.ReferenceType); }
         }
         public bool IsInterfaceType
         {
             get { return Attributes.Contains(FlagAttribute.InterfaceType.AttributeType); }
-            set { AddAttribute(FlagAttribute.InterfaceType); }
+            set { if (value) AddAttribute(FlagAttribute.InterfaceType); else RemoveAttributes(FlagAttribute.InterfaceType); }
         }
         public bool IsSpecialType
         {
             get { return Attributes.Contains(FlagAttribute.SpecialType.AttributeType); }
-            set { AddAttribute(FlagAttribute.SpecialType); }
+            set { if (value) AddAttribute(FlagAttribute.SpecialType); else RemoveAttributes(FlagAttribute.SpecialType); }
         }
         public bool IsInternalCall
         {
             get { return Attributes.Contains(FlagAttribute.InternalCall.AttributeType); }
-            set { AddAttribute(FlagAttribute.InternalCall); }
+            set { if (value) AddAttribute(FlagAttribute.InternalCall); else RemoveAttributes(FlagAttribute.InternalCall); }
         }
         public bool IsAbstract
         {
             get { return Attributes.Contains(FlagAttribute.Abstract.AttributeType); }
-            set { AddAttribute(FlagAttribute.Abstract); }
+            set { if (value) AddAttribute(FlagAttribute.Abstract); else RemoveAttributes(FlagAttribute.Abstract); }
         }
         public bool IsStatic
         {
             get { return Attributes.Contains(FlagAttribute.Static.AttributeType); }
-            set { AddAttribute(FlagAttribute.Static); }
+            set { if (value) AddAttribute(FlagAttribute.Static); else RemoveAttributes(FlagAttribute.Static); }
         }
         public bool IsVirtual
         {
             get { return Attributes.Contains(FlagAttribute.Virtual.AttributeType); }
-            set { AddAttribute(FlagAttribute.Virtual); }
+            set { if (value) AddAttribute(FlagAttribute.Virtual); else RemoveAttributes(FlagAttribute.Virtual); }
         }
         public bool IsPublic
         {
             get { return GetAccessModifier().HasFlag(AccessModifier.Public); }
-            set { AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public)); }
+            set { if (value) { RemoveAccessModifier(); AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public)); } else { RemoveAccessModifier(); } }
         }
         public bool IsProtected
         {
             get { return GetAccessModifier().HasFlag(AccessModifier.Protected); }
-            set { AddAttribute(AccessModifierAttribute.Create(AccessModifier.Protected)); }
+            set { if (value) { RemoveAccessModifier(); AddAttribute(AccessModifierAttribute.Create(AccessModifier.Protected)); } else { RemoveAccessModifier(); } }
         }
         public bool IsPrivate
         {
             get { return GetAccessModifier().HasFlag(AccessModifier.Private); }
-            set { AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private)); }
+            set { if (value) { RemoveAccessModifier(); AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private)); } else { RemoveAccessModifier(); } }
         }
         #endregion
 
@@ -187,5 +187,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         }
 
         public AccessModifier GetAccessModifier() => AccessModifierAttribute.GetAccessModifier(this);
+
+        public void RemoveAccessModifier() => RemoveAttributesFromType(AccessModifierAttribute.AttributeType);
     }
 }
