@@ -45,8 +45,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// in the declaring type.
         /// </summary>
         Private,
-
-        Static,
     }
 
     /// <summary>
@@ -73,7 +71,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
                 { AccessModifier.ProtectedAndInternal, "protected-and-internal" },
                 { AccessModifier.ProtectedOrInternal, "protected-or-internal" },
                 { AccessModifier.Public, "public" },
-                { AccessModifier.Static, "static" },
             };
             invModifierNames = new Dictionary<string, AccessModifier>();
             foreach (var pair in modifierNames)

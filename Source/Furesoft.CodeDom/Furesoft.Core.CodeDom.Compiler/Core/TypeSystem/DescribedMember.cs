@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
@@ -8,6 +7,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     /// </summary>
     public class DescribedMember : IMember
     {
+        private AttributeMapBuilder attributeBuilder;
+
         /// <summary>
         /// Creates a described member from a fully qualified name.
         /// </summary>
@@ -20,16 +21,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             this.attributeBuilder = new AttributeMapBuilder();
         }
 
-        private AttributeMapBuilder attributeBuilder;
+        /// <inheritdoc/>
+        public AttributeMap Attributes => new(attributeBuilder);
 
         /// <inheritdoc/>
         public QualifiedName FullName { get; private set; }
 
-        /// <inheritdoc/>
-        public UnqualifiedName Name => FullName.FullyUnqualifiedName;
+        public bool IsStatic { get; set; }
 
         /// <inheritdoc/>
-        public AttributeMap Attributes => new(attributeBuilder);
+        public UnqualifiedName Name => FullName.FullyUnqualifiedName;
 
         /// <summary>
         /// Adds an attribute to this member's attribute map.
