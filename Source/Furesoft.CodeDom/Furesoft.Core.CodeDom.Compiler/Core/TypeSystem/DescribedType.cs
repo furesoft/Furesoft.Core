@@ -44,6 +44,59 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             nestedTypeList = new List<IType>();
         }
 
+        #region Helpers
+        public bool IsReferenceType
+        {
+            get { return Attributes.Contains(FlagAttribute.ReferenceType.AttributeType); }
+            set { AddAttribute(FlagAttribute.ReferenceType); }
+        }
+        public bool IsInterfaceType
+        {
+            get { return Attributes.Contains(FlagAttribute.InterfaceType.AttributeType); }
+            set { AddAttribute(FlagAttribute.InterfaceType); }
+        }
+        public bool IsSpecialType
+        {
+            get { return Attributes.Contains(FlagAttribute.SpecialType.AttributeType); }
+            set { AddAttribute(FlagAttribute.SpecialType); }
+        }
+        public bool IsInternalCall
+        {
+            get { return Attributes.Contains(FlagAttribute.InternalCall.AttributeType); }
+            set { AddAttribute(FlagAttribute.InternalCall); }
+        }
+        public bool IsAbstract
+        {
+            get { return Attributes.Contains(FlagAttribute.Abstract.AttributeType); }
+            set { AddAttribute(FlagAttribute.Abstract); }
+        }
+        public bool IsStatic
+        {
+            get { return Attributes.Contains(FlagAttribute.Static.AttributeType); }
+            set { AddAttribute(FlagAttribute.Static); }
+        }
+        public bool IsVirtual
+        {
+            get { return Attributes.Contains(FlagAttribute.Virtual.AttributeType); }
+            set { AddAttribute(FlagAttribute.Virtual); }
+        }
+        public bool IsPublic
+        {
+            get { return GetAccessModifier().HasFlag(AccessModifier.Public); }
+            set { AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public)); }
+        }
+        public bool IsProtected
+        {
+            get { return GetAccessModifier().HasFlag(AccessModifier.Protected); }
+            set { AddAttribute(AccessModifierAttribute.Create(AccessModifier.Protected)); }
+        }
+        public bool IsPrivate
+        {
+            get { return GetAccessModifier().HasFlag(AccessModifier.Private); }
+            set { AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private)); }
+        }
+        #endregion
+
         /// <inheritdoc/>
         public TypeParent Parent { get; private set; }
 
@@ -132,5 +185,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
                 object.Equals(this, member.ParentType),
                 "A member can only be added to its defining type.");
         }
+
+        public AccessModifier GetAccessModifier() => AccessModifierAttribute.GetAccessModifier(this);
     }
 }

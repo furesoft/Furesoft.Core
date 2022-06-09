@@ -37,6 +37,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             new("Virtual");
 
         /// <summary>
+        /// An attribute that identifies a type or method as static.
+        /// </summary>
+        /// <returns>An intrinsic attribute.</returns>
+        public static readonly IntrinsicAttribute Static =
+            new("Static");
+
+        /// <summary>
         /// An attribute that identifies a type as special, i.e., it is
         /// a "regular" type that contains more information than its fields
         /// alone.
@@ -53,6 +60,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute InternalCall =
             new("InternalCall");
+
 
         /// <summary>
         /// Tests if a particular type is definitely a reference type.
