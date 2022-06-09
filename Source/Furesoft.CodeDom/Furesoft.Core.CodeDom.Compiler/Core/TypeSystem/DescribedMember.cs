@@ -39,6 +39,22 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             attributeBuilder.Add(attribute);
         }
 
+        /// <summary>
+        /// Removes an attribute from this member's attribute map.
+        /// </summary>
+        public void RemoveAttributes(IAttribute attribute)
+        {
+            RemoveAttributesFromType(attribute.AttributeType);
+        }
+
+        /// <summary>
+        /// Removes all attributes with the given type from this member's attribute map.
+        /// </summary>
+        public void RemoveAttributesFromType(IType attributeType)
+        {
+            attributeBuilder.RemoveAll(attributeType);
+        }
+
         /// <inheritdoc/>
         public override string ToString()
         {
