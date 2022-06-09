@@ -27,8 +27,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <inheritdoc/>
         public QualifiedName FullName { get; private set; }
 
-        public bool IsStatic { get; set; }
-
         /// <inheritdoc/>
         public UnqualifiedName Name => FullName.FullyUnqualifiedName;
 
