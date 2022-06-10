@@ -1,24 +1,117 @@
+using Furesoft.Core.CodeDom.Compiler;
 using System;
 using System.Collections.Generic;
-using OpCode = Mono.Cecil.Cil.OpCode;
 using CilInstruction = Mono.Cecil.Cil.Instruction;
-using Furesoft.Core.CodeDom.Compiler;
+using OpCode = Mono.Cecil.Cil.OpCode;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
 {
     /// <summary>
+    /// An instruction that computes the address of a virtual register.
+    /// </summary>
+    public sealed class CilAddressOfRegisterInstruction : CilCodegenInstruction
+    {
+        /// <summary>
+        /// Creates an instruction that computes the address of a virtual register.
+        /// </summary>
+        /// <param name="value">The virtual register.</param>
+        public CilAddressOfRegisterInstruction(ValueTag value)
+        {
+            this.Value = value;
+        }
+
+        /// <summary>
+        /// Gets the virtual register manipulated by this instruction.
+        /// </summary>
+        /// <value>A value tag.</value>
+        public ValueTag Value { get; private set; }
+    }
+
+    /// <summary>
     /// An instruction type for CIL instruction selection.
     /// </summary>
-    internal abstract class CilCodegenInstruction
+    public abstract class CilCodegenInstruction
     {
-        internal CilCodegenInstruction()
+        public CilCodegenInstruction()
         { }
+    }
+
+    /// <summary>
+    /// A codegen instruction that marks the end of an exception handler.
+    /// </summary>
+    public sealed class CilHandlerEndMarker : CilCodegenInstruction
+    {
+        public static readonly CilHandlerEndMarker Instance =
+            new();
+
+        private CilHandlerEndMarker()
+        { }
+    }
+
+    /// <summary>
+    /// A codegen instruction that marks the point at which a try block
+    /// transitions to its handler.
+    /// </summary>
+    public sealed class CilHandlerStartMarker : CilCodegenInstruction
+    {
+        public CilHandlerStartMarker(Mono.Cecil.Cil.ExceptionHandler handler)
+        {
+            this.Handler = handler;
+        }
+
+        /// <summary>
+        /// Gets the exception handler.
+        /// </summary>
+        /// <value>An exception handler.</value>
+        public Mono.Cecil.Cil.ExceptionHandler Handler { get; private set; }
+    }
+
+    /// <summary>
+    /// An instruction that reads from a virtual register.
+    /// </summary>
+    public sealed class CilLoadRegisterInstruction : CilCodegenInstruction
+    {
+        /// <summary>
+        /// Creates an instruction that reads from a virtual register.
+        /// </summary>
+        /// <param name="value">The value to load.</param>
+        public CilLoadRegisterInstruction(ValueTag value)
+        {
+            this.Value = value;
+        }
+
+        /// <summary>
+        /// Gets the value loaded by this instruction.
+        /// </summary>
+        /// <value>A value tag.</value>
+        public ValueTag Value { get; private set; }
+    }
+
+    /// <summary>
+    /// An instruction that marks an instruction as a branch target.
+    /// </summary>
+    public sealed class CilMarkTargetInstruction : CilCodegenInstruction
+    {
+        /// <summary>
+        /// Creates an instruction that marks a branch target.
+        /// </summary>
+        /// <param name="target">The branch target to mark.</param>
+        public CilMarkTargetInstruction(BasicBlockTag target)
+        {
+            this.Target = target;
+        }
+
+        /// <summary>
+        /// Gets the tag marked by this instruction.
+        /// </summary>
+        /// <value>A basic block tag.</value>
+        public BasicBlockTag Target { get; private set; }
     }
 
     /// <summary>
     /// An actual CIL instruction that is emitted as-is.
     /// </summary>
-    internal sealed class CilOpInstruction : CilCodegenInstruction
+    public sealed class CilOpInstruction : CilCodegenInstruction
     {
         /// <summary>
         /// Creates a CIL instruction that is emitted as-is.
@@ -69,93 +162,9 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
     }
 
     /// <summary>
-    /// A codegen instruction that marks the start of a try block.
-    /// </summary>
-    internal sealed class CilTryStartMarker : CilCodegenInstruction
-    {
-        private CilTryStartMarker()
-        { }
-
-        public static readonly CilTryStartMarker Instance =
-            new();
-    }
-
-    /// <summary>
-    /// A codegen instruction that marks the point at which a try block
-    /// transitions to its handler.
-    /// </summary>
-    internal sealed class CilHandlerStartMarker : CilCodegenInstruction
-    {
-        public CilHandlerStartMarker(Mono.Cecil.Cil.ExceptionHandler handler)
-        {
-            this.Handler = handler;
-        }
-
-        /// <summary>
-        /// Gets the exception handler.
-        /// </summary>
-        /// <value>An exception handler.</value>
-        public Mono.Cecil.Cil.ExceptionHandler Handler { get; private set; }
-    }
-
-    /// <summary>
-    /// A codegen instruction that marks the end of an exception handler.
-    /// </summary>
-    internal sealed class CilHandlerEndMarker : CilCodegenInstruction
-    {
-        private CilHandlerEndMarker()
-        { }
-
-        public static readonly CilHandlerEndMarker Instance =
-            new();
-    }
-
-    /// <summary>
-    /// An instruction that marks an instruction as a branch target.
-    /// </summary>
-    internal sealed class CilMarkTargetInstruction : CilCodegenInstruction
-    {
-        /// <summary>
-        /// Creates an instruction that marks a branch target.
-        /// </summary>
-        /// <param name="target">The branch target to mark.</param>
-        public CilMarkTargetInstruction(BasicBlockTag target)
-        {
-            this.Target = target;
-        }
-
-        /// <summary>
-        /// Gets the tag marked by this instruction.
-        /// </summary>
-        /// <value>A basic block tag.</value>
-        public BasicBlockTag Target { get; private set; }
-    }
-
-    /// <summary>
-    /// An instruction that reads from a virtual register.
-    /// </summary>
-    internal sealed class CilLoadRegisterInstruction : CilCodegenInstruction
-    {
-        /// <summary>
-        /// Creates an instruction that reads from a virtual register.
-        /// </summary>
-        /// <param name="value">The value to load.</param>
-        public CilLoadRegisterInstruction(ValueTag value)
-        {
-            this.Value = value;
-        }
-
-        /// <summary>
-        /// Gets the value loaded by this instruction.
-        /// </summary>
-        /// <value>A value tag.</value>
-        public ValueTag Value { get; private set; }
-    }
-
-    /// <summary>
     /// An instruction that writes to a virtual register.
     /// </summary>
-    internal sealed class CilStoreRegisterInstruction : CilCodegenInstruction
+    public sealed class CilStoreRegisterInstruction : CilCodegenInstruction
     {
         /// <summary>
         /// Creates an instruction that writes to a virtual register.
@@ -174,23 +183,14 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
     }
 
     /// <summary>
-    /// An instruction that computes the address of a virtual register.
+    /// A codegen instruction that marks the start of a try block.
     /// </summary>
-    internal sealed class CilAddressOfRegisterInstruction : CilCodegenInstruction
+    public sealed class CilTryStartMarker : CilCodegenInstruction
     {
-        /// <summary>
-        /// Creates an instruction that computes the address of a virtual register.
-        /// </summary>
-        /// <param name="value">The virtual register.</param>
-        public CilAddressOfRegisterInstruction(ValueTag value)
-        {
-            this.Value = value;
-        }
+        public static readonly CilTryStartMarker Instance =
+            new();
 
-        /// <summary>
-        /// Gets the virtual register manipulated by this instruction.
-        /// </summary>
-        /// <value>A value tag.</value>
-        public ValueTag Value { get; private set; }
+        private CilTryStartMarker()
+        { }
     }
 }
