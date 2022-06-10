@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core
 {
@@ -39,6 +36,24 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         { }
 
         /// <summary>
+        /// Creates a parameter from a type and a name.
+        /// </summary>
+        /// <param name="type">The parameter's type.</param>
+        /// <param name="name">The parameter's name.</param>
+        public Parameter(IType type, string name, object DefaultValue)
+            : this(type, new SimpleName(name), DefaultValue)
+        { }
+
+        /// <summary>
+        /// Creates a parameter from a type and a name.
+        /// </summary>
+        /// <param name="type">The parameter's type.</param>
+        /// <param name="name">The parameter's name.</param>
+        public Parameter(IType type, UnqualifiedName name, object DefaultValue)
+            : this(type, name, AttributeMap.Empty, DefaultValue)
+        { }
+
+        /// <summary>
         /// Creates a parameter from a type, a name
         /// and an attribute map.
         /// </summary>
@@ -70,6 +85,32 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             this.Attributes = attributes;
         }
 
+        public Parameter(
+            IType type,
+            string name,
+            AttributeMap attributes,
+            object DefaultValue)
+            : this(type, new SimpleName(name), attributes, DefaultValue)
+        { }
+
+        /// <summary>
+        /// Creates a parameter from a type, a name
+        /// and an attribute map.
+        /// </summary>
+        /// <param name="type">The parameter's type.</param>
+        /// <param name="name">The parameter's name.</param>
+        /// <param name="attributes">The parameter's attributes.</param>
+        public Parameter(
+            IType type,
+            UnqualifiedName name,
+            AttributeMap attributes,
+            object DefaultValue)
+            : this(type, name, attributes)
+        {
+            this.DefaultValue = DefaultValue;
+            this.HasDefault = true;
+        }
+
         /// <summary>
         /// Gets this parameter's type.
         /// </summary>
@@ -87,6 +128,23 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// </summary>
         /// <returns>The attributes for this parameter.</returns>
         public AttributeMap Attributes { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the default value of the parameter.
+        /// </summary>
+        public object DefaultValue { get; set; }
+
+        /// <summary>
+        /// Checks if this parameter has set a default value
+        /// Can also set hasDefault
+        /// </summary>
+        public bool HasDefault { get; set; }
+
+        public void RemoveDefault()
+        {
+            HasDefault = false;
+            DefaultValue = null;
+        }
 
         /// <summary>
         /// Gets this parameter's full name, which is just a qualified
