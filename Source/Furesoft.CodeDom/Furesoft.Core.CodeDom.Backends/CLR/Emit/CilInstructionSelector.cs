@@ -23,7 +23,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
     /// <summary>
     /// An instruction selector for CIL codegen instructions.
     /// </summary>
-    internal sealed class CilInstructionSelector :
+    public sealed class CilInstructionSelector :
         ILinearInstructionSelector<CilCodegenInstruction>,
         IStackInstructionSelector<CilCodegenInstruction>
     {
