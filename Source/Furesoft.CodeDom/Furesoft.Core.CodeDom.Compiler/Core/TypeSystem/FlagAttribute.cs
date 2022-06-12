@@ -50,6 +50,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             new("Override");
 
         /// <summary>
+        /// An attribute that identifies a method as extern.
+        /// </summary>
+        public static readonly IntrinsicAttribute Extern =
+            new("Extern");
+
+        /// <summary>
         /// An attribute that identifies a type as special, i.e., it is
         /// a "regular" type that contains more information than its fields
         /// alone.

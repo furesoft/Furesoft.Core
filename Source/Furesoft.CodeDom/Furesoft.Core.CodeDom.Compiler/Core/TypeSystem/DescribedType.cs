@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
@@ -43,64 +41,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             propertyList = new List<IProperty>();
             nestedTypeList = new List<IType>();
         }
-
-        #region Helpers
-        public bool IsReferenceType
-        {
-            get { return Owns(FlagAttribute.ReferenceType); }
-            set { SetAttr(value, FlagAttribute.ReferenceType); }
-        }
-        public bool IsInterfaceType
-        {
-            get { return Owns(FlagAttribute.InterfaceType); }
-            set { SetAttr(value, FlagAttribute.InterfaceType); }
-        }
-        public bool IsSpecialType
-        {
-            get { return Owns(FlagAttribute.SpecialType); }
-            set { SetAttr(value, FlagAttribute.SpecialType); }
-        }
-        public bool IsInternalCall
-        {
-            get { return Owns(FlagAttribute.InternalCall); }
-            set { SetAttr(value, FlagAttribute.InternalCall); }
-        }
-        public bool IsAbstract
-        {
-            get { return Owns(FlagAttribute.Abstract); }
-            set { SetAttr(value, FlagAttribute.Abstract); }
-        }
-        public bool IsStatic
-        {
-            get { return Owns(FlagAttribute.Static); }
-            set { SetAttr(value, FlagAttribute.Static); }
-        }
-        public bool IsOverride
-        {
-            get { return Owns(FlagAttribute.Override); }
-            set { SetAttr(value, FlagAttribute.Override); }
-        }
-        public bool IsVirtual
-        {
-            get { return Owns(FlagAttribute.Virtual); }
-            set { SetAttr(value, FlagAttribute.Virtual); }
-        }
-        public bool IsPublic
-        {
-            get { return GetAccessModifier().HasFlag(AccessModifier.Public); }
-            set { if (value) { RemoveAccessModifier(); AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public)); } else { RemoveAccessModifier(); } }
-        }
-        public bool IsProtected
-        {
-            get { return GetAccessModifier().HasFlag(AccessModifier.Protected); }
-            set { if (value) { RemoveAccessModifier(); AddAttribute(AccessModifierAttribute.Create(AccessModifier.Protected)); } else { RemoveAccessModifier(); } }
-        }
-        public bool IsPrivate
-        {
-            get { return GetAccessModifier().HasFlag(AccessModifier.Private); }
-            set { if (value) { RemoveAccessModifier(); AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private)); } else { RemoveAccessModifier(); } }
-        }
-        #endregion
 
         /// <inheritdoc/>
         public TypeParent Parent { get; private set; }
@@ -190,16 +130,5 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
                 object.Equals(this, member.ParentType),
                 "A member can only be added to its defining type.");
         }
-
-        public bool Owns(IAttribute attribute) => Attributes.Contains(attribute.AttributeType);
-
-        public void SetAttr(bool value, IAttribute attribute) {
-            if (value) AddAttribute(attribute);
-            else RemoveAttributes(attribute);
-        }
-
-        public AccessModifier GetAccessModifier() => AccessModifierAttribute.GetAccessModifier(this);
-
-        public void RemoveAccessModifier() => RemoveAttributesFromType(AccessModifierAttribute.AttributeType);
     }
 }
