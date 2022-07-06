@@ -12,5 +12,6 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
         }
 
         public IType AttributeType => _attributeType;
+        public List<AttributeArgument> ConstructorArguments { get; set; } = new();
     }
 }

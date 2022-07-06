@@ -10,7 +10,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
     /// <summary>
     /// An instruction stream builder for CIL instructions.
     /// </summary>
-    internal sealed class CilInstructionStreamBuilder : StackInstructionStreamBuilder<CilCodegenInstruction>
+    public sealed class CilInstructionStreamBuilder : StackInstructionStreamBuilder<CilCodegenInstruction>
     {
         /// <summary>
         /// Creates a CIL instruction stream builder.

@@ -1,7 +1,7 @@
 using Furesoft.Core.CodeDom.Compiler.Analysis;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 {
@@ -11,6 +11,13 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
     public sealed class MemorySpecificationAttribute : IAttribute
     {
         /// <summary>
+        /// The attribute type of memory specification attributes.
+        /// </summary>
+        /// <value>An attribute type.</value>
+        public static readonly IType AttributeType = new DescribedType(
+            new SimpleName("MemorySpecification").Qualify(), null);
+
+        /// <summary>
         /// Creates a memory specification attribute.
         /// </summary>
         /// <param name="specification">A memory specification.</param>
@@ -19,12 +26,7 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
             this.Specification = specification;
         }
 
-        /// <summary>
-        /// The attribute type of memory specification attributes.
-        /// </summary>
-        /// <value>An attribute type.</value>
-        public static readonly IType AttributeType = new DescribedType(
-            new SimpleName("MemorySpecification").Qualify(), null);
+        IType IAttribute.AttributeType => AttributeType;
 
         /// <summary>
         /// Gets the memory specification wrapped by this memory specification
@@ -32,7 +34,5 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
         /// </summary>
         /// <value>A memory specification.</value>
         public MemorySpecification Specification { get; private set; }
-
-        IType IAttribute.AttributeType => AttributeType;
     }
 }
