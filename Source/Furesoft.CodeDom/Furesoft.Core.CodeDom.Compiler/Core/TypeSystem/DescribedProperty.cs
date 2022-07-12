@@ -11,6 +11,11 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
         private IList<IAccessor> _accessors;
         private IList<Parameter> _indexers;
 
+        public IPropertyMethod Getter { get; set; }
+        public bool HasGetter { get { return Getter != null; } }
+        public IPropertyMethod Setter { get; set; }
+        public bool HasSetter { get { return Setter != null; } }
+
         public DescribedProperty(UnqualifiedName name, IType propertyType, IType parentType)
             : base(name.Qualify(parentType.FullName))
         {
@@ -30,43 +35,22 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
             _accessors.Add(accessor);
         }
 
-        public void AddGetter(UnqualifiedName name, bool isStatic, IType returnType, MethodBody body)
-        {
-            var accessor = new DescribedBodyAccessor(this, AccessorKind.Get,
-                name, isStatic, returnType);
-            accessor.Body = body;
-
-            _accessors.Add(accessor);
-        }
-
-        public void AddGetter(UnqualifiedName name, bool isStatic, IType returnType)
-        {
-            var accessor = new DescribedAccessor(this, AccessorKind.Get,
-                name, isStatic, returnType);
-
-            _accessors.Add(accessor);
-        }
-
         public void AddIndexer(Parameter parameter)
         {
             _indexers.Add(parameter);
         }
+    }
 
-        public void AddSetter(UnqualifiedName name, bool isStatic, IType returnType)
+    public class DescribedPropertyMethod : DescribedMember, IPropertyMethod
+    {
+        private readonly IType _parentType;
+        public MethodBody Body { get; set; }
+
+        public DescribedPropertyMethod(UnqualifiedName name, IType parentType) : base(name.Qualify(parentType.FullName.Qualifier))
         {
-            var accessor = new DescribedAccessor(this, AccessorKind.Set,
-                name, isStatic, returnType);
-
-            _accessors.Add(accessor);
+            _parentType = parentType;
         }
 
-        public void AddSetter(UnqualifiedName name, bool isStatic, IType returnType, MethodBody body)
-        {
-            var accessor = new DescribedBodyAccessor(this, AccessorKind.Set,
-                name, isStatic, returnType);
-            accessor.Body = body;
-
-            _accessors.Add(accessor);
-        }
+        public IType ParentType => _parentType;
     }
 }
