@@ -37,6 +37,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 
         /// <inheritdoc/>
         public bool IsConstructor { get; set; }
+        /// <inheritdoc/>
+        public bool IsDestructor { get; set; }
 
         /// <inheritdoc/>
         public Parameter ReturnParameter { get; set; }
