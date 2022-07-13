@@ -112,6 +112,9 @@ namespace Furesoft.Core.CodeDom.Backends.CLR
         public bool IsConstructor { get; private set; }
 
         /// <inheritdoc/>
+        public bool IsDestructor { get; private set; }
+
+        /// <inheritdoc/>
         public bool IsStatic { get; private set; }
 
         /// <inheritdoc/>
