@@ -81,6 +81,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public bool IsConstructor => Declaration.IsConstructor;
 
         /// <inheritdoc/>
+        public bool IsDestructor => Declaration.IsDestructor;
+
+        /// <inheritdoc/>
         public bool IsStatic => Declaration.IsStatic;
 
         /// <inheritdoc/>
@@ -99,6 +102,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 
         /// <inheritdoc/>
         public AttributeMap Attributes => Declaration.Attributes;
+
 
         private IReadOnlyList<IMethod> CreateBaseMethods()
         {
