@@ -109,17 +109,22 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         }
         public bool IsPublic
         {
-            get { return GetAccessModifier().HasFlag(AccessModifier.Public); }
+            get { return GetAccessModifier().Equals(AccessModifier.Public); }
             set { RemoveAccessModifier(); if (value) AddAttribute(AccessModifierAttribute.Create(AccessModifier.Public)); }
+        }
+        public bool IsInternal
+        {
+            get { return GetAccessModifier().Equals(AccessModifier.Internal); }
+            set { RemoveAccessModifier(); if (value) AddAttribute(AccessModifierAttribute.Create(AccessModifier.Internal)); }
         }
         public bool IsProtected
         {
-            get { return GetAccessModifier().HasFlag(AccessModifier.Protected); }
+            get { return GetAccessModifier().Equals(AccessModifier.Protected); }
             set { RemoveAccessModifier(); if (value) AddAttribute(AccessModifierAttribute.Create(AccessModifier.Protected)); }
         }
         public bool IsPrivate
         {
-            get { return GetAccessModifier().HasFlag(AccessModifier.Private); }
+            get { return GetAccessModifier().Equals(AccessModifier.Private); }
             set { RemoveAccessModifier(); if (value) AddAttribute(AccessModifierAttribute.Create(AccessModifier.Private)); }
         }
         public AccessModifier GetAccessModifier() => AccessModifierAttribute.GetAccessModifier(this);

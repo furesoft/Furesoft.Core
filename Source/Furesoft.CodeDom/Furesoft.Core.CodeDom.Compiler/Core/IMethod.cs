@@ -14,6 +14,14 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         bool IsConstructor { get; }
 
         /// <summary>
+        /// Indicates if this method is a destructor.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if this method is a destructor; otherwise, <c>false</c>.
+        /// </returns>
+        bool IsDestructor { get; }
+
+        /// <summary>
         /// Tells if this is a static method. Non-static methods take
         /// a non-null pointer to their parent type as an implicit
         /// first arguments. Static methods do not.
