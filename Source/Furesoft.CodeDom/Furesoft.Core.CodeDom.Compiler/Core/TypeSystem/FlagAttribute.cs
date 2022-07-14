@@ -1,4 +1,3 @@
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 {
     /// <summary>
@@ -42,6 +41,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <returns>An intrinsic attribute.</returns>
         public static readonly IntrinsicAttribute Static =
             new("Static");
+
+        /// <summary>
+        /// An attribute that identifies a type as sealed.
+        /// </summary>
+        /// <returns>An intrinsic attribute.</returns>
+        public static readonly IntrinsicAttribute Sealed =
+            new("Sealed");
 
         /// <summary>
         /// An attribute that identifies a method as overridden.

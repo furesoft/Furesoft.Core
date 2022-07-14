@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Flow;
 
 namespace Furesoft.Core.CodeDom.Compiler.Flow
 {
@@ -11,6 +8,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
     /// </summary>
     public sealed class ReturnFlow : BlockFlow
     {
+        private Instruction? _returnValue;
+
         /// <summary>
         /// Creates return flow that returns a particular value.
         /// </summary>
@@ -20,14 +19,25 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
             this.ReturnValue = returnValue;
         }
 
+        public ReturnFlow()
+        {
+            this._returnValue = null;
+        }
+
         /// <summary>
         /// Gets the value returned by this return flow.
         /// </summary>
         /// <returns>The returned value.</returns>
-        public Instruction ReturnValue { get; private set; }
+        public Instruction ReturnValue
+        {
+            get { return _returnValue.Value; }
+            private set { _returnValue = value; }
+        }
+
+        public bool HasReturnValue { get { return _returnValue != null; } }
 
         /// <inheritdoc/>
-        public override IReadOnlyList<Instruction> Instructions => new Instruction[] { ReturnValue };
+        public override IReadOnlyList<Instruction> Instructions => HasReturnValue ? new Instruction[] { ReturnValue } : new Instruction[0];
 
         /// <inheritdoc/>
         public override IReadOnlyList<Branch> Branches => EmptyArray<Branch>.Value;
@@ -37,14 +47,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         {
             ContractHelpers.Assert(instructions.Count == 1, "Return flow takes exactly one instruction.");
             var newReturnValue = instructions[0];
-            if (object.ReferenceEquals(newReturnValue, ReturnValue))
-            {
-                return this;
-            }
-            else
-            {
-                return new ReturnFlow(newReturnValue);
-            }
+
+            return new ReturnFlow(newReturnValue);
         }
 
         /// <inheritdoc/>

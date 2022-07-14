@@ -1,6 +1,4 @@
-using System;
 using System.Runtime.Serialization;
-using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Compiler.Core
 {

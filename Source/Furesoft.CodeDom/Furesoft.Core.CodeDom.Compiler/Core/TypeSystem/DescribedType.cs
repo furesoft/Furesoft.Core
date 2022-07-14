@@ -61,8 +61,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <inheritdoc/>
         public IReadOnlyList<IType> NestedTypes => nestedTypeList;
 
-        public bool IsSealed { get; set; }
-
         /// <summary>
         /// Makes a particular type a base type of this type.
         /// </summary>
@@ -134,6 +132,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             ContractHelpers.Assert(
                 object.Equals(this, member.ParentType),
                 "A member can only be added to its defining type.");
+        }
+
+        public bool IsSealed
+        {
+            get { return Owns(FlagAttribute.Sealed); }
+            set { SetAttr(value, FlagAttribute.Sealed); }
         }
     }
 }
