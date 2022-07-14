@@ -7,6 +7,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     /// </summary>
     public class DescribedType : DescribedGenericMember, IType
     {
+        private List<IType> baseTypeList;
+
+        private List<IField> fieldList;
+
+        private List<IMethod> methodList;
+
+        private List<IProperty> propertyList;
+
+        private List<IType> nestedTypeList;
+
         /// <summary>
         /// Creates a type from a name and a parent assembly.
         /// </summary>
@@ -33,23 +43,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             Initialize();
         }
 
-        private void Initialize()
-        {
-            baseTypeList = new List<IType>();
-            fieldList = new List<IField>();
-            methodList = new List<IMethod>();
-            propertyList = new List<IProperty>();
-            nestedTypeList = new List<IType>();
-        }
-
         /// <inheritdoc/>
         public TypeParent Parent { get; private set; }
-
-        private List<IType> baseTypeList;
-        private List<IField> fieldList;
-        private List<IMethod> methodList;
-        private List<IProperty> propertyList;
-        private List<IType> nestedTypeList;
 
         /// <inheritdoc/>
         public IReadOnlyList<IType> BaseTypes => baseTypeList;
@@ -65,6 +60,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
 
         /// <inheritdoc/>
         public IReadOnlyList<IType> NestedTypes => nestedTypeList;
+
+        public bool IsSealed { get; set; }
 
         /// <summary>
         /// Makes a particular type a base type of this type.
@@ -87,17 +84,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             fieldList.Add(field);
         }
 
-        /// <summary>
-        /// Adds a method to this type.
-        /// </summary>
-        /// <param name="method">The method to add.</param>
-
         public void AddMethod(IMethod method)
         {
             CheckParent(method);
             methodList.Add(method);
         }
 
+        /// <summary>
+        /// Adds a method to this type.
+        /// </summary>
+        /// <param name="method">The method to add.</param>
         /// <summary>
         /// Adds a property to this type.
         /// </summary>
@@ -122,6 +118,15 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
                 object.Equals(this, nestedType.Parent.Type),
                 "A nested type can only be added to its defining type.");
             nestedTypeList.Add(nestedType);
+        }
+
+        private void Initialize()
+        {
+            baseTypeList = new List<IType>();
+            fieldList = new List<IField>();
+            methodList = new List<IMethod>();
+            propertyList = new List<IProperty>();
+            nestedTypeList = new List<IType>();
         }
 
         private void CheckParent(ITypeMember member)

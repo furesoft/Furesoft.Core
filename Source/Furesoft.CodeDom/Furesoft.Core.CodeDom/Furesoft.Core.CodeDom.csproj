@@ -4,9 +4,9 @@
 	  <TargetFramework>netstandard2.0</TargetFramework>
 	  <LangVersion>latest</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.24</Version>
+    <Version>1.0.25</Version>
     <Description>Parsing and Tree: https://www.codeproject.com/Articles/492466/Object-Oriented-Parsing-Breaking-With-Tradition-Pa</Description>
-    <PackageVersion>1.0.24</PackageVersion>
+    <PackageVersion>1.0.25</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
