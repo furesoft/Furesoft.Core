@@ -1,7 +1,6 @@
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler;
 
 namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 {
