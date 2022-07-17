@@ -1,8 +1,6 @@
-using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Instructions;
 
 namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
@@ -12,14 +10,18 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     /// </summary>
     public sealed class StorePrototype : InstructionPrototype
     {
+        private static readonly InterningCache<StorePrototype> instanceCache
+            = new(
+                new StructuralStorePrototypeComparer());
+
+        private IType elemType;
+
         private StorePrototype(IType elementType, bool isVolatile, Alignment alignment)
         {
             this.elemType = elementType;
             this.IsVolatile = isVolatile;
             this.Alignment = alignment;
         }
-
-        private IType elemType;
 
         /// <summary>
         /// Tests if instances of this store prototype are volatile operations.
@@ -39,6 +41,31 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
 
         /// <inheritdoc/>
         public override int ParameterCount => 2;
+
+        /// <summary>
+        /// Gets or creates a store instruction prototype for a particular
+        /// element type.
+        /// </summary>
+        /// <param name="elementType">
+        /// The type of element to store in a pointer.
+        /// </param>
+        /// <param name="isVolatile">
+        /// Tells if instances of the store prototype are volatile operations.
+        /// Volatile operations may not be reordered with regard to each other.
+        /// </param>
+        /// <param name="alignment">
+        /// The pointer alignment of pointers written to by the prototype.
+        /// </param>
+        /// <returns>
+        /// A store instruction prototype.
+        /// </returns>
+        public static StorePrototype Create(
+            IType elementType,
+            bool isVolatile = false,
+            Alignment alignment = default(Alignment))
+        {
+            return instanceCache.Intern(new StorePrototype(elementType, isVolatile, alignment));
+        }
 
         /// <inheritdoc/>
         public override IReadOnlyList<string> CheckConformance(Instruction instance, MethodBody body)
@@ -173,35 +200,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         public Instruction Instantiate(ValueTag pointer, ValueTag value)
         {
             return Instantiate(new ValueTag[] { pointer, value });
-        }
-
-        private static readonly InterningCache<StorePrototype> instanceCache
-            = new(
-                new StructuralStorePrototypeComparer());
-
-        /// <summary>
-        /// Gets or creates a store instruction prototype for a particular
-        /// element type.
-        /// </summary>
-        /// <param name="elementType">
-        /// The type of element to store in a pointer.
-        /// </param>
-        /// <param name="isVolatile">
-        /// Tells if instances of the store prototype are volatile operations.
-        /// Volatile operations may not be reordered with regard to each other.
-        /// </param>
-        /// <param name="alignment">
-        /// The pointer alignment of pointers written to by the prototype.
-        /// </param>
-        /// <returns>
-        /// A store instruction prototype.
-        /// </returns>
-        public static StorePrototype Create(
-            IType elementType,
-            bool isVolatile = false,
-            Alignment alignment = default(Alignment))
-        {
-            return instanceCache.Intern(new StorePrototype(elementType, isVolatile, alignment));
         }
     }
 

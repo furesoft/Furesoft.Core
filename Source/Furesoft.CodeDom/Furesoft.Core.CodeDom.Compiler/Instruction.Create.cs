@@ -2,8 +2,6 @@ using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Compiler
 {
@@ -515,6 +513,16 @@ ArithmeticIntrinsics.Operators.Convert,
             Alignment alignment = default(Alignment))
         {
             return LoadPrototype.Create(pointeeType, isVolatile, alignment).Instantiate(pointer);
+        }
+
+        public static Instruction CreateLoadArg(Parameter parameter)
+        {
+            return new LoadArgPrototype(parameter.Type, parameter).Instantiate(Array.Empty<ValueTag>());
+        }
+
+        public static Instruction CreateLoadLocal(Parameter parameter)
+        {
+            return new LoadLocalPrototype(parameter.Type, parameter).Instantiate(Array.Empty<ValueTag>());
         }
 
         /// <summary>
