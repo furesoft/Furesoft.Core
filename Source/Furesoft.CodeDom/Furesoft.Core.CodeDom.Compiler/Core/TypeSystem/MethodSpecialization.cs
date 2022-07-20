@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </param>
         public MethodSpecialization(IMethod declaration)
         {
-            this.Declaration = declaration;
+            Declaration = declaration;
         }
 
         /// <summary>
@@ -123,7 +123,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             TypeSpecialization parentType)
             : base(declaration)
         {
-            this.parentTy = parentType;
+            parentTy = parentType;
         }
 
         private static IndirectMethodSpecialization InitializeInstance(IndirectMethodSpecialization instance)
@@ -261,7 +261,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IReadOnlyList<IType> genericArguments)
             : base(declaration)
         {
-            this.GenericArguments = genericArguments;
+            GenericArguments = genericArguments;
         }
 
         private static DirectMethodSpecialization InitializeInstance(DirectMethodSpecialization instance)

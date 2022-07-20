@@ -8,7 +8,7 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 
         public DescribedAttribute(IType attributeType)
         {
-            this._attributeType = attributeType;
+            _attributeType = attributeType;
         }
 
         public IType AttributeType => _attributeType;

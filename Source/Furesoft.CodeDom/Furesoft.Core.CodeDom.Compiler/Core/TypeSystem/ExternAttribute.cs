@@ -30,7 +30,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </param>
         public ExternAttribute(string importName)
         {
-            this.ImportNameOrNull = importName;
+            ImportNameOrNull = importName;
         }
 
         IType IAttribute.AttributeType => AttributeType;

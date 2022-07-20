@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public DescribedGenericMember(QualifiedName fullName)
             : base(fullName)
         {
-            this.genericParamList = new List<IGenericParameter>();
+            genericParamList = new List<IGenericParameter>();
         }
 
         private List<IGenericParameter> genericParamList;

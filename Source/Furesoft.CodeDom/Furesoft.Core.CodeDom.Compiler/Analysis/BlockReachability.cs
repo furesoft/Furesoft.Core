@@ -68,8 +68,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// <param name="graph">The graph to create a reachability analysis for.</param>
         public LazyBlockReachability(FlowGraph graph)
         {
-            this.Graph = graph;
-            this.results = new Dictionary<BasicBlockTag, HashSet<BasicBlockTag>>();
+            Graph = graph;
+            results = new Dictionary<BasicBlockTag, HashSet<BasicBlockTag>>();
         }
 
         /// <summary>

@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         public ExplicitInstructionExceptionSpecs(
             IReadOnlyDictionary<Instruction, ExceptionSpecification> specifications)
         {
-            this.Specifications = specifications;
+            Specifications = specifications;
         }
 
         /// <summary>
@@ -160,7 +160,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </param>
         public TrivialInstructionExceptionSpecs(PrototypeExceptionSpecs exceptionSpecs)
         {
-            this.ExceptionSpecs = exceptionSpecs;
+            ExceptionSpecs = exceptionSpecs;
         }
 
         /// <summary>

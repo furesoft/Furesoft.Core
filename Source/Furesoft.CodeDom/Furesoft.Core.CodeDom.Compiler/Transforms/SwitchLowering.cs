@@ -33,9 +33,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             bool allowBitTests = true,
             bool allowJumpTables = true)
         {
-            this.TypeEnvironment = typeEnvironment;
-            this.AllowBitTests = allowBitTests;
-            this.AllowJumpTables = allowJumpTables;
+            TypeEnvironment = typeEnvironment;
+            AllowBitTests = allowBitTests;
+            AllowJumpTables = allowJumpTables;
         }
 
         /// <summary>
@@ -293,10 +293,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                 IntegerConstant valueRange,
                 TypeEnvironment typeEnvironment)
             {
-                this.Flow = flow;
-                this.MinValue = minValue;
-                this.ValueRange = valueRange;
-                this.TypeEnvironment = typeEnvironment;
+                Flow = flow;
+                MinValue = minValue;
+                ValueRange = valueRange;
+                TypeEnvironment = typeEnvironment;
             }
 
             public SwitchFlow Flow { get; private set; }
@@ -474,7 +474,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         {
             public JumpLowering(Branch branch)
             {
-                this.Branch = branch;
+                Branch = branch;
             }
 
             /// <summary>

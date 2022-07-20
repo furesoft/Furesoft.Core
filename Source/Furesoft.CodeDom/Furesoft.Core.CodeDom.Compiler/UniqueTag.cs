@@ -20,7 +20,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// <param name="name">The tag's name.</param>
         public UniqueTag(string name)
         {
-            this.Name = name;
+            Name = name;
         }
 
         /// <summary>

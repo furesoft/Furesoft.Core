@@ -79,7 +79,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             /// </param>
             internal Exact(IType exceptionType)
             {
-                this.ExceptionType = exceptionType;
+                ExceptionType = exceptionType;
             }
 
             /// <summary>
@@ -95,7 +95,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             /// <inheritdoc/>
             public override bool CanThrow(IType exceptionType)
             {
-                return exceptionType == this.ExceptionType;
+                return exceptionType == ExceptionType;
             }
 
             /// <summary>
@@ -128,7 +128,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             /// </param>
             internal Union(IReadOnlyList<ExceptionSpecification> operands)
             {
-                this.Operands = operands;
+                Operands = operands;
             }
 
             /// <summary>

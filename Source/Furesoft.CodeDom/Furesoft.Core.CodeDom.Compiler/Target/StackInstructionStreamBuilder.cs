@@ -110,16 +110,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                 BasicBlock block,
                 IReadOnlyDictionary<ValueTag, SelectedInstructions<TInstruction>> instructions)
             {
-                this.Block = block;
+                Block = block;
                 this.parent = parent;
                 this.instructions = instructions;
-                this.instructionBlobs = new LinkedList<IReadOnlyList<TInstruction>>();
-                this.resurrectionList = ImmutableList.CreateBuilder<ValueTag>();
-                this.resurrectionPoints = new Dictionary<ValueTag, LinkedListNode<IReadOnlyList<TInstruction>>>();
-                this.invResurrectionPoints = new Dictionary<LinkedListNode<IReadOnlyList<TInstruction>>, ValueTag>();
-                this.uses = block.Graph.GetAnalysisResult<ValueUses>();
-                this.refCount = new Dictionary<ValueTag, int>();
-                this.emptyStackPoints = new HashSet<LinkedListNode<IReadOnlyList<TInstruction>>>();
+                instructionBlobs = new LinkedList<IReadOnlyList<TInstruction>>();
+                resurrectionList = ImmutableList.CreateBuilder<ValueTag>();
+                resurrectionPoints = new Dictionary<ValueTag, LinkedListNode<IReadOnlyList<TInstruction>>>();
+                invResurrectionPoints = new Dictionary<LinkedListNode<IReadOnlyList<TInstruction>>, ValueTag>();
+                uses = block.Graph.GetAnalysisResult<ValueUses>();
+                refCount = new Dictionary<ValueTag, int>();
+                emptyStackPoints = new HashSet<LinkedListNode<IReadOnlyList<TInstruction>>>();
             }
 
             /// <summary>
@@ -379,8 +379,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
                     this.insertionPoint = insertionPoint;
                     this.resurrectionList = resurrectionList;
 
-                    this.FirstPush = null;
-                    this.FirstPushValue = null;
+                    FirstPush = null;
+                    FirstPushValue = null;
                 }
 
                 /// <summary>

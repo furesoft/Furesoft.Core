@@ -24,7 +24,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             SimpleName name)
             : base(name.Qualify(parentMember.FullName))
         {
-            this.ParentMember = parentMember;
+            ParentMember = parentMember;
         }
 
         /// <summary>

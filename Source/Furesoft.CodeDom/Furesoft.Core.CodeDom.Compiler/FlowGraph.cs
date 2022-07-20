@@ -22,26 +22,26 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// </summary>
         public FlowGraph()
         {
-            this.instructions = ImmutableDictionary.Create<ValueTag, Instruction>();
-            this.blocks = ImmutableOrderedDictionary.Create<BasicBlockTag, BasicBlockData>();
-            this.blockParamTypes = ImmutableDictionary.Create<ValueTag, IType>();
-            this.valueParents = ImmutableDictionary.Create<ValueTag, BasicBlockTag>();
-            this.analysisCache = new MacroAnalysisCache();
-            this.EntryPointTag = new BasicBlockTag("entry-point");
-            this.blocks = this.blocks.SetItem(
-                this.EntryPointTag,
+            instructions = ImmutableDictionary.Create<ValueTag, Instruction>();
+            blocks = ImmutableOrderedDictionary.Create<BasicBlockTag, BasicBlockData>();
+            blockParamTypes = ImmutableDictionary.Create<ValueTag, IType>();
+            valueParents = ImmutableDictionary.Create<ValueTag, BasicBlockTag>();
+            analysisCache = new MacroAnalysisCache();
+            EntryPointTag = new BasicBlockTag("entry-point");
+            blocks = blocks.SetItem(
+                EntryPointTag,
                 new BasicBlockData());
         }
 
         private FlowGraph(
             FlowGraph other)
         {
-            this.instructions = other.instructions;
-            this.blocks = other.blocks;
-            this.blockParamTypes = other.blockParamTypes;
-            this.valueParents = other.valueParents;
-            this.EntryPointTag = other.EntryPointTag;
-            this.analysisCache = other.analysisCache;
+            instructions = other.instructions;
+            blocks = other.blocks;
+            blockParamTypes = other.blockParamTypes;
+            valueParents = other.valueParents;
+            EntryPointTag = other.EntryPointTag;
+            analysisCache = other.analysisCache;
         }
 
         private FlowGraph(
@@ -49,7 +49,7 @@ namespace Furesoft.Core.CodeDom.Compiler
             FlowGraphUpdate update)
             : this(other)
         {
-            this.analysisCache = other.analysisCache.Update(update);
+            analysisCache = other.analysisCache.Update(update);
         }
 
         private ImmutableDictionary<ValueTag, Instruction> instructions;

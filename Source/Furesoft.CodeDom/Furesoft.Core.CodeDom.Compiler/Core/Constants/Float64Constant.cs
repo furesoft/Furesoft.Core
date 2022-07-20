@@ -11,7 +11,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// <param name="value">The constant value.</param>
         public Float64Constant(double value)
         {
-            this.Value = value;
+            Value = value;
         }
 
         /// <summary>

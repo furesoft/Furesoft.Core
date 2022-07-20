@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private DynamicCastPrototype(PointerType targetType)
         {
-            this.TargetType = targetType;
+            TargetType = targetType;
         }
 
         /// <summary>

@@ -186,8 +186,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
 
             public ValueNumberingImpl()
             {
-                this.valueNumbers = new Dictionary<ValueTag, ValueTag>();
-                this.instructionNumbers = new Dictionary<Instruction, ValueTag>(
+                valueNumbers = new Dictionary<ValueTag, ValueTag>();
+                instructionNumbers = new Dictionary<Instruction, ValueTag>(
                     new ValueNumberingInstructionComparer(this));
             }
 

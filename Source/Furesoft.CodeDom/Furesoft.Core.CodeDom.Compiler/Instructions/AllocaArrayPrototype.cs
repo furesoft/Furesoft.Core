@@ -15,7 +15,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private AllocaArrayPrototype(IType elementType)
         {
-            this.ElementType = elementType;
+            ElementType = elementType;
         }
 
         /// <summary>

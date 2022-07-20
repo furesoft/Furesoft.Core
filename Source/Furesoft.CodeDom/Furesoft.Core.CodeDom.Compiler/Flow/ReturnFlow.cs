@@ -16,12 +16,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         /// <param name="returnValue">The value to return.</param>
         public ReturnFlow(Instruction returnValue)
         {
-            this.ReturnValue = returnValue;
+            ReturnValue = returnValue;
         }
 
         public ReturnFlow()
         {
-            this._returnValue = null;
+            _returnValue = null;
         }
 
         /// <summary>

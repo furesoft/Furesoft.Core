@@ -17,8 +17,8 @@ namespace Furesoft.Core.CodeDom.Compiler
             InstructionPrototype prototype,
             IReadOnlyList<ValueTag> arguments)
         {
-            this.Prototype = prototype;
-            this.Arguments = arguments;
+            Prototype = prototype;
+            Arguments = arguments;
         }
 
         /// <summary>

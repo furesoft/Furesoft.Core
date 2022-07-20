@@ -23,7 +23,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </param>
         public ConstantAnalysis(T result)
         {
-            this.Result = result;
+            Result = result;
         }
 
         /// <summary>

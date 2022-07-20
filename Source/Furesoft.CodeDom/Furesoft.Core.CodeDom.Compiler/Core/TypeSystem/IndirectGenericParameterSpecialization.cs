@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IGenericParameter declaration, IGenericMember parentMember)
             : base(declaration)
         {
-            this.ParentMember = parentMember;
+            ParentMember = parentMember;
         }
 
         private static IndirectGenericParameterSpecialization InitializeInstance(

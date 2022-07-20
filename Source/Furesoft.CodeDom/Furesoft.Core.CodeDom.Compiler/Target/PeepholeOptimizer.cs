@@ -56,9 +56,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
             Predicate<IReadOnlyList<TInstruction>> macroPattern,
             Func<IReadOnlyList<TInstruction>, IReadOnlyList<TInstruction>> rewrite)
         {
-            this.Pattern = pattern;
-            this.MacroPattern = macroPattern;
-            this.Rewrite = rewrite;
+            Pattern = pattern;
+            MacroPattern = macroPattern;
+            Rewrite = rewrite;
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
         public PeepholeOptimizer(
             IReadOnlyList<PeepholeRewriteRule<TInstruction>> rules)
         {
-            this.Rules = rules;
+            Rules = rules;
         }
 
         /// <summary>

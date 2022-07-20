@@ -43,8 +43,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// </param>
         public Branch(BasicBlockTag target, IReadOnlyList<BranchArgument> arguments)
         {
-            this.Target = target;
-            this.Arguments = arguments;
+            Target = target;
+            Arguments = arguments;
         }
 
         /// <summary>
@@ -278,8 +278,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         private BranchArgument(BranchArgumentKind kind, ValueTag value)
         {
             this = default(BranchArgument);
-            this.Kind = kind;
-            this.ValueOrNull = value;
+            Kind = kind;
+            ValueOrNull = value;
         }
 
         /// <summary>

@@ -30,8 +30,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Names
             QualifiedName declarationName,
             IReadOnlyList<QualifiedName> typeArgumentNames)
         {
-            this.DeclarationName = declarationName;
-            this.TypeArgumentNames = typeArgumentNames;
+            DeclarationName = declarationName;
+            TypeArgumentNames = typeArgumentNames;
         }
 
         /// <summary>

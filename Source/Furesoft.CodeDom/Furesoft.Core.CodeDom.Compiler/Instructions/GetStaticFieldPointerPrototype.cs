@@ -14,8 +14,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private GetStaticFieldPointerPrototype(IField field)
         {
-            this.Field = field;
-            this.fieldPointerType = field.FieldType.MakePointerType(PointerKind.Reference);
+            Field = field;
+            fieldPointerType = field.FieldType.MakePointerType(PointerKind.Reference);
         }
 
         /// <summary>

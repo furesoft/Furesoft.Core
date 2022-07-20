@@ -29,7 +29,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// <param name="graph">An immutable control-flow graph.</param>
         public FlowGraphBuilder(FlowGraph graph)
         {
-            this.ImmutableGraph = graph;
+            ImmutableGraph = graph;
         }
 
         /// <summary>

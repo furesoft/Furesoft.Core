@@ -15,7 +15,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private UnboxPrototype(PointerType ptrType)
         {
-            this.refType = ptrType;
+            refType = ptrType;
         }
 
         private PointerType refType;

@@ -22,9 +22,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             Func<IMethod, IMethod> mapMethod,
             Func<IField, IField> mapField)
         {
-            this.MapType = mapType;
-            this.MapMethod = mapMethod;
-            this.MapField = mapField;
+            MapType = mapType;
+            MapMethod = mapMethod;
+            MapField = mapField;
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </param>
         public MemberMapping(Func<IType, IType> mapType)
         {
-            this.MapType = mapType;
+            MapType = mapType;
             var visitor = new TypeFuncVisitor(mapType);
             MapMethod = visitor.Visit;
             MapField = visitor.Visit;

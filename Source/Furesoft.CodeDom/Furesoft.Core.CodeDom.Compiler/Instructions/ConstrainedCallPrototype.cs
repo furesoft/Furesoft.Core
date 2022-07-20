@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Instructions;
 
 namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
@@ -14,9 +11,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     /// </summary>
     public sealed class ConstrainedCallPrototype : InstructionPrototype
     {
+        private static readonly InterningCache<ConstrainedCallPrototype> instanceCache
+            = new(
+                new MappedComparer<ConstrainedCallPrototype, IMethod>(proto => proto.Callee));
+
         private ConstrainedCallPrototype(IMethod callee)
         {
-            this.Callee = callee;
+            Callee = callee;
         }
 
         /// <summary>
@@ -32,6 +33,19 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// <inheritdoc/>
         public override int ParameterCount
             => 1 + Callee.Parameters.Count;
+
+        /// <summary>
+        /// Gets the constrained call instruction prototype for a particular callee.
+        /// </summary>
+        /// <param name="callee">The method to call.</param>
+        /// <returns>A constrained call instruction prototype.</returns>
+        public static ConstrainedCallPrototype Create(IMethod callee)
+        {
+            ContractHelpers.Assert(
+                !callee.IsStatic,
+                "Constrained calls cannot call static methods.");
+            return instanceCache.Intern(new ConstrainedCallPrototype(callee));
+        }
 
         /// <inheritdoc/>
         public override IReadOnlyList<string> CheckConformance(
@@ -140,23 +154,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
                 instruction.Arguments,
                 offset,
                 instruction.Arguments.Count - offset);
-        }
-
-        private static readonly InterningCache<ConstrainedCallPrototype> instanceCache
-            = new(
-                new MappedComparer<ConstrainedCallPrototype, IMethod>(proto => proto.Callee));
-
-        /// <summary>
-        /// Gets the constrained call instruction prototype for a particular callee.
-        /// </summary>
-        /// <param name="callee">The method to call.</param>
-        /// <returns>A constrained call instruction prototype.</returns>
-        public static ConstrainedCallPrototype Create(IMethod callee)
-        {
-            ContractHelpers.Assert(
-                !callee.IsStatic,
-                "Constrained calls cannot call static methods.");
-            return instanceCache.Intern(new ConstrainedCallPrototype(callee));
         }
     }
 }

@@ -17,9 +17,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
         /// <param name="initialBody">An initial method body.</param>
         public MethodBodyHolder(MethodBody initialBody)
         {
-            this.readerWriterLock = new ReaderWriterLockSlim();
-            this.currentBody = initialBody;
-            this.specializationCache = new ConcurrentDictionary<IMethod, MethodBody>();
+            readerWriterLock = new ReaderWriterLockSlim();
+            currentBody = initialBody;
+            specializationCache = new ConcurrentDictionary<IMethod, MethodBody>();
         }
 
         private ReaderWriterLockSlim readerWriterLock;

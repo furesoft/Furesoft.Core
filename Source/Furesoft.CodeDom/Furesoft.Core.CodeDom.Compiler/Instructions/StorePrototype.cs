@@ -18,9 +18,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
 
         private StorePrototype(IType elementType, bool isVolatile, Alignment alignment)
         {
-            this.elemType = elementType;
-            this.IsVolatile = isVolatile;
-            this.Alignment = alignment;
+            elemType = elementType;
+            IsVolatile = isVolatile;
+            Alignment = alignment;
         }
 
         /// <summary>

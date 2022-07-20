@@ -15,7 +15,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public DescribedAssembly(QualifiedName fullName)
             : base(fullName)
         {
-            this.definedTypes = new List<IType>();
+            definedTypes = new List<IType>();
         }
 
         private List<IType> definedTypes;

@@ -19,8 +19,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Names
         /// </param>
         public PointerName(QualifiedName elementName, PointerKind kind)
         {
-            this.ElementName = elementName;
-            this.Kind = kind;
+            ElementName = elementName;
+            Kind = kind;
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     {
         internal BasicBlockPredecessors(Dictionary<BasicBlockTag, HashSet<BasicBlockTag>> values)
         {
-            this.predecessorDict = values;
+            predecessorDict = values;
         }
 
         private Dictionary<BasicBlockTag, HashSet<BasicBlockTag>> predecessorDict;

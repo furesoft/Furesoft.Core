@@ -23,7 +23,7 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
         /// <param name="specification">A memory specification.</param>
         public MemorySpecificationAttribute(MemorySpecification specification)
         {
-            this.Specification = specification;
+            Specification = specification;
         }
 
         IType IAttribute.AttributeType => AttributeType;

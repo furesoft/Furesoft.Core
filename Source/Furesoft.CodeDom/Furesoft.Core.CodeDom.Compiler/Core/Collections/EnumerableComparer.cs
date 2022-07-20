@@ -19,7 +19,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="elementComparer"></param>
         public EnumerableComparer(IEqualityComparer<T> elementComparer)
         {
-            this.ElementComparer = elementComparer;
+            ElementComparer = elementComparer;
         }
 
         /// <summary>

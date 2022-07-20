@@ -59,7 +59,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         public TypeParent(IAssembly assembly)
         {
             this = default(TypeParent);
-            this.AssemblyOrNull = assembly;
+            AssemblyOrNull = assembly;
         }
 
         /// <summary>
@@ -71,7 +71,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         public TypeParent(IType type)
         {
             this = default(TypeParent);
-            this.TypeOrNull = type;
+            TypeOrNull = type;
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         public TypeParent(IMethod method)
         {
             this = default(TypeParent);
-            this.MethodOrNull = method;
+            MethodOrNull = method;
         }
 
         /// <summary>

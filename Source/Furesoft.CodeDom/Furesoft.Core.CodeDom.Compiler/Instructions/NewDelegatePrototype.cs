@@ -20,9 +20,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
             MethodLookup lookup)
         {
             this.delegateType = delegateType;
-            this.Callee = callee;
-            this.HasThisArgument = hasThisArgument;
-            this.Lookup = lookup;
+            Callee = callee;
+            HasThisArgument = hasThisArgument;
+            Lookup = lookup;
         }
 
         private IType delegateType;

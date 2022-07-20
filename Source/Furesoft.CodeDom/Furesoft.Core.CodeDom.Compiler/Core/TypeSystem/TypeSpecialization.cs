@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <param name="declaration">A declaration.</param>
         internal TypeSpecialization(IType declaration)
         {
-            this.Declaration = declaration;
+            Declaration = declaration;
         }
 
         /// <summary>
@@ -22,10 +22,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         protected void Initialize()
         {
-            this.instantiatingVisitorCache = new Lazy<TypeMappingVisitor>(CreateInstantiatingVisitor);
-            this.nestedTypesCache = new Lazy<IReadOnlyList<IType>>(CreateNestedTypes);
-            this.baseTypeCache = new Lazy<IReadOnlyList<IType>>(CreateBaseTypes);
-            this.fieldsCache = new Lazy<IReadOnlyList<IField>>(CreateFields);
+            instantiatingVisitorCache = new Lazy<TypeMappingVisitor>(CreateInstantiatingVisitor);
+            nestedTypesCache = new Lazy<IReadOnlyList<IType>>(CreateNestedTypes);
+            baseTypeCache = new Lazy<IReadOnlyList<IType>>(CreateBaseTypes);
+            fieldsCache = new Lazy<IReadOnlyList<IField>>(CreateFields);
         }
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IReadOnlyList<IType> genericArguments)
             : base(declaration)
         {
-            this.GenericArguments = genericArguments;
+            GenericArguments = genericArguments;
         }
 
         private static DirectTypeSpecialization InitializeInstance(DirectTypeSpecialization instance)
@@ -267,7 +267,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             TypeSpecialization parentType)
             : base(declaration)
         {
-            this.ParentType = parentType;
+            ParentType = parentType;
         }
 
         /// <summary>

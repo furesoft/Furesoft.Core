@@ -50,7 +50,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         {
             this.getElements = getElements;
             this.keyComparer = keyComparer;
-            this.indexCache = new WeakCache<TContainer, Dictionary<TKey, List<TValue>>>();
+            indexCache = new WeakCache<TContainer, Dictionary<TKey, List<TValue>>>();
         }
 
         private Func<TContainer, IEnumerable<KeyValuePair<TKey, TValue>>> getElements;

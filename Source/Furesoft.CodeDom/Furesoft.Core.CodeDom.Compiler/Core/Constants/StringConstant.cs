@@ -19,7 +19,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
                 throw new ArgumentNullException(nameof(value));
             }
 
-            this.Value = value;
+            Value = value;
         }
 
         /// <summary>

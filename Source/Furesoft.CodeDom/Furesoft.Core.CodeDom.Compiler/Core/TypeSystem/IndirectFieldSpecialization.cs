@@ -13,8 +13,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IField declaration,
             TypeSpecialization parentType)
         {
-            this.Declaration = declaration;
-            this.parentTy = parentType;
+            Declaration = declaration;
+            parentTy = parentType;
         }
 
         private static IndirectFieldSpecialization InitializeInstance(

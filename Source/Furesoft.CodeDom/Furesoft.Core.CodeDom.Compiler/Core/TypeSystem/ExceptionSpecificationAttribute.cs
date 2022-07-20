@@ -20,7 +20,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <param name="specification">An exception specification.</param>
         public ExceptionSpecificationAttribute(ExceptionSpecification specification)
         {
-            this.Specification = specification;
+            Specification = specification;
         }
 
         IType IAttribute.AttributeType => AttributeType;

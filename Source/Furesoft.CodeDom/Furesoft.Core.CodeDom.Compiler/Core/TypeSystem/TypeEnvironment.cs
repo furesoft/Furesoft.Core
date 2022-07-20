@@ -311,7 +311,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public MutableTypeEnvironment(
             TypeEnvironment innerEnvironment)
         {
-            this.InnerEnvironment = innerEnvironment;
+            InnerEnvironment = innerEnvironment;
         }
 
         /// <summary>

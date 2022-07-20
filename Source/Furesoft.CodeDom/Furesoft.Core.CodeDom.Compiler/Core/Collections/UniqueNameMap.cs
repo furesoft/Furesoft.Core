@@ -26,8 +26,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public UniqueNameMap(Func<T, string> getName, string prefix)
         {
-            this.nameSet = new UniqueNameSet<T>(getName, prefix);
-            this.dict = new ConcurrentDictionary<T, string>();
+            nameSet = new UniqueNameSet<T>(getName, prefix);
+            dict = new ConcurrentDictionary<T, string>();
         }
 
         /// <summary>
@@ -46,8 +46,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public UniqueNameMap(Func<T, string> getName, Func<T, int, string> generateName)
         {
-            this.nameSet = new UniqueNameSet<T>(getName, generateName);
-            this.dict = new ConcurrentDictionary<T, string>();
+            nameSet = new UniqueNameSet<T>(getName, generateName);
+            dict = new ConcurrentDictionary<T, string>();
         }
 
         /// <summary>
@@ -59,7 +59,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         public UniqueNameMap(UniqueNameSet<T> nameSet)
         {
             this.nameSet = nameSet;
-            this.dict = new ConcurrentDictionary<T, string>();
+            dict = new ConcurrentDictionary<T, string>();
         }
 
         private UniqueNameSet<T> nameSet;

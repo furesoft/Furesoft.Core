@@ -13,9 +13,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
 
         public RuleBasedSpecStore(TSpec defaultSpec)
         {
-            this.DefaultSpec = defaultSpec;
-            this.instructionSpecs = new Dictionary<Type, Func<InstructionPrototype, TSpec>>();
-            this.intrinsicSpecs = new Dictionary<string, Func<IntrinsicPrototype, TSpec>>();
+            DefaultSpec = defaultSpec;
+            instructionSpecs = new Dictionary<Type, Func<InstructionPrototype, TSpec>>();
+            intrinsicSpecs = new Dictionary<string, Func<IntrinsicPrototype, TSpec>>();
         }
 
         /// <summary>
@@ -23,10 +23,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         public RuleBasedSpecStore(RuleBasedSpecStore<TSpec> other)
         {
-            this.DefaultSpec = other.DefaultSpec;
-            this.instructionSpecs = new Dictionary<Type, Func<InstructionPrototype, TSpec>>(
+            DefaultSpec = other.DefaultSpec;
+            instructionSpecs = new Dictionary<Type, Func<InstructionPrototype, TSpec>>(
                 other.instructionSpecs);
-            this.intrinsicSpecs = new Dictionary<string, Func<IntrinsicPrototype, TSpec>>(
+            intrinsicSpecs = new Dictionary<string, Func<IntrinsicPrototype, TSpec>>(
                 other.intrinsicSpecs);
         }
 
@@ -138,8 +138,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             int parameterIndex,
             ExceptionSpecification nullCheckSpec)
         {
-            this.ParameterIndex = parameterIndex;
-            this.NullCheckSpec = nullCheckSpec;
+            ParameterIndex = parameterIndex;
+            NullCheckSpec = nullCheckSpec;
         }
 
         /// <summary>
@@ -301,7 +301,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         public RuleBasedPrototypeExceptionSpecs()
         {
-            this.store = new RuleBasedSpecStore<ExceptionSpecification>(ExceptionSpecification.ThrowAny);
+            store = new RuleBasedSpecStore<ExceptionSpecification>(ExceptionSpecification.ThrowAny);
         }
 
         /// <summary>
@@ -309,7 +309,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         public RuleBasedPrototypeExceptionSpecs(RuleBasedPrototypeExceptionSpecs other)
         {
-            this.store = new RuleBasedSpecStore<ExceptionSpecification>(other.store);
+            store = new RuleBasedSpecStore<ExceptionSpecification>(other.store);
         }
 
         /// <inheritdoc/>

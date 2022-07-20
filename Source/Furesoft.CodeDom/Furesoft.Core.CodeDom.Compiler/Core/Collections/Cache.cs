@@ -74,10 +74,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public LruCache(int capacity)
         {
-            this.Capacity = capacity;
-            this.cache =
+            Capacity = capacity;
+            cache =
                 new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
-            this.evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
+            evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
         }
 
         /// <summary>
@@ -92,10 +92,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public LruCache(int capacity, IEqualityComparer<TKey> comparer)
         {
-            this.Capacity = capacity;
-            this.cache =
+            Capacity = capacity;
+            cache =
                 new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>(comparer);
-            this.evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
+            evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
         }
 
         /// <summary>

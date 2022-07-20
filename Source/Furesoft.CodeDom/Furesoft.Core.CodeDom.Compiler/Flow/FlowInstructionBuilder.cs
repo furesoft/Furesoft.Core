@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         public FlowInstructionBuilder(BasicBlockBuilder block)
         {
             this.block = block;
-            this.Flow = block.Flow;
+            Flow = block.Flow;
         }
 
         /// <summary>

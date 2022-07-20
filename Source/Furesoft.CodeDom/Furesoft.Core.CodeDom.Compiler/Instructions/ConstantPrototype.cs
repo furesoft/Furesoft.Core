@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private ConstantPrototype(Constant value, IType type)
         {
-            this.Value = value;
+            Value = value;
             this.type = type;
         }
 

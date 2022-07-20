@@ -29,7 +29,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             this.distinctCaches = distinctCaches;
             this.cacheIndices = cacheIndices;
             this.cacheRefCounts = cacheRefCounts;
-            this.updateLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+            updateLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
         }
 
         /// <summary>
@@ -373,9 +373,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
                 if (DefaultAnalyses.TryGetDefaultAnalysisCache(t, graph, out cache))
                 {
                     var newMacroCache = WithAnalysis(t, cache, false);
-                    this.cacheIndices = newMacroCache.cacheIndices;
-                    this.cacheRefCounts = newMacroCache.cacheRefCounts;
-                    this.distinctCaches = newMacroCache.distinctCaches;
+                    cacheIndices = newMacroCache.cacheIndices;
+                    cacheRefCounts = newMacroCache.cacheRefCounts;
+                    distinctCaches = newMacroCache.distinctCaches;
                     return true;
                 }
                 else

@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </summary>
         public SymmetricRelation()
         {
-            this.relation = new Dictionary<T, HashSet<T>>();
+            relation = new Dictionary<T, HashSet<T>>();
         }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="comparer">The equality comparer to use.</param>
         public SymmetricRelation(IEqualityComparer<T> comparer)
         {
-            this.relation = new Dictionary<T, HashSet<T>>(comparer);
+            relation = new Dictionary<T, HashSet<T>>(comparer);
         }
 
         private Dictionary<T, HashSet<T>> relation;

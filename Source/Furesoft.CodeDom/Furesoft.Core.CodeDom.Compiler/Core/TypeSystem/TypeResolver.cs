@@ -14,10 +14,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </summary>
         public TypeResolver()
         {
-            this.assemblySet = new HashSet<IAssembly>();
-            this.nestedTypeNamespaces = new ConcurrentDictionary<IType, TypeResolverNamespace>();
-            this.genericMemberNamespaces = new ConcurrentDictionary<IGenericMember, TypeResolverNamespace>();
-            this.RootNamespace = new TypeResolverNamespace();
+            assemblySet = new HashSet<IAssembly>();
+            nestedTypeNamespaces = new ConcurrentDictionary<IType, TypeResolverNamespace>();
+            genericMemberNamespaces = new ConcurrentDictionary<IGenericMember, TypeResolverNamespace>();
+            RootNamespace = new TypeResolverNamespace();
         }
 
         /// <summary>
@@ -466,10 +466,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     {
         internal TypeResolverNamespace()
         {
-            this.typeMap = new Dictionary<UnqualifiedName, List<IType>>();
-            this.impreciseTypeMap = new Dictionary<string, List<IType>>();
-            this.namespaceMap = new Dictionary<UnqualifiedName, TypeResolverNamespace>();
-            this.typeSet = new HashSet<IType>();
+            typeMap = new Dictionary<UnqualifiedName, List<IType>>();
+            impreciseTypeMap = new Dictionary<string, List<IType>>();
+            namespaceMap = new Dictionary<UnqualifiedName, TypeResolverNamespace>();
+            typeSet = new HashSet<IType>();
         }
 
         private Dictionary<UnqualifiedName, List<IType>> typeMap;

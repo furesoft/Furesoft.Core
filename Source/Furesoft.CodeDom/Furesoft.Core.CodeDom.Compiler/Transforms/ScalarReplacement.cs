@@ -28,7 +28,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// </param>
         public ScalarReplacement(Func<IType, bool> canAccessFields)
         {
-            this.CanAccessFields = canAccessFields;
+            CanAccessFields = canAccessFields;
         }
 
         /// <summary>

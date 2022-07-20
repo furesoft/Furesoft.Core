@@ -25,11 +25,11 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IType returnType)
             : base(name.Qualify(parentType.FullName))
         {
-            this.ParentType = parentType;
-            this.IsStatic = isStatic;
-            this.ReturnParameter = new Parameter(returnType);
-            this.paramList = new List<Parameter>();
-            this.baseMethodList = new List<IMethod>();
+            ParentType = parentType;
+            IsStatic = isStatic;
+            ReturnParameter = new Parameter(returnType);
+            paramList = new List<Parameter>();
+            baseMethodList = new List<IMethod>();
         }
 
         /// <inheritdoc/>

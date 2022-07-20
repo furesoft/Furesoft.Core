@@ -20,8 +20,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public ValueList(int initialCapacity)
         {
-            this.Items = new T[initialCapacity];
-            this.Count = 0;
+            Items = new T[initialCapacity];
+            Count = 0;
         }
 
         /// <summary>
@@ -32,8 +32,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public ValueList(ValueList<T> other)
         {
-            this.Items = new T[other.Count];
-            this.Count = other.Count;
+            Items = new T[other.Count];
+            Count = other.Count;
             Array.Copy((Array)other.Items, (Array)Items, Count);
         }
 
@@ -43,8 +43,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="values">The values to put in the list.</param>
         public ValueList(IEnumerable<T> values)
         {
-            this.Items = Enumerable.ToArray<T>(values);
-            this.Count = this.Items.Length;
+            Items = Enumerable.ToArray<T>(values);
+            Count = Items.Length;
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
             {
                 this[i - 1] = this[i];
             }
-            this.Count--;
+            Count--;
         }
 
         /// <summary>

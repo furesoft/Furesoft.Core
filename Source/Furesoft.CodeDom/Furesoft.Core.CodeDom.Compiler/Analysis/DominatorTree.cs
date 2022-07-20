@@ -564,7 +564,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             public DominatorTreeImpl(
                 IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> immediateDominators)
             {
-                this.ImmediateDominators = immediateDominators;
+                ImmediateDominators = immediateDominators;
             }
 
             public IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> ImmediateDominators { get; private set; }

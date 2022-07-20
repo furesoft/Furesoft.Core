@@ -290,8 +290,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             ImmutableHashSet<ValueTag> nullablePointers,
             ImmutableHashSet<ValueTag> nonDereferenceablePointers)
         {
-            this.NullablePointers = nullablePointers;
-            this.NonDereferenceablePointers = nonDereferenceablePointers;
+            NullablePointers = nullablePointers;
+            NonDereferenceablePointers = nonDereferenceablePointers;
         }
 
         /// <summary>

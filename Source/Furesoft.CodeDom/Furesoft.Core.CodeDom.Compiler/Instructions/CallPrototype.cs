@@ -15,8 +15,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private CallPrototype(IMethod callee, MethodLookup lookup)
         {
-            this.Callee = callee;
-            this.Lookup = lookup;
+            Callee = callee;
+            Lookup = lookup;
         }
 
         /// <summary>

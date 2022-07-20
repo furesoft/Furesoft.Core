@@ -1,21 +1,23 @@
-using Furesoft.Core.CodeDom.Compiler.Core;
+﻿using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
 namespace Furesoft.Core.CodeDom.Compiler.Flow
 {
     /// <summary>
-    /// Control flow that unconditionally jumps to a particular branch.
+    /// Control flow that conditionally jumps to a particular branch.
     /// </summary>
-    public sealed class JumpFlow : BlockFlow
+    public sealed class JumpConditionalFlow : BlockFlow
     {
         /// <summary>
-        /// Creates control flow that unconditionally jumps
+        /// Creates control flow that conditionally jumps
         /// to a particular branch.
         /// </summary>
         /// <param name="branch">The branch to jump to.</param>
-        public JumpFlow(Branch branch)
+        /// <param name="conditionSelector">To decide which jump instruction to emit</param>
+        public JumpConditionalFlow(Branch branch, object conditionSelector)
         {
             Branch = branch;
+            ConditionSelector = conditionSelector;
         }
 
         /// <summary>
@@ -23,8 +25,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         /// to a particular block, passing no arguments.
         /// </summary>
         /// <param name="target">The target block.</param>
-        public JumpFlow(BasicBlockTag target)
-            : this(new Branch(target))
+        public JumpConditionalFlow(BasicBlockTag target, object conditionSelector)
+            : this(new Branch(target), conditionSelector)
         { }
 
         /// <summary>
@@ -35,8 +37,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         /// <param name="arguments">
         /// A list of arguments to pass to the target block.
         /// </param>
-        public JumpFlow(BasicBlockTag target, IReadOnlyList<BranchArgument> arguments)
-            : this(new Branch(target, arguments))
+        public JumpConditionalFlow(BasicBlockTag target, object conditionSelector, IReadOnlyList<BranchArgument> arguments)
+            : this(new Branch(target, arguments), conditionSelector)
         { }
 
         /// <summary>
@@ -47,8 +49,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         /// <param name="arguments">
         /// A list of arguments to pass to the target block.
         /// </param>
-        public JumpFlow(BasicBlockTag target, IReadOnlyList<ValueTag> arguments)
-            : this(new Branch(target, arguments))
+        public JumpConditionalFlow(BasicBlockTag target, object conditionSelector, IReadOnlyList<ValueTag> arguments)
+            : this(new Branch(target, arguments), conditionSelector)
         { }
 
         /// <summary>
@@ -57,6 +59,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         /// </summary>
         /// <returns>The jump branch.</returns>
         public Branch Branch { get; private set; }
+
+        public object ConditionSelector { get; set; }
 
         /// <inheritdoc/>
         public override IReadOnlyList<Instruction> Instructions => EmptyArray<Instruction>.Value;

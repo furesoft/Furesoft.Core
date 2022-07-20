@@ -5,9 +5,6 @@ using Furesoft.Core.CodeDom.Compiler.Core.Constants;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
@@ -40,7 +37,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         public ConstantPropagation(
             Func<InstructionPrototype, IReadOnlyList<Constant>, Constant> evaluate)
         {
-            this.Analyzer = new Analysis(evaluate);
+            Analyzer = new Analysis(evaluate);
         }
 
         /// <summary>
@@ -291,8 +288,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         {
             private LatticeCell(LatticeCellKind kind, Constant value)
             {
-                this.Kind = kind;
-                this.Value = value;
+                Kind = kind;
+                Value = value;
             }
 
             public static LatticeCell Bottom =>
@@ -402,7 +399,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             public Analysis(
                 Func<InstructionPrototype, IReadOnlyList<Constant>, Constant> evaluateAsConstant)
             {
-                this.EvaluateAsConstant = evaluateAsConstant;
+                EvaluateAsConstant = evaluateAsConstant;
             }
 
             public override LatticeCell Bottom => LatticeCell.Bottom;

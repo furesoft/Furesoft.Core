@@ -41,8 +41,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
             IReadOnlyList<SwitchCase> cases,
             Branch defaultBranch)
         {
-            this.SwitchValue = switchValue;
-            this.DefaultBranch = defaultBranch;
+            SwitchValue = switchValue;
+            DefaultBranch = defaultBranch;
 
             // Iterate through the switch cases. Eliminate cases
             // that take the default branch and cases that have an
@@ -80,8 +80,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
 
             branchList.Add(DefaultBranch);
 
-            this.Cases = caseList;
-            this.cachedBranchList = branchList;
+            Cases = caseList;
+            cachedBranchList = branchList;
         }
 
         /// <summary>
@@ -331,8 +331,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
         public SwitchCase(ImmutableHashSet<Constant> values, Branch branch)
         {
             this = default(SwitchCase);
-            this.Values = values;
-            this.Branch = branch;
+            Values = values;
+            Branch = branch;
         }
 
         /// <summary>

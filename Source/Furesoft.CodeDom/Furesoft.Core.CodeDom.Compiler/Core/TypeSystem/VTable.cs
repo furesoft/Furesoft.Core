@@ -31,7 +31,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
                     impls[baseMethod] = method;
                 }
             }
-            this.implementations = impls;
+            implementations = impls;
         }
 
         public static VTable Get(IType type)

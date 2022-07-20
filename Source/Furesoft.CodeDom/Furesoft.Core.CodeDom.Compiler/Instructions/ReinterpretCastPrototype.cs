@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private ReinterpretCastPrototype(PointerType targetType)
         {
-            this.TargetType = targetType;
+            TargetType = targetType;
         }
 
         /// <summary>

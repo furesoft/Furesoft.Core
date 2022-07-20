@@ -1,9 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Instructions;
 
 namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
@@ -24,7 +21,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
             IReadOnlyList<IType> parameterTypes)
         {
             this.returnType = returnType;
-            this.ParameterTypes = parameterTypes;
+            ParameterTypes = parameterTypes;
         }
 
         /// <inheritdoc/>

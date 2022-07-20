@@ -23,7 +23,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
         public SelectedFlowInstructions(
             IReadOnlyList<SelectedInstructions<TInstruction>> chunks)
         {
-            this.Chunks = chunks;
+            Chunks = chunks;
         }
 
         /// <summary>
@@ -130,8 +130,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
             IReadOnlyList<TInstruction> instructions,
             IReadOnlyList<ValueTag> dependencies)
         {
-            this.Instructions = instructions;
-            this.Dependencies = dependencies;
+            Instructions = instructions;
+            Dependencies = dependencies;
         }
 
         /// <summary>

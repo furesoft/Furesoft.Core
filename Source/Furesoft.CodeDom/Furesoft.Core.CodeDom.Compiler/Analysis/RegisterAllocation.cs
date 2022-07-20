@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         public RegisterAllocation(
             IReadOnlyDictionary<ValueTag, TRegister> allocation)
         {
-            this.Allocation = allocation;
+            Allocation = allocation;
         }
 
         /// <summary>

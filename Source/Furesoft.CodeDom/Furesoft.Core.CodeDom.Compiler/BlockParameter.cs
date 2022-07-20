@@ -38,8 +38,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         public BlockParameter(IType type, ValueTag tag)
         {
             this = default(BlockParameter);
-            this.Type = type;
-            this.Tag = tag;
+            Type = type;
+            Tag = tag;
         }
 
         /// <summary>

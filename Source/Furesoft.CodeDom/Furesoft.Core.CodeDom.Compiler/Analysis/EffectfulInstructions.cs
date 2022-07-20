@@ -18,7 +18,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </param>
         public EffectfulInstructions(ImmutableHashSet<ValueTag> instructions)
         {
-            this.Instructions = instructions;
+            Instructions = instructions;
         }
 
         /// <summary>
@@ -53,7 +53,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         public EffectfulInstructionAnalysis(
             Predicate<NamedInstruction> isEffectful)
         {
-            this.IsEffectful = isEffectful;
+            IsEffectful = isEffectful;
         }
 
         /// <summary>

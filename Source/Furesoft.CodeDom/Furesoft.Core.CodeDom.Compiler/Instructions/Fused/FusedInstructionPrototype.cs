@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core;
 
 namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
@@ -13,15 +11,18 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
     /// </summary>
     public abstract class FusedInstructionPrototype : InstructionPrototype
     {
+        private Lazy<IType> resultTypeCache;
+
         /// <summary>
         /// Creates a fused instruction prototype.
         /// </summary>
         public FusedInstructionPrototype()
         {
-            this.resultTypeCache = new Lazy<IType>(GetResultType);
+            resultTypeCache = new Lazy<IType>(GetResultType);
         }
 
-        private Lazy<IType> resultTypeCache;
+        /// <inheritdoc/>
+        public override sealed IType ResultType => resultTypeCache.Value;
 
         /// <summary>
         /// Expands this fused instruction to an equivalent nonempty sequence
@@ -35,7 +36,26 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
         public abstract void Expand(NamedInstructionBuilder instance);
 
         /// <inheritdoc/>
-        public sealed override IType ResultType => resultTypeCache.Value;
+        public override IReadOnlyList<string> CheckConformance(
+            Instruction instance,
+            MethodBody body)
+        {
+            // Create a mock basic block that contains the instruction,
+            // expand the instruction and check conformance.
+            var builder = body.Implementation.ToBuilder();
+            var block = builder.AddBasicBlock();
+            var insn = block.AppendInstruction(instance);
+            Expand(insn);
+
+            var results = new List<string>();
+            foreach (var item in block.NamedInstructions)
+            {
+                results.AddRange(
+                    item.Prototype.CheckConformance(
+                        item.Instruction, body));
+            }
+            return results;
+        }
 
         private IType GetResultType()
         {
@@ -61,28 +81,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
 
             // Get the instruction's result type.
             return insn.Instruction.ResultType;
-        }
-
-        /// <inheritdoc/>
-        public override IReadOnlyList<string> CheckConformance(
-            Instruction instance,
-            MethodBody body)
-        {
-            // Create a mock basic block that contains the instruction,
-            // expand the instruction and check conformance.
-            var builder = body.Implementation.ToBuilder();
-            var block = builder.AddBasicBlock();
-            var insn = block.AppendInstruction(instance);
-            Expand(insn);
-
-            var results = new List<string>();
-            foreach (var item in block.NamedInstructions)
-            {
-                results.AddRange(
-                    item.Prototype.CheckConformance(
-                        item.Instruction, body));
-            }
-            return results;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <param name="elementType">The element type.</param>
         protected ContainerType(IType elementType)
         {
-            this.ElementType = elementType;
+            ElementType = elementType;
         }
 
         /// <summary>
@@ -47,9 +47,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             QualifiedName fullName,
             AttributeMap attributes)
         {
-            this.Name = name;
-            this.FullName = fullName;
-            this.Attributes = attributes;
+            Name = name;
+            FullName = fullName;
+            Attributes = attributes;
         }
 
         /// <summary>

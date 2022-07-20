@@ -35,8 +35,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public MappedComparer(Func<T1, T2> transform, IEqualityComparer<T2> resultComparer)
         {
-            this.Transform = transform;
-            this.ResultComparer = resultComparer;
+            Transform = transform;
+            ResultComparer = resultComparer;
         }
 
         /// <summary>

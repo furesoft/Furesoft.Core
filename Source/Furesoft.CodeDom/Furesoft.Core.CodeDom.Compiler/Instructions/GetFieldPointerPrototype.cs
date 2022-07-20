@@ -1,8 +1,6 @@
-using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Instructions;
 
 namespace Furesoft.Core.CodeDom.Compiler.Instructions
 {
@@ -12,10 +10,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     /// </summary>
     public sealed class GetFieldPointerPrototype : InstructionPrototype
     {
+        private static readonly InterningCache<GetFieldPointerPrototype> instanceCache
+            = new(
+                new StructuralGetFieldPointerPrototypeComparer());
+
+        private IType fieldPointerType;
+
         private GetFieldPointerPrototype(IField field)
         {
-            this.Field = field;
-            this.fieldPointerType = field.FieldType.MakePointerType(PointerKind.Reference);
+            Field = field;
+            fieldPointerType = field.FieldType.MakePointerType(PointerKind.Reference);
         }
 
         /// <summary>
@@ -24,13 +28,26 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// <value>The field whose address is taken.</value>
         public IField Field { get; private set; }
 
-        private IType fieldPointerType;
-
         /// <inheritdoc/>
         public override IType ResultType => fieldPointerType;
 
         /// <inheritdoc/>
         public override int ParameterCount => 1;
+
+        /// <summary>
+        /// Gets or creates a get-field-pointer instruction prototype
+        /// that computes the address of a particular field.
+        /// </summary>
+        /// <param name="field">
+        /// The field whose address is to be computed.
+        /// </param>
+        /// <returns>
+        /// A get-field-pointer instruction prototype.
+        /// </returns>
+        public static GetFieldPointerPrototype Create(IField field)
+        {
+            return instanceCache.Intern(new GetFieldPointerPrototype(field));
+        }
 
         /// <inheritdoc/>
         public override IReadOnlyList<string> CheckConformance(Instruction instance, MethodBody body)
@@ -82,25 +99,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         public Instruction Instantiate(ValueTag basePointer)
         {
             return Instantiate(new ValueTag[] { basePointer });
-        }
-
-        private static readonly InterningCache<GetFieldPointerPrototype> instanceCache
-            = new(
-                new StructuralGetFieldPointerPrototypeComparer());
-
-        /// <summary>
-        /// Gets or creates a get-field-pointer instruction prototype
-        /// that computes the address of a particular field.
-        /// </summary>
-        /// <param name="field">
-        /// The field whose address is to be computed.
-        /// </param>
-        /// <returns>
-        /// A get-field-pointer instruction prototype.
-        /// </returns>
-        public static GetFieldPointerPrototype Create(IField field)
-        {
-            return instanceCache.Intern(new GetFieldPointerPrototype(field));
         }
     }
 

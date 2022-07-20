@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private NewObjectPrototype(IMethod constructor)
         {
-            this.Constructor = constructor;
+            Constructor = constructor;
         }
 
         /// <summary>

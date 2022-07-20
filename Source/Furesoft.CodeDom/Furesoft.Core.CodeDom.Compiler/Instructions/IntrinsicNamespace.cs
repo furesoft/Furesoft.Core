@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// <param name="ns">The namespace to manage.</param>
         public IntrinsicNamespace(string ns)
         {
-            this.Namespace = ns;
+            Namespace = ns;
         }
 
         /// <summary>

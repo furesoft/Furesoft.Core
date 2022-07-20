@@ -16,7 +16,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
     {
         private StoreFieldPrototype(IField field)
         {
-            this.Field = field;
+            Field = field;
         }
 
         /// <summary>

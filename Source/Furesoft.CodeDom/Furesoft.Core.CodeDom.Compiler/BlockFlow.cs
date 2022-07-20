@@ -101,8 +101,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         public BlockFlow MapValues(
             Func<ValueTag, ValueTag> mapping)
         {
-            return this
-                .WithInstructions(
+            return 
+                WithInstructions(
                     Instructions.EagerSelect(insn => insn.MapArguments(mapping)))
                 .WithBranches(
                     Branches.EagerSelect(branch => branch.MapArguments(mapping)));
@@ -141,8 +141,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         public BlockFlow MapBlocks(
             Func<BasicBlockTag, BasicBlockTag> mapping)
         {
-            return this
-                .WithBranches(
+            return 
+                WithBranches(
                     Branches.EagerSelect(branch => branch.WithTarget(mapping(branch.Target))));
         }
 
@@ -190,8 +190,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         public BlockFlow MapArguments(
             Func<BranchArgument, BranchArgument> mapping)
         {
-            return this
-                .WithBranches(
+            return 
+                WithBranches(
                     Branches.EagerSelect(branch => branch.MapArguments(mapping)));
         }
 

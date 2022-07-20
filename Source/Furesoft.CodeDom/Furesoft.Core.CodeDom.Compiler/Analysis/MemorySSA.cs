@@ -109,8 +109,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             ImmutableDictionary<BasicBlockTag, Value> blockValues,
             ImmutableDictionary<ValueTag, Value> instructionValues)
         {
-            this.BlockValues = blockValues;
-            this.InstructionValues = instructionValues;
+            BlockValues = blockValues;
+            InstructionValues = instructionValues;
         }
 
         /// <summary>
@@ -197,7 +197,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             /// </param>
             public Phi(IReadOnlyList<Value> operands)
             {
-                this.Operands = operands;
+                Operands = operands;
             }
 
             /// <summary>
@@ -227,9 +227,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             /// </param>
             public Store(Value operand, ValueTag address, ValueTag value)
             {
-                this.Operand = operand;
-                this.Address = address;
-                this.Value = value;
+                Operand = operand;
+                Address = address;
+                Value = value;
             }
 
             /// <summary>

@@ -11,7 +11,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IndirectPropertySpecialization parentProperty)
             : base(declaration, (TypeSpecialization)parentProperty.ParentType)
         {
-            this.specializedParentProperty = parentProperty;
+            specializedParentProperty = parentProperty;
         }
 
         private IndirectPropertySpecialization specializedParentProperty;

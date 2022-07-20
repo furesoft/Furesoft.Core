@@ -80,9 +80,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             AttributeMap attributes)
         {
             this = default(Parameter);
-            this.Type = type;
-            this.Name = name;
-            this.Attributes = attributes;
+            Type = type;
+            Name = name;
+            Attributes = attributes;
         }
 
         public Parameter(
@@ -108,7 +108,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             : this(type, name, attributes)
         {
             this.DefaultValue = DefaultValue;
-            this.HasDefault = true;
+            HasDefault = true;
         }
 
         /// <summary>
@@ -164,7 +164,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// <returns>The new parameter.</returns>
         public Parameter WithType(IType type)
         {
-            return new Parameter(type, this.Name, this.Attributes);
+            return new Parameter(type, Name, Attributes);
         }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// <returns>The new parameter.</returns>
         public Parameter WithAttributes(AttributeMap attributes)
         {
-            return new Parameter(this.Type, this.Name, attributes);
+            return new Parameter(Type, Name, attributes);
         }
 
         /// <summary>

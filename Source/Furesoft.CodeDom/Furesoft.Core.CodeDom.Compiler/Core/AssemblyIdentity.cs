@@ -33,8 +33,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
             string name,
             IReadOnlyDictionary<string, string> annotations)
         {
-            this.Name = name;
-            this.Annotations = annotations;
+            Name = name;
+            Annotations = annotations;
         }
 
         /// <summary>

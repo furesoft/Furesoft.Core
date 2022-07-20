@@ -24,9 +24,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// <param name="arguments">The attribute's list of arguments.</param>
         public IntrinsicAttribute(string name, IReadOnlyList<Constant> arguments)
         {
-            this.Name = name;
-            this.Arguments = arguments;
-            this.AttributeType = GetIntrinsicAttributeType(name);
+            Name = name;
+            Arguments = arguments;
+            AttributeType = GetIntrinsicAttributeType(name);
         }
 
         /// <summary>

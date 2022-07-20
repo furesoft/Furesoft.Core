@@ -16,8 +16,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="initializer">The initializer to run once.</param>
         private DeferredInitializer(Action initializer)
         {
-            this.init = initializer;
-            this.syncObject = new object();
+            init = initializer;
+            syncObject = new object();
         }
 
         /// <summary>

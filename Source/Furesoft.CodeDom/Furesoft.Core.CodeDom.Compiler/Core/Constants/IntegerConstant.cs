@@ -20,8 +20,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         {
             ContractHelpers.Assert(spec != null);
 
-            this.Value = value;
-            this.Spec = spec;
+            Value = value;
+            Spec = spec;
         }
 
         /// <summary>
@@ -33,11 +33,11 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </remarks>
         public IntegerConstant(bool value)
         {
-            this.Spec = IntegerSpec.UInt1;
+            Spec = IntegerSpec.UInt1;
             if (value)
-                this.Value = BigInteger.One;
+                Value = BigInteger.One;
             else
-                this.Value = BigInteger.Zero;
+                Value = BigInteger.Zero;
         }
 
         /// <summary>
@@ -49,8 +49,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </remarks>
         public IntegerConstant(sbyte value)
         {
-            this.Value = new BigInteger((int)value);
-            this.Spec = IntegerSpec.Int8;
+            Value = new BigInteger((int)value);
+            Spec = IntegerSpec.Int8;
         }
 
         /// <summary>
@@ -58,8 +58,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(char value)
         {
-            this.Value = new BigInteger((int)value);
-            this.Spec = IntegerSpec.UInt16;
+            Value = new BigInteger((int)value);
+            Spec = IntegerSpec.UInt16;
         }
 
         /// <summary>
@@ -67,8 +67,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(short value)
         {
-            this.Value = new BigInteger((int)value);
-            this.Spec = IntegerSpec.Int16;
+            Value = new BigInteger((int)value);
+            Spec = IntegerSpec.Int16;
         }
 
         /// <summary>
@@ -76,8 +76,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(int value)
         {
-            this.Value = new BigInteger(value);
-            this.Spec = IntegerSpec.Int32;
+            Value = new BigInteger(value);
+            Spec = IntegerSpec.Int32;
         }
 
         /// <summary>
@@ -85,8 +85,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(long value)
         {
-            this.Value = new BigInteger(value);
-            this.Spec = IntegerSpec.Int64;
+            Value = new BigInteger(value);
+            Spec = IntegerSpec.Int64;
         }
 
         /// <summary>
@@ -94,8 +94,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(byte value)
         {
-            this.Value = new BigInteger((int)value);
-            this.Spec = IntegerSpec.UInt8;
+            Value = new BigInteger((int)value);
+            Spec = IntegerSpec.UInt8;
         }
 
         /// <summary>
@@ -103,8 +103,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(ushort value)
         {
-            this.Value = new BigInteger((int)value);
-            this.Spec = IntegerSpec.UInt16;
+            Value = new BigInteger((int)value);
+            Spec = IntegerSpec.UInt16;
         }
 
         /// <summary>
@@ -112,8 +112,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(uint value)
         {
-            this.Value = new BigInteger(value);
-            this.Spec = IntegerSpec.UInt32;
+            Value = new BigInteger(value);
+            Spec = IntegerSpec.UInt32;
         }
 
         /// <summary>
@@ -121,8 +121,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerConstant(ulong value)
         {
-            this.Value = new BigInteger(value);
-            this.Spec = IntegerSpec.UInt64;
+            Value = new BigInteger(value);
+            Spec = IntegerSpec.UInt64;
         }
 
         /// <summary>
@@ -709,7 +709,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 
             ContractHelpers.Assert(leadingZeros >= 0);
 
-            var d = this.CastSignedness(false);
+            var d = CastSignedness(false);
             IntegerConstant delta;
             // Initialize the "add" indicator.
             bool useAdd = false;
@@ -811,7 +811,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
             // The algorithm implemented there was originally taken from
             // "Hacker's Delight", Henry S. Warren, Jr., chapter 10.
 
-            var d = this.CastSignedness(false);
+            var d = CastSignedness(false);
             var signed = Spec.SignedVariant;
             var unsigned = d.Spec;
 
@@ -822,7 +822,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 
             IntegerConstant delta;
 
-            var ad = this.AbsoluteValue.Normalized;
+            var ad = AbsoluteValue.Normalized;
             var t = signedMin.Add(d.ShiftRight(unsigned.Size - 1));
             // Initialyze `anc`, the absolute value of `nc`.
             var anc = t.Subtract(one).Subtract(t.Remainder(ad).Normalized).Normalized;
@@ -862,7 +862,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 
             // Compute the resulting magic number.
             var magicMultiplier = q2.Add(one).Cast(signed);
-            if (this.IsNegative)
+            if (IsNegative)
             {
                 magicMultiplier = magicMultiplier.Negated;
             }
@@ -886,9 +886,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// <param name="useAdd">A Boolean flag that tells if an addition should be used.</param>
         public UnsignedDivisionMagic(IntegerConstant multiplier, int shiftAmount, bool useAdd)
         {
-            this.Multiplier = multiplier;
-            this.ShiftAmount = shiftAmount;
-            this.UseAdd = useAdd;
+            Multiplier = multiplier;
+            ShiftAmount = shiftAmount;
+            UseAdd = useAdd;
         }
 
         /// <summary>
@@ -924,8 +924,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// <param name="shiftAmount">An amount of bits to shift.</param>
         public SignedDivisionMagic(IntegerConstant multiplier, int shiftAmount)
         {
-            this.Multiplier = multiplier;
-            this.ShiftAmount = shiftAmount;
+            Multiplier = multiplier;
+            ShiftAmount = shiftAmount;
         }
 
         /// <summary>

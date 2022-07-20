@@ -22,9 +22,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IType fieldType)
             : base(name.Qualify(parentType.FullName))
         {
-            this.ParentType = parentType;
-            this.IsStatic = isStatic;
-            this.FieldType = fieldType;
+            ParentType = parentType;
+            IsStatic = isStatic;
+            FieldType = fieldType;
         }
 
         /// <summary>

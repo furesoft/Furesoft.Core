@@ -16,8 +16,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         public ReadOnlySlice(IReadOnlyList<T> list)
         {
             this.list = list;
-            this.offset = 0;
-            this.Count = list.Count;
+            offset = 0;
+            Count = list.Count;
         }
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         {
             this.list = list;
             this.offset = offset;
-            this.Count = count;
+            Count = count;
 
             if (offset + count > list.Count)
             {

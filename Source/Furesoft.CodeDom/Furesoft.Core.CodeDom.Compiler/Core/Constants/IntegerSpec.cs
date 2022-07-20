@@ -16,22 +16,22 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// </summary>
         public IntegerSpec(int size, bool isSigned)
         {
-            this.Size = size;
-            this.IsSigned = isSigned;
+            Size = size;
+            IsSigned = isSigned;
 
             ContractHelpers.Assert(size > 0);
 
-            this.UnsignedModulus = BigInteger.Pow(new BigInteger((int)2), size);
-            this.Modulus = BigInteger.Pow(new BigInteger((int)2), DataSize);
-            this.MaxValue = BigInteger.Subtract(Modulus, BigInteger.One);
+            UnsignedModulus = BigInteger.Pow(new BigInteger((int)2), size);
+            Modulus = BigInteger.Pow(new BigInteger((int)2), DataSize);
+            MaxValue = BigInteger.Subtract(Modulus, BigInteger.One);
 
             if (isSigned)
             {
-                this.MinValue = BigInteger.Negate(Modulus);
+                MinValue = BigInteger.Negate(Modulus);
             }
             else
             {
-                this.MinValue = BigInteger.Zero;
+                MinValue = BigInteger.Zero;
             }
         }
 

@@ -13,8 +13,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private SizeOfPrototype(IType measuredType, IType resultType)
         {
-            this.MeasuredType = measuredType;
-            this.resultTy = resultType;
+            MeasuredType = measuredType;
+            resultTy = resultType;
         }
 
         /// <summary>

@@ -48,8 +48,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
             IMethod method,
             Optimizer optimizer)
         {
-            this.Method = method;
-            this.Optimizer = optimizer;
+            Method = method;
+            Optimizer = optimizer;
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
         /// </remarks>
         public Task<MethodBody> GetBodyAsync(IMethod method)
         {
-            return Optimizer.GetBodyAsync(method, this.Method);
+            return Optimizer.GetBodyAsync(method, Method);
         }
     }
 }

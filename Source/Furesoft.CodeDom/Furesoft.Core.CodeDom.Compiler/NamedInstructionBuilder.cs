@@ -19,7 +19,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         internal NamedInstructionBuilder(FlowGraphBuilder graph, ValueTag tag)
         {
             this.graph = graph;
-            this.Tag = tag;
+            Tag = tag;
         }
 
         private FlowGraphBuilder graph;
@@ -179,7 +179,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// </param>
         public void MoveTo(int index, BasicBlockTag block)
         {
-            var data = this.Instruction;
+            var data = Instruction;
             var target = Graph.GetBasicBlock(block);
             Graph.RemoveInstruction(Tag);
             target.InsertInstruction(index, data, Tag);
@@ -194,7 +194,7 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// </param>
         public void MoveTo(BasicBlockTag block)
         {
-            var data = this.Instruction;
+            var data = Instruction;
             var target = Graph.GetBasicBlock(block);
             Graph.RemoveInstruction(Tag);
             target.AppendInstruction(data, Tag);

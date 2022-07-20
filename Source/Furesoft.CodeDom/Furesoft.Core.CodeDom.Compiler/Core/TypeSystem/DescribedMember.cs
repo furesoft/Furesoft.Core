@@ -17,8 +17,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </param>
         public DescribedMember(QualifiedName fullName)
         {
-            this.FullName = fullName;
-            this.attributeBuilder = new AttributeMapBuilder();
+            FullName = fullName;
+            attributeBuilder = new AttributeMapBuilder();
         }
 
         /// <inheritdoc/>

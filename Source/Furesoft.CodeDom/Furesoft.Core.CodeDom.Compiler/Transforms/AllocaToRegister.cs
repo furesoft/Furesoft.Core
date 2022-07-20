@@ -160,19 +160,19 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             {
                 this.graphBuilder = graphBuilder;
                 this.eligibleAllocas = eligibleAllocas;
-                this.currentDef = new Dictionary<ValueTag, Dictionary<BasicBlockTag, ValueTag>>();
-                this.incompletePhis = new Dictionary<BasicBlockTag, Dictionary<ValueTag, BlockParameter>>();
-                this.filledBlocks = new HashSet<BasicBlockTag>();
-                this.processedBlocks = new HashSet<BasicBlockTag>();
-                this.predecessors = graphBuilder.GetAnalysisResult<BasicBlockPredecessors>();
+                currentDef = new Dictionary<ValueTag, Dictionary<BasicBlockTag, ValueTag>>();
+                incompletePhis = new Dictionary<BasicBlockTag, Dictionary<ValueTag, BlockParameter>>();
+                filledBlocks = new HashSet<BasicBlockTag>();
+                processedBlocks = new HashSet<BasicBlockTag>();
+                predecessors = graphBuilder.GetAnalysisResult<BasicBlockPredecessors>();
 
                 foreach (var alloca in eligibleAllocas)
                 {
-                    this.currentDef[alloca] = new Dictionary<BasicBlockTag, ValueTag>();
+                    currentDef[alloca] = new Dictionary<BasicBlockTag, ValueTag>();
                 }
                 foreach (var tag in graphBuilder.BasicBlockTags)
                 {
-                    this.incompletePhis[tag] = new Dictionary<ValueTag, BlockParameter>();
+                    incompletePhis[tag] = new Dictionary<ValueTag, BlockParameter>();
                 }
             }
 

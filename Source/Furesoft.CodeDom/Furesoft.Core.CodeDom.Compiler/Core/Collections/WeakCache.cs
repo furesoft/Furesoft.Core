@@ -75,16 +75,16 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         public WeakCache(IEqualityComparer<TKey> keyComparer, int maxConcurrency)
         {
             this.keyComparer = keyComparer;
-            this.buckets = new WeakCacheBucket<TKey, TValue>[primes[0]];
-            this.initializedBucketCount = 0;
-            this.accessCounters = new int[maxConcurrency];
-            this.domainLocks = new object[maxConcurrency];
-            this.resizeLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
+            buckets = new WeakCacheBucket<TKey, TValue>[primes[0]];
+            initializedBucketCount = 0;
+            accessCounters = new int[maxConcurrency];
+            domainLocks = new object[maxConcurrency];
+            resizeLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 
             for (int i = 0; i < maxConcurrency; i++)
             {
-                this.accessCounters[i] = 0;
-                this.domainLocks[i] = new object();
+                accessCounters[i] = 0;
+                domainLocks[i] = new object();
             }
         }
 
@@ -556,10 +556,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
             if (!IsEmpty)
             {
                 var newSpilloverlist = new WeakCacheBucketNode<TKey, TValue>(this);
-                this.spilloverList = newSpilloverlist;
+                spilloverList = newSpilloverlist;
             }
 
-            this.keyValuePair = kvPair;
+            keyValuePair = kvPair;
         }
 
         /// <summary>

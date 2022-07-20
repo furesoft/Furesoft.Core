@@ -22,7 +22,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         private PointerType(IType elementType, PointerKind kind)
             : base(elementType)
         {
-            this.Kind = kind;
+            Kind = kind;
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     {
         public PrimitivePointerKind(string name)
         {
-            this.Name = name;
+            Name = name;
         }
 
         public string Name { get; private set; }

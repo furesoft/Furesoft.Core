@@ -13,8 +13,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IProperty declaration,
             TypeSpecialization parentType)
         {
-            this.Declaration = declaration;
-            this.specializedParentType = parentType;
+            Declaration = declaration;
+            specializedParentType = parentType;
         }
 
         private static IndirectPropertySpecialization InitializeInstance(

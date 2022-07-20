@@ -12,7 +12,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// <param name="type">The type to create a token to.</param>
         public TypeTokenConstant(IType type)
         {
-            this.Type = type;
+            Type = type;
         }
 
         /// <summary>

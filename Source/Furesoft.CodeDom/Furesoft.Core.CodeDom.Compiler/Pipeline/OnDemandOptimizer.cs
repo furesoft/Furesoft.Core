@@ -77,11 +77,11 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
             Func<IMethod, MethodBody> getInitialMethodBody)
         {
             this.pipeline = pipeline;
-            this.getInitMethodBody = getInitialMethodBody;
-            this.holders = new ConcurrentDictionary<IMethod, MethodBodyHolder>();
-            this.graphLock = new object();
-            this.results = new Dictionary<IMethod, TaskCompletionSource<MethodBody>>();
-            this.dependencies = new Dictionary<IMethod, HashSet<IMethod>>();
+            getInitMethodBody = getInitialMethodBody;
+            holders = new ConcurrentDictionary<IMethod, MethodBodyHolder>();
+            graphLock = new object();
+            results = new Dictionary<IMethod, TaskCompletionSource<MethodBody>>();
+            dependencies = new Dictionary<IMethod, HashSet<IMethod>>();
         }
 
         /// <summary>

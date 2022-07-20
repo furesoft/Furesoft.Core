@@ -21,9 +21,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
             IType returnType,
             IReadOnlyList<IType> parameterTypes)
         {
-            this.Name = name;
+            Name = name;
             this.returnType = returnType;
-            this.ParameterTypes = parameterTypes;
+            ParameterTypes = parameterTypes;
         }
 
         /// <summary>

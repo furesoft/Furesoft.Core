@@ -15,7 +15,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
     {
         private CopyPrototype(IType resultType)
         {
-            this.type = resultType;
+            type = resultType;
         }
 
         private IType type;

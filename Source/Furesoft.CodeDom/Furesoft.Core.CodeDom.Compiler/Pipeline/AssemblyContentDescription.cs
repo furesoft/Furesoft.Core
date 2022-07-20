@@ -16,10 +16,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Pipeline
             IMethod entryPoint,
             TypeEnvironment environment)
         {
-            this.FullName = fullName;
-            this.Attributes = attributes;
-            this.Assembly = assembly;
-            this.EntryPoint = entryPoint;
+            FullName = fullName;
+            Attributes = attributes;
+            Assembly = assembly;
+            EntryPoint = entryPoint;
             Environment = environment;
         }
 

@@ -25,7 +25,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </param>
         public InterningCache(IEqualityComparer<T> comparer, Func<T, T> initialize)
         {
-            this.mainCache = new WeakCache<T, T>(comparer);
+            mainCache = new WeakCache<T, T>(comparer);
             this.initialize = initialize;
         }
 

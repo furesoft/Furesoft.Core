@@ -35,8 +35,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             IType returnType)
             : base(parentProperty.ParentType, name, isStatic, returnType)
         {
-            this.Kind = kind;
-            this.ParentProperty = parentProperty;
+            Kind = kind;
+            ParentProperty = parentProperty;
         }
 
         /// <inheritdoc/>

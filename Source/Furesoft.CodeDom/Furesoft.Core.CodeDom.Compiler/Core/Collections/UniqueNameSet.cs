@@ -17,7 +17,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </summary>
         public PrefixNameGenerator(string prefix)
         {
-            this.Prefix = prefix;
+            Prefix = prefix;
         }
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         public UniqueNameSet(Func<T, string> getName, string prefix)
         {
             this.getName = getName;
-            this.generateName = new PrefixNameGenerator<T>(prefix).GenerateName;
-            this.nameSet = new HashSet<string>();
+            generateName = new PrefixNameGenerator<T>(prefix).GenerateName;
+            nameSet = new HashSet<string>();
         }
 
         /// <summary>
@@ -83,8 +83,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         public UniqueNameSet(Func<T, string> getName, string prefix, UniqueNameSet<T> alias)
         {
             this.getName = getName;
-            this.generateName = new PrefixNameGenerator<T>(prefix).GenerateName;
-            this.nameSet = alias.nameSet;
+            generateName = new PrefixNameGenerator<T>(prefix).GenerateName;
+            nameSet = alias.nameSet;
         }
 
         /// <summary>
@@ -105,7 +105,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         {
             this.getName = getName;
             this.generateName = generateName;
-            this.nameSet = new HashSet<string>();
+            nameSet = new HashSet<string>();
         }
 
         /// <summary>
@@ -133,7 +133,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         {
             this.getName = getName;
             this.generateName = generateName;
-            this.nameSet = alias.nameSet;
+            nameSet = alias.nameSet;
         }
 
         private Func<T, string> getName;

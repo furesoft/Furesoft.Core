@@ -69,7 +69,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         public FlowGraphAnalysisCache(IFlowGraphAnalysis<T> analysis)
         {
             this.analysis = analysis;
-            this.resultLock = new ReaderWriterLockSlim();
+            resultLock = new ReaderWriterLockSlim();
         }
 
         private sealed class Box<TVal>
@@ -110,8 +110,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             var result = new FlowGraphAnalysisCache<T>();
             result.update = update;
             result.parentCache = this;
-            result.analysis = this.analysis;
-            result.resultLock = this.resultLock;
+            result.analysis = analysis;
+            result.resultLock = resultLock;
             return result;
         }
 

@@ -40,9 +40,9 @@ namespace Furesoft.Core.CodeDom.Compiler
             ImmutableList<ValueTag> instructions,
             BlockFlow flow)
         {
-            this.Parameters = parameters;
-            this.InstructionTags = instructions;
-            this.Flow = flow;
+            Parameters = parameters;
+            InstructionTags = instructions;
+            Flow = flow;
         }
 
         /// <summary>

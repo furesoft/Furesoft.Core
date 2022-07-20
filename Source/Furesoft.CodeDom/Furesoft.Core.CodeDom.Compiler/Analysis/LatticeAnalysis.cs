@@ -17,8 +17,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             IReadOnlyDictionary<ValueTag, TCell> valueCells,
             IEnumerable<BasicBlockTag> liveBlocks)
         {
-            this.ValueCells = valueCells;
-            this.LiveBlocks = liveBlocks;
+            ValueCells = valueCells;
+            LiveBlocks = liveBlocks;
         }
 
         /// <summary>

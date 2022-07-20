@@ -19,8 +19,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// <param name="tag">The basic block's tag.</param>
         internal BasicBlockBuilder(FlowGraphBuilder graph, BasicBlockTag tag)
         {
-            this.Graph = graph;
-            this.Tag = tag;
+            Graph = graph;
+            Tag = tag;
         }
 
         /// <summary>

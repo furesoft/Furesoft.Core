@@ -15,8 +15,8 @@ namespace Furesoft.Core.CodeDom.Compiler
         internal BasicBlock(FlowGraph graph, BasicBlockTag tag, BasicBlockData data)
         {
             this = default(BasicBlock);
-            this.Graph = graph;
-            this.Tag = tag;
+            Graph = graph;
+            Tag = tag;
             this.data = data;
         }
 
@@ -114,9 +114,9 @@ namespace Furesoft.Core.CodeDom.Compiler
         public BasicBlock RemoveInstruction(ValueTag tag)
         {
             ContractHelpers.Assert(
-                Graph.GetValueParent(tag).Tag == this.Tag,
+                Graph.GetValueParent(tag).Tag == Tag,
                 "Basic block does not define the instruction being removed.");
-            return Graph.RemoveInstruction(tag).GetBasicBlock(this.Tag);
+            return Graph.RemoveInstruction(tag).GetBasicBlock(Tag);
         }
 
         /// <summary>

@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler.Instructions.Fused;
 
 namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
 {
@@ -14,9 +11,13 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
     /// </summary>
     public sealed class LoadFieldPrototype : FusedInstructionPrototype
     {
+        private static readonly InterningCache<LoadFieldPrototype> instanceCache
+            = new(
+                new MappedComparer<LoadFieldPrototype, IField>(proto => proto.Field));
+
         private LoadFieldPrototype(IField field)
         {
-            this.Field = field;
+            Field = field;
         }
 
         /// <summary>
@@ -27,6 +28,21 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
 
         /// <inheritdoc/>
         public override int ParameterCount => 1;
+
+        /// <summary>
+        /// Gets or creates an instruction prototype for instructions
+        /// that load a particular field.
+        /// </summary>
+        /// <param name="field">
+        /// The field that is to be loaded.
+        /// </param>
+        /// <returns>
+        /// A load-field instruction prototype.
+        /// </returns>
+        public static LoadFieldPrototype Create(IField field)
+        {
+            return instanceCache.Intern(new LoadFieldPrototype(field));
+        }
 
         /// <inheritdoc/>
         public override InstructionPrototype Map(MemberMapping mapping)
@@ -57,25 +73,6 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions.Fused
         public Instruction Instantiate(ValueTag basePointer)
         {
             return Instantiate(new ValueTag[] { basePointer });
-        }
-
-        private static readonly InterningCache<LoadFieldPrototype> instanceCache
-            = new(
-                new MappedComparer<LoadFieldPrototype, IField>(proto => proto.Field));
-
-        /// <summary>
-        /// Gets or creates an instruction prototype for instructions
-        /// that load a particular field.
-        /// </summary>
-        /// <param name="field">
-        /// The field that is to be loaded.
-        /// </param>
-        /// <returns>
-        /// A load-field instruction prototype.
-        /// </returns>
-        public static LoadFieldPrototype Create(IField field)
-        {
-            return instanceCache.Intern(new LoadFieldPrototype(field));
         }
     }
 }

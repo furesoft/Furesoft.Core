@@ -20,9 +20,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="value">A value.</param>
         public HashedKeyValuePair(int keyHashCode, TKey key, TValue value)
         {
-            this.KeyHashCode = keyHashCode;
-            this.Key = key;
-            this.Value = value;
+            KeyHashCode = keyHashCode;
+            Key = key;
+            Value = value;
         }
 
         /// <summary>
@@ -55,8 +55,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// </summary>
         public SmallMultiDictionary()
         {
-            this.keyEq = EqualityComparer<TKey>.Default;
-            this.pairs = new ValueList<HashedKeyValuePair<TKey, TValue>>(6);
+            keyEq = EqualityComparer<TKey>.Default;
+            pairs = new ValueList<HashedKeyValuePair<TKey, TValue>>(6);
         }
 
         /// <summary>
@@ -65,8 +65,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="initialCapacity">The dictionary's initial capacity.</param>
         public SmallMultiDictionary(int initialCapacity)
         {
-            this.keyEq = EqualityComparer<TKey>.Default;
-            this.pairs = new ValueList<HashedKeyValuePair<TKey, TValue>>(initialCapacity);
+            keyEq = EqualityComparer<TKey>.Default;
+            pairs = new ValueList<HashedKeyValuePair<TKey, TValue>>(initialCapacity);
         }
 
         /// <summary>
@@ -76,8 +76,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         /// <param name="other">The other multi-dictionary.</param>
         public SmallMultiDictionary(SmallMultiDictionary<TKey, TValue> other)
         {
-            this.pairs = new ValueList<HashedKeyValuePair<TKey, TValue>>(other.pairs);
-            this.keyEq = other.keyEq;
+            pairs = new ValueList<HashedKeyValuePair<TKey, TValue>>(other.pairs);
+            keyEq = other.keyEq;
         }
 
         private EqualityComparer<TKey> keyEq;

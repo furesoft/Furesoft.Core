@@ -245,8 +245,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             SubtypingRules subtyping,
             Func<IMember, IType, bool> isExportedTo)
         {
-            this.Subtyping = subtyping;
-            this.IsExportedTo = isExportedTo;
+            Subtyping = subtyping;
+            IsExportedTo = isExportedTo;
         }
 
         /// <summary>

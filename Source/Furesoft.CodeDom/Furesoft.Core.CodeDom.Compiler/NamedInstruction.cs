@@ -14,10 +14,10 @@ namespace Furesoft.Core.CodeDom.Compiler
         internal NamedInstruction(
             BasicBlock block, ValueTag tag, Instruction instruction)
         {
-            this.Block = block;
-            this.Tag = tag;
-            this.Instruction = instruction;
-            this.instrIndexValue = -1;
+            Block = block;
+            Tag = tag;
+            Instruction = instruction;
+            instrIndexValue = -1;
         }
 
         internal NamedInstruction(
@@ -26,10 +26,10 @@ namespace Furesoft.Core.CodeDom.Compiler
             Instruction instruction,
             int instructionIndex)
         {
-            this.Block = block;
-            this.Tag = tag;
-            this.Instruction = instruction;
-            this.instrIndexValue = instructionIndex;
+            Block = block;
+            Tag = tag;
+            Instruction = instruction;
+            instrIndexValue = instructionIndex;
         }
 
         /// <summary>

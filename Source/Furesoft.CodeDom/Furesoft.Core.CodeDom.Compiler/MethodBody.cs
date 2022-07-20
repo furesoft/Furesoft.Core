@@ -37,10 +37,10 @@ namespace Furesoft.Core.CodeDom.Compiler
             IReadOnlyList<Parameter> parameters,
             FlowGraph implementation)
         {
-            this.ReturnParameter = returnParameter;
-            this.ThisParameter = thisParameter;
-            this.Parameters = parameters;
-            this.Implementation = implementation;
+            ReturnParameter = returnParameter;
+            ThisParameter = thisParameter;
+            Parameters = parameters;
+            Implementation = implementation;
         }
 
         /// <summary>

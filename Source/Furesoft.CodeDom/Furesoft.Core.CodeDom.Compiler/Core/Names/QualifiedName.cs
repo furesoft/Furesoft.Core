@@ -88,7 +88,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Names
         public QualifiedName(IReadOnlyList<string> names)
         {
             this = default(QualifiedName);
-            this.qualifiers = new UnqualifiedName[names.Count];
+            qualifiers = new UnqualifiedName[names.Count];
             for (int i = 0; i < qualifiers.Length; i++)
             {
                 qualifiers[i] = new SimpleName(names[i]);

@@ -90,7 +90,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         {
             private ArgumentRead(int parameterIndex)
             {
-                this.ParameterIndex = parameterIndex;
+                ParameterIndex = parameterIndex;
             }
 
             /// <inheritdoc/>
@@ -128,7 +128,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         {
             private ArgumentWrite(int parameterIndex)
             {
-                this.ParameterIndex = parameterIndex;
+                ParameterIndex = parameterIndex;
             }
 
             /// <inheritdoc/>
@@ -166,7 +166,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         {
             private Union(IReadOnlyList<MemorySpecification> elements)
             {
-                this.Elements = elements;
+                Elements = elements;
             }
 
             /// <summary>
@@ -201,8 +201,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
 
             public UnknownSpec(bool mayRead, bool mayWrite)
             {
-                this.mayReadValue = mayRead;
-                this.mayWriteValue = mayWrite;
+                mayReadValue = mayRead;
+                mayWriteValue = mayWrite;
             }
 
             /// <inheritdoc/>
@@ -323,7 +323,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         public RuleBasedPrototypeMemorySpecs()
         {
-            this.store = new RuleBasedSpecStore<MemorySpecification>(Unknown);
+            store = new RuleBasedSpecStore<MemorySpecification>(Unknown);
         }
 
         /// <summary>
@@ -331,7 +331,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         /// </summary>
         public RuleBasedPrototypeMemorySpecs(RuleBasedPrototypeMemorySpecs other)
         {
-            this.store = new RuleBasedSpecStore<MemorySpecification>(other.store);
+            store = new RuleBasedSpecStore<MemorySpecification>(other.store);
         }
 
         /// <inheritdoc/>

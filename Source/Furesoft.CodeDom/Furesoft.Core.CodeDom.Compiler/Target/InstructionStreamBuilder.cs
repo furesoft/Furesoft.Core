@@ -31,7 +31,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Target
         protected InstructionStreamBuilder(
             ILinearInstructionSelector<TInstruction> instructionSelector)
         {
-            this.InstructionSelector = instructionSelector;
+            InstructionSelector = instructionSelector;
         }
 
         /// <summary>

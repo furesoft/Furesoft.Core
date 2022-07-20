@@ -28,7 +28,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
         /// <param name="value">The alignment.</param>
         public Alignment(uint value)
         {
-            this.Value = value;
+            Value = value;
         }
 
         /// <summary>
@@ -115,9 +115,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
 
         private LoadPrototype(IType elementType, bool isVolatile, Alignment alignment)
         {
-            this.elemType = elementType;
-            this.IsVolatile = isVolatile;
-            this.Alignment = alignment;
+            elemType = elementType;
+            IsVolatile = isVolatile;
+            Alignment = alignment;
         }
 
         /// <summary>

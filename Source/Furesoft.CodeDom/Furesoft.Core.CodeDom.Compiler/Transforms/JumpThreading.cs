@@ -26,7 +26,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
         /// </param>
         public JumpThreading(bool includeSwitches = true)
         {
-            this.IncludeSwitches = includeSwitches;
+            IncludeSwitches = includeSwitches;
         }
 
         /// <summary>

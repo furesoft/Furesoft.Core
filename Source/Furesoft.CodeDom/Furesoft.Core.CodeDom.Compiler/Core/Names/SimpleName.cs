@@ -23,8 +23,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Names
         /// </summary>
         public SimpleName(string name, int typeParameterCount)
         {
-            this.Name = name;
-            this.TypeParameterCount = typeParameterCount;
+            Name = name;
+            TypeParameterCount = typeParameterCount;
         }
 
         /// <summary>

@@ -25,7 +25,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public DescribedType(QualifiedName fullName, IAssembly assembly)
             : base(fullName)
         {
-            this.Parent = new TypeParent(assembly);
+            Parent = new TypeParent(assembly);
             Initialize();
         }
 
@@ -39,7 +39,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         public DescribedType(UnqualifiedName name, IType parentType)
             : base(name.Qualify(parentType.FullName))
         {
-            this.Parent = new TypeParent(parentType);
+            Parent = new TypeParent(parentType);
             Initialize();
         }
 

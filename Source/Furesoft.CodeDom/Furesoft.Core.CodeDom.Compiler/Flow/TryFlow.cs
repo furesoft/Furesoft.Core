@@ -31,9 +31,9 @@ namespace Furesoft.Core.CodeDom.Compiler.Flow
             Branch successBranch,
             Branch exceptionBranch)
         {
-            this.Instruction = instruction;
-            this.SuccessBranch = successBranch;
-            this.ExceptionBranch = exceptionBranch;
+            Instruction = instruction;
+            SuccessBranch = successBranch;
+            ExceptionBranch = exceptionBranch;
         }
 
         /// <summary>

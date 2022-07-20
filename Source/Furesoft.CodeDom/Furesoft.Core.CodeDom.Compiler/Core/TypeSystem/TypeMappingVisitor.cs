@@ -14,7 +14,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </param>
         public TypeMappingVisitor(IReadOnlyDictionary<IType, IType> mapping)
         {
-            this.Mapping = mapping;
+            Mapping = mapping;
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         /// </param>
         public TypeFuncVisitor(Func<IType, IType> mapType)
         {
-            this.MapType = mapType;
+            MapType = mapType;
         }
 
         /// <summary>

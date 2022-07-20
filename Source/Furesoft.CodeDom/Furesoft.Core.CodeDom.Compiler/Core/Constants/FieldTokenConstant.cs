@@ -12,7 +12,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// <param name="field">The field to create a token to.</param>
         public FieldTokenConstant(IField field)
         {
-            this.Field = field;
+            Field = field;
         }
 
         /// <summary>

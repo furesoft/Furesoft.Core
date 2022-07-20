@@ -21,7 +21,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     {
         internal InstructionUpdate(ValueTag tag)
         {
-            this.Tag = tag;
+            Tag = tag;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             Instruction instruction)
             : base(tag)
         {
-            this.Instruction = instruction;
+            Instruction = instruction;
         }
 
         /// <summary>
@@ -61,7 +61,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
             Instruction instruction)
             : base(tag)
         {
-            this.Instruction = instruction;
+            Instruction = instruction;
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     {
         internal BasicBlockUpdate(BasicBlockTag tag)
         {
-            this.Tag = tag;
+            Tag = tag;
         }
 
         /// <summary>
@@ -157,7 +157,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
     {
         internal MapMembersUpdate(MemberMapping mapping)
         {
-            this.Mapping = mapping;
+            Mapping = mapping;
         }
 
         /// <summary>

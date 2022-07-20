@@ -12,7 +12,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// <param name="method">The method to create a token to.</param>
         public MethodTokenConstant(IMethod method)
         {
-            this.Method = method;
+            Method = method;
         }
 
         /// <summary>

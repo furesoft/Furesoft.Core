@@ -167,7 +167,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// </param>
         public AttributeMap(IEnumerable<IAttribute> attributes)
         {
-            this.attributeDict = new AttributeMapBuilder(attributes).attributeDict;
+            attributeDict = new AttributeMapBuilder(attributes).attributeDict;
         }
 
         /// <summary>
@@ -178,7 +178,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// </param>
         public AttributeMap(params IAttribute[] attributes)
         {
-            this.attributeDict = new AttributeMapBuilder(attributes).attributeDict;
+            attributeDict = new AttributeMapBuilder(attributes).attributeDict;
         }
 
         /// <summary>
@@ -190,7 +190,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// </param>
         public AttributeMap(AttributeMapBuilder builder)
         {
-            this.attributeDict = builder.attributeDict;
+            attributeDict = builder.attributeDict;
         }
 
         internal SmallMultiDictionary<IType, IAttribute> attributeDict;

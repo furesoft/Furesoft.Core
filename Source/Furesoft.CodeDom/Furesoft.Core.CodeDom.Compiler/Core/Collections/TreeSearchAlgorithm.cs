@@ -23,7 +23,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
         public TreeSearchAlgorithm(
             Func<TInternalNode, Tuple<IEnumerable<TInternalNode>, IEnumerable<TLeafNode>>> getChildren)
         {
-            this.GetChildren = getChildren;
+            GetChildren = getChildren;
         }
 
         /// <summary>

@@ -20,10 +20,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Analysis
         private BlockLiveness(BasicBlock block)
         {
             this.block = block;
-            this.blockInstructions = new HashSet<ValueTag>(block.InstructionTags);
-            this.livePositions = new Dictionary<ValueTag, int>();
-            this.deadPositions = new Dictionary<ValueTag, int>();
-            this.ExportIndex = block.InstructionTags.Count
+            blockInstructions = new HashSet<ValueTag>(block.InstructionTags);
+            livePositions = new Dictionary<ValueTag, int>();
+            deadPositions = new Dictionary<ValueTag, int>();
+            ExportIndex = block.InstructionTags.Count
                 + block.Flow.Instructions.Count
                 + block.Flow.Branches.Count;
         }
