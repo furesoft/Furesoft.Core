@@ -1,10 +1,10 @@
-using Mono.Cecil;
-using System;
-using System.Collections.Generic;
+using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
-using Furesoft.Core.CodeDom.Compiler.Core;
+using Mono.Cecil;
+using System;
+using System.Collections.Generic;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR
 {
@@ -89,6 +89,8 @@ namespace Furesoft.Core.CodeDom.Backends.CLR
 
         /// <inheritdoc/>
         public IReadOnlyList<IType> Types => typeCache.Value;
+
+        public bool IsLibrary { get; set; }
 
         /// <summary>
         /// Wraps a CIL assembly definition in a Flame assembly, setting

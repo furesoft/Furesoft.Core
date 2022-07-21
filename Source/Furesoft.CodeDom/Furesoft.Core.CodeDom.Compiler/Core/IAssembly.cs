@@ -11,5 +11,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core
         /// </summary>
         /// <returns>A list of types that are defined in this assembly.</returns>
         IReadOnlyList<IType> Types { get; }
+
+        public bool IsLibrary { get; set; }
     }
 }

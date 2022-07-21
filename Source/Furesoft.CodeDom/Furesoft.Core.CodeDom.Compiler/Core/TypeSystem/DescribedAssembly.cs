@@ -8,6 +8,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
     /// </summary>
     public sealed class DescribedAssembly : DescribedMember, IAssembly
     {
+        private List<IType> definedTypes;
+
         /// <summary>
         /// Creates an empty assembly with a particular name.
         /// </summary>
@@ -18,10 +20,10 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
             definedTypes = new List<IType>();
         }
 
-        private List<IType> definedTypes;
-
         /// <inheritdoc/>
         public IReadOnlyList<IType> Types => definedTypes;
+
+        public bool IsLibrary { get; set; }
 
         /// <summary>
         /// Adds a type to this assembly's list of defined types.
