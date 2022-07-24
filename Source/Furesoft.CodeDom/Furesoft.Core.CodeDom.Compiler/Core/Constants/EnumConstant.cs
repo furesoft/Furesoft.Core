@@ -1,35 +1,30 @@
-namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
+﻿namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
 {
-    /// <summary>
-    /// A character string constant.
-    /// </summary>
-    public sealed class StringConstant : Constant
+    public sealed class EnumConstant : Constant
     {
         /// <summary>
         /// Creates a constant from a value.
         /// </summary>
         /// <param name="value">The constant value.</param>
-        public StringConstant(string value)
+        public EnumConstant(object value, IType type)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
-
-            Value = value;
+            Value = value ?? throw new ArgumentNullException(nameof(value));
+            Type = type;
         }
 
         /// <summary>
         /// Gets the value represented by this constant.
         /// </summary>
         /// <returns>The constant value.</returns>
-        public string Value { get; private set; }
+        public object Value { get; private set; }
+
+        public IType Type { get; }
 
         /// <inheritdoc/>
         public override bool Equals(Constant other)
         {
-            return other is StringConstant
-                && Value == ((StringConstant)other).Value;
+            return other is EnumConstant
+                && Value == ((EnumConstant)other).Value;
         }
 
         /// <inheritdoc/>
@@ -41,7 +36,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.Constants
         /// <inheritdoc/>
         public override string ToString()
         {
-            return "\"" + Value.Replace("\"", "\\\"") + "\"";
+            return Value.ToString();
         }
     }
 }
