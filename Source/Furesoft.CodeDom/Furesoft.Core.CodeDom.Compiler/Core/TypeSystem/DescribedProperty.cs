@@ -10,11 +10,26 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
         private readonly IType _propertyType;
         private IList<IAccessor> _accessors;
         private IList<Parameter> _indexers;
+        private IList<DescribedPropertyMethod> _propertyMethods;
 
-        public IPropertyMethod Getter { get; set; }
-        public bool HasGetter { get { return Getter != null; } }
-        public IPropertyMethod Setter { get; set; }
-        public bool HasSetter { get { return Setter != null; } }
+        public DescribedPropertyMethod Getter
+        {
+            get => _propertyMethods.First(_ => _.IsGetter);
+            set { if (HasGetter) { _propertyMethods.Remove(Getter); } _propertyMethods.Add(value); value.IsGetter = true; }
+        }
+        public bool HasGetter 
+        {
+            get => _propertyMethods.Any(_ => _.IsGetter);
+        }
+        public DescribedPropertyMethod Setter
+        {
+            get => _propertyMethods.First(_ => _.IsSetter);
+            set { if (HasSetter) { _propertyMethods.Remove(Setter); } _propertyMethods.Add(value); value.IsSetter = true; }
+        }
+        public bool HasSetter
+        {
+            get => _propertyMethods.Any(_ => _.IsSetter);
+        }
 
         public DescribedProperty(UnqualifiedName name, IType propertyType, IType parentType)
             : base(name.Qualify(parentType.FullName))
@@ -27,6 +42,7 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 
         public IReadOnlyList<IAccessor> Accessors => (IReadOnlyList<IAccessor>)_accessors;
         public IReadOnlyList<Parameter> IndexerParameters => (IReadOnlyList<Parameter>)_indexers;
+        public IReadOnlyList<DescribedPropertyMethod> PropertyMethods => (IReadOnlyList<DescribedPropertyMethod>)_propertyMethods;
         public IType ParentType => _parentType;
         public IType PropertyType => _propertyType;
 
@@ -52,5 +68,24 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
         }
 
         public IType ParentType => _parentType;
+
+        public bool IsGetter
+        {
+            get { return GetPropertyTypeModifier().Equals(PropertyTypeModifier.Getter); }
+            set { RemovePropertyTypeModifier(); if (value) AddAttribute(PropertyTypeModifierAttribute.Create(PropertyTypeModifier.Getter)); }
+        }
+        public bool IsSetter
+        {
+            get { return GetPropertyTypeModifier().Equals(PropertyTypeModifier.Setter); }
+            set { RemovePropertyTypeModifier(); if (value) AddAttribute(PropertyTypeModifierAttribute.Create(PropertyTypeModifier.Setter)); }
+        }
+        public bool IsInit
+        {
+            get { return GetPropertyTypeModifier().Equals(PropertyTypeModifier.Init); }
+            set { RemovePropertyTypeModifier(); if (value) AddAttribute(PropertyTypeModifierAttribute.Create(PropertyTypeModifier.Init)); }
+        }
+
+        public PropertyTypeModifier GetPropertyTypeModifier() => PropertyTypeModifierAttribute.GetPropertyTypeModifier(this);
+        public void RemovePropertyTypeModifier() => RemoveAttributesFromType(PropertyTypeModifierAttribute.AttributeType);
     }
 }
