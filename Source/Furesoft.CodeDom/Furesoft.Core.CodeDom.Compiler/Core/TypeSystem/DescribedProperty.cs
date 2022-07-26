@@ -10,26 +10,37 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
         private readonly IType _propertyType;
         private IList<IAccessor> _accessors;
         private IList<Parameter> _indexers;
-        private IList<DescribedPropertyMethod> _propertyMethods;
 
         public DescribedPropertyMethod Getter
         {
-            get => _propertyMethods.First(_ => _.IsGetter);
-            set { if (HasGetter) { _propertyMethods.Remove(Getter); } _propertyMethods.Add(value); value.IsGetter = true; }
+            get => GetMethod(PropertyTypeModifier.Getter);
+            set { if (HasGetter) { PropertyMethods.Remove(Getter); } PropertyMethods.Add(value); value.IsGetter = true; }
         }
         public bool HasGetter 
         {
-            get => _propertyMethods.Any(_ => _.IsGetter);
+            get => HasMethod(PropertyTypeModifier.Getter);
         }
         public DescribedPropertyMethod Setter
         {
-            get => _propertyMethods.First(_ => _.IsSetter);
-            set { if (HasSetter) { _propertyMethods.Remove(Setter); } _propertyMethods.Add(value); value.IsSetter = true; }
+            get => GetMethod(PropertyTypeModifier.Setter);
+            set { if (HasSetter) { PropertyMethods.Remove(Setter); } PropertyMethods.Add(value); value.IsSetter = true; }
         }
         public bool HasSetter
         {
-            get => _propertyMethods.Any(_ => _.IsSetter);
+            get => HasMethod(PropertyTypeModifier.Setter);
         }
+        public DescribedPropertyMethod InitOnlySetter
+        {
+            get => GetMethod(PropertyTypeModifier.Init);
+            set { if (HasInitOnlySetter) { PropertyMethods.Remove(InitOnlySetter); } PropertyMethods.Add(value); value.IsInit = true; }
+        }
+        public bool HasInitOnlySetter
+        {
+            get => HasMethod(PropertyTypeModifier.Init);
+        }
+
+        public bool HasMethod(PropertyTypeModifier typeMod) => PropertyMethods.Any(_ => _.GetPropertyTypeModifier().Equals(typeMod));
+        public DescribedPropertyMethod GetMethod(PropertyTypeModifier typeMod) => PropertyMethods.First(_ => _.GetPropertyTypeModifier().Equals(typeMod));
 
         public DescribedProperty(UnqualifiedName name, IType propertyType, IType parentType)
             : base(name.Qualify(parentType.FullName))
@@ -42,7 +53,7 @@ namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
 
         public IReadOnlyList<IAccessor> Accessors => (IReadOnlyList<IAccessor>)_accessors;
         public IReadOnlyList<Parameter> IndexerParameters => (IReadOnlyList<Parameter>)_indexers;
-        public IReadOnlyList<DescribedPropertyMethod> PropertyMethods => (IReadOnlyList<DescribedPropertyMethod>)_propertyMethods;
+        public List<DescribedPropertyMethod> PropertyMethods { get; } = new();
         public IType ParentType => _parentType;
         public IType PropertyType => _propertyType;
 
