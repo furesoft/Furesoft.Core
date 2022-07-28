@@ -15,6 +15,8 @@ namespace Furesoft.Core.CodeDom.Compiler.Instructions
 
         public override IType ResultType => _field.FieldType;
 
+        public IField Field => _field;
+
         public override int ParameterCount => 0;
 
         public override IReadOnlyList<string> CheckConformance(Instruction instance, MethodBody body)
