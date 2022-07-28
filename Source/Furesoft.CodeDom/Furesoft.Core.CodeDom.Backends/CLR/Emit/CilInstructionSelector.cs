@@ -1916,16 +1916,6 @@ ArrayIntrinsics.Operators.StoreElement);
                         .Prepend(prefix);
                 }
             }
-            else if (proto is LoadFieldPrototype)
-            {
-                var loadProto = (LoadFieldPrototype)proto;
-
-                return CreateSelection(
-                    CilInstruction.Create(
-                        OpCodes.Ldfld,
-                        Method.Module.ImportReference(loadProto.Field)),
-                    instruction.Arguments);
-            }
             else if (proto is StorePrototype)
             {
                 var storeProto = (StorePrototype)proto;

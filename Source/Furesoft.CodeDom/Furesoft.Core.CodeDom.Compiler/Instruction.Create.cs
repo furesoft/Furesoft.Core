@@ -520,6 +520,11 @@ ArithmeticIntrinsics.Operators.Convert,
             return new LoadArgPrototype(parameter.Type, parameter).Instantiate(Array.Empty<ValueTag>());
         }
 
+        public static Instruction CreateLoadField(IField field)
+        {
+            return new LoadFieldPrototype(field).Instantiate(Array.Empty<ValueTag>());
+        }
+
         public static Instruction CreateStoreFieldPointer(IField field)
         {
             return new StoreFieldPointerPrototype(field.FieldType, field).Instantiate(Array.Empty<ValueTag>());
