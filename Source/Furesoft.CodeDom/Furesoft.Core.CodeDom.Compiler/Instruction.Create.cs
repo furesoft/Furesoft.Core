@@ -535,6 +535,11 @@ ArithmeticIntrinsics.Operators.Convert,
             return new LoadLocalPrototype(parameter.Type, parameter).Instantiate(Array.Empty<ValueTag>());
         }
 
+        public static Instruction CreateLoadLocalAdress(Parameter parameter)
+        {
+            return new LoadLocalAPrototype(parameter.Type, parameter).Instantiate(Array.Empty<ValueTag>());
+        }
+
         /// <summary>
         /// Creates a 'load_element' intrinsic, which indexes
         /// an array and loads the indexed array element.
