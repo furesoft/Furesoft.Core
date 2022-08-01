@@ -535,6 +535,11 @@ ArithmeticIntrinsics.Operators.Convert,
             return new LoadLocalPrototype(parameter.Type, parameter).Instantiate(Array.Empty<ValueTag>());
         }
 
+        public static Instruction CreateLoadIndirect(IType type)
+        {
+            return new LoadIndirectPrototype(type).Instantiate(Array.Empty<ValueTag>());
+        }
+
         public static Instruction CreateLoadLocalAdress(Parameter parameter)
         {
             return new LoadLocalAPrototype(parameter.Type, parameter).Instantiate(Array.Empty<ValueTag>());
