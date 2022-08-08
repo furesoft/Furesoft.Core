@@ -1,9 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using Furesoft.Core.CodeDom.Compiler.Core;
-using Furesoft.Core.CodeDom.Compiler;
+using System.Collections.Immutable;
 
 namespace Furesoft.Core.CodeDom.Compiler
 {
@@ -45,8 +41,6 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// <c>true</c> if this basic block builder is still valid; otherwise, <c>false</c>.
         /// </returns>
         public bool IsValid => Graph.ContainsBasicBlock(Tag);
-
-        private BasicBlock ImmutableBlock => Graph.ImmutableGraph.GetBasicBlock(Tag);
 
         /// <summary>
         /// Gets or sets this basic block's list of parameters.
@@ -102,6 +96,19 @@ namespace Furesoft.Core.CodeDom.Compiler
             {
                 Graph.ImmutableGraph = ImmutableBlock.WithFlow(value).Graph;
             }
+        }
+
+        private BasicBlock ImmutableBlock => Graph.ImmutableGraph.GetBasicBlock(Tag);
+
+        /// <summary>
+        /// Implicitly converts a block to its tag.
+        /// </summary>
+        /// <param name="block">
+        /// The block to convert.
+        /// </param>
+        public static implicit operator BasicBlockTag(BasicBlockBuilder block)
+        {
+            return block.Tag;
         }
 
         /// <summary>
@@ -229,9 +236,9 @@ namespace Furesoft.Core.CodeDom.Compiler
         /// <param name="type">The type of the parameter to append.</param>
         /// <param name="tag">The tag of the parameter to append.</param>
         /// <returns>The block parameter.</returns>
-        public BlockParameter AppendParameter(IType type, ValueTag tag)
+        public BlockParameter AppendParameter(IType type, ValueTag tag, bool isConst = false)
         {
-            return AppendParameter(new BlockParameter(type, tag));
+            return AppendParameter(new BlockParameter(type, tag, isConst));
         }
 
         /// <summary>
@@ -312,17 +319,6 @@ namespace Furesoft.Core.CodeDom.Compiler
         public override int GetHashCode()
         {
             return (Graph.GetHashCode() << 16) ^ Tag.GetHashCode();
-        }
-
-        /// <summary>
-        /// Implicitly converts a block to its tag.
-        /// </summary>
-        /// <param name="block">
-        /// The block to convert.
-        /// </param>
-        public static implicit operator BasicBlockTag(BasicBlockBuilder block)
-        {
-            return block.Tag;
         }
     }
 }

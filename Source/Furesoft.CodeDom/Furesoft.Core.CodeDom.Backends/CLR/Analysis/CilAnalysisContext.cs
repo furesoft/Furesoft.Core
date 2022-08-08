@@ -1,11 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
+using Furesoft.Core.CodeDom.Compiler;
 using Furesoft.Core.CodeDom.Compiler.Analysis;
-using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Core;
+using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using Furesoft.Core.CodeDom.Compiler;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
 {
@@ -189,7 +189,7 @@ namespace Furesoft.Core.CodeDom.Backends.CLR.Analysis
                         // the two pieces with 'try' flow.
                         var nextBasicBlock = Block.Graph.AddBasicBlock();
                         var successTag = new ValueTag(name);
-                        nextBasicBlock.AppendParameter(new BlockParameter(instruction.ResultType, successTag));
+                        nextBasicBlock.AppendParameter(new BlockParameter(instruction.ResultType, successTag, false));
 
                         Block.Flow = new TryFlow(
                             instruction,

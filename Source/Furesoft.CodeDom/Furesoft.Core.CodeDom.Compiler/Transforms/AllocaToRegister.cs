@@ -2,8 +2,6 @@ using Furesoft.Core.CodeDom.Compiler.Analysis;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Flow;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Furesoft.Core.CodeDom.Compiler.Transforms
 {
@@ -262,7 +260,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                         var oldTag = oldParam.Tag;
                         var newTag = new ValueTag(oldTag.Name);
                         newEntryPoint.AppendParameter(
-                            new BlockParameter(oldParam.Type, newTag));
+                            new BlockParameter(oldParam.Type, newTag, false));
                         oldToNew[oldTag] = newTag;
                     }
 
@@ -293,7 +291,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
             {
                 // Define a block parameter.
                 var blockBuilder = graphBuilder.GetBasicBlock(block);
-                var blockParam = new BlockParameter(type, phi);
+                var blockParam = new BlockParameter(type, phi, false);
                 blockBuilder.AppendParameter(blockParam);
 
                 // Add an argument to all blocks that refer to the block.
@@ -462,7 +460,7 @@ namespace Furesoft.Core.CodeDom.Compiler.Transforms
                     // sealed yet. That's fine. Just add an entry to
                     // the list of incomplete phis.
                     var val = new ValueTag(variable.Name + ".phi");
-                    incompletePhis[block][variable] = new BlockParameter(type, val);
+                    incompletePhis[block][variable] = new BlockParameter(type, val, false);
                     WriteVariable(variable, block, val);
                     return val;
                 }
