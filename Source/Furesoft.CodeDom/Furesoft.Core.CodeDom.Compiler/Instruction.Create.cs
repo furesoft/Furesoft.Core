@@ -779,6 +779,16 @@ ArithmeticIntrinsics.Operators.Convert,
             return StorePrototype.Create(pointeeType, isVolatile, alignment).Instantiate(pointer, value);
         }
 
+        public static Instruction CreateStoreIndirect(
+            IType pointeeType,
+            ValueTag pointer,
+            ValueTag value,
+            bool isVolatile = false,
+            Alignment alignment = default(Alignment))
+        {
+            return StoreIndirectPrototype.Create(pointeeType, isVolatile, alignment).Instantiate(pointer, value);
+        }
+
         /// <summary>
         /// Creates a 'store_element' intrinsic, which indexes
         /// an array and sets the indexed array element.
