@@ -12,6 +12,12 @@ namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
         {
         }
 
+        public GenericType(IType type) : base(type.FullName, type.GetDefiningAssemblyOrNull())
+        {
+            Type = type;
+        }
+
+        public IType Type { get; set; }
         public List<IType> GenericArguments { get; set; } = new();
     }
 }
