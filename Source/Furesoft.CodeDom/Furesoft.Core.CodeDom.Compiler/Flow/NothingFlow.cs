@@ -1,6 +1,6 @@
 ﻿namespace Furesoft.Core.CodeDom.Compiler.Flow;
 
-internal class NothingFlow : BlockFlow
+public class NothingFlow : BlockFlow
 {
     public override IReadOnlyList<Furesoft.Core.CodeDom.Compiler.Instruction> Instructions => throw new NotImplementedException();
 
