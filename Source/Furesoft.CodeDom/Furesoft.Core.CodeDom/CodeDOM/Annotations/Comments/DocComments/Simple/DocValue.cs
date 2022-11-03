@@ -2,59 +2,58 @@
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Simple;
+
+/// <summary>
+/// Documents the value of a property.
+/// </summary>
+public class DocValue : DocComment
 {
     /// <summary>
-    /// Documents the value of a property.
+    /// The token used to parse the code object.
     /// </summary>
-    public class DocValue : DocComment
+    public new const string ParseToken = ValueParameterDecl.FixedName;
+
+    /// <summary>
+    /// Create a <see cref="DocValue"/>.
+    /// </summary>
+    public DocValue(string text)
+        : base(text)
+    { }
+
+    /// <summary>
+    /// Create a <see cref="DocValue"/>.
+    /// </summary>
+    public DocValue(params DocComment[] docComments)
+        : base(docComments)
+    { }
+
+    /// <summary>
+    /// Parse a <see cref="DocValue"/>.
+    /// </summary>
+    public DocValue(Parser parser, CodeObject parent)
     {
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = ValueParameterDecl.FixedName;
+        ParseTag(parser, parent);  // Ignore any attributes
+    }
 
-        /// <summary>
-        /// Create a <see cref="DocValue"/>.
-        /// </summary>
-        public DocValue(string text)
-            : base(text)
-        { }
+    /// <summary>
+    /// The XML tag name for the documentation comment.
+    /// </summary>
+    public override string TagName
+    {
+        get { return ParseToken; }
+    }
 
-        /// <summary>
-        /// Create a <see cref="DocValue"/>.
-        /// </summary>
-        public DocValue(params DocComment[] docComments)
-            : base(docComments)
-        { }
+    public static void AddParsePoints()
+    {
+        Parser.AddDocCommentParseTag(ParseToken, Parse);
+    }
 
-        /// <summary>
-        /// Parse a <see cref="DocValue"/>.
-        /// </summary>
-        public DocValue(Parser parser, CodeObject parent)
-        {
-            ParseTag(parser, parent);  // Ignore any attributes
-        }
-
-        /// <summary>
-        /// The XML tag name for the documentation comment.
-        /// </summary>
-        public override string TagName
-        {
-            get { return ParseToken; }
-        }
-
-        public static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="DocValue"/>.
-        /// </summary>
-        public static new DocValue Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DocValue(parser, parent);
-        }
+    /// <summary>
+    /// Parse a <see cref="DocValue"/>.
+    /// </summary>
+    public static new DocValue Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        return new DocValue(parser, parent);
     }
 }

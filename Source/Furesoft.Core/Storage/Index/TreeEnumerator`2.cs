@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public class TreeEnumerator<K, V> : IEnumerator<Tuple<K, V>>
 	{
 		private readonly ITreeNodeManager<K, V> _nodeManager;
@@ -183,4 +183,3 @@ namespace Furesoft.Core.Storage.Index
 			// dispose my ass
 		}
 	}
-}

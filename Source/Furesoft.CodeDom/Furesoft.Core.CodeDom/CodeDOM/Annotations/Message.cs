@@ -3,197 +3,196 @@ using Furesoft.Core.CodeDom.Parsing;
 using Furesoft.Core.CodeDom.CodeDOM.Annotations.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Base;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations;
+
+/// <summary>
+/// The severity of a message.
+/// </summary>
+public enum MessageSeverity : byte
 {
+    Unspecified,
+    Error,
+    Warning,
+    Suggestion,
+    Hint,
+    Information
+}
+
+/// <summary>
+/// The source of a message.
+/// </summary>
+public enum MessageSource : byte
+{
+    Unspecified,
+    Load,
+    Parse,
+    Resolve,
+    Save
+}
+
+/// <summary>
+/// Represents a generated message associated with a <see cref="CodeObject"/> (error, warning, suggestion, or hint).
+/// </summary>
+public class Message : Annotation
+{
+    protected MessageSeverity _severity;
+    protected MessageSource _source;
+    protected string _text;
+
     /// <summary>
-    /// The severity of a message.
+    /// Create a <see cref="Message"/> with the specified text, severity, and source.
     /// </summary>
-    public enum MessageSeverity : byte
+    public Message(string text, MessageSeverity severity, MessageSource source)
     {
-        Unspecified,
-        Error,
-        Warning,
-        Suggestion,
-        Hint,
-        Information
+        _text = text;
+        _severity = severity;
+        _source = source;
     }
 
     /// <summary>
-    /// The source of a message.
+    /// The category of the message.
     /// </summary>
-    public enum MessageSource : byte
+    public string Category
     {
-        Unspecified,
-        Load,
-        Parse,
-        Resolve,
-        Save
-    }
-
-    /// <summary>
-    /// Represents a generated message associated with a <see cref="CodeObject"/> (error, warning, suggestion, or hint).
-    /// </summary>
-    public class Message : Annotation
-    {
-        protected MessageSeverity _severity;
-        protected MessageSource _source;
-        protected string _text;
-
-        /// <summary>
-        /// Create a <see cref="Message"/> with the specified text, severity, and source.
-        /// </summary>
-        public Message(string text, MessageSeverity severity, MessageSource source)
+        get
         {
-            _text = text;
-            _severity = severity;
-            _source = source;
-        }
-
-        /// <summary>
-        /// The category of the message.
-        /// </summary>
-        public string Category
-        {
-            get
+            switch (_severity)
             {
-                switch (_severity)
-                {
-                    case MessageSeverity.Error:
-                        return "ERROR";
+                case MessageSeverity.Error:
+                    return "ERROR";
 
-                    case MessageSeverity.Warning:
-                        return "Warning";
+                case MessageSeverity.Warning:
+                    return "Warning";
 
-                    case MessageSeverity.Suggestion:
-                        return "Suggestion";
+                case MessageSeverity.Suggestion:
+                    return "Suggestion";
 
-                    case MessageSeverity.Hint:
-                        return "Hint";
+                case MessageSeverity.Hint:
+                    return "Hint";
 
-                    case MessageSeverity.Information:
-                        return "Information";
-                }
-                return null;
+                case MessageSeverity.Information:
+                    return "Information";
             }
-        }
-
-        /// <summary>
-        /// The column number associated with the Parent <see cref="CodeObject"/> of the <see cref="Message"/> (if any, 0 if none).
-        /// </summary>
-        /// <remarks>
-        /// The line number will match the input file when the object is parsed, but may differ if the code tree is modified.
-        /// Parsing messages that relate to a <see cref="Token"/> will use <see cref="TokenMessage"/>, in which case the column
-        /// will be that of the related <see cref="Token"/>.
-        /// </remarks>
-        public override int ColumnNumber
-        {
-            get { return _parent.ColumnNumber; }
-        }
-
-        /// <summary>
-        /// Always <c>true</c> for <see cref="Message"/> annotations.
-        /// </summary>
-        public override bool IsListed
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// The line number associated with the Parent <see cref="CodeObject"/> of the <see cref="Message"/> (if any, 0 if none).
-        /// </summary>
-        /// <remarks>
-        /// The line number will match the input file when the object is parsed, but may differ if the code tree is modified.
-        /// Parsing messages that relate to a <see cref="Token"/> will use <see cref="TokenMessage"/>, in which case the line
-        /// number will be that of the related <see cref="Token"/>.
-        /// </remarks>
-        public override int LineNumber
-        {
-            get { return (_parent != null ? _parent.LineNumber : 0); }
-        }
-
-        /// <summary>
-        /// The <see cref="MessageSeverity"/> of the message.
-        /// </summary>
-        public MessageSeverity Severity
-        {
-            get { return _severity; }
-        }
-
-        /// <summary>
-        /// The <see cref="MessageSource"/> of the message.
-        /// </summary>
-        public MessageSource Source
-        {
-            get { return _source; }
-        }
-
-        /// <summary>
-        /// The text of the <see cref="Message"/>.
-        /// </summary>
-        public override string Text
-        {
-            get { return _text; }
-            set { _text = value; }
-        }
-
-        public override void AsText(CodeWriter writer, RenderFlags flags)
-        {
-            if (!flags.HasFlag(RenderFlags.SuppressNewLine))
-                writer.WriteLine();
-            writer.Write(Category + ": " + _text);
+            return null;
         }
     }
 
     /// <summary>
-    /// Represents a <see cref="Message"/> associated with a parse <see cref="Token"/>.
+    /// The column number associated with the Parent <see cref="CodeObject"/> of the <see cref="Message"/> (if any, 0 if none).
     /// </summary>
     /// <remarks>
-    /// A <see cref="TokenMessage"/> will still be associated with a Parent <see cref="CodeObject"/> like any
-    /// other <see cref="Message"/>, but it also contains the specific <see cref="Token"/> related to the message
-    /// generated by the parser.  The <see cref="LineNumber"/> and <see cref="ColumnNumber"/> properties will return
-    /// the information from the <see cref="Token"/> instead of the Parent <see cref="CodeObject"/>.
+    /// The line number will match the input file when the object is parsed, but may differ if the code tree is modified.
+    /// Parsing messages that relate to a <see cref="Token"/> will use <see cref="TokenMessage"/>, in which case the column
+    /// will be that of the related <see cref="Token"/>.
     /// </remarks>
-    public class TokenMessage : Message
+    public override int ColumnNumber
     {
-        protected Token _token;
+        get { return _parent.ColumnNumber; }
+    }
 
-        /// <summary>
-        /// Create a parse error <see cref="Message"/> with the specified text, in connection with the specified <see cref="Token"/>.
-        /// </summary>
-        protected internal TokenMessage(string text, Token token)
-            : base(text, token.InDocComment ? MessageSeverity.Warning : MessageSeverity.Error, MessageSource.Parse)
-        {
-            _token = token;
-        }
+    /// <summary>
+    /// Always <c>true</c> for <see cref="Message"/> annotations.
+    /// </summary>
+    public override bool IsListed
+    {
+        get { return true; }
+    }
 
-        /// <summary>
-        /// The column number associated with the related <see cref="Token"/> (if any, 0 if none).
-        /// </summary>
-        /// <remarks>
-        /// The column will match the input file from when the object was parsed.
-        /// </remarks>
-        public override int ColumnNumber
-        {
-            get { return _token.ColumnNumber; }
-        }
+    /// <summary>
+    /// The line number associated with the Parent <see cref="CodeObject"/> of the <see cref="Message"/> (if any, 0 if none).
+    /// </summary>
+    /// <remarks>
+    /// The line number will match the input file when the object is parsed, but may differ if the code tree is modified.
+    /// Parsing messages that relate to a <see cref="Token"/> will use <see cref="TokenMessage"/>, in which case the line
+    /// number will be that of the related <see cref="Token"/>.
+    /// </remarks>
+    public override int LineNumber
+    {
+        get { return (_parent != null ? _parent.LineNumber : 0); }
+    }
 
-        /// <summary>
-        /// The line number associated with the related <see cref="Token"/> (if any, 0 if none).
-        /// </summary>
-        /// <remarks>
-        /// The line number will match the input file from when the object was parsed.
-        /// </remarks>
-        public override int LineNumber
-        {
-            get { return _token.LineNumber; }
-        }
+    /// <summary>
+    /// The <see cref="MessageSeverity"/> of the message.
+    /// </summary>
+    public MessageSeverity Severity
+    {
+        get { return _severity; }
+    }
 
-        /// <summary>
-        /// The <see cref="Token"/> that the message is associated with.
-        /// </summary>
-        public Token Token
-        {
-            get { return _token; }
-        }
+    /// <summary>
+    /// The <see cref="MessageSource"/> of the message.
+    /// </summary>
+    public MessageSource Source
+    {
+        get { return _source; }
+    }
+
+    /// <summary>
+    /// The text of the <see cref="Message"/>.
+    /// </summary>
+    public override string Text
+    {
+        get { return _text; }
+        set { _text = value; }
+    }
+
+    public override void AsText(CodeWriter writer, RenderFlags flags)
+    {
+        if (!flags.HasFlag(RenderFlags.SuppressNewLine))
+            writer.WriteLine();
+        writer.Write(Category + ": " + _text);
+    }
+}
+
+/// <summary>
+/// Represents a <see cref="Message"/> associated with a parse <see cref="Token"/>.
+/// </summary>
+/// <remarks>
+/// A <see cref="TokenMessage"/> will still be associated with a Parent <see cref="CodeObject"/> like any
+/// other <see cref="Message"/>, but it also contains the specific <see cref="Token"/> related to the message
+/// generated by the parser.  The <see cref="LineNumber"/> and <see cref="ColumnNumber"/> properties will return
+/// the information from the <see cref="Token"/> instead of the Parent <see cref="CodeObject"/>.
+/// </remarks>
+public class TokenMessage : Message
+{
+    protected Token _token;
+
+    /// <summary>
+    /// Create a parse error <see cref="Message"/> with the specified text, in connection with the specified <see cref="Token"/>.
+    /// </summary>
+    protected internal TokenMessage(string text, Token token)
+        : base(text, token.InDocComment ? MessageSeverity.Warning : MessageSeverity.Error, MessageSource.Parse)
+    {
+        _token = token;
+    }
+
+    /// <summary>
+    /// The column number associated with the related <see cref="Token"/> (if any, 0 if none).
+    /// </summary>
+    /// <remarks>
+    /// The column will match the input file from when the object was parsed.
+    /// </remarks>
+    public override int ColumnNumber
+    {
+        get { return _token.ColumnNumber; }
+    }
+
+    /// <summary>
+    /// The line number associated with the related <see cref="Token"/> (if any, 0 if none).
+    /// </summary>
+    /// <remarks>
+    /// The line number will match the input file from when the object was parsed.
+    /// </remarks>
+    public override int LineNumber
+    {
+        get { return _token.LineNumber; }
+    }
+
+    /// <summary>
+    /// The <see cref="Token"/> that the message is associated with.
+    /// </summary>
+    public Token Token
+    {
+        get { return _token; }
     }
 }

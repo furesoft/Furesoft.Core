@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	internal static class TreeHelper
 	{
 		public static void RemoveRange<T>(this List<T> target, int fromIndex)
@@ -63,4 +63,3 @@ namespace Furesoft.Core.Storage.Index
 			return result;
 		}
 	}
-}

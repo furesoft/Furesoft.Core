@@ -4,91 +4,90 @@ using System.Linq;
 using System.Text;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Furesoft.Core.CodeDom.Compiler.Core.Names
+namespace Furesoft.Core.CodeDom.Compiler.Core.Names;
+
+/// <summary>
+/// Defines a generic name; a simple name that is instantiated by
+/// a number of generic type arguments.
+/// </summary>
+public class GenericName : UnqualifiedName, IEquatable<GenericName>
 {
     /// <summary>
-    /// Defines a generic name; a simple name that is instantiated by
-    /// a number of generic type arguments.
+    /// Creates a new generic name from the given declaration name and
+    /// a number of type arguments names.
     /// </summary>
-    public class GenericName : UnqualifiedName, IEquatable<GenericName>
+    public GenericName(
+        UnqualifiedName declarationName,
+        IReadOnlyList<QualifiedName> typeArgumentNames)
+        : this(new QualifiedName(declarationName), typeArgumentNames)
+    { }
+
+    /// <summary>
+    /// Creates a new generic name from the given declaration name and
+    /// a number of type arguments names.
+    /// </summary>
+    public GenericName(
+        QualifiedName declarationName,
+        IReadOnlyList<QualifiedName> typeArgumentNames)
     {
-        /// <summary>
-        /// Creates a new generic name from the given declaration name and
-        /// a number of type arguments names.
-        /// </summary>
-        public GenericName(
-            UnqualifiedName declarationName,
-            IReadOnlyList<QualifiedName> typeArgumentNames)
-            : this(new QualifiedName(declarationName), typeArgumentNames)
-        { }
+        DeclarationName = declarationName;
+        TypeArgumentNames = typeArgumentNames;
+    }
 
-        /// <summary>
-        /// Creates a new generic name from the given declaration name and
-        /// a number of type arguments names.
-        /// </summary>
-        public GenericName(
-            QualifiedName declarationName,
-            IReadOnlyList<QualifiedName> typeArgumentNames)
+    /// <summary>
+    /// Gets this generic name's instantiated name,
+    /// </summary>
+    public QualifiedName DeclarationName { get; private set; }
+
+    /// <summary>
+    /// Gets this generic name's type arguments.
+    /// </summary>
+    public IReadOnlyList<QualifiedName> TypeArgumentNames { get; private set; }
+
+    /// <inheritdoc/>
+    public override string ToString()
+    {
+        int typeArgNameCount = TypeArgumentNames.Count;
+        if (typeArgNameCount == 0)
+            return DeclarationName.ToString();
+
+        var sb = new StringBuilder(DeclarationName.ToString());
+        sb.Append('<');
+        sb.Append(TypeArgumentNames[0]);
+
+        for (int i = 1; i < typeArgNameCount; i++)
         {
-            DeclarationName = declarationName;
-            TypeArgumentNames = typeArgumentNames;
+            sb.Append(',');
+            sb.Append(TypeArgumentNames[i].FullName);
         }
 
-        /// <summary>
-        /// Gets this generic name's instantiated name,
-        /// </summary>
-        public QualifiedName DeclarationName { get; private set; }
+        sb.Append('>');
+        return sb.ToString();
+    }
 
-        /// <summary>
-        /// Gets this generic name's type arguments.
-        /// </summary>
-        public IReadOnlyList<QualifiedName> TypeArgumentNames { get; private set; }
+    /// <inheritdoc/>
+    public bool Equals(GenericName other)
+    {
+        return DeclarationName.Equals(other.DeclarationName)
+            && Enumerable.SequenceEqual<QualifiedName>(
+                TypeArgumentNames, other.TypeArgumentNames);
+    }
 
-        /// <inheritdoc/>
-        public override string ToString()
+    /// <inheritdoc/>
+    public override bool Equals(UnqualifiedName other)
+    {
+        return other is GenericName && Equals((GenericName)other);
+    }
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+    {
+        var result = DeclarationName.GetHashCode();
+        int typeArgNameCount = TypeArgumentNames.Count;
+        for (int i = 0; i < typeArgNameCount; i++)
         {
-            int typeArgNameCount = TypeArgumentNames.Count;
-            if (typeArgNameCount == 0)
-                return DeclarationName.ToString();
-
-            var sb = new StringBuilder(DeclarationName.ToString());
-            sb.Append('<');
-            sb.Append(TypeArgumentNames[0]);
-
-            for (int i = 1; i < typeArgNameCount; i++)
-            {
-                sb.Append(',');
-                sb.Append(TypeArgumentNames[i].FullName);
-            }
-
-            sb.Append('>');
-            return sb.ToString();
+            result = (result << 1) ^ TypeArgumentNames[i].GetHashCode();
         }
-
-        /// <inheritdoc/>
-        public bool Equals(GenericName other)
-        {
-            return DeclarationName.Equals(other.DeclarationName)
-                && Enumerable.SequenceEqual<QualifiedName>(
-                    TypeArgumentNames, other.TypeArgumentNames);
-        }
-
-        /// <inheritdoc/>
-        public override bool Equals(UnqualifiedName other)
-        {
-            return other is GenericName && Equals((GenericName)other);
-        }
-
-        /// <inheritdoc/>
-        public override int GetHashCode()
-        {
-            var result = DeclarationName.GetHashCode();
-            int typeArgNameCount = TypeArgumentNames.Count;
-            for (int i = 0; i < typeArgNameCount; i++)
-            {
-                result = (result << 1) ^ TypeArgumentNames[i].GetHashCode();
-            }
-            return result;
-        }
+        return result;
     }
 }

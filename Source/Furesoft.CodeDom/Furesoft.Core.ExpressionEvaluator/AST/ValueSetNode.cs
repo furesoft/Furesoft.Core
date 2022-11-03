@@ -1,47 +1,46 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator.AST
+﻿namespace Furesoft.Core.ExpressionEvaluator.AST;
+
+public class ValueSetNode : Expression, IEvaluatableStatement
 {
-    public class ValueSetNode : Expression, IEvaluatableStatement
+    public ValueSetNode(Parser parser, CodeObject parent) : base(parser, parent)
     {
-        public ValueSetNode(Parser parser, CodeObject parent) : base(parser, parent)
-        {
-        }
+    }
 
-        public ChildList<Expression> Items { get; set; }
+    public ChildList<Expression> Items { get; set; }
 
-        public static new void AddParsePoints()
-        {
-            Parser.AddParsePoint("valueset", 1, Parse);
-        }
+    public static new void AddParsePoints()
+    {
+        Parser.AddParsePoint("valueset", 1, Parse);
+    }
 
-        public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
-        {
-            writer.Write("valueset");
-        }
+    public override void AsTextExpression(CodeWriter writer, RenderFlags flags)
+    {
+        writer.Write("valueset");
+    }
 
-        public void Evaluate(ExpressionParser ep)
+    public void Evaluate(ExpressionParser ep)
+    {
+        if (Items != null)
         {
-            if (Items != null)
+            for (int i = 0; i < Items.Count; i++)
             {
-                for (int i = 0; i < Items.Count; i++)
-                {
-                    Expression item = Items[i];
+                Expression item = Items[i];
 
-                    if (item is UnresolvedRef uref && uref.Reference is string s)
-                    {
-                        ep.RootScope.Variables.Add(s, i);
-                    }
+                if (item is UnresolvedRef uref && uref.Reference is string s)
+                {
+                    ep.RootScope.Variables.Add(s, i);
                 }
             }
         }
+    }
 
-        private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            var r = new ValueSetNode(parser, parent);
-            parser.NextToken();
+    private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        var r = new ValueSetNode(parser, parent);
+        parser.NextToken();
 
-            r.Items = Expression.ParseList(parser, r, ";");
+        r.Items = Expression.ParseList(parser, r, ";");
 
-            return r;
-        }
+        return r;
     }
 }

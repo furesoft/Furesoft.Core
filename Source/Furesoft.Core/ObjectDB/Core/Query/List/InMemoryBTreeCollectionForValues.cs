@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Btree;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	/// <summary>
 	///   An ordered Collection to hold values (not objects) based on a BTree implementation.
 	/// </summary>
@@ -35,4 +35,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 			return new InMemoryBTreeMultipleValuesPerKey(degree);
 		}
 	}
-}

@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Core;
 using Furesoft.Core.ObjectDB.Core.Session;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Transaction
-{
+namespace Furesoft.Core.ObjectDB.Transaction;
+
 	/// <summary>
 	///   The session object used when ODB is used in local/embedded mode
 	/// </summary>
@@ -91,4 +91,3 @@ namespace Furesoft.Core.ObjectDB.Transaction
 			return _storageEngine.GetObjectWriter();
 		}
 	}
-}

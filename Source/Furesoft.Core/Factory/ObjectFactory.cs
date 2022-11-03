@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Furesoft.Core.Activation;
 
-namespace Furesoft.Core.Factory
-{
+namespace Furesoft.Core.Factory;
+
 	public static class ObjectFactory
 	{
 		private static readonly Dictionary<Type, IObjectFactory> factories = new();
@@ -75,4 +75,3 @@ namespace Furesoft.Core.Factory
 			return typeof(T);
 		}
 	}
-}

@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	///   Constants used for ordering queries and creating ordered collection iterators
 	/// </summary>
@@ -75,4 +75,3 @@ namespace Furesoft.Core.ObjectDB.Api
 			}
 		}
 	}
-}

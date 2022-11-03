@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Storage
-{
+namespace Furesoft.Core.ObjectDB.Storage;
+
 	/// <summary>
 	///   All Block Types of the ODB database format.
 	/// </summary>
@@ -70,4 +70,3 @@ namespace Furesoft.Core.ObjectDB.Storage
 			return blockType == BlockTypeNativeNullObject || blockType == BlockTypeNonNativeNullObject;
 		}
 	}
-}

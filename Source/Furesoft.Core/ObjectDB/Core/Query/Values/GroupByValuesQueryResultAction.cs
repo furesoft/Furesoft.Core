@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Indexing;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	internal sealed class GroupByValuesQueryResultAction : IMatchingObjectAction
 	{
 		private readonly string[] _groupByFieldList;
@@ -99,4 +99,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			}
 		}
 	}
-}

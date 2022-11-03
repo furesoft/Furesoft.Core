@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta.Compare
-{
+namespace Furesoft.Core.ObjectDB.Meta.Compare;
+
 	internal interface IObjectInfoComparator
 	{
 		bool HasChanged(AbstractObjectInfo aoi1, AbstractObjectInfo aoi2);
@@ -8,4 +8,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Compare
 
 		int GetNbChanges();
 	}
-}

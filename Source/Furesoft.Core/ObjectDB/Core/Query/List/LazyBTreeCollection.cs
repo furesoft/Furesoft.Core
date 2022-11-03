@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Btree;
 using Furesoft.Core.ObjectDB.Core.BTree;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	/// <summary>
 	///   A collection using a BTtree as a back-end component.
 	/// </summary>
@@ -32,4 +32,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 			return new LazyOdbBtreeIteratorMultiple<T>(GetTree(), orderByType, _storageEngine, _returnObjects);
 		}
 	}
-}

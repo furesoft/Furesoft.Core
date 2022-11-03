@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   The NDatabase ODB BTree Node implementation.
 	/// </summary>
@@ -174,4 +174,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			return GetValueAt(index);
 		}
 	}
-}

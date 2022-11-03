@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	///   The main NDatabase ODB Configuration class.
 	/// </summary>
@@ -119,4 +119,3 @@ namespace Furesoft.Core.ObjectDB.Api
 			DLogger.Register(logger);
 		}
 	}
-}

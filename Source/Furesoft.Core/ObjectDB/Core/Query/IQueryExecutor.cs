@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Core.Query
-{
+namespace Furesoft.Core.ObjectDB.Core.Query;
+
 	internal interface IQueryExecutor
 	{
 		/// <summary>
@@ -15,4 +15,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query
 		IInternalObjectSet<T> Execute<T>(bool inMemory, int startIndex, int endIndex, bool returnObjects,
 							   IMatchingObjectAction queryResultAction);
 	}
-}

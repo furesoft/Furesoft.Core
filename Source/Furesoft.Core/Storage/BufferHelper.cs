@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	/// <summary>
 	/// Helper class contains static methods that read and write numeric values
 	/// into and from a byte array in little endian byte order.
@@ -68,4 +68,3 @@ namespace Furesoft.Core.Storage
 			Buffer.BlockCopy(value.ToByteArray(), 0, buffer, bufferOffset, 16);
 		}
 	}
-}

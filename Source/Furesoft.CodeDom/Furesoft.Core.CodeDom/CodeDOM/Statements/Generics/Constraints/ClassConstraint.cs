@@ -3,49 +3,48 @@ using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints.Base;
 using Furesoft.Core.CodeDom.Parsing;
 using System.Reflection;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints
+namespace Furesoft.Core.CodeDom.CodeDOM.Statements.Generics.Constraints;
+
+/// <summary>
+/// Constrains the type that a <see cref="TypeParameter"/> can represent to a reference type.
+/// </summary>
+public class ClassConstraint : TypeParameterConstraint
 {
     /// <summary>
-    /// Constrains the type that a <see cref="TypeParameter"/> can represent to a reference type.
+    /// The token used to parse the code object.
     /// </summary>
-    public class ClassConstraint : TypeParameterConstraint
+    public const string ParseToken = "class";
+
+    /// <summary>
+    /// Create a <see cref="ClassConstraint"/>.
+    /// </summary>
+    public ClassConstraint()
+    { }
+
+    /// <summary>
+    /// Parse a <see cref="ClassConstraint"/>.
+    /// </summary>
+    public ClassConstraint(Parser parser, CodeObject parent)
+        : base(parser, parent)
     {
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "class";
+        parser.NextToken();  // Move past 'class'
+    }
 
-        /// <summary>
-        /// Create a <see cref="ClassConstraint"/>.
-        /// </summary>
-        public ClassConstraint()
-        { }
+    /// <summary>
+    /// The attribute of the constraint.
+    /// </summary>
+    public override GenericParameterAttributes ConstraintAttribute
+    {
+        get { return GenericParameterAttributes.ReferenceTypeConstraint; }
+    }
 
-        /// <summary>
-        /// Parse a <see cref="ClassConstraint"/>.
-        /// </summary>
-        public ClassConstraint(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        {
-            parser.NextToken();  // Move past 'class'
-        }
+    public override string ConstraintText
+    {
+        get { return ParseToken; }
+    }
 
-        /// <summary>
-        /// The attribute of the constraint.
-        /// </summary>
-        public override GenericParameterAttributes ConstraintAttribute
-        {
-            get { return GenericParameterAttributes.ReferenceTypeConstraint; }
-        }
-
-        public override string ConstraintText
-        {
-            get { return ParseToken; }
-        }
-
-        public override T Accept<T>(VisitorBase<T> visitor)
-        {
-            return visitor.Visit(this);
-        }
+    public override T Accept<T>(VisitorBase<T> visitor)
+    {
+        return visitor.Visit(this);
     }
 }

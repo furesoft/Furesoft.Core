@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	/// <summary>
 	///   Generic ODB Runtime exception : Used to report all problems.
 	/// </summary>
@@ -28,4 +28,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 		{
 		}
 	}
-}

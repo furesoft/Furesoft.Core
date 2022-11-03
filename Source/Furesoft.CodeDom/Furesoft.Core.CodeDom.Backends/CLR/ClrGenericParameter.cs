@@ -6,178 +6,177 @@ using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Furesoft.Core.CodeDom.Backends.CLR
+namespace Furesoft.Core.CodeDom.Backends.CLR;
+
+/// <summary>
+/// A Flame type that wraps an IL generic parameter.
+/// </summary>
+public sealed class ClrGenericParameter : IGenericParameter
 {
+    private AttributeMap attributeMap;
+
+    private IReadOnlyList<IType> baseTypeList;
+
+    private DeferredInitializer contentsInitializer;
+
+    private IReadOnlyList<IGenericParameter> genericParameterList;
+
     /// <summary>
-    /// A Flame type that wraps an IL generic parameter.
+    /// Creates a Flame type definition that wraps
+    /// around an IL generic parameter.
     /// </summary>
-    public sealed class ClrGenericParameter : IGenericParameter
+    /// <param name="definition">
+    /// The IL type definition to wrap.
+    /// </param>
+    /// <param name="parentType">
+    /// The parent type that defines the generic parameter.
+    /// </param>
+    public ClrGenericParameter(
+        GenericParameter definition,
+        ClrTypeDefinition parentType)
+        : this(
+            definition,
+            parentType.Assembly,
+            new TypeParent(parentType))
+    { }
+
+    /// <summary>
+    /// Creates a Flame type definition that wraps
+    /// around an IL generic parameter.
+    /// </summary>
+    /// <param name="definition">
+    /// The IL type definition to wrap.
+    /// </param>
+    /// <param name="parentMethod">
+    /// The parent method that defines the generic parameter.
+    /// </param>
+    public ClrGenericParameter(
+        GenericParameter definition,
+        ClrMethodDefinition parentMethod)
+        : this(
+            definition,
+            parentMethod.ParentType.Assembly,
+            new TypeParent(parentMethod))
+    { }
+
+    /// <summary>
+    /// Creates a Flame type definition that wraps
+    /// around an IL generic parameter.
+    /// </summary>
+    /// <param name="definition">
+    /// The IL type definition to wrap.
+    /// </param>
+    /// <param name="parentType">
+    /// The parent type that defines the generic parameter.
+    /// </param>
+    private ClrGenericParameter(
+        GenericParameter definition,
+        ClrGenericParameter parentType)
+        : this(
+            definition,
+            parentType.Assembly,
+            new TypeParent(parentType))
+    { }
+
+    private ClrGenericParameter(
+        GenericParameter definition,
+        ClrAssembly assembly,
+        TypeParent parent)
     {
-        private AttributeMap attributeMap;
+        this.Definition = definition;
+        this.Assembly = assembly;
+        this.Parent = parent;
+        this.FullName = new SimpleName(definition.Name)
+            .Qualify(parent.Member.FullName);
+        this.contentsInitializer = Assembly.CreateSynchronizedInitializer(
+            AnalyzeContents);
+    }
 
-        private IReadOnlyList<IType> baseTypeList;
+    /// <summary>
+    /// Gets the assembly that directly or indirectly defines
+    /// this type.
+    /// </summary>
+    /// <returns>The assembly.</returns>
+    public ClrAssembly Assembly { get; private set; }
 
-        private DeferredInitializer contentsInitializer;
-
-        private IReadOnlyList<IGenericParameter> genericParameterList;
-
-        /// <summary>
-        /// Creates a Flame type definition that wraps
-        /// around an IL generic parameter.
-        /// </summary>
-        /// <param name="definition">
-        /// The IL type definition to wrap.
-        /// </param>
-        /// <param name="parentType">
-        /// The parent type that defines the generic parameter.
-        /// </param>
-        public ClrGenericParameter(
-            GenericParameter definition,
-            ClrTypeDefinition parentType)
-            : this(
-                definition,
-                parentType.Assembly,
-                new TypeParent(parentType))
-        { }
-
-        /// <summary>
-        /// Creates a Flame type definition that wraps
-        /// around an IL generic parameter.
-        /// </summary>
-        /// <param name="definition">
-        /// The IL type definition to wrap.
-        /// </param>
-        /// <param name="parentMethod">
-        /// The parent method that defines the generic parameter.
-        /// </param>
-        public ClrGenericParameter(
-            GenericParameter definition,
-            ClrMethodDefinition parentMethod)
-            : this(
-                definition,
-                parentMethod.ParentType.Assembly,
-                new TypeParent(parentMethod))
-        { }
-
-        /// <summary>
-        /// Creates a Flame type definition that wraps
-        /// around an IL generic parameter.
-        /// </summary>
-        /// <param name="definition">
-        /// The IL type definition to wrap.
-        /// </param>
-        /// <param name="parentType">
-        /// The parent type that defines the generic parameter.
-        /// </param>
-        private ClrGenericParameter(
-            GenericParameter definition,
-            ClrGenericParameter parentType)
-            : this(
-                definition,
-                parentType.Assembly,
-                new TypeParent(parentType))
-        { }
-
-        private ClrGenericParameter(
-            GenericParameter definition,
-            ClrAssembly assembly,
-            TypeParent parent)
+    /// <inheritdoc/>
+    public AttributeMap Attributes
+    {
+        get
         {
-            this.Definition = definition;
-            this.Assembly = assembly;
-            this.Parent = parent;
-            this.FullName = new SimpleName(definition.Name)
-                .Qualify(parent.Member.FullName);
-            this.contentsInitializer = Assembly.CreateSynchronizedInitializer(
-                AnalyzeContents);
+            contentsInitializer.Initialize();
+            return attributeMap;
         }
+    }
 
-        /// <summary>
-        /// Gets the assembly that directly or indirectly defines
-        /// this type.
-        /// </summary>
-        /// <returns>The assembly.</returns>
-        public ClrAssembly Assembly { get; private set; }
-
-        /// <inheritdoc/>
-        public AttributeMap Attributes
+    /// <inheritdoc/>
+    public IReadOnlyList<IType> BaseTypes
+    {
+        get
         {
-            get
-            {
-                contentsInitializer.Initialize();
-                return attributeMap;
-            }
+            contentsInitializer.Initialize();
+            return baseTypeList;
         }
+    }
 
-        /// <inheritdoc/>
-        public IReadOnlyList<IType> BaseTypes
+    /// <summary>
+    /// Gets the generic parameter this type is based on.
+    /// </summary>
+    /// <returns>The generic parameter.</returns>
+    public GenericParameter Definition { get; private set; }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<IField> Fields => EmptyArray<IField>.Value;
+
+    /// <inheritdoc/>
+    public QualifiedName FullName { get; private set; }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<IGenericParameter> GenericParameters
+    {
+        get
         {
-            get
-            {
-                contentsInitializer.Initialize();
-                return baseTypeList;
-            }
+            contentsInitializer.Initialize();
+            return genericParameterList;
         }
+    }
 
-        /// <summary>
-        /// Gets the generic parameter this type is based on.
-        /// </summary>
-        /// <returns>The generic parameter.</returns>
-        public GenericParameter Definition { get; private set; }
+    /// <inheritdoc/>
+    public IReadOnlyList<IMethod> Methods => EmptyArray<IMethod>.Value;
 
-        /// <inheritdoc/>
-        public IReadOnlyList<IField> Fields => EmptyArray<IField>.Value;
+    /// <inheritdoc/>
+    public UnqualifiedName Name => FullName.FullyUnqualifiedName;
 
-        /// <inheritdoc/>
-        public QualifiedName FullName { get; private set; }
+    /// <inheritdoc/>
+    public IReadOnlyList<IType> NestedTypes => EmptyArray<IType>.Value;
 
-        /// <inheritdoc/>
-        public IReadOnlyList<IGenericParameter> GenericParameters
+    /// <inheritdoc/>
+    public TypeParent Parent { get; private set; }
+
+    /// <inheritdoc/>
+    public IGenericMember ParentMember =>
+        Parent.TypeOrNull ?? (IGenericMember)Parent.Method;
+
+    /// <inheritdoc/>
+    public IReadOnlyList<IProperty> Properties => EmptyArray<IProperty>.Value;
+
+    private void AnalyzeContents()
+    {
+        genericParameterList = Definition.GenericParameters
+            .Skip(ParentMember.GenericParameters.Count)
+            .Select(param => new ClrGenericParameter(param, this))
+            .ToArray();
+
+        var attrBuilder = new AttributeMapBuilder();
+        // TODO: analyze other constraints, custom attributes.
+        if (Definition.HasReferenceTypeConstraint)
         {
-            get
-            {
-                contentsInitializer.Initialize();
-                return genericParameterList;
-            }
+            attrBuilder.Add(FlagAttribute.ReferenceType);
         }
+        attributeMap = new AttributeMap(attrBuilder);
 
-        /// <inheritdoc/>
-        public IReadOnlyList<IMethod> Methods => EmptyArray<IMethod>.Value;
-
-        /// <inheritdoc/>
-        public UnqualifiedName Name => FullName.FullyUnqualifiedName;
-
-        /// <inheritdoc/>
-        public IReadOnlyList<IType> NestedTypes => EmptyArray<IType>.Value;
-
-        /// <inheritdoc/>
-        public TypeParent Parent { get; private set; }
-
-        /// <inheritdoc/>
-        public IGenericMember ParentMember =>
-            Parent.TypeOrNull ?? (IGenericMember)Parent.Method;
-
-        /// <inheritdoc/>
-        public IReadOnlyList<IProperty> Properties => EmptyArray<IProperty>.Value;
-
-        private void AnalyzeContents()
-        {
-            genericParameterList = Definition.GenericParameters
-                .Skip(ParentMember.GenericParameters.Count)
-                .Select(param => new ClrGenericParameter(param, this))
-                .ToArray();
-
-            var attrBuilder = new AttributeMapBuilder();
-            // TODO: analyze other constraints, custom attributes.
-            if (Definition.HasReferenceTypeConstraint)
-            {
-                attrBuilder.Add(FlagAttribute.ReferenceType);
-            }
-            attributeMap = new AttributeMap(attrBuilder);
-
-            baseTypeList = Definition.Constraints
-                .Select(ty => Assembly.Resolve(ty.ConstraintType, ParentMember))
-                .ToArray();
-        }
+        baseTypeList = Definition.Constraints
+            .Select(ty => Assembly.Resolve(ty.ConstraintType, ParentMember))
+            .ToArray();
     }
 }

@@ -2,8 +2,8 @@ using System;
 using Furesoft.Core.ObjectDB.IO;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	public interface IFileSystemInterface : IDisposable
 	{
 		void Flush();
@@ -98,4 +98,3 @@ namespace Furesoft.Core.ObjectDB.Core
 
 		sbyte ReadSByte();
 	}
-}

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Furesoft.Core.Platforming
-{
+namespace Furesoft.Core.Platforming;
+
 	public static class Injector
 	{
 		private static Dictionary<Type, Type> mappings
@@ -62,4 +62,3 @@ namespace Furesoft.Core.Platforming
 			mappings.Clear();
 		}
 	}
-}

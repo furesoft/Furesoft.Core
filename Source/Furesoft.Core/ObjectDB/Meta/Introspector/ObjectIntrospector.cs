@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Meta.Introspector
-{
+namespace Furesoft.Core.ObjectDB.Meta.Introspector;
+
 	/// <summary>
 	///   The local implementation of the Object Introspector.
 	/// </summary>
@@ -288,4 +288,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector
 			return new ArrayObjectInfo(arrayCopy, OdbType.Array, type.Id);
 		}
 	}
-}

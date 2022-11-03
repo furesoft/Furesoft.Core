@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public class Tree<K, V> : IIndex<K, V>
 	{
 		private readonly ITreeNodeManager<K, V> nodeManager;
@@ -317,4 +317,3 @@ namespace Furesoft.Core.Storage.Index
 			return FindNodeForInsertion(key, nodeManager.RootNode, ref insertionIndex);
 		}
 	}
-}

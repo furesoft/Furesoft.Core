@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal sealed class OdbFileStream : IOdbStream
 	{
 		private readonly object _lockObject = new();
@@ -175,4 +175,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			Dispose(false);
 		}
 	}
-}

@@ -4,37 +4,36 @@
 
 using System;
 
-namespace Furesoft.Core.CodeDom.Utilities
+namespace Furesoft.Core.CodeDom.Utilities;
+
+/// <summary>
+/// Extension and helper methods for <see cref="Array"/>s.
+/// </summary>
+public static class ArrayUtil
 {
+    #region /* STATIC HELPER METHODS */
+
+    // The following methods would be redundant with those in CollectionUtil:
+    //public static bool IsEmpty(Array thisArray)
+    //public static bool NotEmpty(Array thisArray)
+    //public static int NNLength(Array thisArray)  // Same as NNCount in CollectionUtil
+
     /// <summary>
-    /// Extension and helper methods for <see cref="Array"/>s.
+    /// Check if an array contains the specified item.
     /// </summary>
-    public static class ArrayUtil
+    /// <typeparam name="T">The type of the items in the array.</typeparam>
+    /// <param name="thisArray">The array being searched.</param>
+    /// <param name="item">The item being searched for.</param>
+    /// <returns>True if the array contains the item, otherwise false.</returns>
+    public static bool Contains<T>(T[] thisArray, T item)
     {
-        #region /* STATIC HELPER METHODS */
-
-        // The following methods would be redundant with those in CollectionUtil:
-        //public static bool IsEmpty(Array thisArray)
-        //public static bool NotEmpty(Array thisArray)
-        //public static int NNLength(Array thisArray)  // Same as NNCount in CollectionUtil
-
-        /// <summary>
-        /// Check if an array contains the specified item.
-        /// </summary>
-        /// <typeparam name="T">The type of the items in the array.</typeparam>
-        /// <param name="thisArray">The array being searched.</param>
-        /// <param name="item">The item being searched for.</param>
-        /// <returns>True if the array contains the item, otherwise false.</returns>
-        public static bool Contains<T>(T[] thisArray, T item)
+        foreach (T member in thisArray)
         {
-            foreach (T member in thisArray)
-            {
-                if (member.Equals(item))
-                    return true;
-            }
-            return false;
+            if (member.Equals(item))
+                return true;
         }
-
-        #endregion
+        return false;
     }
+
+    #endregion
 }

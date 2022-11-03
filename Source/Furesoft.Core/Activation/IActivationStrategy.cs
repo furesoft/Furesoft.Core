@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace Furesoft.Core.Activation
+namespace Furesoft.Core.Activation;
+
+public interface IActivationStrategy
 {
-    public interface IActivationStrategy
-    {
-        object Activate(Type type, object[] args);
-    }
+    object Activate(Type type, object[] args);
 }

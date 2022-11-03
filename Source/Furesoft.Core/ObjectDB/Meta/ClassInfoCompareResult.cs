@@ -2,8 +2,8 @@ using System.Text;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   To keep track of differences between two ClassInfo.
 	/// </summary>
@@ -60,4 +60,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return _fullClassName;
 		}
 	}
-}

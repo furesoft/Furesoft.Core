@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	/// <summary>
 	///   A simple list to hold query result for Object Values API.
 	/// </summary>
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 
 		#endregion IValues Members
 	}
-}

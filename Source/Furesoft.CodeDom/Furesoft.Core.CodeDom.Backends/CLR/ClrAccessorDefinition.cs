@@ -1,39 +1,38 @@
 using Mono.Cecil;
 using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Furesoft.Core.CodeDom.Backends.CLR
+namespace Furesoft.Core.CodeDom.Backends.CLR;
+
+/// <summary>
+/// A Flame accessor that wraps an IL method definition.
+/// </summary>
+public sealed class ClrAccessorDefinition : ClrMethodDefinition, IAccessor
 {
     /// <summary>
-    /// A Flame accessor that wraps an IL method definition.
+    /// Creates a wrapper around an IL accessor definition.
     /// </summary>
-    public sealed class ClrAccessorDefinition : ClrMethodDefinition, IAccessor
+    /// <param name="definition">
+    /// The method definition to wrap in a Flame accessor.
+    /// </param>
+    /// <param name="kind">
+    /// The kind of definition described by the accessor.
+    /// </param>
+    /// <param name="parentProperty">
+    /// The definition's declaring property.
+    /// </param>
+    public ClrAccessorDefinition(
+        MethodDefinition definition,
+        AccessorKind kind,
+        ClrPropertyDefinition parentProperty)
+        : base(definition, parentProperty.ParentType)
     {
-        /// <summary>
-        /// Creates a wrapper around an IL accessor definition.
-        /// </summary>
-        /// <param name="definition">
-        /// The method definition to wrap in a Flame accessor.
-        /// </param>
-        /// <param name="kind">
-        /// The kind of definition described by the accessor.
-        /// </param>
-        /// <param name="parentProperty">
-        /// The definition's declaring property.
-        /// </param>
-        public ClrAccessorDefinition(
-            MethodDefinition definition,
-            AccessorKind kind,
-            ClrPropertyDefinition parentProperty)
-            : base(definition, parentProperty.ParentType)
-        {
-            this.Kind = kind;
-            this.ParentProperty = parentProperty;
-        }
-
-        /// <inheritdoc/>
-        public AccessorKind Kind { get; private set; }
-
-        /// <inheritdoc/>
-        public IProperty ParentProperty { get; private set; }
+        this.Kind = kind;
+        this.ParentProperty = parentProperty;
     }
+
+    /// <inheritdoc/>
+    public AccessorKind Kind { get; private set; }
+
+    /// <inheritdoc/>
+    public IProperty ParentProperty { get; private set; }
 }

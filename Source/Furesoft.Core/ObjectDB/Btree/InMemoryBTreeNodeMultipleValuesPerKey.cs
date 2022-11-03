@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal sealed class InMemoryBTreeNodeMultipleValuesPerKey : BTreeNodeMultipleValuesPerKey
 	{
 		private static int nextId = 1;
@@ -121,4 +121,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			return GetValueAt(index);
 		}
 	}
-}

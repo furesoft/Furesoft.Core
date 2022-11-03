@@ -1,9 +1,8 @@
-﻿namespace Furesoft.Core.Platforming
+﻿namespace Furesoft.Core.Platforming;
+
+public enum OSName
 {
-    public enum OSName
-    {
-        Windows,
-        Linux,
-        OSX,
-    }
+    Windows,
+    Linux,
+    OSX,
 }

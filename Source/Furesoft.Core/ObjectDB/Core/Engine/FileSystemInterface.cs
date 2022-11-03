@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.IO;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	/// <summary>
 	///   Class that knows how to read/write all language native types : byte, char, String, int, long,....
 	/// </summary>
@@ -489,4 +489,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			Close();
 		}
 	}
-}

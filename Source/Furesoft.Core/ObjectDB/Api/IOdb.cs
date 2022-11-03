@@ -2,8 +2,8 @@ using System;
 using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Api.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// Database engine interface.
 	/// </summary>
@@ -162,4 +162,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <param name="plainObject">The plain object.</param>
 		void Disconnect<T>(T plainObject) where T : class;
 	}
-}

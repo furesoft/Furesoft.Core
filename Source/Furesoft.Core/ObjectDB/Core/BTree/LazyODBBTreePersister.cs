@@ -9,8 +9,8 @@ using Furesoft.Core.ObjectDB.Services;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.BTree
-{
+namespace Furesoft.Core.ObjectDB.Core.BTree;
+
 	/// <summary>
 	///   Class that persists the BTree and its node into the NDatabase ODB Database.
 	/// </summary>
@@ -333,4 +333,3 @@ namespace Furesoft.Core.ObjectDB.Core.BTree
 			_modifiedObjectOids.Add(oid, _modifiedObjectOidList.Count - 1);
 		}
 	}
-}

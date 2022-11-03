@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   Used for committed zone info.
 	/// </summary>
@@ -53,4 +53,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 								 _nbDeletedObjects.ToString(), ")");
 		}
 	}
-}

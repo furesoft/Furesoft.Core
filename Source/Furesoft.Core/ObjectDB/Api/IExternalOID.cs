@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// External OID, which contains database id
 	/// </summary>
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <returns>Database Id</returns>
 		IDatabaseId GetDatabaseId();
 	}
-}

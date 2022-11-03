@@ -1,8 +1,7 @@
-﻿namespace Furesoft.Core.Storage.Index
-{
+﻿namespace Furesoft.Core.Storage.Index;
+
 	public enum TreeTraverseDirection
 	{
 		Ascending,
 		Decending
 	}
-}

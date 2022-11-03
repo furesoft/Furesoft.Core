@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Core.Query.Execution;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	/// <summary>
 	///   An action to count objects of a query
 	/// </summary>
@@ -48,4 +48,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return new CountAction(Alias);
 		}
 	}
-}

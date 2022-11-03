@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal abstract class ExpressionVisitor
 	{
 		protected void Visit(Expression expression)
@@ -241,4 +241,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			Visit(invocation.Expression);
 		}
 	}
-}

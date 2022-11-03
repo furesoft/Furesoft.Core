@@ -8,8 +8,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	/// <summary>
 	///   A values Criteria query is a query to retrieve object values instead of objects.
 	/// </summary>
@@ -317,4 +317,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			_returnInstance = true;
 		}
 	}
-}

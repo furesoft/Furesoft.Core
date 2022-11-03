@@ -2,8 +2,8 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	public static class StreamExtension
 	{
 		/// <summary>
@@ -229,4 +229,3 @@ namespace Furesoft.Core.Storage
 			}
 		}
 	}
-}

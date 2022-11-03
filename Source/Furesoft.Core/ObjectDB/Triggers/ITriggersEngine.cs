@@ -1,8 +1,8 @@
 using System;
 using Furesoft.Core.ObjectDB.Api.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Triggers;
+
 	public interface ITriggersEngine
 	{
 		void AddUpdateTriggerFor(Type type, UpdateTrigger trigger);
@@ -13,4 +13,3 @@ namespace Furesoft.Core.ObjectDB.Triggers
 
 		void AddSelectTriggerFor(Type type, SelectTrigger trigger);
 	}
-}

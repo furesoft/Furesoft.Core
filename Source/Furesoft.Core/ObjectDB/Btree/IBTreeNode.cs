@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   The interface for btree node.
 	/// </summary>
@@ -95,4 +95,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		object GetChildIdAt(int childIndex, bool throwExceptionIfDoesNotExist);
 	}
-}

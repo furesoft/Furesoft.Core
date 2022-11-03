@@ -1,7 +1,6 @@
-﻿namespace Furesoft.Core.CodeDom.Compiler.Core
+﻿namespace Furesoft.Core.CodeDom.Compiler.Core;
+
+public interface IPropertyMethod : ITypeMember
 {
-    public interface IPropertyMethod : ITypeMember
-    {
-        MethodBody Body { get; }
-    }
+    MethodBody Body { get; }
 }

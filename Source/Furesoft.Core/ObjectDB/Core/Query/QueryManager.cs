@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Core.Query.Values;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query
-{
+namespace Furesoft.Core.ObjectDB.Core.Query;
+
 	internal class QueryManager : IQueryManager
 	{
 		public int[] GetOrderByAttributeIds(ClassInfo classInfo, IInternalQuery query)
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query
 			throw new OdbRuntimeException(NDatabaseError.QueryTypeNotImplemented.AddParameter(query.GetType().FullName));
 		}
 	}
-}

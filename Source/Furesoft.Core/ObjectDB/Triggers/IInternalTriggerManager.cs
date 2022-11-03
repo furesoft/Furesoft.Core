@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Triggers;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Triggers;
+
 	public interface IInternalTriggerManager
 	{
 		void ManageInsertTriggerBefore(Type type, object @object);
@@ -31,4 +31,3 @@ namespace Furesoft.Core.ObjectDB.Triggers
 
 		void AddSelectTriggerFor(Type type, SelectTrigger trigger);
 	}
-}

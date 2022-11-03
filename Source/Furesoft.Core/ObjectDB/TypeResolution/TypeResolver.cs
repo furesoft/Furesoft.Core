@@ -1,8 +1,8 @@
 using System;
 using System.Reflection;
 
-namespace Furesoft.Core.ObjectDB.TypeResolution
-{
+namespace Furesoft.Core.ObjectDB.TypeResolution;
+
 	/// <summary>
 	/// Resolves a <see cref="System.Type"/> by name.
 	/// </summary>
@@ -97,4 +97,3 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			return new TypeLoadException("Could not load type from string value '" + typeName + "'.", ex);
 		}
 	}
-}

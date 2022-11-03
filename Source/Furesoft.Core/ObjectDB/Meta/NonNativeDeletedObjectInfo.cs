@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   To specify that an object has been mark as deleted
 	/// </summary>
@@ -32,4 +32,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return true;
 		}
 	}
-}

@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   The NDatabase ODB BTree.
 	/// </summary>
@@ -31,4 +31,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			_oid = (OID)id;
 		}
 	}
-}

@@ -7,8 +7,8 @@ using Furesoft.Core.ObjectDB.Core.Query.List;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	/// <summary>
 	///   An action to retrieve a sublist of list.
 	/// </summary>
@@ -97,4 +97,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return new SublistAction(_query, AttributeName, Alias, _fromIndex, _size, _throwExceptionIfOutOfBound);
 		}
 	}
-}

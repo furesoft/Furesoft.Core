@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public sealed class TreeDiskNodeSerializer<K, V>
 	{
 		private ISerializer<K> _keySerializer;
@@ -221,4 +221,3 @@ namespace Furesoft.Core.Storage.Index
 			}
 		}
 	}
-}

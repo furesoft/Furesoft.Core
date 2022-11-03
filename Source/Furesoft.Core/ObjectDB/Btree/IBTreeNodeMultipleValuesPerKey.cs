@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   The interface for btree nodes that accept One Value Per Key
 	/// </summary>
@@ -10,4 +10,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 	{
 		IList Search(IComparable key);
 	}
-}

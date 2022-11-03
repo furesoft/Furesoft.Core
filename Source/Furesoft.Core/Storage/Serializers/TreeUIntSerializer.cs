@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.Storage.Serializers
-{
+namespace Furesoft.Core.Storage.Serializers;
+
 	public class TreeUIntSerializer : ISerializer<uint>
 	{
 		public byte[] Serialize(uint value)
@@ -35,4 +35,3 @@ namespace Furesoft.Core.Storage.Serializers
 			}
 		}
 	}
-}

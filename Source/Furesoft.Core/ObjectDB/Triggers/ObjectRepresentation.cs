@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Meta.Introspector;
 
-namespace Furesoft.Core.ObjectDB.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Triggers;
+
 	internal sealed class ObjectRepresentation : IObjectRepresentation
 	{
 		private readonly NonNativeObjectInfo _nnoi;
@@ -53,4 +53,3 @@ namespace Furesoft.Core.ObjectDB.Triggers
 
 		#endregion IObjectRepresentation Members
 	}
-}

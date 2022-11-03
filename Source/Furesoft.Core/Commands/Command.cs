@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace Furesoft.Core.Commands
-{
+namespace Furesoft.Core.Commands;
+
 	public class Command
 	{
 		public string Name { get; set; }
@@ -13,4 +13,3 @@ namespace Furesoft.Core.Commands
 			return (T)Args[index];
 		}
 	}
-}

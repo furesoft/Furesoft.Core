@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   Class keep track of object pointers and number of objects of a class info for a specific zone.
 	///   For example, to keep track of first committed and last committed object position.
@@ -68,4 +68,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			NbObjects = nb;
 		}
 	}
-}

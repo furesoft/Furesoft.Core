@@ -2,8 +2,8 @@ using System.IO;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal sealed class NonBufferedFileIO : INonBufferedFileIO
 	{
 		private readonly string _wholeFileName;
@@ -111,4 +111,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			_odbWriter = null;
 		}
 	}
-}

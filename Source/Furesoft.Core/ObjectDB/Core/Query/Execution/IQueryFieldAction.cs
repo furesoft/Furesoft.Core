@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Core.Query.Execution
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Execution;
+
 	/// <summary>
 	///   Used to implement generic action on matching object.
 	/// </summary>
@@ -33,4 +33,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Execution
 
 		void SetReturnInstance(bool returnInstance);
 	}
-}

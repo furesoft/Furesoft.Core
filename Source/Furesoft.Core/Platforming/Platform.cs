@@ -3,8 +3,8 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Furesoft.Core.Platforming
-{
+namespace Furesoft.Core.Platforming;
+
 	public static class Platform
 	{
 		public static T New<T>(params object[] args)
@@ -62,4 +62,3 @@ namespace Furesoft.Core.Platforming
 			return OSName.Windows;
 		}
 	}
-}

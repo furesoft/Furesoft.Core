@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 
-namespace Furesoft.Core
-{
+namespace Furesoft.Core;
+
 	public sealed class ObjectDumper
 	{
 		private int _level;
@@ -158,4 +158,3 @@ namespace Furesoft.Core
 			return "{ }";
 		}
 	}
-}

@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal interface IInternalConstraint : IConstraint
 	{
 		bool CanUseIndex();
@@ -26,4 +26,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 		/// <returns> true if object matches the criteria </returns>
 		bool Match(object @object);
 	}
-}

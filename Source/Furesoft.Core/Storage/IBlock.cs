@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	public interface IBlock : IDisposable
 	{
 		/// <summary>
@@ -34,4 +34,3 @@ namespace Furesoft.Core.Storage
 		/// </summary>
 		void Write(byte[] src, int srcOffset, int dstOffset, int count);
 	}
-}

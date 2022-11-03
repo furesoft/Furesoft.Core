@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// Use when you don't want to serialize the field.
 	/// </summary>
@@ -12,4 +12,3 @@ namespace Furesoft.Core.ObjectDB.Api
 	public sealed class NonPersistentAttribute : Attribute
 	{
 	}
-}

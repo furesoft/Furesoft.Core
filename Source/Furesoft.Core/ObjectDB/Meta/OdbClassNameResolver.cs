@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	internal static class OdbClassNameResolver
 	{
 		private static readonly Dictionary<string, string> cacheByFullClassName =
@@ -43,4 +43,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return type.AssemblyQualifiedName;
 		}
 	}
-}

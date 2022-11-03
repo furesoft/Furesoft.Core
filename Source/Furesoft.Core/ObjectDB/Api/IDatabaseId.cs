@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// Database identification
 	/// </summary>
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <returns>Array of long numbers which identifies the database</returns>
 		long[] GetIds();
 	}
-}

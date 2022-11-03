@@ -2,8 +2,8 @@ using System;
 using Furesoft.Core.ObjectDB.Cache;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Session
-{
+namespace Furesoft.Core.ObjectDB.Core.Session;
+
 	public interface ISession : IComparable
 	{
 		IOdbCache GetCache();
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Core.Session
 
 		IObjectWriter GetObjectWriter();
 	}
-}

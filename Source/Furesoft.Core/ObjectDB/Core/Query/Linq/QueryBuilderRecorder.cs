@@ -1,8 +1,8 @@
 using System;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal interface IQueryBuilderRecord
 	{
 		void Playback(IQuery query);
@@ -107,4 +107,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			_last = new ChainedQueryBuilderRecord(_last, action);
 		}
 	}
-}

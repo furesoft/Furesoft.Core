@@ -2,67 +2,66 @@
 
 using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 
-namespace Furesoft.Core.ExpressionEvaluator.AST
+namespace Furesoft.Core.ExpressionEvaluator.AST;
+
+public class AliasNode : Statement, IBindable
 {
-    public class AliasNode : Statement, IBindable
+    public AliasNode(Parser parser, CodeObject parent) : base(parser, parent)
     {
-        public AliasNode(Parser parser, CodeObject parent) : base(parser, parent)
-        {
-        }
+    }
 
-        public Expression Name { get; set; }
-        public Expression Value { get; set; }
+    public Expression Name { get; set; }
+    public Expression Value { get; set; }
 
-        public static void AddParsePoints()
-        {
-            Parser.AddParsePoint("alias", Parse);
-        }
+    public static void AddParsePoints()
+    {
+        Parser.AddParsePoint("alias", Parse);
+    }
 
-        public CodeObject Bind(ExpressionParser ep, Binder binder)
+    public CodeObject Bind(ExpressionParser ep, Binder binder)
+    {
+        if (Name is UnresolvedRef nameRef)
         {
-            if (Name is UnresolvedRef nameRef)
+            string name = nameRef.Reference.ToString();
+
+            if (!ep.RootScope.Aliases.ContainsKey(name))
             {
-                string name = nameRef.Reference.ToString();
-
-                if (!ep.RootScope.Aliases.ContainsKey(name))
-                {
-                    ep.RootScope.Aliases.Add(name, Value);
-                }
-                else
-                {
-                    AttachMessage($"Alias '{name}' already exists.", MessageSeverity.Error, MessageSource.Resolve);
-                }
+                ep.RootScope.Aliases.Add(name, Value);
             }
-
-            return this;
+            else
+            {
+                AttachMessage($"Alias '{name}' already exists.", MessageSeverity.Error, MessageSource.Resolve);
+            }
         }
 
-        protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
-        {
-            writer.Write("alias ");
+        return this;
+    }
 
-            Name.AsTextExpression(writer, flags);
+    protected override void AsTextStatement(CodeWriter writer, RenderFlags flags)
+    {
+        writer.Write("alias ");
 
-            writer.Write(" as ");
+        Name.AsTextExpression(writer, flags);
 
-            Value.AsTextExpression(writer, flags);
-        }
+        writer.Write(" as ");
 
-        private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            var node = new AliasNode(parser, parent);
+        Value.AsTextExpression(writer, flags);
+    }
 
-            parser.NextToken();
-            node.Value = Expression.Parse(parser, node);
+    private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        var node = new AliasNode(parser, parent);
 
-            if (!node.ParseExpectedToken(parser, "as"))
-                return null;
+        parser.NextToken();
+        node.Value = Expression.Parse(parser, node);
 
-            node.Name = Expression.Parse(parser, node, false, ";");
+        if (!node.ParseExpectedToken(parser, "as"))
+            return null;
 
-            //alias b as bogenmaß;
+        node.Name = Expression.Parse(parser, node, false, ";");
 
-            return node;
-        }
+        //alias b as bogenmaß;
+
+        return node;
     }
 }

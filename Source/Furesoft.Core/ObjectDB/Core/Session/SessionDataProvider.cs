@@ -2,8 +2,8 @@ using System;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Meta.Introspector;
 
-namespace Furesoft.Core.ObjectDB.Core.Session
-{
+namespace Furesoft.Core.ObjectDB.Core.Session;
+
 	internal sealed class SessionDataProvider : IObjectIntrospectionDataProvider
 	{
 		private ISession _session;
@@ -54,4 +54,3 @@ namespace Furesoft.Core.ObjectDB.Core.Session
 			return nnoi;
 		}
 	}
-}

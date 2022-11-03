@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal abstract class IterarorAdapter : IEnumerator
 	{
 		#region IEnumerator Members
@@ -19,4 +19,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		protected abstract object GetCurrent();
 	}
-}

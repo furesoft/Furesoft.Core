@@ -3,85 +3,84 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections;
+
+/// <summary>
+/// Generates a unique name for every value that is given to it.
+/// Generated names are stored. Requesting a name for the same
+/// object more than once always results in the same unique name.
+/// </summary>
+/// <typeparam name="T">The type of value to generate names for.</typeparam>
+public sealed class UniqueNameMap<T>
 {
     /// <summary>
-    /// Generates a unique name for every value that is given to it.
-    /// Generated names are stored. Requesting a name for the same
-    /// object more than once always results in the same unique name.
+    /// Creates a unique name map from a particular name-providing
+    /// function and a prefix that is used to resolve collisions.
     /// </summary>
-    /// <typeparam name="T">The type of value to generate names for.</typeparam>
-    public sealed class UniqueNameMap<T>
+    /// <param name="getName">
+    /// A function that maps values to their preferred names.
+    /// </param>
+    /// <param name="prefix">
+    /// A string prefix that is used to generate a unique name when a
+    /// collision occurs.
+    /// </param>
+    public UniqueNameMap(Func<T, string> getName, string prefix)
     {
-        /// <summary>
-        /// Creates a unique name map from a particular name-providing
-        /// function and a prefix that is used to resolve collisions.
-        /// </summary>
-        /// <param name="getName">
-        /// A function that maps values to their preferred names.
-        /// </param>
-        /// <param name="prefix">
-        /// A string prefix that is used to generate a unique name when a
-        /// collision occurs.
-        /// </param>
-        public UniqueNameMap(Func<T, string> getName, string prefix)
-        {
-            nameSet = new UniqueNameSet<T>(getName, prefix);
-            dict = new ConcurrentDictionary<T, string>();
-        }
+        nameSet = new UniqueNameSet<T>(getName, prefix);
+        dict = new ConcurrentDictionary<T, string>();
+    }
 
-        /// <summary>
-        /// Creates a unique name map from a particular name-providing
-        /// function and a name-generating function that is used to
-        /// resolve collisions.
-        /// </summary>
-        /// <param name="getName">
-        /// A function that maps values to their preferred names.
-        /// </param>
-        /// <param name="generateName">
-        /// A function that takes a value and an integer and combines
-        /// them into a name. This function is called with increasingly
-        /// large integers when a collision occurs, until a unique name
-        /// is found.
-        /// </param>
-        public UniqueNameMap(Func<T, string> getName, Func<T, int, string> generateName)
-        {
-            nameSet = new UniqueNameSet<T>(getName, generateName);
-            dict = new ConcurrentDictionary<T, string>();
-        }
+    /// <summary>
+    /// Creates a unique name map from a particular name-providing
+    /// function and a name-generating function that is used to
+    /// resolve collisions.
+    /// </summary>
+    /// <param name="getName">
+    /// A function that maps values to their preferred names.
+    /// </param>
+    /// <param name="generateName">
+    /// A function that takes a value and an integer and combines
+    /// them into a name. This function is called with increasingly
+    /// large integers when a collision occurs, until a unique name
+    /// is found.
+    /// </param>
+    public UniqueNameMap(Func<T, string> getName, Func<T, int, string> generateName)
+    {
+        nameSet = new UniqueNameSet<T>(getName, generateName);
+        dict = new ConcurrentDictionary<T, string>();
+    }
 
-        /// <summary>
-        /// Creates a unique name map from a unique name set.
-        /// </summary>
-        /// <param name="nameSet">
-        /// A pre-existing unique name set to use.
-        /// </param>
-        public UniqueNameMap(UniqueNameSet<T> nameSet)
-        {
-            this.nameSet = nameSet;
-            dict = new ConcurrentDictionary<T, string>();
-        }
+    /// <summary>
+    /// Creates a unique name map from a unique name set.
+    /// </summary>
+    /// <param name="nameSet">
+    /// A pre-existing unique name set to use.
+    /// </param>
+    public UniqueNameMap(UniqueNameSet<T> nameSet)
+    {
+        this.nameSet = nameSet;
+        dict = new ConcurrentDictionary<T, string>();
+    }
 
-        private UniqueNameSet<T> nameSet;
-        private ConcurrentDictionary<T, string> dict;
+    private UniqueNameSet<T> nameSet;
+    private ConcurrentDictionary<T, string> dict;
 
-        /// <summary>
-        /// Gets the name that the given element is mapped to.
-        /// </summary>
-        public string Get(T element)
-        {
-            return dict.GetOrAdd(element, nameSet.GenerateName);
-        }
+    /// <summary>
+    /// Gets the name that the given element is mapped to.
+    /// </summary>
+    public string Get(T element)
+    {
+        return dict.GetOrAdd(element, nameSet.GenerateName);
+    }
 
-        /// <summary>
-        /// Gets the name that the given element is mapped to.
-        /// </summary>
-        public string this[T element]
+    /// <summary>
+    /// Gets the name that the given element is mapped to.
+    /// </summary>
+    public string this[T element]
+    {
+        get
         {
-            get
-            {
-                return Get(element);
-            }
+            return Get(element);
         }
     }
 }

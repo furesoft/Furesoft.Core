@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	public interface IBTree
 	{
 		void Insert(IComparable key, object value);
@@ -38,4 +38,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		IEnumerator Iterator<T>(OrderByConstants orderBy);
 	}
-}

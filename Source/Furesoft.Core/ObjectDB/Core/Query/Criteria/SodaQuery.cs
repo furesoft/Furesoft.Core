@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal class SodaQuery : AbstractQuery
 	{
 		private string _attributeName;
@@ -119,4 +119,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return attributeName;
 		}
 	}
-}

@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Meta.Introspector;
 
-namespace Furesoft.Core.ObjectDB.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Triggers;
+
 	internal sealed class InstrumentationCallbackForStore : IIntrospectionCallback
 	{
 		private readonly bool _isUpdate;
@@ -29,4 +29,3 @@ namespace Furesoft.Core.ObjectDB.Triggers
 
 		#endregion IIntrospectionCallback Members
 	}
-}

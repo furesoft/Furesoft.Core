@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.Commands
-{
+namespace Furesoft.Core.Commands;
+
 	public static class CommandParser
 	{
 		public static Command Parse(string src)
@@ -39,4 +39,3 @@ namespace Furesoft.Core.Commands
 			return result;
 		}
 	}
-}

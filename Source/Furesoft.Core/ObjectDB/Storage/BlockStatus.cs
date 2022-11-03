@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Storage
-{
+namespace Furesoft.Core.ObjectDB.Storage;
+
 	/// <summary>
 	///   To keep track of block status
 	/// </summary>
@@ -9,4 +9,3 @@ namespace Furesoft.Core.ObjectDB.Storage
 
 		internal const byte BlockFull = 2;
 	}
-}

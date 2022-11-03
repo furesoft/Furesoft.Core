@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Storage
-{
+namespace Furesoft.Core.ObjectDB.Storage;
+
 	public sealed class CurrentIdBlockInfo
 	{
 		/// <summary>
@@ -19,4 +19,3 @@ namespace Furesoft.Core.ObjectDB.Storage
 		/// </summary>
 		internal long CurrentIdBlockPosition { get; set; }
 	}
-}

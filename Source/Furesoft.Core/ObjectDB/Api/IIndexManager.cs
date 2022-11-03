@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// Index Manager - allows to give access to class level configuration like adding an index, checking if index exists, rebuilding an index,...
 	/// </summary>
@@ -31,4 +31,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <param name="indexName">Existing index name</param>
 		void DeleteIndex(string indexName);
 	}
-}

@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	internal sealed class OidInfo
 	{
 		public OidInfo()
@@ -25,4 +25,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 		/// </remarks>
 		public OID PreviousClassOID { get; set; }
 	}
-}

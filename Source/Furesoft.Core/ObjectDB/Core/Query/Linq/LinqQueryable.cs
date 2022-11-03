@@ -6,8 +6,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class LinqQueryable<TElement> : ILinqQueryable<TElement>, IQueryProvider
 	{
 		private readonly Expression _expression;
@@ -105,4 +105,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return LinqQueryTranslator.Translate(expression);
 		}
 	}
-}

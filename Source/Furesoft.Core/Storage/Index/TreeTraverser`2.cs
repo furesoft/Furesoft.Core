@@ -2,8 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public class TreeTraverser<K, V> : IEnumerable<Tuple<K, V>>
 	{
 		private readonly TreeNode<K, V> fromNode;
@@ -43,4 +43,3 @@ namespace Furesoft.Core.Storage.Index
 			return ((IEnumerable<Tuple<K, V>>)this).GetEnumerator();
 		}
 	}
-}

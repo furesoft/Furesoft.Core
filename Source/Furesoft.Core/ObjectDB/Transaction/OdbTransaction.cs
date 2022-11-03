@@ -10,8 +10,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Transaction
-{
+namespace Furesoft.Core.ObjectDB.Transaction;
+
 	/// <summary>
 	/// The transaction class is used to guarantee ACID behavior.
 	/// </summary>
@@ -625,4 +625,3 @@ namespace Furesoft.Core.ObjectDB.Transaction
 			}
 		}
 	}
-}

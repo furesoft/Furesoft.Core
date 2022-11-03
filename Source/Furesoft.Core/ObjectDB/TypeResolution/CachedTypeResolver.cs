@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.TypeResolution
-{
+namespace Furesoft.Core.ObjectDB.TypeResolution;
+
 	/// <summary>
 	/// Resolves (instantiates) a <see cref="System.Type"/> by it's (possibly
 	/// assembly qualified) name, and caches the <see cref="System.Type"/>
@@ -82,4 +82,3 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			return new TypeLoadException("Could not load type from string value '" + typeName + "'.", ex);
 		}
 	}
-}

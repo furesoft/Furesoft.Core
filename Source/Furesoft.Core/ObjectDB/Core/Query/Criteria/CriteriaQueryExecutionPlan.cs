@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	/// <summary>
 	///   A simple Criteria execution plan Check if the query can use index and tries to find the best index to be used
 	/// </summary>
@@ -125,4 +125,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return fieldIds;
 		}
 	}
-}

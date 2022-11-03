@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.ObjectDB.Reflection
-{
+namespace Furesoft.Core.ObjectDB.Reflection;
+
 	internal sealed class ByteBuffer
 	{
 		public ByteBuffer(byte[] buffer)
@@ -95,4 +95,3 @@ namespace Furesoft.Core.ObjectDB.Reflection
 			return num;
 		}
 	}
-}

@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Core.Query.Criteria;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query
-{
+namespace Furesoft.Core.ObjectDB.Core.Query;
+
 	internal abstract class AbstractQuery : IInternalQuery
 	{
 		protected IInternalConstraint Constraint;
@@ -126,4 +126,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query
 
 		public abstract IConstraint Constrain(object value);
 	}
-}

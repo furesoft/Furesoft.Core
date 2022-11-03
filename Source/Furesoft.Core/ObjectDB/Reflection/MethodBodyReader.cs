@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Furesoft.Core.ObjectDB.Reflection
-{
+namespace Furesoft.Core.ObjectDB.Reflection;
+
 	internal sealed class MethodBodyReader
 	{
 		private static readonly OpCode[] oneByteOpcodes = new OpCode[0xe1];
@@ -246,4 +246,3 @@ Label_005A:
 			return opcode.Name.Contains("loc");
 		}
 	}
-}

@@ -16,8 +16,8 @@ using Furesoft.Core.ObjectDB.Storage;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	/// <summary>
 	///   Manage all IO Reading
 	/// </summary>
@@ -1086,4 +1086,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			return aoi;
 		}
 	}
-}

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   A simple list to contain some class infos.
 	/// </summary>
@@ -54,4 +54,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return buffer.ToString();
 		}
 	}
-}

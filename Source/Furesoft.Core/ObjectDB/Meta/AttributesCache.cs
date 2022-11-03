@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	internal sealed class AttributesCache
 	{
 		internal AttributesCache()
@@ -24,4 +24,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 		/// </summary>
 		internal IDictionary<string, ClassAttributeInfo> AttributesByName { get; set; }
 	}
-}

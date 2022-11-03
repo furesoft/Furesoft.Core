@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Storage
-{
+namespace Furesoft.Core.ObjectDB.Storage;
+
 	internal sealed class IdInfo
 	{
 		internal IdInfo(long position, byte status)
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Storage
 		internal long Position { get; private set; }
 		internal byte Status { get; set; }
 	}
-}

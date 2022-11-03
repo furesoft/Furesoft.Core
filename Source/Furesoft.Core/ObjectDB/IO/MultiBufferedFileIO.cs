@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	/// <summary>
 	///   Class allowing buffering for IO This class is used to give
 	///   a transparent access to buffered file io
@@ -409,4 +409,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			return buffer.ToString();
 		}
 	}
-}

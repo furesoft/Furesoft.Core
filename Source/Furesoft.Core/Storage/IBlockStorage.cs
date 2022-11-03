@@ -1,5 +1,5 @@
-﻿namespace Furesoft.Core.Storage
-{
+﻿namespace Furesoft.Core.Storage;
+
 	public interface IBlockStorage
 	{
 		/// <summary>
@@ -36,4 +36,3 @@
 		/// </summary>
 		IBlock CreateNew();
 	}
-}

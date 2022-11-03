@@ -1,8 +1,8 @@
 using System;
 using Furesoft.Core.ObjectDB.Api.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Triggers;
+
 	internal sealed class TriggerManager<T> : ITriggerManager where T : class
 	{
 		private readonly ITriggersEngine _storageEngine;
@@ -38,4 +38,3 @@ namespace Furesoft.Core.ObjectDB.Triggers
 
 		#endregion ITriggerManager Members
 	}
-}

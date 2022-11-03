@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.CLI
-{
+namespace Furesoft.Core.CLI;
+
 	public static class ConsoleEx
 	{
 		public static string Prompt(string message)
@@ -36,4 +36,3 @@ namespace Furesoft.Core.CLI
 			return -1;
 		}
 	}
-}

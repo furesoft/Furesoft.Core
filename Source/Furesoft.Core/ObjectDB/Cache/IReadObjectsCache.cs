@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Cache
-{
+namespace Furesoft.Core.ObjectDB.Cache;
+
 	/// <summary>
 	///   An interface for temporary cache
 	/// </summary>
@@ -16,4 +16,3 @@ namespace Furesoft.Core.ObjectDB.Cache
 
 		void ClearObjectInfos();
 	}
-}

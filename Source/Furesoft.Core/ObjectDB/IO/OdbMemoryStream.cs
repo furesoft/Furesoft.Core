@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal sealed class OdbMemoryStream : IOdbStream
 	{
 		private MemoryStream _memoryStream;
@@ -138,4 +138,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			_memoryStream = null;
 		}
 	}
-}

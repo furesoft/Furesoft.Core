@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Oid
-{
+namespace Furesoft.Core.ObjectDB.Oid;
+
 	internal class ObjectOID : BaseOID
 	{
 		public ObjectOID(long oid) : base(oid)
@@ -30,4 +30,3 @@ namespace Furesoft.Core.ObjectDB.Oid
 			return (int)(ObjectId ^ (UrShift(ObjectId, 32)));
 		}
 	}
-}

@@ -1,15 +1,14 @@
-namespace Furesoft.Core.CodeDom.Compiler.Core
+namespace Furesoft.Core.CodeDom.Compiler.Core;
+
+/// <summary>
+/// Defines a common interface for members
+/// that may be defined inside types.
+/// </summary>
+public interface ITypeMember : IMember
 {
     /// <summary>
-    /// Defines a common interface for members
-    /// that may be defined inside types.
+    /// Gets the type that defines this member, if any.
     /// </summary>
-    public interface ITypeMember : IMember
-    {
-        /// <summary>
-        /// Gets the type that defines this member, if any.
-        /// </summary>
-        /// <returns>The parent type.</returns>
-        IType ParentType { get; }
-    }
+    /// <returns>The parent type.</returns>
+    IType ParentType { get; }
 }

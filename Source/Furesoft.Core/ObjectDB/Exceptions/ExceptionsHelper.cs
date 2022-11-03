@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	internal static class ExceptionsHelper
 	{
 		/// <summary>
@@ -63,4 +63,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 			return sResult.ToString();
 		}
 	}
-}

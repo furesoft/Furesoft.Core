@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Storage
-{
+namespace Furesoft.Core.ObjectDB.Storage;
+
 	internal static class IDStatus
 	{
 		public const byte Active = 1;
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Storage
 			return status == Active;
 		}
 	}
-}

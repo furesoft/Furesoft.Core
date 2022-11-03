@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Btree;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.BTree
-{
+namespace Furesoft.Core.ObjectDB.Core.BTree;
+
 	/// <summary>
 	///   A Lazy BTree Iterator : It iterate on the object OIDs and lazy load objects from them (OIDs) Used by the LazyBTreeCollection
 	/// </summary>
@@ -50,4 +50,3 @@ namespace Furesoft.Core.ObjectDB.Core.BTree
 			return nnoi;
 		}
 	}
-}

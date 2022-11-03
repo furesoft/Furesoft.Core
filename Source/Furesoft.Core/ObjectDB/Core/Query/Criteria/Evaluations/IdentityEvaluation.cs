@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal sealed class IdentityEvaluation : AEvaluation
 	{
 		/// <summary>
@@ -51,4 +51,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 			return map;
 		}
 	}
-}

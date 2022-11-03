@@ -7,8 +7,8 @@ using Furesoft.Core.ObjectDB.Storage;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	internal sealed class FileSystemReader : IFileSystemReader
 	{
 		/// <summary>
@@ -461,4 +461,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			return o;
 		}
 	}
-}

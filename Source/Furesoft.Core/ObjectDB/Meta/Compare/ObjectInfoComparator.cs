@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Text;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Meta.Compare
-{
+namespace Furesoft.Core.ObjectDB.Meta.Compare;
+
 	/// <summary>
 	///   Manage Object info differences.
 	/// </summary>
@@ -304,4 +304,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Compare
 			return string.Format("{0} changes", _nbChanges);
 		}
 	}
-}

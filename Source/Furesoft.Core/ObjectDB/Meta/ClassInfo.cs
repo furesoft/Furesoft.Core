@@ -8,8 +8,8 @@ using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.TypeResolution;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   A meta representation of a class
 	/// </summary>
@@ -510,4 +510,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return GetAttributeInfoFromId(attributeId);
 		}
 	}
-}

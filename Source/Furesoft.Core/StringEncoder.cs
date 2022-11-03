@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Text;
 
-namespace Furesoft.Core
-{
+namespace Furesoft.Core;
+
 	/// <summary>
 	/// A Class To Encode Strings in a SerialKey Format
 	/// </summary>
@@ -107,4 +107,3 @@ namespace Furesoft.Core
 			return sb.ToString();
 		}
 	}
-}

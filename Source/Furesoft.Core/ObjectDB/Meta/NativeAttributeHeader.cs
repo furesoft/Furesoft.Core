@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   A class that contain basic information about a native object
 	/// </summary>
@@ -28,4 +28,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			_odbTypeId = odbTypeId;
 		}
 	}
-}

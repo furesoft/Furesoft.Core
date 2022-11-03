@@ -6,8 +6,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.TypeResolution;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   The database meta-model
 	/// </summary>
@@ -174,4 +174,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return result;
 		}
 	}
-}

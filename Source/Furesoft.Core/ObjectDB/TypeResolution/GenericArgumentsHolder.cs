@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Furesoft.Core.ObjectDB.TypeResolution
-{
+namespace Furesoft.Core.ObjectDB.TypeResolution;
+
 	/// <summary>
 	///     Holder for the generic arguments when using type parameters.
 	/// </summary>
@@ -328,4 +328,3 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			return count;
 		}
 	}
-}

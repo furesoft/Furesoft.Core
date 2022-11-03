@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Tool.Wrappers
-{
+namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
+
 	internal class OdbList<TItem> : List<TItem>, IOdbList<TItem>
 	{
 		public OdbList()
@@ -44,4 +44,3 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers
 			return stringBuilder.ToString();
 		}
 	}
-}

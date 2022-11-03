@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	public interface IInternalObjectSet<TItem> : IObjectSet<TItem>
 	{
 		/// <summary>
@@ -13,4 +13,3 @@ namespace Furesoft.Core.ObjectDB.Core
 
 		void AddOid(OID oid);
 	}
-}

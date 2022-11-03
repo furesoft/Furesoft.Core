@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	/// <summary>
 	/// Helper class contains static methods to read and write
 	/// numeric data in little endian byte order
@@ -160,4 +160,3 @@ namespace Furesoft.Core.Storage
 			return GetInt32(copied);
 		}
 	}
-}

@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Oid;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	public interface IObjectWriter : IDisposable
 	{
 		ClassInfoList AddClasses(ClassInfoList classInfoList);
@@ -107,4 +107,3 @@ namespace Furesoft.Core.ObjectDB.Core
 
 		IFileSystemWriter FileSystemProcessor { get; }
 	}
-}

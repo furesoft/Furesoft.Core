@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Tool
-{
+namespace Furesoft.Core.ObjectDB.Tool;
+
 	internal static class DictionaryExtensions
 	{
 		internal static TItem GetOrAdd<TKey, TItem>(this Dictionary<TKey, TItem> self, TKey key, Func<TKey, TItem> produce)
@@ -28,4 +28,3 @@ namespace Furesoft.Core.ObjectDB.Tool
 			return item;
 		}
 	}
-}

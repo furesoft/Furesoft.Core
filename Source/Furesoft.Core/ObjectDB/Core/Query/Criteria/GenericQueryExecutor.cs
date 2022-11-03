@@ -12,8 +12,8 @@ using Furesoft.Core.ObjectDB.Indexing;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	/// <summary>
 	///   <p>Generic query executor</p> .
 	/// </summary>
@@ -444,4 +444,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return IndexTool.BuildIndexKey("OrderBy", values, Query.GetOrderByFieldNames());
 		}
 	}
-}

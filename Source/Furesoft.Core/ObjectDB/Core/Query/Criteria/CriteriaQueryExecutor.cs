@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Indexing;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal sealed class CriteriaQueryExecutor : GenericQueryExecutor
 	{
 		private IOdbList<string> _involvedFields;
@@ -99,4 +99,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return CurrentNnoi;
 		}
 	}
-}

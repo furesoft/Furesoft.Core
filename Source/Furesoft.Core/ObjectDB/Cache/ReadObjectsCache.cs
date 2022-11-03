@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Cache
-{
+namespace Furesoft.Core.ObjectDB.Cache;
+
 	/// <summary>
 	///   A temporary cache of objects.
 	/// </summary>
@@ -55,4 +55,3 @@ namespace Furesoft.Core.ObjectDB.Cache
 
 		#endregion IReadObjectsCache Members
 	}
-}

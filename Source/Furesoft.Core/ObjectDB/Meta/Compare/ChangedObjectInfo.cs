@@ -1,7 +1,7 @@
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Meta.Compare
-{
+namespace Furesoft.Core.ObjectDB.Meta.Compare;
+
 	/// <summary>
 	///   Used to store informations about object changes
 	/// </summary>
@@ -54,4 +54,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Compare
 			return buffer.ToString();
 		}
 	}
-}

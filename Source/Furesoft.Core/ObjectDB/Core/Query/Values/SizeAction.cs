@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Core.Query.Execution;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	/// <summary>
 	///   An action to retrieve a size of a list.
 	/// </summary>
@@ -71,4 +71,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return new SizeAction(_query, AttributeName, Alias);
 		}
 	}
-}

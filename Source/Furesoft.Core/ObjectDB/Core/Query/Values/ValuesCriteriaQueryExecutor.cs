@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Core.Query.Criteria;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	internal sealed class ValuesCriteriaQueryExecutor : GenericQueryExecutor
 	{
 		private SodaQuery _sodaQuery;
@@ -57,4 +57,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return _values;
 		}
 	}
-}

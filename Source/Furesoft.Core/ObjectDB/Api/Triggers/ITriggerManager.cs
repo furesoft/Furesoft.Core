@@ -1,5 +1,5 @@
-﻿namespace Furesoft.Core.ObjectDB.Api.Triggers
-{
+﻿namespace Furesoft.Core.ObjectDB.Api.Triggers;
+
 	/// <summary>
 	/// Triggers manager
 	/// </summary>
@@ -25,4 +25,3 @@
 		/// </summary>
 		void AddSelectTrigger(SelectTrigger trigger);
 	}
-}

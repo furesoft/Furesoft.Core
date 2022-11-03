@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	public class Block : IBlock
 	{
 		private readonly byte[] _firstSector;
@@ -251,4 +251,3 @@ namespace Furesoft.Core.Storage
 			Dispose(false);
 		}
 	}
-}

@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Btree;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	/// <summary>
 	///   An implementation of an ordered Collection based on a BTree implementation that holds all objects in memory
 	/// </summary>
@@ -17,4 +17,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 			return new InMemoryBTreeMultipleValuesPerKey(degree);
 		}
 	}
-}

@@ -1,8 +1,8 @@
 using System;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// Database engine interface (simplified for triggers purpose).
 	/// </summary>
@@ -111,4 +111,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <returns>Queryable collection</returns>
 		ILinqQueryable<T> AsQueryable<T>();
 	}
-}

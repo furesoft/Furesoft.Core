@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Container
-{
+namespace Furesoft.Core.ObjectDB.Container;
+
 	internal static class DependencyContainer
 	{
 		private static readonly Dictionary<Type, Func<object>> factory = new();
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Container
 			return (TInterface)factoryWithArgument[typeof(TInterface)](argument);
 		}
 	}
-}

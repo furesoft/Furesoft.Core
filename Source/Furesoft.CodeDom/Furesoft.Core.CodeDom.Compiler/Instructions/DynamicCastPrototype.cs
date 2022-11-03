@@ -5,129 +5,128 @@ using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 using Furesoft.Core.CodeDom.Compiler.Core;
 using Furesoft.Core.CodeDom.Compiler.Instructions;
 
-namespace Furesoft.Core.CodeDom.Compiler.Instructions
+namespace Furesoft.Core.CodeDom.Compiler.Instructions;
+
+/// <summary>
+/// A prototype for dynamic cast instructions: instructions that
+/// convert one pointer type to another but check that this
+/// conversion is indeed legal; if it is not, then a null pointer
+/// is produced.
+/// </summary>
+public sealed class DynamicCastPrototype : InstructionPrototype
 {
-    /// <summary>
-    /// A prototype for dynamic cast instructions: instructions that
-    /// convert one pointer type to another but check that this
-    /// conversion is indeed legal; if it is not, then a null pointer
-    /// is produced.
-    /// </summary>
-    public sealed class DynamicCastPrototype : InstructionPrototype
+    private DynamicCastPrototype(PointerType targetType)
     {
-        private DynamicCastPrototype(PointerType targetType)
+        TargetType = targetType;
+    }
+
+    /// <summary>
+    /// Gets the pointer type to cast the input to.
+    /// </summary>
+    /// <returns>The target pointer type.</returns>
+    public PointerType TargetType { get; private set; }
+
+    /// <inheritdoc/>
+    public override IType ResultType => TargetType;
+
+    /// <inheritdoc/>
+    public override int ParameterCount => 1;
+
+    /// <inheritdoc/>
+    public override IReadOnlyList<string> CheckConformance(
+        Instruction instance,
+        MethodBody body)
+    {
+        var argType = body.Implementation.GetValueType(GetOperand(instance));
+        if (!(argType is PointerType))
         {
-            TargetType = targetType;
-        }
-
-        /// <summary>
-        /// Gets the pointer type to cast the input to.
-        /// </summary>
-        /// <returns>The target pointer type.</returns>
-        public PointerType TargetType { get; private set; }
-
-        /// <inheritdoc/>
-        public override IType ResultType => TargetType;
-
-        /// <inheritdoc/>
-        public override int ParameterCount => 1;
-
-        /// <inheritdoc/>
-        public override IReadOnlyList<string> CheckConformance(
-            Instruction instance,
-            MethodBody body)
-        {
-            var argType = body.Implementation.GetValueType(GetOperand(instance));
-            if (!(argType is PointerType))
+            return new string[]
             {
-                return new string[]
-                {
-                    "Argument to a dynamic cast has type '" + argType.FullName +
-                    "', but should have had a pointer type."
-                };
-            }
-            else
-            {
-                return EmptyArray<string>.Value;
-            }
+                "Argument to a dynamic cast has type '" + argType.FullName +
+                "', but should have had a pointer type."
+            };
         }
-
-        /// <inheritdoc/>
-        public override InstructionPrototype Map(MemberMapping mapping)
+        else
         {
-            var newType = mapping.MapType(TargetType);
-            if (object.ReferenceEquals(newType, TargetType))
-            {
-                return this;
-            }
-            else if (!(newType is PointerType))
-            {
-                throw new InvalidOperationException(
-                    "Cannot transform a dynamic cast to take non-pointer target type '" +
-                    newType.FullName + "'.");
-            }
-            else
-            {
-                return Create((PointerType)newType);
-            }
-        }
-
-        /// <summary>
-        /// Gets the input pointer of an instance of this dynamic
-        /// cast instruction prototype.
-        /// </summary>
-        /// <param name="instance">
-        /// An instance of this dynamic cast instruction prototype.
-        /// </param>
-        /// <returns>The input pointer.</returns>
-        public ValueTag GetOperand(Instruction instance)
-        {
-            AssertIsPrototypeOf(instance);
-            return instance.Arguments[0];
-        }
-
-        /// <summary>
-        /// Creates an instance of this dynamic cast instruction
-        /// prototype.
-        /// </summary>
-        /// <param name="operand">
-        /// A pointer to cast to another pointer type.
-        /// </param>
-        /// <returns>
-        /// A dynamic cast instruction.
-        /// </returns>
-        public Instruction Instantiate(ValueTag operand)
-        {
-            return Instantiate(new ValueTag[] { operand });
-        }
-
-        private static readonly InterningCache<DynamicCastPrototype> instanceCache
-            = new(
-                new StructuralDynamicCastPrototypeComparer());
-
-        /// <summary>
-        /// Gets or creates a dynamic cast instruction prototype that
-        /// converts pointers to a specific pointer type.
-        /// </summary>
-        /// <param name="targetType">The target pointer type.</param>
-        /// <returns>A dynamic cast instruction prototype.</returns>
-        public static DynamicCastPrototype Create(PointerType targetType)
-        {
-            return instanceCache.Intern(new DynamicCastPrototype(targetType));
+            return EmptyArray<string>.Value;
         }
     }
 
-    internal sealed class StructuralDynamicCastPrototypeComparer
-        : IEqualityComparer<DynamicCastPrototype>
+    /// <inheritdoc/>
+    public override InstructionPrototype Map(MemberMapping mapping)
     {
-        public bool Equals(DynamicCastPrototype x, DynamicCastPrototype y)
+        var newType = mapping.MapType(TargetType);
+        if (object.ReferenceEquals(newType, TargetType))
         {
-            return object.Equals(x.TargetType, y.TargetType);
+            return this;
         }
+        else if (!(newType is PointerType))
+        {
+            throw new InvalidOperationException(
+                "Cannot transform a dynamic cast to take non-pointer target type '" +
+                newType.FullName + "'.");
+        }
+        else
+        {
+            return Create((PointerType)newType);
+        }
+    }
 
-        public int GetHashCode(DynamicCastPrototype obj)
-        {
-            return obj.TargetType.GetHashCode();
-        }
+    /// <summary>
+    /// Gets the input pointer of an instance of this dynamic
+    /// cast instruction prototype.
+    /// </summary>
+    /// <param name="instance">
+    /// An instance of this dynamic cast instruction prototype.
+    /// </param>
+    /// <returns>The input pointer.</returns>
+    public ValueTag GetOperand(Instruction instance)
+    {
+        AssertIsPrototypeOf(instance);
+        return instance.Arguments[0];
+    }
+
+    /// <summary>
+    /// Creates an instance of this dynamic cast instruction
+    /// prototype.
+    /// </summary>
+    /// <param name="operand">
+    /// A pointer to cast to another pointer type.
+    /// </param>
+    /// <returns>
+    /// A dynamic cast instruction.
+    /// </returns>
+    public Instruction Instantiate(ValueTag operand)
+    {
+        return Instantiate(new ValueTag[] { operand });
+    }
+
+    private static readonly InterningCache<DynamicCastPrototype> instanceCache
+        = new(
+            new StructuralDynamicCastPrototypeComparer());
+
+    /// <summary>
+    /// Gets or creates a dynamic cast instruction prototype that
+    /// converts pointers to a specific pointer type.
+    /// </summary>
+    /// <param name="targetType">The target pointer type.</param>
+    /// <returns>A dynamic cast instruction prototype.</returns>
+    public static DynamicCastPrototype Create(PointerType targetType)
+    {
+        return instanceCache.Intern(new DynamicCastPrototype(targetType));
+    }
+}
+
+internal sealed class StructuralDynamicCastPrototypeComparer
+    : IEqualityComparer<DynamicCastPrototype>
+{
+    public bool Equals(DynamicCastPrototype x, DynamicCastPrototype y)
+    {
+        return object.Equals(x.TargetType, y.TargetType);
+    }
+
+    public int GetHashCode(DynamicCastPrototype obj)
+    {
+        return obj.TargetType.GetHashCode();
     }
 }

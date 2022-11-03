@@ -2,185 +2,184 @@ using System;
 using System.Collections.Generic;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 
-namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections;
+
+/// <summary>
+/// A base class for cache data structures.
+/// </summary>
+public abstract class Cache<TKey, TValue>
 {
     /// <summary>
-    /// A base class for cache data structures.
+    /// Inserts a new key-value pair into this cache,
+    /// or overwrites the value for an existing key.
     /// </summary>
-    public abstract class Cache<TKey, TValue>
+    /// <param name="key">The cached value's key.</param>
+    /// <param name="value">The value to cache.</param>
+    public abstract void Insert(TKey key, TValue value);
+
+    /// <summary>
+    /// Tries to query the cache for the value with a
+    /// particular key.
+    /// </summary>
+    /// <param name="key">The key of the value to query.</param>
+    /// <param name="value">A cached value, if any.</param>
+    /// <returns>
+    /// <c>true</c> if a value for the given key was
+    /// found in the cache; otherwise, <c>false</c>.
+    /// </returns>
+    public abstract bool TryGet(TKey key, out TValue value);
+
+    /// <summary>
+    /// Queries the cache for the value with a particular key.
+    /// If that value cannot be found, the key is recomputed.
+    /// </summary>
+    /// <param name="key">The key of the value to query.</param>
+    /// <param name="createValue">
+    /// A callback that creates the value for the key,
+    /// in case the key was not in the cache.
+    /// </param>
+    /// <returns>The value for the key.</returns>
+    public virtual TValue Get(TKey key, Func<TKey, TValue> createValue)
     {
-        /// <summary>
-        /// Inserts a new key-value pair into this cache,
-        /// or overwrites the value for an existing key.
-        /// </summary>
-        /// <param name="key">The cached value's key.</param>
-        /// <param name="value">The value to cache.</param>
-        public abstract void Insert(TKey key, TValue value);
-
-        /// <summary>
-        /// Tries to query the cache for the value with a
-        /// particular key.
-        /// </summary>
-        /// <param name="key">The key of the value to query.</param>
-        /// <param name="value">A cached value, if any.</param>
-        /// <returns>
-        /// <c>true</c> if a value for the given key was
-        /// found in the cache; otherwise, <c>false</c>.
-        /// </returns>
-        public abstract bool TryGet(TKey key, out TValue value);
-
-        /// <summary>
-        /// Queries the cache for the value with a particular key.
-        /// If that value cannot be found, the key is recomputed.
-        /// </summary>
-        /// <param name="key">The key of the value to query.</param>
-        /// <param name="createValue">
-        /// A callback that creates the value for the key,
-        /// in case the key was not in the cache.
-        /// </param>
-        /// <returns>The value for the key.</returns>
-        public virtual TValue Get(TKey key, Func<TKey, TValue> createValue)
+        if (!TryGet(key, out TValue result))
         {
-            if (!TryGet(key, out TValue result))
-            {
-                result = createValue(key);
-                Insert(key, result);
-            }
-            return result;
+            result = createValue(key);
+            Insert(key, result);
         }
-
-        /// <summary>
-        /// Tests if this cache contains a particular key.
-        /// </summary>
-        /// <returns><c>true</c> if the key is in the cache; <c>false</c> otherwise.</returns>
-        /// <param name="key">The key to look for.</param>
-        public virtual bool ContainsKey(TKey key)
-        {
-            return TryGet(key, out TValue value);
-        }
+        return result;
     }
 
     /// <summary>
-    /// A cache implementation that uses the least recently used
-    /// (LRU) policy to evict stale key-value pairs.
+    /// Tests if this cache contains a particular key.
     /// </summary>
-    public sealed class LruCache<TKey, TValue> : Cache<TKey, TValue>
+    /// <returns><c>true</c> if the key is in the cache; <c>false</c> otherwise.</returns>
+    /// <param name="key">The key to look for.</param>
+    public virtual bool ContainsKey(TKey key)
     {
-        /// <summary>
-        /// Creates an LRU cache with a particular capacity.
-        /// </summary>
-        /// <param name="capacity">
-        /// The maximal number of key-value pairs in the LRU cache.
-        /// </param>
-        public LruCache(int capacity)
+        return TryGet(key, out TValue value);
+    }
+}
+
+/// <summary>
+/// A cache implementation that uses the least recently used
+/// (LRU) policy to evict stale key-value pairs.
+/// </summary>
+public sealed class LruCache<TKey, TValue> : Cache<TKey, TValue>
+{
+    /// <summary>
+    /// Creates an LRU cache with a particular capacity.
+    /// </summary>
+    /// <param name="capacity">
+    /// The maximal number of key-value pairs in the LRU cache.
+    /// </param>
+    public LruCache(int capacity)
+    {
+        Capacity = capacity;
+        cache =
+            new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
+        evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
+    }
+
+    /// <summary>
+    /// Creates an LRU cache with a particular capacity and a
+    /// key equality comparer.
+    /// </summary>
+    /// <param name="capacity">
+    /// The maximal number of key-value pairs in the LRU cache.
+    /// </param>
+    /// <param name="comparer">
+    /// An equality comparer for keys.
+    /// </param>
+    public LruCache(int capacity, IEqualityComparer<TKey> comparer)
+    {
+        Capacity = capacity;
+        cache =
+            new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>(comparer);
+        evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
+    }
+
+    /// <summary>
+    /// Gets the LRU cache's capacity.
+    /// </summary>
+    /// <returns>
+    /// The maximal number of key-value pairs in the LRU cache.
+    /// </returns>
+    public int Capacity { get; private set; }
+
+    private Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> cache;
+    private LinkedList<KeyValuePair<TKey, TValue>> evictionList;
+
+    /// <inheritdoc/>
+    public override void Insert(TKey key, TValue value)
+    {
+        if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
         {
-            Capacity = capacity;
-            cache =
-                new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
-            evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
+            RegisterUse(node);
+            node.Value = new KeyValuePair<TKey, TValue>(key, value);
         }
-
-        /// <summary>
-        /// Creates an LRU cache with a particular capacity and a
-        /// key equality comparer.
-        /// </summary>
-        /// <param name="capacity">
-        /// The maximal number of key-value pairs in the LRU cache.
-        /// </param>
-        /// <param name="comparer">
-        /// An equality comparer for keys.
-        /// </param>
-        public LruCache(int capacity, IEqualityComparer<TKey> comparer)
+        else
         {
-            Capacity = capacity;
-            cache =
-                new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>(comparer);
-            evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
+            InsertNew(key, value);
         }
+    }
 
-        /// <summary>
-        /// Gets the LRU cache's capacity.
-        /// </summary>
-        /// <returns>
-        /// The maximal number of key-value pairs in the LRU cache.
-        /// </returns>
-        public int Capacity { get; private set; }
-
-        private Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>> cache;
-        private LinkedList<KeyValuePair<TKey, TValue>> evictionList;
-
-        /// <inheritdoc/>
-        public override void Insert(TKey key, TValue value)
+    /// <inheritdoc/>
+    public override bool TryGet(TKey key, out TValue value)
+    {
+        if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
         {
-            if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
-            {
-                RegisterUse(node);
-                node.Value = new KeyValuePair<TKey, TValue>(key, value);
-            }
-            else
-            {
-                InsertNew(key, value);
-            }
+            RegisterUse(node);
+            value = node.Value.Value;
+            return true;
         }
-
-        /// <inheritdoc/>
-        public override bool TryGet(TKey key, out TValue value)
+        else
         {
-            if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
-            {
-                RegisterUse(node);
-                value = node.Value.Value;
-                return true;
-            }
-            else
-            {
-                value = default(TValue);
-                return false;
-            }
+            value = default(TValue);
+            return false;
         }
+    }
 
-        /// <inheritdoc/>
-        public override TValue Get(TKey key, Func<TKey, TValue> createValue)
+    /// <inheritdoc/>
+    public override TValue Get(TKey key, Func<TKey, TValue> createValue)
+    {
+        if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
         {
-            if (cache.TryGetValue(key, out LinkedListNode<KeyValuePair<TKey, TValue>> node))
-            {
-                RegisterUse(node);
-                return node.Value.Value;
-            }
-            else
-            {
-                var value = createValue(key);
-                InsertNew(key, value);
-                return value;
-            }
+            RegisterUse(node);
+            return node.Value.Value;
         }
-
-        private void RegisterUse(LinkedListNode<KeyValuePair<TKey, TValue>> node)
+        else
         {
-            // Move the cached value node to the front of the
-            // linked list.
-            evictionList.Remove(node);
-            evictionList.AddFirst(node);
+            var value = createValue(key);
+            InsertNew(key, value);
+            return value;
         }
+    }
 
-        private void InsertNew(TKey key, TValue value)
+    private void RegisterUse(LinkedListNode<KeyValuePair<TKey, TValue>> node)
+    {
+        // Move the cached value node to the front of the
+        // linked list.
+        evictionList.Remove(node);
+        evictionList.AddFirst(node);
+    }
+
+    private void InsertNew(TKey key, TValue value)
+    {
+        // Create a new node, add it to the eviction list and
+        // the cache.
+        var node = new LinkedListNode<KeyValuePair<TKey, TValue>>(
+            new KeyValuePair<TKey, TValue>(key, value));
+
+        evictionList.AddFirst(node);
+        cache[key] = node;
+
+        if (evictionList.Count > Capacity)
         {
-            // Create a new node, add it to the eviction list and
-            // the cache.
-            var node = new LinkedListNode<KeyValuePair<TKey, TValue>>(
-                new KeyValuePair<TKey, TValue>(key, value));
-
-            evictionList.AddFirst(node);
-            cache[key] = node;
-
-            if (evictionList.Count > Capacity)
-            {
-                // Remove the last node from the eviction list as
-                // well as the cache if we ran out of space.
-                var evictedNode = evictionList.Last;
-                evictionList.RemoveLast();
-                cache.Remove(evictedNode.Value.Key);
-            }
+            // Remove the last node from the eviction list as
+            // well as the cache if we ran out of space.
+            var evictedNode = evictionList.Last;
+            evictionList.RemoveLast();
+            cache.Remove(evictedNode.Value.Key);
         }
     }
 }

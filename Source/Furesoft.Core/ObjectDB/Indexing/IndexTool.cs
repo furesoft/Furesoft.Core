@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Indexing
-{
+namespace Furesoft.Core.ObjectDB.Indexing;
+
 	internal static class IndexTool
 	{
 		internal static IOdbComparable BuildIndexKey(string indexName, NonNativeObjectInfo oi, int[] fieldIds)
@@ -63,4 +63,3 @@ namespace Furesoft.Core.ObjectDB.Indexing
 			return new ComposedCompareKey(keys);
 		}
 	}
-}

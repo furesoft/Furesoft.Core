@@ -8,8 +8,8 @@ using Furesoft.Core.ObjectDB.Core.Query.Execution;
 using Furesoft.Core.ObjectDB.Core.Query.List;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	/// <summary>
 	///   An action to retrieve an object field
 	/// </summary>
@@ -70,4 +70,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return new FieldValueAction(AttributeName, Alias);
 		}
 	}
-}

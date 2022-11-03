@@ -1,8 +1,8 @@
 using System;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   to keep informations about an attribute of a class :
 	///    - Its type
@@ -144,4 +144,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			_id = id;
 		}
 	}
-}

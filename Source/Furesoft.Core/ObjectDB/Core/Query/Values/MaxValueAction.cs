@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Core.Query.Execution;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	/// <summary>
 	///   An action to compute the max value of a field
 	/// </summary>
@@ -54,4 +54,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return new MaxValueAction(AttributeName, Alias);
 		}
 	}
-}

@@ -11,8 +11,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Services;
 using Furesoft.Core.ObjectDB.Transaction;
 
-namespace Furesoft.Core.ObjectDB
-{
+namespace Furesoft.Core.ObjectDB;
+
 	/// <summary>
 	/// The NDatabase Factory to open new instance of local odb.
 	/// </summary>
@@ -83,4 +83,3 @@ namespace Furesoft.Core.ObjectDB
 			}
 		}
 	}
-}

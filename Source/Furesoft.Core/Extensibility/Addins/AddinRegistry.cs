@@ -3,8 +3,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Reflection;
 
-namespace Furesoft.Core.Extensibility.Addins
-{
+namespace Furesoft.Core.Extensibility.Addins;
+
 	public class AddinRegistry : Collection<Addin>
 	{
 		#region Public Properties
@@ -85,4 +85,3 @@ namespace Furesoft.Core.Extensibility.Addins
 
 		#endregion Public Methods and Operators
 	}
-}

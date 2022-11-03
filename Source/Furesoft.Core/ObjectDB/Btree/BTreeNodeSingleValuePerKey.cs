@@ -1,8 +1,8 @@
 using System;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal abstract class BTreeNodeSingleValuePerKey : AbstractBTreeNode, IBTreeNodeOneValuePerKey
 	{
 		protected BTreeNodeSingleValuePerKey(IBTree btree) : base(btree)
@@ -78,4 +78,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		#endregion IBTreeNodeOneValuePerKey Members
 	}
-}

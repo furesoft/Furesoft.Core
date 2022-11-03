@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB
-{
+namespace Furesoft.Core.ObjectDB;
+
 	/// <summary>
 	/// Base interface for creacting custom logger
 	/// </summary>
@@ -29,4 +29,3 @@ namespace Furesoft.Core.ObjectDB
 		/// <param name="message">Mssage to log</param>
 		void Error(string message);
 	}
-}

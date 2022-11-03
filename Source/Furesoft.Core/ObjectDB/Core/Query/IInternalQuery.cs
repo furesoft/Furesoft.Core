@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query
-{
+namespace Furesoft.Core.ObjectDB.Core.Query;
+
 	internal interface IInternalQuery : IQuery
 	{
 		IQueryExecutionPlan GetExecutionPlan();
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query
 
 		Type UnderlyingType { get; }
 	}
-}

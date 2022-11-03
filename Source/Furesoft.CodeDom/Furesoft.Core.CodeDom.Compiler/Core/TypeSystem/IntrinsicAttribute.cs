@@ -2,71 +2,70 @@ using System.Collections.Concurrent;
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+
+/// <summary>
+/// Describes a named attribute that is well-understood by the compiler.
+/// </summary>
+public sealed class IntrinsicAttribute : IAttribute
 {
     /// <summary>
-    /// Describes a named attribute that is well-understood by the compiler.
+    /// Creates an intrinsic attribute with the given name and an empty argument list.
     /// </summary>
-    public sealed class IntrinsicAttribute : IAttribute
+    /// <param name="name">The attribute's name.</param>
+    public IntrinsicAttribute(string name)
+        : this(name, EmptyArray<Constant>.Value)
+    { }
+
+    /// <summary>
+    /// Creates an intrinsic attribute with the given name and argument list.
+    /// </summary>
+    /// <param name="name">The attribute's name.</param>
+    /// <param name="arguments">The attribute's list of arguments.</param>
+    public IntrinsicAttribute(string name, IReadOnlyList<Constant> arguments)
     {
-        /// <summary>
-        /// Creates an intrinsic attribute with the given name and an empty argument list.
-        /// </summary>
-        /// <param name="name">The attribute's name.</param>
-        public IntrinsicAttribute(string name)
-            : this(name, EmptyArray<Constant>.Value)
-        { }
+        Name = name;
+        Arguments = arguments;
+        AttributeType = GetIntrinsicAttributeType(name);
+    }
 
-        /// <summary>
-        /// Creates an intrinsic attribute with the given name and argument list.
-        /// </summary>
-        /// <param name="name">The attribute's name.</param>
-        /// <param name="arguments">The attribute's list of arguments.</param>
-        public IntrinsicAttribute(string name, IReadOnlyList<Constant> arguments)
-        {
-            Name = name;
-            Arguments = arguments;
-            AttributeType = GetIntrinsicAttributeType(name);
-        }
+    /// <summary>
+    /// Gets the name of this intrinsic attribute.
+    /// </summary>
+    /// <returns>The name of the intrinsic attribute.</returns>
+    public string Name { get; private set; }
 
-        /// <summary>
-        /// Gets the name of this intrinsic attribute.
-        /// </summary>
-        /// <returns>The name of the intrinsic attribute.</returns>
-        public string Name { get; private set; }
+    /// <summary>
+    /// Gets the list of arguments that is supplied to this intrinsic attribute.
+    /// </summary>
+    /// <returns>The argument list.</returns>
+    public IReadOnlyList<Constant> Arguments { get; private set; }
 
-        /// <summary>
-        /// Gets the list of arguments that is supplied to this intrinsic attribute.
-        /// </summary>
-        /// <returns>The argument list.</returns>
-        public IReadOnlyList<Constant> Arguments { get; private set; }
+    /// <summary>
+    /// Gets the type for this attribute.
+    /// </summary>
+    /// <returns>The attribute type.</returns>
+    public IType AttributeType { get; private set; }
 
-        /// <summary>
-        /// Gets the type for this attribute.
-        /// </summary>
-        /// <returns>The attribute type.</returns>
-        public IType AttributeType { get; private set; }
+    private static ConcurrentDictionary<string, IType> attrTypes = new();
 
-        private static ConcurrentDictionary<string, IType> attrTypes = new();
+    public static IType SynthesizeAttributeType(string name)
+    {
+        return new DescribedType(new SimpleName(name).Qualify(), null);
+    }
 
-        public static IType SynthesizeAttributeType(string name)
-        {
-            return new DescribedType(new SimpleName(name).Qualify(), null);
-        }
-
-        /// <summary>
-        /// Gets the intrinsic attribute type for a particular
-        /// intrinsic attribute name.
-        /// </summary>
-        /// <param name="name">
-        /// The name to find an intrinsic attribute type for.
-        /// </param>
-        /// <returns>
-        /// An intrinsic attribute type.
-        /// </returns>
-        public static IType GetIntrinsicAttributeType(string name)
-        {
-            return attrTypes.GetOrAdd(name, SynthesizeAttributeType);
-        }
+    /// <summary>
+    /// Gets the intrinsic attribute type for a particular
+    /// intrinsic attribute name.
+    /// </summary>
+    /// <param name="name">
+    /// The name to find an intrinsic attribute type for.
+    /// </param>
+    /// <returns>
+    /// An intrinsic attribute type.
+    /// </returns>
+    public static IType GetIntrinsicAttributeType(string name)
+    {
+        return attrTypes.GetOrAdd(name, SynthesizeAttributeType);
     }
 }

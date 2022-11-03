@@ -6,43 +6,42 @@ using System.Reflection;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Methods.OperatorDecls;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Methods;
+
+/// <summary>
+/// Represents a reference to an <see cref="OperatorDecl"/> or a <see cref="MethodInfo"/> for an overloaded operator.
+/// </summary>
+public class OperatorRef : MethodRef
 {
     /// <summary>
-    /// Represents a reference to an <see cref="OperatorDecl"/> or a <see cref="MethodInfo"/> for an overloaded operator.
+    /// Create an <see cref="OperatorRef"/> from an <see cref="OperatorDecl"/>.
     /// </summary>
-    public class OperatorRef : MethodRef
-    {
-        /// <summary>
-        /// Create an <see cref="OperatorRef"/> from an <see cref="OperatorDecl"/>.
-        /// </summary>
-        public OperatorRef(OperatorDecl methodBase, bool isFirstOnLine)
-            : base(methodBase, isFirstOnLine)
-        { }
+    public OperatorRef(OperatorDecl methodBase, bool isFirstOnLine)
+        : base(methodBase, isFirstOnLine)
+    { }
 
-        /// <summary>
-        /// Create an <see cref="OperatorRef"/> from an <see cref="OperatorDecl"/>.
-        /// </summary>
-        public OperatorRef(OperatorDecl methodBase)
-            : base(methodBase, false)
-        { }
+    /// <summary>
+    /// Create an <see cref="OperatorRef"/> from an <see cref="OperatorDecl"/>.
+    /// </summary>
+    public OperatorRef(OperatorDecl methodBase)
+        : base(methodBase, false)
+    { }
 
-        /// <summary>
-        /// Create an <see cref="OperatorRef"/> from a <see cref="MethodInfo"/>.
-        /// </summary>
-        public OperatorRef(MethodInfo methodInfo, bool isFirstOnLine)
-            : base(methodInfo, isFirstOnLine)
-        { }
+    /// <summary>
+    /// Create an <see cref="OperatorRef"/> from a <see cref="MethodInfo"/>.
+    /// </summary>
+    public OperatorRef(MethodInfo methodInfo, bool isFirstOnLine)
+        : base(methodInfo, isFirstOnLine)
+    { }
 
-        /// <summary>
-        /// Create an <see cref="OperatorRef"/> from a <see cref="MethodInfo"/>.
-        /// </summary>
-        public OperatorRef(MethodInfo methodInfo)
-            : base(methodInfo, false)
-        { }
+    /// <summary>
+    /// Create an <see cref="OperatorRef"/> from a <see cref="MethodInfo"/>.
+    /// </summary>
+    public OperatorRef(MethodInfo methodInfo)
+        : base(methodInfo, false)
+    { }
 
-        // OperatorRefs should only be rendered as a Description (not directly), and they never have type arguments.
-        // Descriptions are handled in SymbolicRef rendering, so there's no need to do anything here - the MethodRef
-        // base will render the name if an OperatorRef is rendered not in Description mode for some reason.
-    }
+    // OperatorRefs should only be rendered as a Description (not directly), and they never have type arguments.
+    // Descriptions are handled in SymbolicRef rendering, so there's no need to do anything here - the MethodRef
+    // base will render the name if an OperatorRef is rendered not in Description mode for some reason.
 }

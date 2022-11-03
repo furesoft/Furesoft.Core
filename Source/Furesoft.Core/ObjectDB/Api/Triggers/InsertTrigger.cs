@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Api.Triggers;
+
 	/// <summary>
 	/// Abstract class - derive from it if you want to create insert trigger
 	/// </summary>
@@ -19,4 +19,3 @@ namespace Furesoft.Core.ObjectDB.Api.Triggers
 		/// <param name="oid">Oid of inserted object</param>
 		public abstract void AfterInsert(object @object, OID oid);
 	}
-}

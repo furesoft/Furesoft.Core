@@ -4,8 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Furesoft.Core.ObjectDB.Reflection
-{
+namespace Furesoft.Core.ObjectDB.Reflection;
+
 	internal abstract class ILPattern
 	{
 		protected static Instruction GetLastMatchingInstruction(MatchContext context)
@@ -136,4 +136,3 @@ namespace Furesoft.Core.ObjectDB.Reflection
 
 		#endregion Nested type: SequencePattern
 	}
-}

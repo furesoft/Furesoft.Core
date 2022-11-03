@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Api.Query
-{
+namespace Furesoft.Core.ObjectDB.Api.Query;
+
 	internal interface ILinqQueryInternal<out T> : ILinqQuery<T>
 	{
 		IEnumerable<T> UnoptimizedThenBy<TKey>(Func<T, TKey> function);
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Api.Query
 
 		IEnumerable<T> UnoptimizedWhere(Func<T, bool> func);
 	}
-}

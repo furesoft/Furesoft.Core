@@ -2,8 +2,8 @@ using System.Linq;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Btree;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   An index of a class info
 	/// </summary>
@@ -39,4 +39,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return true;
 		}
 	}
-}

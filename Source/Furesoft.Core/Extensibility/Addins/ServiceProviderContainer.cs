@@ -1,5 +1,5 @@
-﻿namespace Furesoft.Core.Extensibility.Addins
-{
+﻿namespace Furesoft.Core.Extensibility.Addins;
+
 	using System.Collections.Generic;
 	using System.Linq;
 
@@ -34,4 +34,3 @@
 
 		#endregion Public Methods and Operators
 	}
-}

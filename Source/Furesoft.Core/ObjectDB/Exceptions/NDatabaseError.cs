@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	/// <summary>
 	///   All NDatabase ODB Errors.
 	/// </summary>
@@ -349,4 +349,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 			return sourceString;
 		}
 	}
-}

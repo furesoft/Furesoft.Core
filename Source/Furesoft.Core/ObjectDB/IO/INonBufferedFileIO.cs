@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal interface INonBufferedFileIO : IDisposable
 	{
 		long Length { get; }
@@ -20,4 +20,3 @@ namespace Furesoft.Core.ObjectDB.IO
 
 		long Read(long position, byte[] buffer, int size);
 	}
-}

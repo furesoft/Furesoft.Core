@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   To keep meta informations about an object
 	/// </summary>
@@ -86,4 +86,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 
 		public abstract AbstractObjectInfo CreateCopy(IDictionary<OID, AbstractObjectInfo> cache, bool onlyData);
 	}
-}

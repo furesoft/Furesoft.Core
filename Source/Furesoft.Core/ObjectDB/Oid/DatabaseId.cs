@@ -3,8 +3,8 @@ using System.Linq;
 using System.Text;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Oid
-{
+namespace Furesoft.Core.ObjectDB.Oid;
+
 	internal sealed class DatabaseId : IDatabaseId
 	{
 		private readonly long[] _ids;
@@ -69,4 +69,3 @@ namespace Furesoft.Core.ObjectDB.Oid
 			return (number >> bits) + (2L << ~bits);
 		}
 	}
-}

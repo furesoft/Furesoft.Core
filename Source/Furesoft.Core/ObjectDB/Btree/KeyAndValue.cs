@@ -1,8 +1,8 @@
 using System;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal sealed class KeyAndValue : IKeyAndValue
 	{
 		private readonly IComparable _key;
@@ -33,4 +33,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		#endregion IKeyAndValue Members
 	}
-}

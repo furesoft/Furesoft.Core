@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	/// <summary>
 	///   The interface used to implement the classes that are called by the generic query executor when an object matches the query
 	/// </summary>
@@ -32,4 +32,3 @@ namespace Furesoft.Core.ObjectDB.Core
 		/// </summary>
 		IInternalObjectSet<T> GetObjects<T>();
 	}
-}

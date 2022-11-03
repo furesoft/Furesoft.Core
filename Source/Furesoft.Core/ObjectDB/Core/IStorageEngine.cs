@@ -9,8 +9,8 @@ using Furesoft.Core.ObjectDB.Storage;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	/// <summary>
 	///   The interface of all that a StorageEngine (Main concept in ODB) must do.
 	/// </summary>
@@ -93,4 +93,3 @@ namespace Furesoft.Core.ObjectDB.Core
 
 		IInternalTriggerManager GetLocalTriggerManager();
 	}
-}

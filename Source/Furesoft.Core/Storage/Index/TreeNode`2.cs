@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public class TreeNode<K, V>
 	{
 		protected uint id = 0;
@@ -583,4 +583,3 @@ namespace Furesoft.Core.Storage.Index
 			}
 		}
 	}
-}

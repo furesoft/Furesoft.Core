@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal abstract class ComposedExpression : AbstractExpression
 	{
 		protected readonly IOdbList<IConstraint> Constraints;
@@ -49,4 +49,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return map;
 		}
 	}
-}

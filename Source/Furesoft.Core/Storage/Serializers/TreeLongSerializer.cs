@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.Storage.Serializers
-{
+namespace Furesoft.Core.Storage.Serializers;
+
 	public class TreeLongSerializer : ISerializer<long>
 	{
 		public byte[] Serialize(long value)
@@ -35,4 +35,3 @@ namespace Furesoft.Core.Storage.Serializers
 			}
 		}
 	}
-}

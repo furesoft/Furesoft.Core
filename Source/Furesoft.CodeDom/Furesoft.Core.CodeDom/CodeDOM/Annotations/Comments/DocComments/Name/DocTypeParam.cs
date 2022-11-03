@@ -4,72 +4,71 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.References.Types;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Generics;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name
+namespace Furesoft.Core.CodeDom.CodeDOM.Annotations.Comments.DocComments.Name;
+
+/// <summary>
+/// Documents a type parameter.
+/// </summary>
+public class DocTypeParam : DocNameBase
 {
     /// <summary>
-    /// Documents a type parameter.
+    /// The token used to parse the code object.
     /// </summary>
-    public class DocTypeParam : DocNameBase
+    public new const string ParseToken = "typeparam";
+
+    /// <summary>
+    /// Create a <see cref="DocTypeParam"/>.
+    /// </summary>
+    public DocTypeParam(TypeParameterRef typeParameterRef, string text)
+        : base(typeParameterRef, text)
+    { }
+
+    /// <summary>
+    /// Create a <see cref="DocTypeParam"/>.
+    /// </summary>
+    public DocTypeParam(TypeParameterRef typeParameterRef, params DocComment[] docComments)
+        : base(typeParameterRef, docComments)
+    { }
+
+    /// <summary>
+    /// Create a <see cref="DocTypeParam"/>.
+    /// </summary>
+    public DocTypeParam(TypeParameter typeParameter, string text)
+        : base(typeParameter.CreateRef(), text)
+    { }
+
+    /// <summary>
+    /// Create a <see cref="DocTypeParam"/>.
+    /// </summary>
+    public DocTypeParam(TypeParameter typeParameter, params DocComment[] docComments)
+        : base(typeParameter.CreateRef(), docComments)
+    { }
+
+    /// <summary>
+    /// Parse a <see cref="DocTypeParam"/>.
+    /// </summary>
+    public DocTypeParam(Parser parser, CodeObject parent)
+        : base(parser, parent)
+    { }
+
+    /// <summary>
+    /// The XML tag name for the documentation comment.
+    /// </summary>
+    public override string TagName
     {
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public new const string ParseToken = "typeparam";
+        get { return ParseToken; }
+    }
 
-        /// <summary>
-        /// Create a <see cref="DocTypeParam"/>.
-        /// </summary>
-        public DocTypeParam(TypeParameterRef typeParameterRef, string text)
-            : base(typeParameterRef, text)
-        { }
+    public static void AddParsePoints()
+    {
+        Parser.AddDocCommentParseTag(ParseToken, Parse);
+    }
 
-        /// <summary>
-        /// Create a <see cref="DocTypeParam"/>.
-        /// </summary>
-        public DocTypeParam(TypeParameterRef typeParameterRef, params DocComment[] docComments)
-            : base(typeParameterRef, docComments)
-        { }
-
-        /// <summary>
-        /// Create a <see cref="DocTypeParam"/>.
-        /// </summary>
-        public DocTypeParam(TypeParameter typeParameter, string text)
-            : base(typeParameter.CreateRef(), text)
-        { }
-
-        /// <summary>
-        /// Create a <see cref="DocTypeParam"/>.
-        /// </summary>
-        public DocTypeParam(TypeParameter typeParameter, params DocComment[] docComments)
-            : base(typeParameter.CreateRef(), docComments)
-        { }
-
-        /// <summary>
-        /// Parse a <see cref="DocTypeParam"/>.
-        /// </summary>
-        public DocTypeParam(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        /// <summary>
-        /// The XML tag name for the documentation comment.
-        /// </summary>
-        public override string TagName
-        {
-            get { return ParseToken; }
-        }
-
-        public static void AddParsePoints()
-        {
-            Parser.AddDocCommentParseTag(ParseToken, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="DocTypeParam"/>.
-        /// </summary>
-        public static new DocTypeParam Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new DocTypeParam(parser, parent);
-        }
+    /// <summary>
+    /// Parse a <see cref="DocTypeParam"/>.
+    /// </summary>
+    public static new DocTypeParam Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        return new DocTypeParam(parser, parent);
     }
 }

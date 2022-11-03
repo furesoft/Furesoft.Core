@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// Use when you want to enrich your class with OID.
 	/// You can apply it on fields of type: long or OID.
@@ -13,4 +13,3 @@ namespace Furesoft.Core.ObjectDB.Api
 	public sealed class OIDAttribute : Attribute
 	{
 	}
-}

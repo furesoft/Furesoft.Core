@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.TypeResolution
-{
+namespace Furesoft.Core.ObjectDB.TypeResolution;
+
 	/// <summary>
 	/// Holds data about a <see cref="System.Type"/> and it's
 	/// attendant <see cref="System.Reflection.Assembly"/>.
@@ -72,4 +72,3 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			}
 		}
 	}
-}

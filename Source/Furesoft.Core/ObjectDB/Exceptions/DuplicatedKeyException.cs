@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	/// <summary>
 	/// Exception raised when error in BTrees will appear (Duplicated key)
 	/// </summary>
@@ -9,4 +9,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 		{
 		}
 	}
-}

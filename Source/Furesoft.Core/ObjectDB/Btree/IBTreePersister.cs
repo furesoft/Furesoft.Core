@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   Interface used to persist and load btree and btree node from a persistent layer
 	/// </summary>
@@ -21,4 +21,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		void Flush();
 	}
-}

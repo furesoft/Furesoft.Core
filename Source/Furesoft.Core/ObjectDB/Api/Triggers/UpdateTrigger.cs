@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Api.Triggers;
+
 	/// <summary>
 	/// Abstract class - derive from it if you want to create update trigger
 	/// </summary>
@@ -22,4 +22,3 @@ namespace Furesoft.Core.ObjectDB.Api.Triggers
 		/// <param name="oid">Oid of updated object</param>
 		public abstract void AfterUpdate(IObjectRepresentation oldObjectRepresentation, object newObject, OID oid);
 	}
-}

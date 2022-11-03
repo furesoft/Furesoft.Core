@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Measure
-{
-    public partial class MeasureUnit
+namespace Furesoft.Core.Measure;
+
+public partial class MeasureUnit
 	{
 		internal struct Combinator
 		{
@@ -92,4 +92,3 @@ namespace Furesoft.Core.Measure
 			}
 		}
 	}
-}

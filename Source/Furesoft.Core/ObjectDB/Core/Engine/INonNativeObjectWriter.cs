@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	internal interface INonNativeObjectWriter
 	{
 		/// <param name="oid"> The Oid of the object to be inserted </param>
@@ -30,4 +30,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 
 		void AfterInit();
 	}
-}

@@ -1,7 +1,7 @@
 using System.IO;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	/// <summary>
 	///   Database Parameters for local database access
 	/// </summary>
@@ -70,4 +70,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			return Path.GetFileName(_fileName);
 		}
 	}
-}

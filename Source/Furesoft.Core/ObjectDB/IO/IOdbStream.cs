@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	/// <summary>
 	///   The basic IO interface for basic IO operation like reading and writing bytes
 	/// </summary>
@@ -26,4 +26,3 @@ namespace Furesoft.Core.ObjectDB.IO
 		/// </summary>
 		long Length { get; }
 	}
-}

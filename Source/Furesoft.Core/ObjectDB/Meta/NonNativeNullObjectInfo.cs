@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   To keep info about a non native null instance
 	/// </summary>
@@ -19,4 +19,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return true;
 		}
 	}
-}

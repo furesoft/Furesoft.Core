@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   A Map to contain values of attributes of an object.
 	/// </summary>
@@ -67,4 +67,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 				Add(key, map[key]);
 		}
 	}
-}

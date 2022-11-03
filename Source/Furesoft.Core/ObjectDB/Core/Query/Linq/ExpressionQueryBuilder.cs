@@ -5,8 +5,8 @@ using System.Reflection;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal abstract class ExpressionQueryBuilder : ExpressionVisitor
 	{
 		protected QueryBuilderRecorder Recorder { get; private set; }
@@ -167,4 +167,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			CannotConvertToSoda(newArray);
 		}
 	}
-}

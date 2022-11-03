@@ -1,5 +1,5 @@
-﻿namespace Furesoft.Core.Extensibility.Addins
-{
+﻿namespace Furesoft.Core.Extensibility.Addins;
+
 	using System;
 	using System.IO;
 	using System.Reflection;
@@ -123,4 +123,3 @@
 
 		#endregion Public Methods and Operators
 	}
-}

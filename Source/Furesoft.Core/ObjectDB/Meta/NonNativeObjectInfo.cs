@@ -5,8 +5,8 @@ using System.Text;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   To keep info about a non native object <pre>- Keeps its class info : a meta information to describe its type
 	///                                            - All its attributes values
@@ -358,4 +358,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			_objectHeader = header;
 		}
 	}
-}

@@ -4,8 +4,8 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal static class OdbFileManager
 	{
 		private const int DefaultBufferSize = 4096 * 2;
@@ -42,4 +42,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			return errorCode == 32 || errorCode == 33;
 		}
 	}
-}

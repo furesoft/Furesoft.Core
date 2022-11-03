@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace Furesoft.Core.ObjectDB.Services
-{
+namespace Furesoft.Core.ObjectDB.Services;
+
 	internal class ReflectionService : IReflectionService
 	{
 		public IList<MemberInfo> GetFieldsAndProperties(Type type)
@@ -87,4 +87,3 @@ namespace Furesoft.Core.ObjectDB.Services
 			return result;
 		}
 	}
-}

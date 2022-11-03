@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core
-{
+namespace Furesoft.Core;
+
 	/// <summary>
 	/// A Class To Easily Use Int as BitField
 	/// </summary>
@@ -71,4 +71,3 @@ namespace Furesoft.Core
 			return Convert.ToString(flags, 2);
 		}
 	}
-}

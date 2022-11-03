@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public sealed class TreeDiskNodeManager<K, V> : ITreeNodeManager<K, V>
 	{
 		private readonly IRecordStorage recordStorage;
@@ -255,4 +255,3 @@ namespace Furesoft.Core.Storage.Index
 			}
 		}
 	}
-}

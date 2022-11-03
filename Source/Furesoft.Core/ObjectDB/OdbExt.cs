@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Core;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Oid;
 
-namespace Furesoft.Core.ObjectDB
-{
+namespace Furesoft.Core.ObjectDB;
+
 	internal sealed class OdbExt : IOdbExt
 	{
 		private readonly IStorageEngine _storageEngine;
@@ -65,4 +65,3 @@ namespace Furesoft.Core.ObjectDB
 
 		#endregion IOdbExt Members
 	}
-}

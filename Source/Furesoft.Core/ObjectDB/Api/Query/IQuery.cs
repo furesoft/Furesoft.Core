@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api.Query
-{
+namespace Furesoft.Core.ObjectDB.Api.Query;
+
 	/// <summary>
 	/// handle to a node in the query graph.
 	///
@@ -94,4 +94,3 @@ namespace Furesoft.Core.ObjectDB.Api.Query
 		/// <returns>Number of filtered elements.</returns>
 		long Count();
 	}
-}

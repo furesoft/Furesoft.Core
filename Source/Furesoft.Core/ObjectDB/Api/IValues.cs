@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	///   The main interface of all Object Values query results of NDatabase ODB
 	/// </summary>
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <returns>Next values</returns>
 		IObjectValues NextValues();
 	}
-}

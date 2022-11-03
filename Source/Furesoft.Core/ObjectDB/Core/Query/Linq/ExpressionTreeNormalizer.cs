@@ -1,7 +1,7 @@
 using System.Linq.Expressions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class ExpressionTreeNormalizer : ExpressionTransformer
 	{
 		protected override Expression VisitLambda(LambdaExpression lambda)
@@ -99,4 +99,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return Visit(expression);
 		}
 	}
-}

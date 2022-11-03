@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace TestApp
-{
+namespace TestApp;
+
 	/// <summary>
 	/// This class serializes a CowModel into byte[] for using with RecordStorage;
 	/// It does not matter how you serialize the model, whenever it is XML, JSON, Protobuf or Binary serialization.
@@ -141,4 +141,3 @@ namespace TestApp
 			return cowModel;
 		}
 	}
-}

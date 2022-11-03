@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Api.Triggers;
+
 	/// <summary>
 	/// Abstract class - derive from it if you want to create select trigger
 	/// </summary>
@@ -12,4 +12,3 @@ namespace Furesoft.Core.ObjectDB.Api.Triggers
 		/// <param name="oid">OID of selected object</param>
 		public abstract void AfterSelect(object @object, OID oid);
 	}
-}

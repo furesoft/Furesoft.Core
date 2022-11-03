@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.TypeResolution
-{
+namespace Furesoft.Core.ObjectDB.TypeResolution;
+
 	/// <summary>
 	/// Provides access to a central registry of aliased <see cref="System.Type"/>s.
 	/// </summary>
@@ -401,4 +401,3 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			return type;
 		}
 	}
-}

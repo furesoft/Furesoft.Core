@@ -2,8 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Furesoft.Core.ObjectDB.Api.Query
-{
+namespace Furesoft.Core.ObjectDB.Api.Query;
+
 	/// <summary>
 	/// IOrderedQueryable&lt;T&gt; derived interface, Linq
 	/// </summary>
@@ -36,4 +36,3 @@ namespace Furesoft.Core.ObjectDB.Api.Query
 	public interface ILinqQuery : IEnumerable
 	{
 	}
-}

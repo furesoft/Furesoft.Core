@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Core.Query.List;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Oid;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	internal sealed class ValuesQueryResultAction : IMatchingObjectAction
 	{
 		private readonly IStorageEngine _engine;
@@ -140,4 +140,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return _result;
 		}
 	}
-}

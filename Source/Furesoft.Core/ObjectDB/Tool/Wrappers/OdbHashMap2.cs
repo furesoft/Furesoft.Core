@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Tool.Wrappers
-{
+namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
+
 	internal sealed class OdbHashMap<TKey, TValue> : IDictionary<TKey, TValue>
 	{
 		private readonly IDictionary<TKey, TValue> _dictionary;
@@ -132,4 +132,3 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers
 			return value;
 		}
 	}
-}

@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal sealed class MultiBuffer : IMultiBuffer
 	{
 		///<summary>
@@ -167,4 +167,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			get { return _end; }
 		}
 	}
-}

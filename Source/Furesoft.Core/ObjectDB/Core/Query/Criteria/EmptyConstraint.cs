@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal sealed class EmptyConstraint : IInternalConstraint
 	{
 		private readonly object _theObject;
@@ -128,4 +128,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return true;
 		}
 	}
-}

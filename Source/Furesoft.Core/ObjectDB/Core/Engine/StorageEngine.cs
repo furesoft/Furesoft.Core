@@ -20,8 +20,8 @@ using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	/// <summary>
 	///   The storage Engine. The Local Storage Engine class in the most important class in ODB.
 	/// </summary>
@@ -543,4 +543,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			return buffer.ToString();
 		}
 	}
-}

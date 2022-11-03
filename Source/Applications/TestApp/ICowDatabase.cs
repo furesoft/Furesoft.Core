@@ -2,18 +2,17 @@
 using System;
 using System.Collections.Generic;
 
-namespace TestApp
+namespace TestApp;
+
+public interface ICowDatabase
 {
-    public interface ICowDatabase
-    {
-        void Insert(CowModel cow);
+    void Insert(CowModel cow);
 
-        void Delete(CowModel cow);
+    void Delete(CowModel cow);
 
-        void Update(CowModel cow);
+    void Update(CowModel cow);
 
-        CowModel Find(Guid id);
+    CowModel Find(Guid id);
 
-        IEnumerable<CowModel> FindBy(string breed, int age);
-    }
+    IEnumerable<CowModel> FindBy(string breed, int age);
 }

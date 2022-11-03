@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal static class OptimizeableMethodConstrains
 	{
 		public static bool CanBeOptimized(MethodInfo method)
@@ -32,4 +32,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return enumerable.IsGenericType && enumerable.GetGenericTypeDefinition() == type;
 		}
 	}
-}

@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	/// <summary>
 	///   An exception thrown by ODB when a corrupted block is found
 	/// </summary>
@@ -9,4 +9,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 		{
 		}
 	}
-}

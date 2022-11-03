@@ -8,8 +8,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Transaction
-{
+namespace Furesoft.Core.ObjectDB.Transaction;
+
 	/// <summary>
 	///   The WriteAction class is the description of a Write operation that will be applied to the main database file when committing.
 	/// </summary>
@@ -143,4 +143,3 @@ namespace Furesoft.Core.ObjectDB.Transaction
 			return buffer.ToString();
 		}
 	}
-}

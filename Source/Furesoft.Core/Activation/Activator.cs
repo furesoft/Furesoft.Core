@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace Furesoft.Core.Activation
-{
+namespace Furesoft.Core.Activation;
+
 	public class Activator<ActivationStrategy>
 		where ActivationStrategy : IActivationStrategy, new()
 	{
@@ -38,4 +38,3 @@ namespace Furesoft.Core.Activation
 			return (T)CreateInstance(typeof(T), new[] { arg1, arg2, arg3 });
 		}
 	}
-}

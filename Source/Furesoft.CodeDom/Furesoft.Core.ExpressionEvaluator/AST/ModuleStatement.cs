@@ -1,36 +1,35 @@
-﻿namespace Furesoft.Core.ExpressionEvaluator.AST
+﻿namespace Furesoft.Core.ExpressionEvaluator.AST;
+
+public class ModuleStatement : Statement, IBindable
 {
-    public class ModuleStatement : Statement, IBindable
+    public ModuleStatement(Parser parser, CodeObject parent) : base(parser, parent)
     {
-        public ModuleStatement(Parser parser, CodeObject parent) : base(parser, parent)
+    }
+
+    public Expression ModuleName { get; set; }
+
+    public static void AddParsePoints()
+    {
+        Parser.AddParsePoint("module", Parse);
+    }
+
+    public CodeObject Bind(ExpressionParser ep, Binder binder)
+    {
+        if (ModuleName is Dot dot)
         {
+            ModuleName = new UnresolvedRef(dot._AsString);
         }
 
-        public Expression ModuleName { get; set; }
+        return this;
+    }
 
-        public static void AddParsePoints()
-        {
-            Parser.AddParsePoint("module", Parse);
-        }
+    private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        var node = new ModuleStatement(parser, parent);
+        parser.NextToken();
 
-        public CodeObject Bind(ExpressionParser ep, Binder binder)
-        {
-            if (ModuleName is Dot dot)
-            {
-                ModuleName = new UnresolvedRef(dot._AsString);
-            }
+        node.ModuleName = Expression.Parse(parser, node, false, ";");
 
-            return this;
-        }
-
-        private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            var node = new ModuleStatement(parser, parent);
-            parser.NextToken();
-
-            node.ModuleName = Expression.Parse(parser, node, false, ";");
-
-            return node;
-        }
+        return node;
     }
 }

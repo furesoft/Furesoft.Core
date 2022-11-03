@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	/// <summary>
 	/// Record storage service that store data in form of records, each
 	/// record made up from one or several blocks
@@ -548,4 +548,3 @@ namespace Furesoft.Core.Storage
 			}
 		}
 	}
-}

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Tool
-{
+namespace Furesoft.Core.ObjectDB.Tool;
+
 	/// <summary>
 	///   Simple logging class
 	/// </summary>
@@ -54,4 +54,3 @@ namespace Furesoft.Core.ObjectDB.Tool
 			}
 		}
 	}
-}

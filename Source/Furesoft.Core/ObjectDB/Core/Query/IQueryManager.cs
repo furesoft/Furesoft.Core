@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query
-{
+namespace Furesoft.Core.ObjectDB.Core.Query;
+
 	internal interface IQueryManager
 	{
 		int[] GetOrderByAttributeIds(ClassInfo classInfo, IInternalQuery query);
@@ -12,4 +12,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query
 		/// </summary>
 		IQueryExecutor GetQueryExecutor(IQuery query, IStorageEngine engine);
 	}
-}

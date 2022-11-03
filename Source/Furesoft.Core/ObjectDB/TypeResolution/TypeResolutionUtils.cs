@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.TypeResolution
-{
+namespace Furesoft.Core.ObjectDB.TypeResolution;
+
 	/// <summary>
 	/// Helper methods with regard to type resolution.
 	/// </summary>
@@ -29,4 +29,3 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			return TypeRegistry.ResolveType(typeName) ?? InternalTypeResolver.Resolve(typeName);
 		}
 	}
-}

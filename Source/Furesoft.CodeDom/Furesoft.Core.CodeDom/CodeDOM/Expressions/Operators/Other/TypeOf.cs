@@ -3,68 +3,67 @@ using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other.Base;
 using Furesoft.Core.CodeDom.Parsing;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Other;
+
+/// <summary>
+/// Returns the system type object for the specified type.
+/// </summary>
+public class TypeOf : TypeOperator
 {
     /// <summary>
-    /// Returns the system type object for the specified type.
+    /// True if the operator is left-associative, or false if it's right-associative.
     /// </summary>
-    public class TypeOf : TypeOperator
+    public const bool LeftAssociative = true;
+
+    /// <summary>
+    /// The token used to parse the code object.
+    /// </summary>
+    public const string ParseToken = "typeof";
+
+    /// <summary>
+    /// The precedence of the operator.
+    /// </summary>
+    public const int Precedence = 100;
+
+    /// <summary>
+    /// Create a <see cref="TypeOf"/> operator - the expression must evaluate to a <see cref="TypeRef"/> in valid code.
+    /// </summary>
+    public TypeOf(Expression type)
+        : base(type)
+    { }
+
+    protected TypeOf(Parser parser, CodeObject parent)
+                : base(parser, parent)
     {
-        /// <summary>
-        /// True if the operator is left-associative, or false if it's right-associative.
-        /// </summary>
-        public const bool LeftAssociative = true;
+        ParseKeywordAndArgument(parser, ParseFlags.Type);
+    }
 
-        /// <summary>
-        /// The token used to parse the code object.
-        /// </summary>
-        public const string ParseToken = "typeof";
+    /// <summary>
+    /// The symbol associated with the operator.
+    /// </summary>
+    public override string Symbol
+    {
+        get { return ParseToken; }
+    }
 
-        /// <summary>
-        /// The precedence of the operator.
-        /// </summary>
-        public const int Precedence = 100;
+    public static new void AddParsePoints()
+    {
+        Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
+    }
 
-        /// <summary>
-        /// Create a <see cref="TypeOf"/> operator - the expression must evaluate to a <see cref="TypeRef"/> in valid code.
-        /// </summary>
-        public TypeOf(Expression type)
-            : base(type)
-        { }
+    /// <summary>
+    /// Parse a <see cref="TypeOf"/> operator.
+    /// </summary>
+    public static TypeOf Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        return new TypeOf(parser, parent);
+    }
 
-        protected TypeOf(Parser parser, CodeObject parent)
-                    : base(parser, parent)
-        {
-            ParseKeywordAndArgument(parser, ParseFlags.Type);
-        }
-
-        /// <summary>
-        /// The symbol associated with the operator.
-        /// </summary>
-        public override string Symbol
-        {
-            get { return ParseToken; }
-        }
-
-        public static new void AddParsePoints()
-        {
-            Parser.AddOperatorParsePoint(ParseToken, Precedence, LeftAssociative, false, Parse);
-        }
-
-        /// <summary>
-        /// Parse a <see cref="TypeOf"/> operator.
-        /// </summary>
-        public static TypeOf Parse(Parser parser, CodeObject parent, ParseFlags flags)
-        {
-            return new TypeOf(parser, parent);
-        }
-
-        /// <summary>
-        /// Get the precedence of the operator.
-        /// </summary>
-        public override int GetPrecedence()
-        {
-            return Precedence;
-        }
+    /// <summary>
+    /// Get the precedence of the operator.
+    /// </summary>
+    public override int GetPrecedence()
+    {
+        return Precedence;
     }
 }

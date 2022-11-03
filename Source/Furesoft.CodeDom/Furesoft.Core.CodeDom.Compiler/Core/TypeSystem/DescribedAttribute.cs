@@ -1,17 +1,16 @@
 ﻿using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Furesoft.Core.CodeDom.Compiler.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.TypeSystem;
+
+public class DescribedAttribute : IAttribute
 {
-    public class DescribedAttribute : IAttribute
+    private readonly IType _attributeType;
+
+    public DescribedAttribute(IType attributeType)
     {
-        private readonly IType _attributeType;
-
-        public DescribedAttribute(IType attributeType)
-        {
-            _attributeType = attributeType;
-        }
-
-        public IType AttributeType => _attributeType;
-        public List<AttributeArgument> ConstructorArguments { get; set; } = new();
+        _attributeType = attributeType;
     }
+
+    public IType AttributeType => _attributeType;
+    public List<AttributeArgument> ConstructorArguments { get; set; } = new();
 }

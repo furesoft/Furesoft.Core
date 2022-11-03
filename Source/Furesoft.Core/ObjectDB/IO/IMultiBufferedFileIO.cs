@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	/// <summary>
 	///   The interface for buffered IO
 	/// </summary>
@@ -27,4 +27,3 @@ namespace Furesoft.Core.ObjectDB.IO
 
 		void Close();
 	}
-}

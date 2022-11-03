@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Tool.Wrappers
-{
+namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
+
 	internal static class OdbRandom
 	{
 		private static readonly Random Random = new();
@@ -16,4 +16,3 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers
 			return Random.NextDouble();
 		}
 	}
-}

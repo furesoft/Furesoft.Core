@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Meta.Introspector
-{
+namespace Furesoft.Core.ObjectDB.Meta.Introspector;
+
 	public interface IObjectIntrospectionDataProvider
 	{
 		ClassInfo GetClassInfo(Type type);
@@ -10,4 +10,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector
 
 		NonNativeObjectInfo EnrichWithOid(NonNativeObjectInfo nnoi, object o);
 	}
-}

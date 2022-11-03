@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public class TreeMemoryNodeManager<K, V> : ITreeNodeManager<K, V>
 	{
 		private readonly Dictionary<uint, TreeNode<K, V>> _nodes = new();
@@ -88,4 +88,3 @@ namespace Furesoft.Core.Storage.Index
 			// does nothing
 		}
 	}
-}

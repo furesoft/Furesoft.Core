@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Api.Triggers;
+
 	/// <summary>
 	///   A simple base class for all triggers.
 	/// </summary>
@@ -10,4 +10,3 @@ namespace Furesoft.Core.ObjectDB.Api.Triggers
 		/// </summary>
 		public IOdbForTrigger Odb { get; internal set; }
 	}
-}

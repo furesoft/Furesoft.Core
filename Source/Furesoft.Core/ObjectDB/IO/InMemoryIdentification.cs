@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal sealed class InMemoryIdentification : IDbIdentification
 	{
 		private readonly string _inmemoryID = InMemoryName + "ID";
@@ -55,4 +55,3 @@ namespace Furesoft.Core.ObjectDB.IO
 			return new InMemoryIdentification(filename);
 		}
 	}
-}

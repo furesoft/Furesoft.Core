@@ -1,8 +1,8 @@
 using System.Globalization;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Oid
-{
+namespace Furesoft.Core.ObjectDB.Oid;
+
 	/// <summary>
 	///   The abstract class to represent OID.
 	/// </summary>
@@ -41,4 +41,3 @@ namespace Furesoft.Core.ObjectDB.Oid
 			return CompareTo(oid);
 		}
 	}
-}

@@ -1,8 +1,8 @@
 using System;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal sealed class StartsWithEvaluation : AEvaluation
 	{
 		private readonly bool _isCaseSensitive;
@@ -40,4 +40,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 				NDatabaseError.QueryStartsWithConstraintTypeNotSupported.AddParameter(TheObject.GetType().FullName));
 		}
 	}
-}

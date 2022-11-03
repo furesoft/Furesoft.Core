@@ -2,31 +2,30 @@
 using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
 
-namespace Furesoft.Core.CodeDom.Compiler.Instructions
+namespace Furesoft.Core.CodeDom.Compiler.Instructions;
+
+public sealed class LoadFieldPrototype : InstructionPrototype
 {
-    public sealed class LoadFieldPrototype : InstructionPrototype
+    private readonly IField _field;
+
+    public LoadFieldPrototype(IField field)
     {
-        private readonly IField _field;
+        this._field = field;
+    }
 
-        public LoadFieldPrototype(IField field)
-        {
-            this._field = field;
-        }
+    public override IType ResultType => _field.FieldType;
 
-        public override IType ResultType => _field.FieldType;
+    public IField Field => _field;
 
-        public IField Field => _field;
+    public override int ParameterCount => 0;
 
-        public override int ParameterCount => 0;
+    public override IReadOnlyList<string> CheckConformance(Instruction instance, MethodBody body)
+    {
+        return EmptyArray<string>.Value;
+    }
 
-        public override IReadOnlyList<string> CheckConformance(Instruction instance, MethodBody body)
-        {
-            return EmptyArray<string>.Value;
-        }
-
-        public override InstructionPrototype Map(MemberMapping mapping)
-        {
-            return this;
-        }
+    public override InstructionPrototype Map(MemberMapping mapping)
+    {
+        return this;
     }
 }

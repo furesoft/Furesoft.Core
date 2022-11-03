@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal abstract class BTreeNodeMultipleValuesPerKey : AbstractBTreeNode, IBTreeNodeMultipleValuesPerKey
 	{
 		protected BTreeNodeMultipleValuesPerKey(IBTree btree) : base(btree)
@@ -157,4 +157,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			list.Add(value);
 		}
 	}
-}

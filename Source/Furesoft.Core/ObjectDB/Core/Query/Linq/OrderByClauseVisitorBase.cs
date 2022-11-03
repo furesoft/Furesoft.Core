@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal abstract class OrderByClauseVisitorBase : ExpressionQueryBuilder
 	{
 		protected abstract void ApplyDirection(IQuery query);
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return recorder.Record;
 		}
 	}
-}

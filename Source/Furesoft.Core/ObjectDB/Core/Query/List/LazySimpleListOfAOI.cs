@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	/// <summary>
 	///   A simple list to hold query result.
 	/// </summary>
@@ -114,4 +114,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 			return buffer.ToString();
 		}
 	}
-}

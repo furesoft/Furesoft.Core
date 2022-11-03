@@ -6,8 +6,8 @@ using Furesoft.Core.ObjectDB.Oid;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.TypeResolution;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   Contains the list for the ODB types
 	/// </summary>
@@ -516,4 +516,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 
 		#endregion Type Sizes
 	}
-}

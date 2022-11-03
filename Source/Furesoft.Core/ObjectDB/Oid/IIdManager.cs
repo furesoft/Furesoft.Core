@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Oid
-{
+namespace Furesoft.Core.ObjectDB.Oid;
+
 	public interface IIdManager
 	{
 		/// <summary>
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Oid
 		/// <returns> a boolean value to check if block of id is full </returns>
 		bool MustShift();
 	}
-}

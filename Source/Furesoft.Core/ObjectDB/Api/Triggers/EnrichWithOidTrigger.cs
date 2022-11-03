@@ -6,8 +6,8 @@ using Furesoft.Core.ObjectDB.Container;
 using Furesoft.Core.ObjectDB.Services;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Api.Triggers
-{
+namespace Furesoft.Core.ObjectDB.Api.Triggers;
+
 	internal sealed class EnrichWithOidTrigger : SelectTrigger
 	{
 		private static readonly Dictionary<Type, FieldInfo> oidFields = new();
@@ -45,4 +45,3 @@ namespace Furesoft.Core.ObjectDB.Api.Triggers
 					select fieldInfo).FirstOrDefault();
 		}
 	}
-}

@@ -7,8 +7,8 @@ using Furesoft.Core.ObjectDB.Oid;
 using Furesoft.Core.ObjectDB.Storage;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	internal sealed class FileSystemWriter : IFileSystemWriter
 	{
 		public IFileSystemInterface FileSystemInterface { get; private set; }
@@ -358,4 +358,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			FileSystemInterface.Flush();
 		}
 	}
-}

@@ -3,44 +3,43 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace TestApp
+namespace TestApp;
+
+public class ShowAllCommand : ICliCommand
 {
-    public class ShowAllCommand : ICliCommand
+    public string Name => "all";
+
+    public string HelpText => throw new System.NotImplementedException();
+
+    public string Description => throw new System.NotImplementedException();
+
+    public int Invoke(CommandlineArguments args)
     {
-        public string Name => "all";
+        var dbFile = Path.Combine(Environment.CurrentDirectory, "cowdb.data");
 
-        public string HelpText => throw new System.NotImplementedException();
-
-        public string Description => throw new System.NotImplementedException();
-
-        public int Invoke(CommandlineArguments args)
+        using var db = new CowDatabase(dbFile);
+        foreach (var cow in db.FindAll())
         {
-            var dbFile = Path.Combine(Environment.CurrentDirectory, "cowdb.data");
-
-            using var db = new CowDatabase(dbFile);
-            foreach (var cow in db.FindAll())
-            {
-                Console.WriteLine(cow);
-            }
-
-            return 0;
+            Console.WriteLine(cow);
         }
+
+        return 0;
     }
+}
 
-    public class AddCommand : ICliCommand
+public class AddCommand : ICliCommand
+{
+    public string Name => "add";
+
+    public string HelpText => "add <id> (--optimize|-opt)?";
+
+    public string Description => "Add Article from Site to Book";
+
+    public int Invoke(CommandlineArguments args)
     {
-        public string Name => "add";
+        var id = args["id"];
+        var optimize = args.GetOption("opt", "optimize");
 
-        public string HelpText => "add <id> (--optimize|-opt)?";
-
-        public string Description => "Add Article from Site to Book";
-
-        public int Invoke(CommandlineArguments args)
-        {
-            var id = args["id"];
-            var optimize = args.GetOption("opt", "optimize");
-
-            return 0;
-        }
+        return 0;
     }
 }

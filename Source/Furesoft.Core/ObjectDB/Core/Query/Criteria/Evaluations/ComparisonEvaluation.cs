@@ -3,8 +3,8 @@ using System.Text;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta.Compare;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal sealed class ComparisonEvaluation : AEvaluation
 	{
 		private readonly int _comparisonType;
@@ -95,4 +95,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 			return "?";
 		}
 	}
-}

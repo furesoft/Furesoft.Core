@@ -5,21 +5,20 @@
 using System.Collections.Generic;
 using Furesoft.Core.CodeDom.CodeDOM.Statements.Variables.Base;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces
+namespace Furesoft.Core.CodeDom.CodeDOM.Base.Interfaces;
+
+/// <summary>
+/// This interface is implemented by <see cref="MultiFieldDecl"/>, <see cref="MultiLocalDecl"/>, <see cref="MultiEnumMemberDecl"/>.
+/// </summary>
+public interface IMultiVariableDecl : IEnumerable<VariableDecl>
 {
     /// <summary>
-    /// This interface is implemented by <see cref="MultiFieldDecl"/>, <see cref="MultiLocalDecl"/>, <see cref="MultiEnumMemberDecl"/>.
+    /// The number of <see cref="VariableDecl"/>s.
     /// </summary>
-    public interface IMultiVariableDecl : IEnumerable<VariableDecl>
-    {
-        /// <summary>
-        /// The number of <see cref="VariableDecl"/>s.
-        /// </summary>
-        int Count { get; }
+    int Count { get; }
 
-        /// <summary>
-        /// Get the <see cref="VariableDecl"/> at the specified index.
-        /// </summary>
-        VariableDecl this[int index] { get; }
-    }
+    /// <summary>
+    /// Get the <see cref="VariableDecl"/> at the specified index.
+    /// </summary>
+    VariableDecl this[int index] { get; }
 }

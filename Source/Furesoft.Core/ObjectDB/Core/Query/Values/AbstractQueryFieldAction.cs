@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Core.Query.Execution;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	internal abstract class AbstractQueryFieldAction : IQueryFieldAction
 	{
 		protected readonly string Alias;
@@ -74,4 +74,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return _returnInstance;
 		}
 	}
-}

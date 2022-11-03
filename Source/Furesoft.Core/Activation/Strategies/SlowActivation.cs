@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace Furesoft.Core.Activation.Strategies
+namespace Furesoft.Core.Activation.Strategies;
+
+public class SlowActivation : IActivationStrategy
 {
-    public class SlowActivation : IActivationStrategy
+    public object Activate(Type type, object[] args)
     {
-        public object Activate(Type type, object[] args)
-        {
-            return Activator.CreateInstance(type, args);
-        }
+        return Activator.CreateInstance(type, args);
     }
 }

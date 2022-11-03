@@ -6,162 +6,161 @@ using Furesoft.Core.CodeDom.Compiler.Core.Collections;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 using Furesoft.Core.CodeDom.Compiler.Core;
 
-namespace Furesoft.Core.CodeDom.Backends.CLR
+namespace Furesoft.Core.CodeDom.Backends.CLR;
+
+/// <summary>
+/// A Flame property that wraps an IL property definition.
+/// </summary>
+public sealed class ClrPropertyDefinition : IProperty
 {
+    private Lazy<IReadOnlyList<ClrAccessorDefinition>> accessorDefs;
+
+    private AttributeMap attributeMap;
+
+    private DeferredInitializer contentsInitializer;
+
+    private IReadOnlyList<Parameter> indexerParams;
+
+    private IType propertyTypeValue;
+
     /// <summary>
-    /// A Flame property that wraps an IL property definition.
+    /// Creates a wrapper around an IL property definition.
     /// </summary>
-    public sealed class ClrPropertyDefinition : IProperty
+    /// <param name="definition">
+    /// The definition to wrap in a Flame property.
+    /// </param>
+    /// <param name="parentType">
+    /// The definition's declaring type.
+    /// </param>
+    public ClrPropertyDefinition(
+        PropertyDefinition definition,
+        ClrTypeDefinition parentType)
     {
-        private Lazy<IReadOnlyList<ClrAccessorDefinition>> accessorDefs;
+        this.Definition = definition;
+        this.ParentType = parentType;
+        this.FullName = new SimpleName(definition.Name)
+            .Qualify(parentType.FullName);
+        this.contentsInitializer = parentType.Assembly
+            .CreateSynchronizedInitializer(AnalyzeContents);
+        this.accessorDefs = parentType.Assembly
+            .CreateSynchronizedLazy(AnalyzeAccessors);
+    }
 
-        private AttributeMap attributeMap;
-
-        private DeferredInitializer contentsInitializer;
-
-        private IReadOnlyList<Parameter> indexerParams;
-
-        private IType propertyTypeValue;
-
-        /// <summary>
-        /// Creates a wrapper around an IL property definition.
-        /// </summary>
-        /// <param name="definition">
-        /// The definition to wrap in a Flame property.
-        /// </param>
-        /// <param name="parentType">
-        /// The definition's declaring type.
-        /// </param>
-        public ClrPropertyDefinition(
-            PropertyDefinition definition,
-            ClrTypeDefinition parentType)
+    /// <summary>
+    /// Gets a list of all accessors defined by this
+    /// property.
+    /// </summary>
+    /// <returns>All accessors defined by this property.</returns>
+    public IReadOnlyList<ClrAccessorDefinition> Accessors
+    {
+        get
         {
-            this.Definition = definition;
-            this.ParentType = parentType;
-            this.FullName = new SimpleName(definition.Name)
-                .Qualify(parentType.FullName);
-            this.contentsInitializer = parentType.Assembly
-                .CreateSynchronizedInitializer(AnalyzeContents);
-            this.accessorDefs = parentType.Assembly
-                .CreateSynchronizedLazy(AnalyzeAccessors);
+            return accessorDefs.Value;
         }
+    }
 
-        /// <summary>
-        /// Gets a list of all accessors defined by this
-        /// property.
-        /// </summary>
-        /// <returns>All accessors defined by this property.</returns>
-        public IReadOnlyList<ClrAccessorDefinition> Accessors
+    /// <inheritdoc/>
+    IReadOnlyList<IAccessor> IProperty.Accessors => Accessors;
+
+    /// <inheritdoc/>
+    public AttributeMap Attributes
+    {
+        get
         {
-            get
-            {
-                return accessorDefs.Value;
-            }
+            contentsInitializer.Initialize();
+            return attributeMap;
         }
+    }
 
-        /// <inheritdoc/>
-        IReadOnlyList<IAccessor> IProperty.Accessors => Accessors;
+    /// <summary>
+    /// Gets the IL property definition wrapped by this Flame property.
+    /// </summary>
+    /// <returns>An IL property definition.</returns>
+    public PropertyDefinition Definition { get; private set; }
 
-        /// <inheritdoc/>
-        public AttributeMap Attributes
+    /// <inheritdoc/>
+    public QualifiedName FullName { get; private set; }
+
+    /// <inheritdoc/>
+    public IReadOnlyList<Parameter> IndexerParameters
+    {
+        get
         {
-            get
-            {
-                contentsInitializer.Initialize();
-                return attributeMap;
-            }
+            contentsInitializer.Initialize();
+            return indexerParams;
         }
+    }
 
-        /// <summary>
-        /// Gets the IL property definition wrapped by this Flame property.
-        /// </summary>
-        /// <returns>An IL property definition.</returns>
-        public PropertyDefinition Definition { get; private set; }
+    /// <inheritdoc/>
+    public UnqualifiedName Name => FullName.FullyUnqualifiedName;
 
-        /// <inheritdoc/>
-        public QualifiedName FullName { get; private set; }
+    /// <summary>
+    /// Gets the type that defines this property.
+    /// </summary>
+    /// <returns>The type that defines this property.</returns>
+    public ClrTypeDefinition ParentType { get; private set; }
 
-        /// <inheritdoc/>
-        public IReadOnlyList<Parameter> IndexerParameters
+    /// <inheritdoc/>
+    IType ITypeMember.ParentType => ParentType;
+
+    /// <inheritdoc/>
+    public IType PropertyType
+    {
+        get
         {
-            get
-            {
-                contentsInitializer.Initialize();
-                return indexerParams;
-            }
+            contentsInitializer.Initialize();
+            return propertyTypeValue;
         }
+    }
 
-        /// <inheritdoc/>
-        public UnqualifiedName Name => FullName.FullyUnqualifiedName;
-
-        /// <summary>
-        /// Gets the type that defines this property.
-        /// </summary>
-        /// <returns>The type that defines this property.</returns>
-        public ClrTypeDefinition ParentType { get; private set; }
-
-        /// <inheritdoc/>
-        IType ITypeMember.ParentType => ParentType;
-
-        /// <inheritdoc/>
-        public IType PropertyType
+    private IReadOnlyList<ClrAccessorDefinition> AnalyzeAccessors()
+    {
+        var results = new List<ClrAccessorDefinition>();
+        if (Definition.GetMethod != null)
         {
-            get
-            {
-                contentsInitializer.Initialize();
-                return propertyTypeValue;
-            }
+            results.Add(
+                new ClrAccessorDefinition(
+                    Definition.GetMethod,
+                    AccessorKind.Get,
+                    this));
         }
-
-        private IReadOnlyList<ClrAccessorDefinition> AnalyzeAccessors()
+        if (Definition.SetMethod != null)
         {
-            var results = new List<ClrAccessorDefinition>();
-            if (Definition.GetMethod != null)
-            {
-                results.Add(
-                    new ClrAccessorDefinition(
-                        Definition.GetMethod,
-                        AccessorKind.Get,
-                        this));
-            }
-            if (Definition.SetMethod != null)
-            {
-                results.Add(
-                    new ClrAccessorDefinition(
-                        Definition.SetMethod,
-                        AccessorKind.Set,
-                        this));
-            }
-            foreach (var accessor in Definition.OtherMethods)
-            {
-                results.Add(
-                    new ClrAccessorDefinition(
-                        accessor,
-                        AccessorKind.Other,
-                        this));
-            }
-            return results;
+            results.Add(
+                new ClrAccessorDefinition(
+                    Definition.SetMethod,
+                    AccessorKind.Set,
+                    this));
         }
-
-        private void AnalyzeContents()
+        foreach (var accessor in Definition.OtherMethods)
         {
-            var assembly = ParentType.Assembly;
-
-            propertyTypeValue = TypeHelpers.BoxIfReferenceType(
-                assembly.Resolve(Definition.PropertyType, ParentType));
-
-            // Analyze the parameter list.
-            indexerParams = Definition.Parameters
-                .Select(param =>
-                    ClrMethodDefinition.WrapParameter(
-                        param,
-                        assembly,
-                        ParentType))
-                .ToArray();
-
-            var attrBuilder = new AttributeMapBuilder();
-            // TODO: analyze attributes.
-            attributeMap = new AttributeMap(attrBuilder);
+            results.Add(
+                new ClrAccessorDefinition(
+                    accessor,
+                    AccessorKind.Other,
+                    this));
         }
+        return results;
+    }
+
+    private void AnalyzeContents()
+    {
+        var assembly = ParentType.Assembly;
+
+        propertyTypeValue = TypeHelpers.BoxIfReferenceType(
+            assembly.Resolve(Definition.PropertyType, ParentType));
+
+        // Analyze the parameter list.
+        indexerParams = Definition.Parameters
+            .Select(param =>
+                ClrMethodDefinition.WrapParameter(
+                    param,
+                    assembly,
+                    ParentType))
+            .ToArray();
+
+        var attrBuilder = new AttributeMapBuilder();
+        // TODO: analyze attributes.
+        attributeMap = new AttributeMap(attrBuilder);
     }
 }

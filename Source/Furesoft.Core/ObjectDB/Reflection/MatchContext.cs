@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Reflection
-{
+namespace Furesoft.Core.ObjectDB.Reflection;
+
 	internal sealed class MatchContext
 	{
 		private readonly Dictionary<object, object> _data = new();
@@ -42,4 +42,3 @@ namespace Furesoft.Core.ObjectDB.Reflection
 			return _data.TryGetValue(key, out value);
 		}
 	}
-}

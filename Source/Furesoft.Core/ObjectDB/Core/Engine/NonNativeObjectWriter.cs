@@ -11,8 +11,8 @@ using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	internal sealed class NonNativeObjectWriter : INonNativeObjectWriter
 	{
 		private readonly IObjectWriter _objectWriter;
@@ -611,4 +611,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			Buffer.BlockCopy(bytes, 0, arrayWhereToWrite, offset, 4);
 		}
 	}
-}

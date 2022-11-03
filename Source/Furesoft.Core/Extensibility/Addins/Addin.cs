@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Extensibility.Addins
-{
+namespace Furesoft.Core.Extensibility.Addins;
+
 	public class Addin
 	{
 		#region Fields
@@ -41,4 +41,3 @@ namespace Furesoft.Core.Extensibility.Addins
 
 		#endregion Public Methods and Operators
 	}
-}

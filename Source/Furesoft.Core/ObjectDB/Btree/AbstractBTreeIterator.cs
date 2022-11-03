@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal abstract class AbstractBTreeIterator<T> : IterarorAdapter, IEnumerator<T>
 	{
 		private readonly IBTree _btree;
@@ -155,4 +155,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter(errorMessage));
 		}
 	}
-}

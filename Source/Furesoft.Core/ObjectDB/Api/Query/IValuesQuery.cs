@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api.Query
-{
+namespace Furesoft.Core.ObjectDB.Api.Query;
+
 	/// <summary>
 	/// Extending query with additional query metrics.
 	/// </summary>
@@ -164,4 +164,3 @@ namespace Furesoft.Core.ObjectDB.Api.Query
 		/// <returns>The list of values that matches the values query.</returns>
 		IValues Execute();
 	}
-}

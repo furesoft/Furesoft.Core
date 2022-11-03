@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal sealed class QueryConstraint : IInternalConstraint
 	{
 		/// <summary>
@@ -211,4 +211,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return _evaluation is ComparisonEvaluation evaluation && evaluation.ComparisonType == ComparisonConstraint.ComparisonTypeLt;
 		}
 	}
-}

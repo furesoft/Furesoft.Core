@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Tool
-{
+namespace Furesoft.Core.ObjectDB.Tool;
+
 	internal static class ListExtensions
 	{
 		internal static bool IsEmpty<TItem>(this IList<TItem> self)
@@ -18,4 +18,3 @@ namespace Furesoft.Core.ObjectDB.Tool
 			return !self.IsEmpty();
 		}
 	}
-}

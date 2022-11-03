@@ -1,5 +1,5 @@
-﻿namespace Furesoft.Core.CLI
-{
+﻿namespace Furesoft.Core.CLI;
+
 	using System;
 	using System.Collections;
 
@@ -150,4 +150,3 @@
 			Console.WriteLine(s);
 		}
 	}
-}

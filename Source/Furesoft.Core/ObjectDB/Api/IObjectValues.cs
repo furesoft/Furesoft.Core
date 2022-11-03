@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	///   Interface that will be implemented to hold a row of a result of an Object Values Query
 	/// </summary>
@@ -25,4 +25,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <returns>Array of objects as values</returns>
 		object[] GetValues();
 	}
-}

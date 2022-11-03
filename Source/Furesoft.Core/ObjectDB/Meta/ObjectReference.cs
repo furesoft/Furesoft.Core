@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   Meta representation of an object reference.
 	/// </summary>
@@ -56,4 +56,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return new ObjectReference((NonNativeObjectInfo)_nnoi.CreateCopy(cache, onlyData));
 		}
 	}
-}

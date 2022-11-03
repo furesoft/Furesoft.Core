@@ -13,8 +13,8 @@ using Furesoft.Core.ObjectDB.Storage;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	/// <summary>
 	///   Manage all IO writing
 	/// </summary>
@@ -1152,4 +1152,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			Close();
 		}
 	}
-}

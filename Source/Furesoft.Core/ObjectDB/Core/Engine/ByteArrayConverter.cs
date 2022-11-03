@@ -3,8 +3,8 @@ using System.Text;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	/// <summary>
 	///   Converts array of bytes into native objects and native objects into array of bytes
 	/// </summary>
@@ -223,4 +223,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			return oid == -1 ? null : OIDFactory.BuildObjectOID(oid);
 		}
 	}
-}

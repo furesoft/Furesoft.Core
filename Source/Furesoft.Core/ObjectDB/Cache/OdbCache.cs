@@ -7,8 +7,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Storage;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Cache
-{
+namespace Furesoft.Core.ObjectDB.Cache;
+
 	/// <summary>
 	///   A cache of objects.
 	/// </summary>
@@ -335,4 +335,3 @@ namespace Furesoft.Core.ObjectDB.Cache
 
 		#endregion Nested type: Cache
 	}
-}

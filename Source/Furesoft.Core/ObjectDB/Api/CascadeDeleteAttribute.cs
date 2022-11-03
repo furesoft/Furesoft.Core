@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// Use when you want to do a cascade delete on field object.
 	/// </summary>
@@ -12,4 +12,3 @@ namespace Furesoft.Core.ObjectDB.Api
 	public sealed class CascadeDeleteAttribute : Attribute
 	{
 	}
-}

@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class SubtreeEvaluator : LinqQueryTranslator
 	{
 		private readonly HashSet<Expression> _candidates;
@@ -90,4 +90,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 
 		#endregion Nested type: Nominator
 	}
-}

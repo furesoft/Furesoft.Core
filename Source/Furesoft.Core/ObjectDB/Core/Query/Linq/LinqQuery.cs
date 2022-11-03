@@ -5,8 +5,8 @@ using System.Linq;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class LinqQuery<T> : ILinqQueryInternal<T>
 	{
 		private readonly IOdb _odb;
@@ -69,4 +69,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 
 		#endregion ILinqQueryInternal<T> Members
 	}
-}

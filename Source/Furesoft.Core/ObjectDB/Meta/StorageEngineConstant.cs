@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   Some Storage engine constants about offset position for object writing/reading.
 	/// </summary>
@@ -208,4 +208,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return number;
 		}
 	}
-}

@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Furesoft.Core.ObjectDB.Tool.Wrappers
-{
+namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
+
 	internal static class OdbString
 	{
 		private static readonly Dictionary<string, Regex> cache = new();
@@ -27,4 +27,3 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers
 			return buffer.ToString();
 		}
 	}
-}

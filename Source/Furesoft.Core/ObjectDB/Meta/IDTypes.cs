@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   ID types are used for classes(class id) and objects(Object Id) to specify the type of the id in the ID blocks
 	/// </summary>
@@ -9,4 +9,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 
 		public const byte Class = 2;
 	}
-}

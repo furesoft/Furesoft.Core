@@ -8,8 +8,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	internal sealed class InternalTriggerManager : IInternalTriggerManager
 	{
 		/// <summary>
@@ -316,4 +316,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			return listOfTriggersByClassName;
 		}
 	}
-}

@@ -8,8 +8,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal class LinqQueryTranslator : ExpressionTransformer
 	{
 		private bool _optimize = true;
@@ -244,4 +244,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return type.GetGenericArguments()[0];
 		}
 	}
-}

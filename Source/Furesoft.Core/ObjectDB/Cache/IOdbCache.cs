@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Cache
-{
+namespace Furesoft.Core.ObjectDB.Cache;
+
 	public interface IOdbCache
 	{
 		void AddObject(OID oid, object @object, ObjectInfoHeader objectInfoHeader);
@@ -50,4 +50,3 @@ namespace Furesoft.Core.ObjectDB.Cache
 
 		void AddOIDToUnconnectedZone(OID oid);
 	}
-}

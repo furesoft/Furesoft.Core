@@ -3,8 +3,8 @@ using System.Collections;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal abstract class AbstractBTree : IBTree
 	{
 		private readonly int _degree;
@@ -563,4 +563,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			InsertNonFull(nodeToDescend, key, value);
 		}
 	}
-}

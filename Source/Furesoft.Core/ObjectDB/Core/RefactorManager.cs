@@ -3,8 +3,8 @@ using System.Reflection;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	internal sealed class RefactorManager : IRefactorManager
 	{
 		private readonly IMetaModel _metaModel;
@@ -71,4 +71,3 @@ namespace Furesoft.Core.ObjectDB.Core
 
 		#endregion IRefactorManager Members
 	}
-}

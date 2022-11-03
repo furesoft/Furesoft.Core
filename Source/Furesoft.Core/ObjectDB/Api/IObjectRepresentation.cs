@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	///   used to give the user an instance of an object representation, level2.
 	/// </summary>
@@ -29,4 +29,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// </summary>
 		void SetValueOf(string attributeName, object value);
 	}
-}

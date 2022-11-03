@@ -4,8 +4,8 @@ using System.Text;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal abstract class AbstractBTreeNode : IBTreeNode
 	{
 		/// <summary>
@@ -437,4 +437,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			return result.ToString();
 		}
 	}
-}

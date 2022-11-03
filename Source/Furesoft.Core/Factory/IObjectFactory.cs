@@ -1,7 +1,6 @@
-﻿namespace Furesoft.Core.Factory
+﻿namespace Furesoft.Core.Factory;
+
+public interface IObjectFactory
 {
-    public interface IObjectFactory
-    {
-        object Create<T>(params object[] args);
-    }
+    object Create<T>(params object[] args);
 }

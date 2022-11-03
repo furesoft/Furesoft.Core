@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Btree;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	/// <summary>
 	///   A collection that uses a BTree as an underlying system to provide ordered by Collections <p></p>
 	/// </summary>
@@ -146,4 +146,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 			return s.ToString();
 		}
 	}
-}

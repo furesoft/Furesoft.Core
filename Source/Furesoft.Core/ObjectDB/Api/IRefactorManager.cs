@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	///   <p>An interface for refactoring</p>
 	/// </summary>
@@ -37,4 +37,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <param name="attributeName">Name of field to remove</param>
 		void RemoveField(Type type, string attributeName);
 	}
-}

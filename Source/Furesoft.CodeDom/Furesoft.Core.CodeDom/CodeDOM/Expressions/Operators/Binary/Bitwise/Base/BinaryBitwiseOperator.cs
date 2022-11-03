@@ -3,27 +3,26 @@ using Furesoft.Core.CodeDom.CodeDOM.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Base;
 using Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Base;
 
-namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise.Base
+namespace Furesoft.Core.CodeDom.CodeDOM.Expressions.Operators.Binary.Bitwise.Base;
+
+/// <summary>
+/// The common base class of all binary bitwise operators (<see cref="BitwiseAnd"/>, <see cref="BitwiseOr"/>, <see cref="BitwiseXor"/>).
+/// </summary>
+public abstract class BinaryBitwiseOperator : BinaryOperator
 {
+    protected BinaryBitwiseOperator(Expression left, Expression right)
+        : base(left, right)
+    { }
+
+    protected BinaryBitwiseOperator(Parser parser, CodeObject parent)
+        : base(parser, parent)
+    { }
+
     /// <summary>
-    /// The common base class of all binary bitwise operators (<see cref="BitwiseAnd"/>, <see cref="BitwiseOr"/>, <see cref="BitwiseXor"/>).
+    /// True if the expression should have parens by default.
     /// </summary>
-    public abstract class BinaryBitwiseOperator : BinaryOperator
+    public override bool HasParensDefault
     {
-        protected BinaryBitwiseOperator(Expression left, Expression right)
-            : base(left, right)
-        { }
-
-        protected BinaryBitwiseOperator(Parser parser, CodeObject parent)
-            : base(parser, parent)
-        { }
-
-        /// <summary>
-        /// True if the expression should have parens by default.
-        /// </summary>
-        public override bool HasParensDefault
-        {
-            get { return false; }  // Default to NO parens for binary bitwise operators
-        }
+        get { return false; }  // Default to NO parens for binary bitwise operators
     }
 }

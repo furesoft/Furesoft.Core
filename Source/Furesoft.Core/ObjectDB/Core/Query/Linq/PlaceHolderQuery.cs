@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class PlaceHolderQuery<T> : ILinqQuery<T>
 	{
 		private readonly IOdb _odb;
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 
 		#endregion ILinqQuery<T> Members
 	}
-}

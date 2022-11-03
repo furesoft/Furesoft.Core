@@ -2,59 +2,58 @@ using System.Globalization;
 using System.Linq;
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Furesoft.Core.CodeDom.Backends.CLR
+namespace Furesoft.Core.CodeDom.Backends.CLR;
+
+/// <summary>
+/// A collection of functions that help convert back and forth
+/// between Flame names and IL names.
+/// </summary>
+public static class NameConversion
 {
     /// <summary>
-    /// A collection of functions that help convert back and forth
-    /// between Flame names and IL names.
+    /// Parses an IL namespace as a Flame qualified name.
     /// </summary>
-    public static class NameConversion
+    /// <param name="ns">The namespace to parse.</param>
+    /// <returns>A qualified name.</returns>
+    public static QualifiedName ParseNamespace(string ns)
     {
-        /// <summary>
-        /// Parses an IL namespace as a Flame qualified name.
-        /// </summary>
-        /// <param name="ns">The namespace to parse.</param>
-        /// <returns>A qualified name.</returns>
-        public static QualifiedName ParseNamespace(string ns)
+        if (string.IsNullOrEmpty(ns))
         {
-            if (string.IsNullOrEmpty(ns))
-            {
-                return new QualifiedName();
-            }
-            else
-            {
-                return new QualifiedName(
-                    ns
-                        .Split('.')
-                        .Select(ParseSimpleName)
-                        .ToArray());
-            }
+            return new QualifiedName();
         }
-
-        /// <summary>
-        /// Parses an IL name as a Flame simple name.
-        /// </summary>
-        /// <param name="name">The name to parse.</param>
-        /// <returns>A simple name.</returns>
-        public static SimpleName ParseSimpleName(string name)
+        else
         {
-            int backtickIndex = name.LastIndexOf('`');
-            int genericParamCount;
-            if (backtickIndex >= 0
-                && int.TryParse(
-                    name.Substring(backtickIndex + 1),
-                    NumberStyles.None,
-                    CultureInfo.InstalledUICulture,
-                    out genericParamCount))
-            {
-                return new SimpleName(
-                    name.Substring(0, backtickIndex),
-                    genericParamCount);
-            }
-            else
-            {
-                return new SimpleName(name);
-            }
+            return new QualifiedName(
+                ns
+                    .Split('.')
+                    .Select(ParseSimpleName)
+                    .ToArray());
+        }
+    }
+
+    /// <summary>
+    /// Parses an IL name as a Flame simple name.
+    /// </summary>
+    /// <param name="name">The name to parse.</param>
+    /// <returns>A simple name.</returns>
+    public static SimpleName ParseSimpleName(string name)
+    {
+        int backtickIndex = name.LastIndexOf('`');
+        int genericParamCount;
+        if (backtickIndex >= 0
+            && int.TryParse(
+                name.Substring(backtickIndex + 1),
+                NumberStyles.None,
+                CultureInfo.InstalledUICulture,
+                out genericParamCount))
+        {
+            return new SimpleName(
+                name.Substring(0, backtickIndex),
+                genericParamCount);
+        }
+        else
+        {
+            return new SimpleName(name);
         }
     }
 }

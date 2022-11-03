@@ -2,8 +2,8 @@ using System.Text;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   Some basic info about an object info like position, its class info,...
 	/// </summary>
@@ -221,4 +221,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			_updateDate = OdbTime.GetCurrentTimeInTicks();
 		}
 	}
-}

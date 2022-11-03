@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal sealed class Not : AbstractExpression
 	{
 		private readonly IInternalConstraint _criterion;
@@ -36,4 +36,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return new AttributeValuesMap();
 		}
 	}
-}

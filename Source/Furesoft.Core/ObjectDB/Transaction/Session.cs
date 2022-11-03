@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Core.Session;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Transaction
-{
+namespace Furesoft.Core.ObjectDB.Transaction;
+
 	/// <summary>
 	///   An ODB Session.
 	/// </summary>
@@ -156,4 +156,3 @@ namespace Furesoft.Core.ObjectDB.Transaction
 			return GetId().Equals(session.GetId());
 		}
 	}
-}

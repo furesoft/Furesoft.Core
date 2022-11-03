@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Services;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	public interface IMetaModel : IMetaModelService
 	{
 		void AddClass(ClassInfo classInfo);
@@ -53,4 +53,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 		/// <returns> The list of class info of persistent classes that are subclasses or equal to the class </returns>
 		IList<ClassInfo> GetPersistentSubclassesOf(Type type);
 	}
-}

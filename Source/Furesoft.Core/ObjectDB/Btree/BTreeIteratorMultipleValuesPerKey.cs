@@ -1,8 +1,8 @@
 using System.Collections;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   An iterator to iterate over NDatabase BTree that accept more than one value per key.
 	/// </summary>
@@ -77,4 +77,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			return null;
 		}
 	}
-}

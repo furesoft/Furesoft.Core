@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Meta.Compare;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal sealed class EqualsEvaluation : AEvaluation
 	{
 		private readonly OID _oid;
@@ -59,4 +59,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 			return map;
 		}
 	}
-}

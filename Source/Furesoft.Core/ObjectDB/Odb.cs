@@ -15,8 +15,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Meta.Introspector;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB
-{
+namespace Furesoft.Core.ObjectDB;
+
 	/// <summary>
 	///   A basic adapter for ODB interface
 	/// </summary>
@@ -218,4 +218,3 @@ namespace Furesoft.Core.ObjectDB
 			return _storageEngine.GetClassInfoProvider();
 		}
 	}
-}

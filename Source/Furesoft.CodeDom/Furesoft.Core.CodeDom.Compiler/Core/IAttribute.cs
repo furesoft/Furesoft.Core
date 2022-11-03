@@ -1,13 +1,12 @@
-namespace Furesoft.Core.CodeDom.Compiler.Core
+namespace Furesoft.Core.CodeDom.Compiler.Core;
+
+/// <summary>
+/// Defines common functionality for member attributes.
+/// </summary>
+public interface IAttribute
 {
     /// <summary>
-    /// Defines common functionality for member attributes.
+    /// Gets the attribute's type.
     /// </summary>
-    public interface IAttribute
-    {
-        /// <summary>
-        /// Gets the attribute's type.
-        /// </summary>
-        IType AttributeType { get; }
-    }
+    IType AttributeType { get; }
 }

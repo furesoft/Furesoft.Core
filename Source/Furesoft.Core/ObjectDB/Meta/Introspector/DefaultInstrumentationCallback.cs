@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta.Introspector
-{
+namespace Furesoft.Core.ObjectDB.Meta.Introspector;
+
 	internal sealed class DefaultInstrumentationCallback : IIntrospectionCallback
 	{
 		#region IIntrospectionCallback Members
@@ -10,4 +10,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector
 
 		#endregion IIntrospectionCallback Members
 	}
-}

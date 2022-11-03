@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Core.Query.List;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	/// <summary>
 	///   Class that manage normal query.
 	/// </summary>
@@ -106,4 +106,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 				   _instanceBuilder.BuildOneInstance(nnoi, _storageEngine.GetSession().GetCache());
 		}
 	}
-}

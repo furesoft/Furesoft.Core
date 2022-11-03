@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Core.Query.Execution;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	public interface IInternalValuesQuery : IValuesQuery
 	{
 		IEnumerable<IQueryFieldAction> GetObjectActions();
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.Core
 		/// <returns>The type of the order by - NONE, DESC or ASC</returns>
 		OrderByConstants GetOrderByType();
 	}
-}

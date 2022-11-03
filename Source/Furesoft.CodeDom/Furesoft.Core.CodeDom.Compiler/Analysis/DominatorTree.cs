@@ -3,576 +3,575 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Furesoft.Core.CodeDom.Compiler.Analysis
+namespace Furesoft.Core.CodeDom.Compiler.Analysis;
+
+/// <summary>
+/// A data structure that describes the dominator tree of a
+/// control-flow graph.
+/// </summary>
+public abstract class DominatorTree
 {
     /// <summary>
-    /// A data structure that describes the dominator tree of a
-    /// control-flow graph.
+    /// Gets a block's immediate dominator, that is, the block
+    /// that dominates this block such that there is no intermediate
+    /// block that is dominated by the immediate dominator and also
+    /// dominates the given block.
     /// </summary>
-    public abstract class DominatorTree
+    /// <param name="block">
+    /// A block to find an immediate dominator for.
+    /// </param>
+    /// <returns>
+    /// The tag of the immediate dominator block if it exists; otherwise, <c>null</c>.
+    /// </returns>
+    public abstract BasicBlockTag GetImmediateDominator(BasicBlockTag block);
+
+    /// <summary>
+    /// Tells if a particular block is dominated by another block,
+    /// that is, if control cannot flow to the block unless it first flowed
+    /// through the dominator block or if the blocks are equal.
+    /// </summary>
+    /// <param name="block">
+    /// A block that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// A block that might dominate <paramref name="block"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="block"/> is strictly dominated by
+    /// <paramref name="dominator"/> or <paramref name="block"/> equals
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsDominatedBy(BasicBlockTag block, BasicBlockTag dominator)
     {
-        /// <summary>
-        /// Gets a block's immediate dominator, that is, the block
-        /// that dominates this block such that there is no intermediate
-        /// block that is dominated by the immediate dominator and also
-        /// dominates the given block.
-        /// </summary>
-        /// <param name="block">
-        /// A block to find an immediate dominator for.
-        /// </param>
-        /// <returns>
-        /// The tag of the immediate dominator block if it exists; otherwise, <c>null</c>.
-        /// </returns>
-        public abstract BasicBlockTag GetImmediateDominator(BasicBlockTag block);
+        return block == dominator || IsStrictlyDominatedBy(block, dominator);
+    }
 
-        /// <summary>
-        /// Tells if a particular block is dominated by another block,
-        /// that is, if control cannot flow to the block unless it first flowed
-        /// through the dominator block or if the blocks are equal.
-        /// </summary>
-        /// <param name="block">
-        /// A block that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// A block that might dominate <paramref name="block"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="block"/> is strictly dominated by
-        /// <paramref name="dominator"/> or <paramref name="block"/> equals
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsDominatedBy(BasicBlockTag block, BasicBlockTag dominator)
+    /// <summary>
+    /// Tells if a particular value is dominated by another value,
+    /// that is, if control cannot flow to the value unless it first flowed
+    /// through the dominator value.
+    /// </summary>
+    /// <param name="value">
+    /// A value that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// A value that might dominate <paramref name="value"/>.
+    /// </param>
+    /// <param name="graph">
+    /// A control-flow graph that defines both <paramref name="value"/> and <paramref name="dominator"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="value"/> is strictly dominated by
+    /// <paramref name="dominator"/> or <paramref name="value"/> equals
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsDominatedBy(ValueTag value, ValueTag dominator, FlowGraph graph)
+    {
+        return value == dominator || IsStrictlyDominatedBy(value, dominator, graph);
+    }
+
+    /// <summary>
+    /// Tells if a particular value is dominated by another value,
+    /// that is, if control cannot flow to the value unless it first flowed
+    /// through the dominator value.
+    /// </summary>
+    /// <param name="value">
+    /// A value that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// A value that might dominate <paramref name="value"/>.
+    /// </param>
+    /// <param name="graph">
+    /// A control-flow graph that defines both <paramref name="value"/> and <paramref name="dominator"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="value"/> is strictly dominated by
+    /// <paramref name="dominator"/> or <paramref name="value"/> equals
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsDominatedBy(ValueTag value, ValueTag dominator, FlowGraphBuilder graph)
+    {
+        return IsDominatedBy(value, dominator, graph.ImmutableGraph);
+    }
+
+    /// <summary>
+    /// Tells if a particular instruction is dominated by another instruction,
+    /// that is, if control cannot flow to the instruction unless it first flowed
+    /// through the dominator instruction.
+    /// </summary>
+    /// <param name="instruction">
+    /// An instruction that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// An instruction that might dominate <paramref name="instruction"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="instruction"/> is strictly dominated by
+    /// <paramref name="dominator"/> or <paramref name="instruction"/> equals
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsDominatedBy(NamedInstruction instruction, NamedInstruction dominator)
+    {
+        var graph = instruction.Block.Graph;
+        ContractHelpers.Assert(graph == dominator.Block.Graph);
+        return IsDominatedBy(instruction, dominator, graph);
+    }
+
+    /// <summary>
+    /// Tells if a particular value is dominated by another value,
+    /// that is, if control cannot flow to the value unless it first flowed
+    /// through the dominator value.
+    /// </summary>
+    /// <param name="value">
+    /// A value that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// A value that might dominate <paramref name="value"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="value"/> is strictly dominated by
+    /// <paramref name="dominator"/> or <paramref name="value"/> equals
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsDominatedBy(InstructionBuilder value, ValueTag dominator)
+    {
+        if (value is NamedInstructionBuilder
+            && ((NamedInstructionBuilder)value).Tag == dominator)
         {
-            return block == dominator || IsStrictlyDominatedBy(block, dominator);
-        }
-
-        /// <summary>
-        /// Tells if a particular value is dominated by another value,
-        /// that is, if control cannot flow to the value unless it first flowed
-        /// through the dominator value.
-        /// </summary>
-        /// <param name="value">
-        /// A value that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// A value that might dominate <paramref name="value"/>.
-        /// </param>
-        /// <param name="graph">
-        /// A control-flow graph that defines both <paramref name="value"/> and <paramref name="dominator"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="value"/> is strictly dominated by
-        /// <paramref name="dominator"/> or <paramref name="value"/> equals
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsDominatedBy(ValueTag value, ValueTag dominator, FlowGraph graph)
-        {
-            return value == dominator || IsStrictlyDominatedBy(value, dominator, graph);
-        }
-
-        /// <summary>
-        /// Tells if a particular value is dominated by another value,
-        /// that is, if control cannot flow to the value unless it first flowed
-        /// through the dominator value.
-        /// </summary>
-        /// <param name="value">
-        /// A value that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// A value that might dominate <paramref name="value"/>.
-        /// </param>
-        /// <param name="graph">
-        /// A control-flow graph that defines both <paramref name="value"/> and <paramref name="dominator"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="value"/> is strictly dominated by
-        /// <paramref name="dominator"/> or <paramref name="value"/> equals
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsDominatedBy(ValueTag value, ValueTag dominator, FlowGraphBuilder graph)
-        {
-            return IsDominatedBy(value, dominator, graph.ImmutableGraph);
-        }
-
-        /// <summary>
-        /// Tells if a particular instruction is dominated by another instruction,
-        /// that is, if control cannot flow to the instruction unless it first flowed
-        /// through the dominator instruction.
-        /// </summary>
-        /// <param name="instruction">
-        /// An instruction that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// An instruction that might dominate <paramref name="instruction"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="instruction"/> is strictly dominated by
-        /// <paramref name="dominator"/> or <paramref name="instruction"/> equals
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsDominatedBy(NamedInstruction instruction, NamedInstruction dominator)
-        {
-            var graph = instruction.Block.Graph;
-            ContractHelpers.Assert(graph == dominator.Block.Graph);
-            return IsDominatedBy(instruction, dominator, graph);
-        }
-
-        /// <summary>
-        /// Tells if a particular value is dominated by another value,
-        /// that is, if control cannot flow to the value unless it first flowed
-        /// through the dominator value.
-        /// </summary>
-        /// <param name="value">
-        /// A value that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// A value that might dominate <paramref name="value"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="value"/> is strictly dominated by
-        /// <paramref name="dominator"/> or <paramref name="value"/> equals
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsDominatedBy(InstructionBuilder value, ValueTag dominator)
-        {
-            if (value is NamedInstructionBuilder
-                && ((NamedInstructionBuilder)value).Tag == dominator)
-            {
-                return true;
-            }
-            else
-            {
-                return IsStrictlyDominatedBy(value, dominator);
-            }
-        }
-
-        /// <summary>
-        /// Tells if a particular block is strictly dominated by another block,
-        /// that is, if control cannot flow to the block unless it first flowed
-        /// through the dominator block.
-        /// </summary>
-        /// <param name="block">
-        /// A block that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// A block that might dominate <paramref name="block"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="block"/> is strictly dominated by
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public virtual bool IsStrictlyDominatedBy(BasicBlockTag block, BasicBlockTag dominator)
-        {
-            do
-            {
-                block = GetImmediateDominator(block);
-            } while (block != null && block != dominator);
-            return block == dominator;
-        }
-
-        /// <summary>
-        /// Tells if a particular value is strictly dominated by another value,
-        /// that is, if control cannot flow to the value unless it first flowed
-        /// through the dominator value.
-        /// </summary>
-        /// <param name="value">
-        /// An value that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// An value that might dominate <paramref name="value"/>.
-        /// </param>
-        /// <param name="graph">
-        /// A graph that defines both values.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="value"/> is strictly dominated by
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsStrictlyDominatedBy(ValueTag value, ValueTag dominator, FlowGraph graph)
-        {
-            var valueBlock = graph.GetValueParent(value);
-            var dominatorBlock = graph.GetValueParent(dominator);
-            if (valueBlock.Tag == dominatorBlock.Tag)
-            {
-                if (graph.ContainsBlockParameter(dominator))
-                {
-                    return !graph.ContainsBlockParameter(value);
-                }
-                else if (graph.ContainsBlockParameter(value))
-                {
-                    return false;
-                }
-                else
-                {
-                    var valueInsn = graph.GetInstruction(value);
-                    var domInsn = graph.GetInstruction(dominator);
-                    return valueInsn.InstructionIndex > domInsn.InstructionIndex;
-                }
-            }
-            else
-            {
-                return IsStrictlyDominatedBy(valueBlock, dominatorBlock);
-            }
-        }
-
-        /// <summary>
-        /// Tells if a particular value is strictly dominated by another value,
-        /// that is, if control cannot flow to the value unless it first flowed
-        /// through the dominator value.
-        /// </summary>
-        /// <param name="value">
-        /// An value that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// An value that might dominate <paramref name="value"/>.
-        /// </param>
-        /// <param name="graph">
-        /// A control-flow graph that defines both <paramref name="value"/> and <paramref name="dominator"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="value"/> is strictly dominated by
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsStrictlyDominatedBy(ValueTag value, ValueTag dominator, FlowGraphBuilder graph)
-        {
-            return IsStrictlyDominatedBy(value, dominator, graph.ImmutableGraph);
-        }
-
-        /// <summary>
-        /// Tells if a particular instruction is strictly dominated by another instruction,
-        /// that is, if control cannot flow to the instruction unless it first flowed
-        /// through the dominator instruction.
-        /// </summary>
-        /// <param name="instruction">
-        /// An instruction that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// An instruction that might dominate <paramref name="instruction"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="instruction"/> is strictly dominated by
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsStrictlyDominatedBy(NamedInstruction instruction, NamedInstruction dominator)
-        {
-            var graph = instruction.Block.Graph;
-            ContractHelpers.Assert(graph == dominator.Block.Graph);
-            return IsStrictlyDominatedBy(instruction, dominator, graph);
-        }
-
-        /// <summary>
-        /// Tells if a particular value is strictly dominated by another value,
-        /// that is, if control cannot flow to the value unless it first flowed
-        /// through the dominator value.
-        /// </summary>
-        /// <param name="value">
-        /// An value that might be dominated by <paramref name="dominator"/>.
-        /// </param>
-        /// <param name="dominator">
-        /// An value that might dominate <paramref name="value"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="value"/> is strictly dominated by
-        /// <paramref name="dominator"/>; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsStrictlyDominatedBy(InstructionBuilder value, ValueTag dominator)
-        {
-            if (value is NamedInstructionBuilder)
-            {
-                return IsStrictlyDominatedBy((NamedInstructionBuilder)value, dominator, value.Graph);
-            }
-            else
-            {
-                var block = value.Block;
-                var dominatorBlock = value.Graph.GetValueParent(dominator);
-                if (block == dominatorBlock)
-                {
-                    // Anonymous flow instructions are always strictly dominated by
-                    // named values in the same block.
-                    return true;
-                }
-                else
-                {
-                    return IsStrictlyDominatedBy(block, dominatorBlock);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Tries to find the last common dominator of a sequence of blocks.
-        /// </summary>
-        /// <param name="blocks">A sequence of blocks.</param>
-        /// <param name="dominator">
-        /// The last common dominator for <paramref name="blocks"/>.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="blocks"/> have one or more common dominators; otherwise, <c>false</c>.
-        /// </returns>
-        public bool TryFindCommonDominator(
-            IEnumerable<BasicBlockTag> blocks,
-            out BasicBlockTag dominator)
-        {
-            var doms = blocks.Select(GetDominators).ToArray();
-            if (doms.Length == 0)
-            {
-                dominator = null;
-                return false;
-            }
-
-            int minLength = doms.Select(xs => xs.Count).Min();
-            for (int i = 0; i < minLength; i++)
-            {
-                if (doms.Any(xs => xs[i] != doms[0][i]))
-                {
-                    if (i > 0)
-                    {
-                        dominator = doms[0][i - 1];
-                        return true;
-                    }
-                    else
-                    {
-                        dominator = null;
-                        return false;
-                    }
-                }
-            }
-            dominator = doms[0][minLength - 1];
             return true;
         }
-
-        internal IReadOnlyList<BasicBlockTag> GetDominators(
-                    BasicBlockTag block)
+        else
         {
-            var blockDoms = new List<BasicBlockTag>();
-            var idom = block;
-            do
-            {
-                blockDoms.Add(idom);
-                idom = GetImmediateDominator(idom);
-            } while (idom != null);
-            blockDoms.Reverse();
-            return blockDoms;
+            return IsStrictlyDominatedBy(value, dominator);
         }
     }
 
     /// <summary>
-    /// An analysis that computes dominator trees for control-flow graphs.
+    /// Tells if a particular block is strictly dominated by another block,
+    /// that is, if control cannot flow to the block unless it first flowed
+    /// through the dominator block.
     /// </summary>
-    public sealed class DominatorTreeAnalysis : IFlowGraphAnalysis<DominatorTree>
+    /// <param name="block">
+    /// A block that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// A block that might dominate <paramref name="block"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="block"/> is strictly dominated by
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public virtual bool IsStrictlyDominatedBy(BasicBlockTag block, BasicBlockTag dominator)
     {
-        /// <summary>
-        /// An instance of the dominator tree analysis.
-        /// </summary>
-        /// <returns>An instance of the dominator tree analysis.</returns>
-        public static readonly DominatorTreeAnalysis Instance = new();
-
-        private DominatorTreeAnalysis()
-        { }
-
-        /// <inheritdoc/>
-        public DominatorTree Analyze(FlowGraph graph)
+        do
         {
-            return new DominatorTreeImpl(GetImmediateDominators(graph));
+            block = GetImmediateDominator(block);
+        } while (block != null && block != dominator);
+        return block == dominator;
+    }
+
+    /// <summary>
+    /// Tells if a particular value is strictly dominated by another value,
+    /// that is, if control cannot flow to the value unless it first flowed
+    /// through the dominator value.
+    /// </summary>
+    /// <param name="value">
+    /// An value that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// An value that might dominate <paramref name="value"/>.
+    /// </param>
+    /// <param name="graph">
+    /// A graph that defines both values.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="value"/> is strictly dominated by
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsStrictlyDominatedBy(ValueTag value, ValueTag dominator, FlowGraph graph)
+    {
+        var valueBlock = graph.GetValueParent(value);
+        var dominatorBlock = graph.GetValueParent(dominator);
+        if (valueBlock.Tag == dominatorBlock.Tag)
+        {
+            if (graph.ContainsBlockParameter(dominator))
+            {
+                return !graph.ContainsBlockParameter(value);
+            }
+            else if (graph.ContainsBlockParameter(value))
+            {
+                return false;
+            }
+            else
+            {
+                var valueInsn = graph.GetInstruction(value);
+                var domInsn = graph.GetInstruction(dominator);
+                return valueInsn.InstructionIndex > domInsn.InstructionIndex;
+            }
+        }
+        else
+        {
+            return IsStrictlyDominatedBy(valueBlock, dominatorBlock);
+        }
+    }
+
+    /// <summary>
+    /// Tells if a particular value is strictly dominated by another value,
+    /// that is, if control cannot flow to the value unless it first flowed
+    /// through the dominator value.
+    /// </summary>
+    /// <param name="value">
+    /// An value that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// An value that might dominate <paramref name="value"/>.
+    /// </param>
+    /// <param name="graph">
+    /// A control-flow graph that defines both <paramref name="value"/> and <paramref name="dominator"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="value"/> is strictly dominated by
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsStrictlyDominatedBy(ValueTag value, ValueTag dominator, FlowGraphBuilder graph)
+    {
+        return IsStrictlyDominatedBy(value, dominator, graph.ImmutableGraph);
+    }
+
+    /// <summary>
+    /// Tells if a particular instruction is strictly dominated by another instruction,
+    /// that is, if control cannot flow to the instruction unless it first flowed
+    /// through the dominator instruction.
+    /// </summary>
+    /// <param name="instruction">
+    /// An instruction that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// An instruction that might dominate <paramref name="instruction"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="instruction"/> is strictly dominated by
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsStrictlyDominatedBy(NamedInstruction instruction, NamedInstruction dominator)
+    {
+        var graph = instruction.Block.Graph;
+        ContractHelpers.Assert(graph == dominator.Block.Graph);
+        return IsStrictlyDominatedBy(instruction, dominator, graph);
+    }
+
+    /// <summary>
+    /// Tells if a particular value is strictly dominated by another value,
+    /// that is, if control cannot flow to the value unless it first flowed
+    /// through the dominator value.
+    /// </summary>
+    /// <param name="value">
+    /// An value that might be dominated by <paramref name="dominator"/>.
+    /// </param>
+    /// <param name="dominator">
+    /// An value that might dominate <paramref name="value"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="value"/> is strictly dominated by
+    /// <paramref name="dominator"/>; otherwise, <c>false</c>.
+    /// </returns>
+    public bool IsStrictlyDominatedBy(InstructionBuilder value, ValueTag dominator)
+    {
+        if (value is NamedInstructionBuilder)
+        {
+            return IsStrictlyDominatedBy((NamedInstructionBuilder)value, dominator, value.Graph);
+        }
+        else
+        {
+            var block = value.Block;
+            var dominatorBlock = value.Graph.GetValueParent(dominator);
+            if (block == dominatorBlock)
+            {
+                // Anonymous flow instructions are always strictly dominated by
+                // named values in the same block.
+                return true;
+            }
+            else
+            {
+                return IsStrictlyDominatedBy(block, dominatorBlock);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Tries to find the last common dominator of a sequence of blocks.
+    /// </summary>
+    /// <param name="blocks">A sequence of blocks.</param>
+    /// <param name="dominator">
+    /// The last common dominator for <paramref name="blocks"/>.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="blocks"/> have one or more common dominators; otherwise, <c>false</c>.
+    /// </returns>
+    public bool TryFindCommonDominator(
+        IEnumerable<BasicBlockTag> blocks,
+        out BasicBlockTag dominator)
+    {
+        var doms = blocks.Select(GetDominators).ToArray();
+        if (doms.Length == 0)
+        {
+            dominator = null;
+            return false;
         }
 
-        /// <inheritdoc/>
-        public DominatorTree AnalyzeWithUpdates(
-            FlowGraph graph,
-            DominatorTree previousResult,
-            IReadOnlyList<FlowGraphUpdate> updates)
+        int minLength = doms.Select(xs => xs.Count).Min();
+        for (int i = 0; i < minLength; i++)
         {
-            foreach (var item in updates)
+            if (doms.Any(xs => xs[i] != doms[0][i]))
             {
-                if (item is InstructionUpdate
-                    || item is BasicBlockParametersUpdate
-                    || item is MapMembersUpdate)
+                if (i > 0)
                 {
-                    // These updates don't affect the dominator tree,
-                    // so we can just ignore them.
-                    continue;
+                    dominator = doms[0][i - 1];
+                    return true;
                 }
                 else
                 {
-                    // Other instructions may affect the dominator tree,
-                    // so we'll re-analyze if we encounter one.
-                    return Analyze(graph);
+                    dominator = null;
+                    return false;
                 }
             }
-            return previousResult;
+        }
+        dominator = doms[0][minLength - 1];
+        return true;
+    }
+
+    internal IReadOnlyList<BasicBlockTag> GetDominators(
+                BasicBlockTag block)
+    {
+        var blockDoms = new List<BasicBlockTag>();
+        var idom = block;
+        do
+        {
+            blockDoms.Add(idom);
+            idom = GetImmediateDominator(idom);
+        } while (idom != null);
+        blockDoms.Reverse();
+        return blockDoms;
+    }
+}
+
+/// <summary>
+/// An analysis that computes dominator trees for control-flow graphs.
+/// </summary>
+public sealed class DominatorTreeAnalysis : IFlowGraphAnalysis<DominatorTree>
+{
+    /// <summary>
+    /// An instance of the dominator tree analysis.
+    /// </summary>
+    /// <returns>An instance of the dominator tree analysis.</returns>
+    public static readonly DominatorTreeAnalysis Instance = new();
+
+    private DominatorTreeAnalysis()
+    { }
+
+    /// <inheritdoc/>
+    public DominatorTree Analyze(FlowGraph graph)
+    {
+        return new DominatorTreeImpl(GetImmediateDominators(graph));
+    }
+
+    /// <inheritdoc/>
+    public DominatorTree AnalyzeWithUpdates(
+        FlowGraph graph,
+        DominatorTree previousResult,
+        IReadOnlyList<FlowGraphUpdate> updates)
+    {
+        foreach (var item in updates)
+        {
+            if (item is InstructionUpdate
+                || item is BasicBlockParametersUpdate
+                || item is MapMembersUpdate)
+            {
+                // These updates don't affect the dominator tree,
+                // so we can just ignore them.
+                continue;
+            }
+            else
+            {
+                // Other instructions may affect the dominator tree,
+                // so we'll re-analyze if we encounter one.
+                return Analyze(graph);
+            }
+        }
+        return previousResult;
+    }
+
+    /// <summary>
+    /// Computes a mapping from nodes to their immediate
+    /// dominators. The root value is mapped to <c>null</c>.
+    /// </summary>
+    private static IReadOnlyDictionary<T, T> GetImmediateDominators<T>(
+        IEnumerable<T> nodes,
+        T root,
+        Func<T, IEnumerable<T>> getSuccessors,
+        Func<T, IEnumerable<T>> getPredecessors)
+        where T : class
+    {
+        // Based on "A Simple, Fast Dominance Algorithm" by
+        // Keith D. Cooper, Timothy J. Harvey, and Ken Kennedy
+        // (http://www.cs.rice.edu/~keith/Embed/dom.pdf)
+
+        var idoms = new Dictionary<T, T>();
+        foreach (var block in nodes)
+        {
+            idoms[block] = null;
         }
 
-        /// <summary>
-        /// Computes a mapping from nodes to their immediate
-        /// dominators. The root value is mapped to <c>null</c>.
-        /// </summary>
-        private static IReadOnlyDictionary<T, T> GetImmediateDominators<T>(
-            IEnumerable<T> nodes,
-            T root,
-            Func<T, IEnumerable<T>> getSuccessors,
-            Func<T, IEnumerable<T>> getPredecessors)
-            where T : class
+        var postorderSort = SortPostorder(nodes, getSuccessors).ToArray();
+        var postorderNums = new Dictionary<T, int>();
+        for (int i = 0; i < postorderSort.Length; i++)
         {
-            // Based on "A Simple, Fast Dominance Algorithm" by
-            // Keith D. Cooper, Timothy J. Harvey, and Ken Kennedy
-            // (http://www.cs.rice.edu/~keith/Embed/dom.pdf)
+            var item = postorderSort[i];
+            postorderNums[item] = i;
+        }
 
-            var idoms = new Dictionary<T, T>();
-            foreach (var block in nodes)
+        idoms[root] = root;
+
+        bool changed = true;
+        while (changed)
+        {
+            changed = false;
+            for (int i = postorderSort.Length - 1; i >= 0; i--)
             {
-                idoms[block] = null;
-            }
+                var b = postorderSort[i];
+                if (b == root)
+                    continue;
 
-            var postorderSort = SortPostorder(nodes, getSuccessors).ToArray();
-            var postorderNums = new Dictionary<T, int>();
-            for (int i = 0; i < postorderSort.Length; i++)
-            {
-                var item = postorderSort[i];
-                postorderNums[item] = i;
-            }
-
-            idoms[root] = root;
-
-            bool changed = true;
-            while (changed)
-            {
-                changed = false;
-                for (int i = postorderSort.Length - 1; i >= 0; i--)
+                T newIdom = null;
+                foreach (var p in getPredecessors(b))
                 {
-                    var b = postorderSort[i];
-                    if (b == root)
+                    if (!postorderNums.ContainsKey(p))
                         continue;
 
-                    T newIdom = null;
-                    foreach (var p in getPredecessors(b))
+                    if (newIdom == null)
                     {
-                        if (!postorderNums.ContainsKey(p))
-                            continue;
-
-                        if (newIdom == null)
-                        {
-                            newIdom = p;
-                        }
-                        else if (idoms[p] != null)
-                        {
-                            newIdom = IntersectImmediateDominators(
-                                p, newIdom, idoms, postorderNums);
-                        }
+                        newIdom = p;
                     }
-
-                    if (idoms[b] != newIdom)
+                    else if (idoms[p] != null)
                     {
-                        idoms[b] = newIdom;
-                        changed = true;
+                        newIdom = IntersectImmediateDominators(
+                            p, newIdom, idoms, postorderNums);
                     }
                 }
-            }
 
-            idoms[root] = null;
-
-            return idoms;
-        }
-
-        /// <summary>
-        /// Computes a mapping from basic block tags to their immediate
-        /// dominators. The entry point block is mapped to <c>null</c>.
-        /// </summary>
-        private static IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> GetImmediateDominators(
-            FlowGraph graph)
-        {
-            var preds = graph.GetAnalysisResult<BasicBlockPredecessors>();
-
-            return GetImmediateDominators(
-                graph.BasicBlockTags,
-                graph.EntryPointTag,
-                tag => graph.GetBasicBlock(tag).Flow.BranchTargets,
-                preds.GetPredecessorsOf);
-        }
-
-        private static T IntersectImmediateDominators<T>(
-                    T b1, T b2,
-                    Dictionary<T, T> idoms,
-                    Dictionary<T, int> postorderNums)
-                    where T : class
-        {
-            var finger1 = b1;
-            var finger2 = b2;
-            while (finger1 != finger2)
-            {
-                while (postorderNums[finger1] < postorderNums[finger2])
+                if (idoms[b] != newIdom)
                 {
-                    finger1 = idoms[finger1];
-                    if (finger1 == null)
-                    {
-                        return finger2;
-                    }
+                    idoms[b] = newIdom;
+                    changed = true;
                 }
+            }
+        }
 
-                while (postorderNums[finger2] < postorderNums[finger1])
+        idoms[root] = null;
+
+        return idoms;
+    }
+
+    /// <summary>
+    /// Computes a mapping from basic block tags to their immediate
+    /// dominators. The entry point block is mapped to <c>null</c>.
+    /// </summary>
+    private static IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> GetImmediateDominators(
+        FlowGraph graph)
+    {
+        var preds = graph.GetAnalysisResult<BasicBlockPredecessors>();
+
+        return GetImmediateDominators(
+            graph.BasicBlockTags,
+            graph.EntryPointTag,
+            tag => graph.GetBasicBlock(tag).Flow.BranchTargets,
+            preds.GetPredecessorsOf);
+    }
+
+    private static T IntersectImmediateDominators<T>(
+                T b1, T b2,
+                Dictionary<T, T> idoms,
+                Dictionary<T, int> postorderNums)
+                where T : class
+    {
+        var finger1 = b1;
+        var finger2 = b2;
+        while (finger1 != finger2)
+        {
+            while (postorderNums[finger1] < postorderNums[finger2])
+            {
+                finger1 = idoms[finger1];
+                if (finger1 == null)
                 {
-                    finger2 = idoms[finger2];
-                    if (finger2 == null)
-                    {
-                        return finger1;
-                    }
+                    return finger2;
                 }
             }
-            return finger1;
+
+            while (postorderNums[finger2] < postorderNums[finger1])
+            {
+                finger2 = idoms[finger2];
+                if (finger2 == null)
+                {
+                    return finger1;
+                }
+            }
+        }
+        return finger1;
+    }
+
+    private static void SortPostorder<T>(
+                T node,
+                HashSet<T> processed,
+                List<T> results,
+                Func<T, IEnumerable<T>> getSuccessors)
+    {
+        if (!processed.Add(node))
+            return;
+
+        foreach (var child in getSuccessors(node))
+        {
+            SortPostorder(child, processed, results, getSuccessors);
         }
 
-        private static void SortPostorder<T>(
-                    T node,
-                    HashSet<T> processed,
-                    List<T> results,
-                    Func<T, IEnumerable<T>> getSuccessors)
+        results.Add(node);
+    }
+
+    /// <summary>
+    /// Produces a postorder traversal list for this graph, starting at the
+    /// given roots.
+    /// </summary>
+    private static List<T> SortPostorder<T>(
+        IEnumerable<T> roots,
+        Func<T, IEnumerable<T>> getSuccessors)
+    {
+        var processed = new HashSet<T>();
+        var results = new List<T>();
+
+        foreach (var item in roots)
         {
-            if (!processed.Add(node))
-                return;
-
-            foreach (var child in getSuccessors(node))
-            {
-                SortPostorder(child, processed, results, getSuccessors);
-            }
-
-            results.Add(node);
+            SortPostorder<T>(item, processed, results, getSuccessors);
         }
 
-        /// <summary>
-        /// Produces a postorder traversal list for this graph, starting at the
-        /// given roots.
-        /// </summary>
-        private static List<T> SortPostorder<T>(
-            IEnumerable<T> roots,
-            Func<T, IEnumerable<T>> getSuccessors)
+        return results;
+    }
+
+    /// <summary>
+    /// A straightforward implementation of the DominatorTree class based
+    /// on an immediate dominator mapping.
+    /// </summary>
+    private sealed class DominatorTreeImpl : DominatorTree
+    {
+        public DominatorTreeImpl(
+            IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> immediateDominators)
         {
-            var processed = new HashSet<T>();
-            var results = new List<T>();
-
-            foreach (var item in roots)
-            {
-                SortPostorder<T>(item, processed, results, getSuccessors);
-            }
-
-            return results;
+            ImmediateDominators = immediateDominators;
         }
 
-        /// <summary>
-        /// A straightforward implementation of the DominatorTree class based
-        /// on an immediate dominator mapping.
-        /// </summary>
-        private sealed class DominatorTreeImpl : DominatorTree
+        public IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> ImmediateDominators { get; private set; }
+
+        public override BasicBlockTag GetImmediateDominator(BasicBlockTag block)
         {
-            public DominatorTreeImpl(
-                IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> immediateDominators)
-            {
-                ImmediateDominators = immediateDominators;
-            }
-
-            public IReadOnlyDictionary<BasicBlockTag, BasicBlockTag> ImmediateDominators { get; private set; }
-
-            public override BasicBlockTag GetImmediateDominator(BasicBlockTag block)
-            {
-                return ImmediateDominators[block];
-            }
+            return ImmediateDominators[block];
         }
     }
 }

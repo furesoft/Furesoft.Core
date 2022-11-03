@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Furesoft.Core.Storage.Index
-{
+namespace Furesoft.Core.Storage.Index;
+
 	public interface ITreeNodeManager<K, V>
 	{
 		/// <summary>
@@ -79,4 +79,3 @@ namespace Furesoft.Core.Storage.Index
 		/// </summary>
 		void SaveChanges();
 	}
-}

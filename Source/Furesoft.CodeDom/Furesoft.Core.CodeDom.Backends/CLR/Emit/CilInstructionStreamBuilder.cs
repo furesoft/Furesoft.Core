@@ -5,59 +5,58 @@ using Furesoft.Core.CodeDom.Compiler.Target;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Furesoft.Core.CodeDom.Backends.CLR.Emit
+namespace Furesoft.Core.CodeDom.Backends.CLR.Emit;
+
+/// <summary>
+/// An instruction stream builder for CIL instructions.
+/// </summary>
+public sealed class CilInstructionStreamBuilder : StackInstructionStreamBuilder<CilCodegenInstruction>
 {
     /// <summary>
-    /// An instruction stream builder for CIL instructions.
+    /// Creates a CIL instruction stream builder.
     /// </summary>
-    public sealed class CilInstructionStreamBuilder : StackInstructionStreamBuilder<CilCodegenInstruction>
+    /// <param name="selector">An instruction selector.</param>
+    private CilInstructionStreamBuilder(CilInstructionSelector selector)
+        : base(selector)
+    { }
+
+    private CilInstructionSelector CilSelector => (CilInstructionSelector)InstructionSelector;
+
+    /// <summary>
+    /// Creates a CIL instruction stream builder.
+    /// </summary>
+    /// <param name="selector">
+    /// The instruction selector to use.
+    /// </param>
+    public static CilInstructionStreamBuilder Create(CilInstructionSelector selector)
     {
-        /// <summary>
-        /// Creates a CIL instruction stream builder.
-        /// </summary>
-        /// <param name="selector">An instruction selector.</param>
-        private CilInstructionStreamBuilder(CilInstructionSelector selector)
-            : base(selector)
-        { }
+        return new CilInstructionStreamBuilder(selector);
+    }
 
-        private CilInstructionSelector CilSelector => (CilInstructionSelector)InstructionSelector;
-
-        /// <summary>
-        /// Creates a CIL instruction stream builder.
-        /// </summary>
-        /// <param name="selector">
-        /// The instruction selector to use.
-        /// </param>
-        public static CilInstructionStreamBuilder Create(CilInstructionSelector selector)
+    /// <inheritdoc/>
+    protected override IEnumerable<ValueTag> GetStackContentsOnEntry(BasicBlock block)
+    {
+        if (block.IsEntryPoint)
         {
-            return new CilInstructionStreamBuilder(selector);
+            return Enumerable.Empty<ValueTag>();
+        }
+        else
+        {
+            return block.ParameterTags;
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override bool ShouldMaterializeOnUse(NamedInstruction instruction)
+    {
+        if (CilSelector.AllocaToVariableMapping.ContainsKey(instruction))
+        {
+            // Materialize ldloca instructions on use.
+            return true;
         }
 
-        /// <inheritdoc/>
-        protected override IEnumerable<ValueTag> GetStackContentsOnEntry(BasicBlock block)
-        {
-            if (block.IsEntryPoint)
-            {
-                return Enumerable.Empty<ValueTag>();
-            }
-            else
-            {
-                return block.ParameterTags;
-            }
-        }
-
-        /// <inheritdoc/>
-        protected override bool ShouldMaterializeOnUse(NamedInstruction instruction)
-        {
-            if (CilSelector.AllocaToVariableMapping.ContainsKey(instruction))
-            {
-                // Materialize ldloca instructions on use.
-                return true;
-            }
-
-            // Materialize trivial constants on use.
-            var proto = instruction.Prototype as ConstantPrototype;
-            return proto != null && proto.Value != DefaultConstant.Instance;
-        }
+        // Materialize trivial constants on use.
+        var proto = instruction.Prototype as ConstantPrototype;
+        return proto != null && proto.Value != DefaultConstant.Instance;
     }
 }

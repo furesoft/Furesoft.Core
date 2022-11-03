@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	internal interface IError
 	{
 		IError AddParameter<T>(T o) where T : class;
@@ -12,4 +12,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 
 		IError AddParameter(long l);
 	}
-}

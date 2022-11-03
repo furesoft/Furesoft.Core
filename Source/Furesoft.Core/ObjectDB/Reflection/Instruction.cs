@@ -1,8 +1,8 @@
 ﻿using System.Reflection.Emit;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Reflection
-{
+namespace Furesoft.Core.ObjectDB.Reflection;
+
 	internal sealed class Instruction
 	{
 		internal Instruction(int offset, OpCode opcode)
@@ -71,4 +71,3 @@ namespace Furesoft.Core.ObjectDB.Reflection
 			return builder.ToString();
 		}
 	}
-}

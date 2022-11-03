@@ -1,17 +1,16 @@
-namespace Furesoft.Core.CodeDom.Compiler.Core
+namespace Furesoft.Core.CodeDom.Compiler.Core;
+
+/// <summary>
+/// Defines a common interface for assemblies: collections
+/// of types.
+/// </summary>
+public interface IAssembly : IMember
 {
     /// <summary>
-    /// Defines a common interface for assemblies: collections
-    /// of types.
+    /// Gets a list of all top-level types defined in this assembly.
     /// </summary>
-    public interface IAssembly : IMember
-    {
-        /// <summary>
-        /// Gets a list of all top-level types defined in this assembly.
-        /// </summary>
-        /// <returns>A list of types that are defined in this assembly.</returns>
-        IReadOnlyList<IType> Types { get; }
+    /// <returns>A list of types that are defined in this assembly.</returns>
+    IReadOnlyList<IType> Types { get; }
 
-        public bool IsLibrary { get; set; }
-    }
+    public bool IsLibrary { get; set; }
 }

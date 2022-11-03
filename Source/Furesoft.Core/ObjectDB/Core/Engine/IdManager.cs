@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Oid;
 using Furesoft.Core.ObjectDB.Storage;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	/// <summary>
 	///   Class to manage the ids of all the objects of the database.
 	/// </summary>
@@ -210,4 +210,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 			return position;
 		}
 	}
-}

@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.TypeResolution
-{
+namespace Furesoft.Core.ObjectDB.TypeResolution;
+
 	/// <summary>
 	///     Resolves a generic <see cref="System.Type" /> by name.
 	/// </summary>
@@ -61,4 +61,3 @@ namespace Furesoft.Core.ObjectDB.TypeResolution
 			return type ?? base.Resolve(typeName);
 		}
 	}
-}

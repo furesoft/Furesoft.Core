@@ -1,40 +1,39 @@
 using Furesoft.Core.CodeDom.Compiler.Core.Names;
 
-namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem
+namespace Furesoft.Core.CodeDom.Compiler.Core.TypeSystem;
+
+/// <summary>
+/// A generic member that can be constructed incrementally in an imperative fashion.
+/// </summary>
+public class DescribedGenericMember : DescribedMember, IGenericMember
 {
     /// <summary>
-    /// A generic member that can be constructed incrementally in an imperative fashion.
+    /// Creates a described generic member from a fully qualified name.
     /// </summary>
-    public class DescribedGenericMember : DescribedMember, IGenericMember
+    /// <param name="fullName">
+    /// A fully qualified name.
+    /// </param>
+    public DescribedGenericMember(QualifiedName fullName)
+        : base(fullName)
     {
-        /// <summary>
-        /// Creates a described generic member from a fully qualified name.
-        /// </summary>
-        /// <param name="fullName">
-        /// A fully qualified name.
-        /// </param>
-        public DescribedGenericMember(QualifiedName fullName)
-            : base(fullName)
-        {
-            genericParamList = new List<IGenericParameter>();
-        }
+        genericParamList = new List<IGenericParameter>();
+    }
 
-        private List<IGenericParameter> genericParamList;
+    private List<IGenericParameter> genericParamList;
 
-        /// <inheritdoc/>
-        public IReadOnlyList<IGenericParameter> GenericParameters => genericParamList;
+    /// <inheritdoc/>
+    public IReadOnlyList<IGenericParameter> GenericParameters => genericParamList;
 
-        /// <summary>
-        /// Adds a generic parameter to this generic member.
-        /// </summary>
-        /// <param name="genericParameter">The generic parameter to add.</param>
-        public void AddGenericParameter(IGenericParameter genericParameter)
-        {
-            ContractHelpers.Assert(
-                object.Equals(this, genericParameter.ParentMember),
-                "Generic parameters can only be added to their declaring member.");
+    /// <summary>
+    /// Adds a generic parameter to this generic member.
+    /// </summary>
+    /// <param name="genericParameter">The generic parameter to add.</param>
+    public void AddGenericParameter(IGenericParameter genericParameter)
+    {
+        ContractHelpers.Assert(
+            object.Equals(this, genericParameter.ParentMember),
+            "Generic parameters can only be added to their declaring member.");
 
-            genericParamList.Add(genericParameter);
-        }
+        genericParamList.Add(genericParameter);
     }
 }

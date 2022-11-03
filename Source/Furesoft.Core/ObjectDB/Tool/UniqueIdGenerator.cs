@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Tool
-{
+namespace Furesoft.Core.ObjectDB.Tool;
+
 	internal static class UniqueIdGenerator
 	{
 		internal static long GetRandomLongId()
@@ -12,4 +12,3 @@ namespace Furesoft.Core.ObjectDB.Tool
 			}
 		}
 	}
-}

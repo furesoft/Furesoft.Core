@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	/// <summary>
 	///   A simple list to hold query result.
 	/// </summary>
@@ -58,4 +58,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 
 		#endregion IObjects<E> Members
 	}
-}

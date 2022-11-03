@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal static class ComparisonConstraint
 	{
 		internal const int ComparisonTypeGt = 1;
@@ -10,4 +10,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 
 		internal const int ComparisonTypeLe = 4;
 	}
-}

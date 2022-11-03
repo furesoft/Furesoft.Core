@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	/// <summary>
 	/// NDatabase exception raised during processing linq query
 	/// </summary>
@@ -17,4 +17,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 		{
 		}
 	}
-}

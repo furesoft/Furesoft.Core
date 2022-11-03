@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.List
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.List;
+
 	internal sealed class ObjectValues : IObjectValues
 	{
 		/// <summary>
@@ -66,4 +66,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List
 			return buffer.ToString();
 		}
 	}
-}

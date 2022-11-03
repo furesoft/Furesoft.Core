@@ -5,8 +5,8 @@ using System.Linq.Expressions;
 using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal static class LinqQueryExtensions
 	{
 		public static ILinqQuery<TSource> Where<TSource>(this ILinqQuery<TSource> self,
@@ -109,4 +109,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return new LinqQueryable<TSource>(self);
 		}
 	}
-}

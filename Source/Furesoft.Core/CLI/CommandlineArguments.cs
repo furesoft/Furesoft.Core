@@ -4,8 +4,8 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 
-namespace Furesoft.Core.CLI
-{
+namespace Furesoft.Core.CLI;
+
 	/// <summary>
 	/// Arguments class
 	/// </summary>
@@ -121,4 +121,3 @@ namespace Furesoft.Core.CLI
 			return false;
 		}
 	}
-}

@@ -2,8 +2,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Core.Session;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	public interface IFileSystemWriter
 	{
 		void BuildFileSystemInterface(IStorageEngine storageEngine, ISession session);
@@ -107,4 +107,3 @@ namespace Furesoft.Core.ObjectDB.Core
 		/// </summary>
 		void WriteClassAttributeInfo(IStorageEngine storageEngine, ClassAttributeInfo cai, bool writeInTransaction);
 	}
-}

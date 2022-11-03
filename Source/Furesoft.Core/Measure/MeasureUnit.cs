@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 
-namespace Furesoft.Core.Measure
-{
-    /// <summary>
-    /// The base class for all measure unit also handles the combination of multiples <see cref="ExponentMeasureUnit"/>.
-    /// </summary>
-    public partial class MeasureUnit
+namespace Furesoft.Core.Measure;
+
+/// <summary>
+/// The base class for all measure unit also handles the combination of multiples <see cref="ExponentMeasureUnit"/>.
+/// </summary>
+public partial class MeasureUnit
 	{
 		readonly MeasureContext _ctx;
 		readonly ExponentMeasureUnit[] _units;
@@ -272,4 +272,3 @@ namespace Furesoft.Core.Measure
 		public override string ToString() => Abbreviation;
 
 	}
-}

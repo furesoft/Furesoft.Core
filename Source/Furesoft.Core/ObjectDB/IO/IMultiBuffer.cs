@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal interface IMultiBuffer
 	{
 		byte[][] Buffers { get; }
@@ -34,4 +34,3 @@ namespace Furesoft.Core.ObjectDB.IO
 
 		long GetCreationDate(int bufferIndex);
 	}
-}

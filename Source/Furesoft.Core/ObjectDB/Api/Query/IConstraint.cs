@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api.Query
-{
+namespace Furesoft.Core.ObjectDB.Api.Query;
+
 	/// <summary>
 	/// constraint to limit the objects returned upon
 	/// query execution.
@@ -152,4 +152,3 @@ namespace Furesoft.Core.ObjectDB.Api.Query
 		/// <returns>this IConstraint to allow the chaining of method calls.</returns>
 		IConstraint StartsWith(bool isCaseSensitive);
 	}
-}

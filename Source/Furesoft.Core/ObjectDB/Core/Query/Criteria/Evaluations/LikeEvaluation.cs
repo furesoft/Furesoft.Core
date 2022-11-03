@@ -2,8 +2,8 @@ using System;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal sealed class LikeEvaluation : AEvaluation
 	{
 		private const string LikePattern = "(.)*{0}(.)*";
@@ -56,4 +56,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 			return OdbString.Matches(regExp, value);
 		}
 	}
-}

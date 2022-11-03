@@ -1,120 +1,119 @@
 using System.Collections.Generic;
 
-namespace Furesoft.Core.CodeDom.Compiler.Core.Collections
+namespace Furesoft.Core.CodeDom.Compiler.Core.Collections;
+
+/// <summary>
+/// Describes a symmetric relation between values:
+/// a set of two-element sets.
+/// </summary>
+/// <typeparam name="T">
+/// The type of values in the relation.
+/// </typeparam>
+public sealed class SymmetricRelation<T>
 {
     /// <summary>
-    /// Describes a symmetric relation between values:
-    /// a set of two-element sets.
+    /// Creates an empty symmetric relation.
     /// </summary>
-    /// <typeparam name="T">
-    /// The type of values in the relation.
-    /// </typeparam>
-    public sealed class SymmetricRelation<T>
+    public SymmetricRelation()
     {
-        /// <summary>
-        /// Creates an empty symmetric relation.
-        /// </summary>
-        public SymmetricRelation()
+        relation = new Dictionary<T, HashSet<T>>();
+    }
+
+    /// <summary>
+    /// Creates an empty symmetric relation.
+    /// </summary>
+    /// <param name="comparer">The equality comparer to use.</param>
+    public SymmetricRelation(IEqualityComparer<T> comparer)
+    {
+        relation = new Dictionary<T, HashSet<T>>(comparer);
+    }
+
+    private Dictionary<T, HashSet<T>> relation;
+
+    /// <summary>
+    /// Adds a pair of values to the relation.
+    /// </summary>
+    /// <param name="first">
+    /// The first element to relate.
+    /// </param>
+    /// <param name="second">
+    /// The second element to relate.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="first"/> and <paramref name="second"/> are not related yet;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    public bool Add(T first, T second)
+    {
+        GetSetFor(first).Add(second);
+        return GetSetFor(second).Add(first);
+    }
+
+    /// <summary>
+    /// Removes a pair of values from the relation.
+    /// </summary>
+    /// <param name="first">
+    /// A first element.
+    /// </param>
+    /// <param name="second">
+    /// A second element.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if <paramref name="first"/> and <paramref name="second"/> were related;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    public bool Remove(T first, T second)
+    {
+        GetSetFor(first).Remove(second);
+        return GetSetFor(second).Remove(first);
+    }
+
+    /// <summary>
+    /// Tests if two elements are related.
+    /// </summary>
+    /// <param name="first">
+    /// A first element.
+    /// </param>
+    /// <param name="second">
+    /// A second element.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> if the elements are related under this relation;
+    /// otherwise, <c>false</c>.
+    /// </returns>
+    public bool Contains(T first, T second)
+    {
+        if (relation.TryGetValue(first, out HashSet<T> firstSet))
         {
-            relation = new Dictionary<T, HashSet<T>>();
+            return firstSet.Contains(second);
         }
-
-        /// <summary>
-        /// Creates an empty symmetric relation.
-        /// </summary>
-        /// <param name="comparer">The equality comparer to use.</param>
-        public SymmetricRelation(IEqualityComparer<T> comparer)
+        else
         {
-            relation = new Dictionary<T, HashSet<T>>(comparer);
+            return false;
         }
+    }
 
-        private Dictionary<T, HashSet<T>> relation;
+    /// <summary>
+    /// Gets the set of all values related to a particular value.
+    /// </summary>
+    /// <param name="value">The value to examine.</param>
+    /// <returns>The set of all related values.</returns>
+    public IEnumerable<T> GetAll(T value)
+    {
+        return GetSetFor(value);
+    }
 
-        /// <summary>
-        /// Adds a pair of values to the relation.
-        /// </summary>
-        /// <param name="first">
-        /// The first element to relate.
-        /// </param>
-        /// <param name="second">
-        /// The second element to relate.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="first"/> and <paramref name="second"/> are not related yet;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        public bool Add(T first, T second)
+    private HashSet<T> GetSetFor(T value)
+    {
+        if (relation.TryGetValue(value, out HashSet<T> valueSet))
         {
-            GetSetFor(first).Add(second);
-            return GetSetFor(second).Add(first);
+            return valueSet;
         }
-
-        /// <summary>
-        /// Removes a pair of values from the relation.
-        /// </summary>
-        /// <param name="first">
-        /// A first element.
-        /// </param>
-        /// <param name="second">
-        /// A second element.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if <paramref name="first"/> and <paramref name="second"/> were related;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        public bool Remove(T first, T second)
+        else
         {
-            GetSetFor(first).Remove(second);
-            return GetSetFor(second).Remove(first);
-        }
-
-        /// <summary>
-        /// Tests if two elements are related.
-        /// </summary>
-        /// <param name="first">
-        /// A first element.
-        /// </param>
-        /// <param name="second">
-        /// A second element.
-        /// </param>
-        /// <returns>
-        /// <c>true</c> if the elements are related under this relation;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        public bool Contains(T first, T second)
-        {
-            if (relation.TryGetValue(first, out HashSet<T> firstSet))
-            {
-                return firstSet.Contains(second);
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// Gets the set of all values related to a particular value.
-        /// </summary>
-        /// <param name="value">The value to examine.</param>
-        /// <returns>The set of all related values.</returns>
-        public IEnumerable<T> GetAll(T value)
-        {
-            return GetSetFor(value);
-        }
-
-        private HashSet<T> GetSetFor(T value)
-        {
-            if (relation.TryGetValue(value, out HashSet<T> valueSet))
-            {
-                return valueSet;
-            }
-            else
-            {
-                valueSet = new HashSet<T>(relation.Comparer);
-                relation[value] = valueSet;
-                return valueSet;
-            }
+            valueSet = new HashSet<T>(relation.Comparer);
+            relation[value] = valueSet;
+            return valueSet;
         }
     }
 }

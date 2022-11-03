@@ -1,5 +1,5 @@
-namespace Furesoft.Core.Extensibility.Addins
-{
+namespace Furesoft.Core.Extensibility.Addins;
+
 	using System;
 
 	public class ServiceContainer
@@ -19,4 +19,3 @@ namespace Furesoft.Core.Extensibility.Addins
 
 		#endregion Public Methods and Operators
 	}
-}

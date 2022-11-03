@@ -2,8 +2,8 @@ using System;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	public interface IQueryEngine
 	{
 		IValues GetValues(IInternalValuesQuery query, int startIndex, int endIndex);
@@ -16,4 +16,3 @@ namespace Furesoft.Core.ObjectDB.Core
 
 		object GetObjectFromOid(OID oid);
 	}
-}

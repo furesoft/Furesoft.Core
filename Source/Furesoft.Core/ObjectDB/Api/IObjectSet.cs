@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	/// query resultset.
 	///
@@ -35,4 +35,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// </summary>
 		void Reset();
 	}
-}

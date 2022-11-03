@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Services;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	internal class MetaModelCompabilityChecker : IMetaModelCompabilityChecker
 	{
 		private readonly IList<ClassInfoCompareResult> _results = new List<ClassInfoCompareResult>();
@@ -39,4 +39,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 				_results.Add(classInfoCompareResult);
 		}
 	}
-}

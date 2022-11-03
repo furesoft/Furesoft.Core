@@ -9,8 +9,8 @@ using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.TypeResolution;
 
-namespace Furesoft.Core.ObjectDB.Meta.Introspector
-{
+namespace Furesoft.Core.ObjectDB.Meta.Introspector;
+
 	/// <summary>
 	///   The Class Introspector is used to introspect classes.
 	/// </summary>
@@ -222,4 +222,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector
 			return classInfoList;
 		}
 	}
-}

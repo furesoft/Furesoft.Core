@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Execution
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Execution;
+
 	/// <summary>
 	///   <p>A class to execute a query on more than one class and then merges the result.</p>
 	/// </summary>
@@ -68,4 +68,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Execution
 
 		#endregion IQueryExecutor Members
 	}
-}

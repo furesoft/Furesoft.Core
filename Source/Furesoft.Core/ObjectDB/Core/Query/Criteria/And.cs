@@ -2,8 +2,8 @@ using System.Linq;
 using System.Text;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
+
 	internal sealed class And : ComposedExpression
 	{
 		public And(IQuery query) : base(query)
@@ -44,4 +44,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria
 			return buffer.ToString();
 		}
 	}
-}

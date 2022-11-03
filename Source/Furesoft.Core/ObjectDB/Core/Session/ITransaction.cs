@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Core.Session
-{
+namespace Furesoft.Core.ObjectDB.Core.Session;
+
 	public interface ITransaction
 	{
 		/// <summary>
@@ -43,4 +43,3 @@ namespace Furesoft.Core.ObjectDB.Core.Session
 		/// </summary>
 		void Reset();
 	}
-}

@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Tool.Wrappers
-{
+namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
+
 	internal static class OdbTime
 	{
 		internal static long GetCurrentTimeInTicks()
@@ -14,4 +14,3 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers
 			return (long)TimeSpan.FromTicks(GetCurrentTimeInTicks()).TotalMilliseconds;
 		}
 	}
-}

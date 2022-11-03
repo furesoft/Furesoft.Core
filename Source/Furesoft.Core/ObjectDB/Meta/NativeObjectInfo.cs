@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   To keep info about a native instance
 	/// </summary>
@@ -47,4 +47,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return TheObject;
 		}
 	}
-}

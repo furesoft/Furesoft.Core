@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Oid
-{
+namespace Furesoft.Core.ObjectDB.Oid;
+
 	internal sealed class ExternalObjectOID : ObjectOID, IExternalOID
 	{
 		private readonly IDatabaseId _databaseId;
@@ -20,4 +20,3 @@ namespace Furesoft.Core.ObjectDB.Oid
 
 		#endregion IExternalOID Members
 	}
-}

@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal static class BTreeValidator
 	{
 		public static void CheckDuplicateChildren(IBTreeNode node1, IBTreeNode node2)
@@ -110,4 +110,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 			}
 		}
 	}
-}

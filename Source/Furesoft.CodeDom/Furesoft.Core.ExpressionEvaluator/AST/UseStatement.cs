@@ -1,128 +1,127 @@
 ﻿using Furesoft.Core.CodeDom.CodeDOM.Annotations;
 using System.IO;
 
-namespace Furesoft.Core.ExpressionEvaluator.AST
+namespace Furesoft.Core.ExpressionEvaluator.AST;
+
+public class UseStatement : Statement, IEvaluatableStatement, IBindable
 {
-    public class UseStatement : Statement, IEvaluatableStatement, IBindable
+    public UseStatement(Parser parser, CodeObject parent) :
+        base(parser, parent)
     {
-        public UseStatement(Parser parser, CodeObject parent) :
-            base(parser, parent)
+    }
+
+    public Expression Module { get; set; }
+
+    public static void AddParsePoints()
+    {
+        Parser.AddParsePoint("use", Parse);
+    }
+
+    public override T Accept<T>(VisitorBase<T> visitor)
+    {
+        return visitor.Visit(this);
+    }
+
+    public CodeObject Bind(ExpressionParser ep, Binder binder)
+    {
+        if (Module is Dot dot)
         {
+            Module = new UnresolvedRef(dot._AsString);
         }
 
-        public Expression Module { get; set; }
-
-        public static void AddParsePoints()
+        if (Module is UnresolvedRef uref && uref.Reference is string name)
         {
-            Parser.AddParsePoint("use", Parse);
-        }
-
-        public override T Accept<T>(VisitorBase<T> visitor)
-        {
-            return visitor.Visit(this);
-        }
-
-        public CodeObject Bind(ExpressionParser ep, Binder binder)
-        {
-            if (Module is Dot dot)
+            if (ep.Modules.ContainsKey(name))
             {
-                Module = new UnresolvedRef(dot._AsString);
+                Module = new ModuleRef(ep.Modules[name]);
             }
-
-            if (Module is UnresolvedRef uref && uref.Reference is string name)
+            else if (name.EndsWith("*") && ep.Modules.Keys.Any(_ => _.StartsWith(name.Substring(0, name.Length - 1))))
             {
-                if (ep.Modules.ContainsKey(name))
+                var tmpModule = new Module();
+                tmpModule.Scope = Scope.CreateScope();
+
+                foreach (var module in ep.Modules.Where(_ => _.Key.StartsWith(name.Substring(0, name.Length - 1))))
                 {
-                    Module = new ModuleRef(ep.Modules[name]);
+                    tmpModule.Scope.ImportScope(module.Value.Scope);
                 }
-                else if (name.EndsWith("*") && ep.Modules.Keys.Any(_ => _.StartsWith(name.Substring(0, name.Length - 1))))
+
+                Module = new ModuleRef(tmpModule);
+            }
+            else
+            {
+                AttachMessage($"'{Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
+            }
+        }
+        else if (Module is Literal)
+        {
+            var filename = Module._AsString.ToString().Replace("\"", "");
+
+            if (File.Exists(filename))
+            {
+                var content = File.ReadAllText(filename);
+
+                var cep = new ExpressionParser();
+                var contentResult = cep.Evaluate(content);
+
+                if (contentResult.Errors.Count > 0)
                 {
-                    var tmpModule = new Module();
-                    tmpModule.Scope = Scope.CreateScope();
-
-                    foreach (var module in ep.Modules.Where(_ => _.Key.StartsWith(name.Substring(0, name.Length - 1))))
+                    foreach (var msg in contentResult.Errors)
                     {
-                        tmpModule.Scope.ImportScope(module.Value.Scope);
+                        AttachMessage(msg.Text, msg.Severity, msg.Source);
                     }
-
-                    Module = new ModuleRef(tmpModule);
                 }
                 else
                 {
-                    AttachMessage($"'{Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
-                }
-            }
-            else if (Module is Literal)
-            {
-                var filename = Module._AsString.ToString().Replace("\"", "");
-
-                if (File.Exists(filename))
-                {
-                    var content = File.ReadAllText(filename);
-
-                    var cep = new ExpressionParser();
-                    var contentResult = cep.Evaluate(content);
-
-                    if (contentResult.Errors.Count > 0)
+                    if (string.IsNullOrEmpty(contentResult.ModuleName))
                     {
-                        foreach (var msg in contentResult.Errors)
-                        {
-                            AttachMessage(msg.Text, msg.Severity, msg.Source);
-                        }
+                        Module = new ModuleRef(cep.RootScope);
                     }
                     else
                     {
-                        if (string.IsNullOrEmpty(contentResult.ModuleName))
-                        {
-                            Module = new ModuleRef(cep.RootScope);
-                        }
-                        else
-                        {
-                            ep.AddModule(contentResult.ModuleName, cep.RootScope);
+                        ep.AddModule(contentResult.ModuleName, cep.RootScope);
 
-                            Module = new ModuleRef(ep.Modules[contentResult.ModuleName]);
-                        }
+                        Module = new ModuleRef(ep.Modules[contentResult.ModuleName]);
                     }
-                }
-                else
-                {
-                    AttachMessage($"File {Module._AsString} does not exist", MessageSeverity.Error, MessageSource.Resolve);
                 }
             }
             else
             {
-                if (Module != null)
-                {
-                    AttachMessage($"'{Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
-                }
+                AttachMessage($"File {Module._AsString} does not exist", MessageSeverity.Error, MessageSource.Resolve);
             }
-
-            return this;
         }
-
-        public void Evaluate(ExpressionParser ep)
+        else
         {
-            if (Module is ModuleRef modRef)
+            if (Module != null)
             {
-                if (modRef.Reference is Module mod)
-                {
-                    ep.RootScope.ImportScope(mod.Scope);
-                }
-                else if (modRef.Reference is Scope scope)
-                {
-                    ep.RootScope.ImportScope(scope);
-                }
+                AttachMessage($"'{Module._AsString}' is not defined", MessageSeverity.Error, MessageSource.Resolve);
             }
         }
 
-        private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
+        return this;
+    }
+
+    public void Evaluate(ExpressionParser ep)
+    {
+        if (Module is ModuleRef modRef)
         {
-            var result = new UseStatement(parser, parent);
-            parser.NextToken();
-
-            result.Module = Expression.Parse(parser, result, false, ";");
-
-            return result;
+            if (modRef.Reference is Module mod)
+            {
+                ep.RootScope.ImportScope(mod.Scope);
+            }
+            else if (modRef.Reference is Scope scope)
+            {
+                ep.RootScope.ImportScope(scope);
+            }
         }
+    }
+
+    private static CodeObject Parse(Parser parser, CodeObject parent, ParseFlags flags)
+    {
+        var result = new UseStatement(parser, parent);
+        parser.NextToken();
+
+        result.Module = Expression.Parse(parser, result, false, ";");
+
+        return result;
     }
 }

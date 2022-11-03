@@ -1,7 +1,7 @@
 using System.IO;
 
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	internal static class OdbDirectory
 	{
 		internal static void Mkdirs(string filename)
@@ -18,4 +18,3 @@ namespace Furesoft.Core.ObjectDB.IO
 				directoryInfo.Create();
 		}
 	}
-}

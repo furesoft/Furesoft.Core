@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace Furesoft.Core.ObjectDB.Exceptions
-{
+namespace Furesoft.Core.ObjectDB.Exceptions;
+
 	/// <summary>
 	///   ODB BTree Errors All @ in error description will be replaced by parameters
 	/// </summary>
@@ -95,4 +95,3 @@ namespace Furesoft.Core.ObjectDB.Exceptions
 			return token;
 		}
 	}
-}

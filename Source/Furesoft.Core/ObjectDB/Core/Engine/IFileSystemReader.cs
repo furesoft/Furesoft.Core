@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	internal interface IFileSystemReader
 	{
 		void ReadDatabaseHeader();
@@ -46,4 +46,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 
 		void Close();
 	}
-}

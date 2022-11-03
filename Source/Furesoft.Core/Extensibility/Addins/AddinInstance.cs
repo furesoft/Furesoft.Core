@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System.Reflection;
 
-namespace Furesoft.Core.Extensibility.Addins
-{
+namespace Furesoft.Core.Extensibility.Addins;
+
 	public class AddinInstance
 	{
 		#region Fields
@@ -49,4 +49,3 @@ namespace Furesoft.Core.Extensibility.Addins
 
 		#endregion Methods
 	}
-}

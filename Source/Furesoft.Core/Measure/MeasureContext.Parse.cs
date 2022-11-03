@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 
-namespace Furesoft.Core.Measure
-{
+namespace Furesoft.Core.Measure;
+
 	public partial class MeasureContext
 	{
 		private static readonly Regex rUnit = new(@"(\(((?<1>(10|2)\^-?\d+)(\*|\.)?)*\))?(?<2>[^\*\.\-0123456789]+)(?<3>-?\d+)?|(?<4>(10|2)\^-?\d+)(?=\*|\.)?",
@@ -141,4 +141,3 @@ namespace Furesoft.Core.Measure
 			return false;
 		}
 	}
-}

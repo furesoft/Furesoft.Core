@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Text;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   A meta representation of an Array
 	/// </summary>
@@ -99,4 +99,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return arrayOfAoi;
 		}
 	}
-}

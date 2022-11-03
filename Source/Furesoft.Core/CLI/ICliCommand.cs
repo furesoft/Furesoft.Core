@@ -1,5 +1,5 @@
-﻿namespace Furesoft.Core.CLI
-{
+﻿namespace Furesoft.Core.CLI;
+
 	public interface ICliCommand
 	{
 		string Name { get; }
@@ -8,4 +8,3 @@
 
 		int Invoke(CommandlineArguments args);
 	}
-}

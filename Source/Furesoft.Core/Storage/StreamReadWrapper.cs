@@ -1,8 +1,8 @@
 ﻿using System;
 using System.IO;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	/// <summary>
 	/// Wrapper around a Stream, for reading only.
 	/// This allows client to limit a stream to a particular length.
@@ -96,4 +96,3 @@ namespace Furesoft.Core.Storage
 			throw new NotSupportedException();
 		}
 	}
-}

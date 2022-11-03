@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-namespace Furesoft.Core.ObjectDB.Core
-{
+namespace Furesoft.Core.ObjectDB.Core;
+
 	public interface IObjectReader
 	{
 		/// <summary>
@@ -132,4 +132,3 @@ namespace Furesoft.Core.ObjectDB.Core
 		NonNativeObjectInfo ReadNonNativeObjectInfoFromPosition(ClassInfo classInfo, OID oid, long position,
 																bool useCache, bool returnInstance);
 	}
-}

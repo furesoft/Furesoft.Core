@@ -4,8 +4,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal sealed class CollectionSizeEvaluation : AEvaluation
 	{
 		internal const int SizeEq = 1;
@@ -88,4 +88,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 			throw new OdbRuntimeException(NDatabaseError.QueryCollectionSizeCriteriaNotSupported.AddParameter(sizeType));
 		}
 	}
-}

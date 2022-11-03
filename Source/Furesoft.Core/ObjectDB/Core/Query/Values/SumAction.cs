@@ -3,8 +3,8 @@ using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Core.Query.Execution;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Values
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Values;
+
 	internal sealed class SumAction : AbstractQueryFieldAction
 	{
 		private decimal _sum;
@@ -43,4 +43,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values
 			return new SumAction(AttributeName, Alias);
 		}
 	}
-}

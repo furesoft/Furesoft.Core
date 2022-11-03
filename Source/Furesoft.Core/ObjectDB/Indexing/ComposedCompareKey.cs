@@ -1,8 +1,8 @@
 using System.Text;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Indexing
-{
+namespace Furesoft.Core.ObjectDB.Indexing;
+
 	/// <summary>
 	///   A composed key : an object that contains various values used for indexing query result
 	///   <p>This is an implementation that allows compare keys to contain more than one single value to be compared</p>
@@ -57,4 +57,3 @@ namespace Furesoft.Core.ObjectDB.Indexing
 			return buffer.ToString();
 		}
 	}
-}

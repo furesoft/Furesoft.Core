@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Api
-{
+namespace Furesoft.Core.ObjectDB.Api;
+
 	/// <summary>
 	///   An interface to provider extended access to ODB.
 	/// </summary>
@@ -51,4 +51,3 @@ namespace Furesoft.Core.ObjectDB.Api
 		/// <returns> the file name </returns>
 		string GetDbId();
 	}
-}

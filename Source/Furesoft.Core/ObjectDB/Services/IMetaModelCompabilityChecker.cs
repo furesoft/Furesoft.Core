@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Services
-{
+namespace Furesoft.Core.ObjectDB.Services;
+
 	internal interface IMetaModelCompabilityChecker
 	{
 		/// <summary>
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Services
 		/// </summary>
 		bool Check(IDictionary<Type, ClassInfo> currentCIs, IMetaModelService metaModelService);
 	}
-}

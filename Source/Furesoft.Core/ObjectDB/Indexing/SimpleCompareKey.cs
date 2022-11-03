@@ -1,8 +1,8 @@
 using System;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Indexing
-{
+namespace Furesoft.Core.ObjectDB.Indexing;
+
 	/// <summary>
 	///   A simple compare key : an object that contains various values used for indexing query result <p></p>
 	/// </summary>
@@ -54,4 +54,3 @@ namespace Furesoft.Core.ObjectDB.Indexing
 			return _key == null ? 0 : _key.GetHashCode();
 		}
 	}
-}

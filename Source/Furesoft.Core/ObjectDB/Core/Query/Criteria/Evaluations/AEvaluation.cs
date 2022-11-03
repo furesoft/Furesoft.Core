@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal abstract class AEvaluation : IEvaluation
 	{
 		protected readonly string AttributeName;
@@ -33,4 +33,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 					   : valueToMatch;
 		}
 	}
-}

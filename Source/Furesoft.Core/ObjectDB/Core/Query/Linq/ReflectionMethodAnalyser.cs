@@ -6,8 +6,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Reflection;
 using Furesoft.Core.ObjectDB.Tool;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class ReflectionMethodAnalyser
 	{
 		private static readonly Dictionary<MethodInfo, FieldInfo> fieldCache =
@@ -95,4 +95,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return (FieldInfo)data;
 		}
 	}
-}

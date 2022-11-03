@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Execution
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Execution;
+
 	internal interface IMultiClassQueryExecutor : IQueryExecutor
 	{
 		void SetExecuteStartAndEndOfQueryAction(bool yes);
@@ -15,4 +15,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Execution
 		/// </summary>
 		void SetClassInfo(ClassInfo ci);
 	}
-}

@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Furesoft.Core.CLI
-{
+namespace Furesoft.Core.CLI;
+
 	/// <summary>
 	/// A Class to build CommandLine Applications easily
 	/// </summary>
@@ -120,4 +120,3 @@ namespace Furesoft.Core.CLI
 			table.RePrint(rows);
 		}
 	}
-}

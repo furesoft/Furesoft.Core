@@ -9,8 +9,8 @@ using Furesoft.Core.ObjectDB.Meta.Introspector;
 using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	/// <summary>
 	///   Class used to build instance from Meta Object representation.
 	/// </summary>
@@ -434,4 +434,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 					OdbType.GetNameFromId(odbTypeId)));
 		}
 	}
-}

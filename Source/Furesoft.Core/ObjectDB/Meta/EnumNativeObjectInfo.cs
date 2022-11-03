@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Meta
-{
+namespace Furesoft.Core.ObjectDB.Meta;
+
 	/// <summary>
 	///   Meta representation of an enum.
 	/// </summary>
@@ -55,4 +55,3 @@ namespace Furesoft.Core.ObjectDB.Meta
 			return _enumClassInfo;
 		}
 	}
-}

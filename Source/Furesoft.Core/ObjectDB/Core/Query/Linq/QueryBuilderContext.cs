@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class QueryBuilderContext
 	{
 		private readonly Stack<IConstraint> _constraints = new();
@@ -72,4 +72,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			CurrentQuery = _descendStack.Pop();
 		}
 	}
-}

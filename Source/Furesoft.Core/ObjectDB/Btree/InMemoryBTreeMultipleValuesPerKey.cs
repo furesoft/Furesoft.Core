@@ -2,8 +2,8 @@ using System;
 using System.Collections;
 using Furesoft.Core.ObjectDB.Api;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	internal sealed class InMemoryBTreeMultipleValuesPerKey : AbstractBTree, IBTreeMultipleValuesPerKey
 	{
 		private static int nextId = 1;
@@ -50,4 +50,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		#endregion IBTreeMultipleValuesPerKey Members
 	}
-}

@@ -8,8 +8,8 @@ using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 using Furesoft.Core.ObjectDB.Services;
 
-namespace Furesoft.Core.ObjectDB.Core.BTree
-{
+namespace Furesoft.Core.ObjectDB.Core.BTree;
+
 	internal sealed class IndexManager : IIndexManager
 	{
 		private readonly ClassInfo _classInfo;
@@ -102,4 +102,3 @@ namespace Furesoft.Core.ObjectDB.Core.BTree
 			return withoutDuplicates;
 		}
 	}
-}

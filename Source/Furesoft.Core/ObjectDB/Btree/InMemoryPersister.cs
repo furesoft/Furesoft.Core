@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   In memory persister
 	/// </summary>
@@ -43,4 +43,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		#endregion IBTreePersister Members
 	}
-}

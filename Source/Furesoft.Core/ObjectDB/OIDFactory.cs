@@ -1,8 +1,8 @@
 using Furesoft.Core.ObjectDB.Api;
 using Furesoft.Core.ObjectDB.Oid;
 
-namespace Furesoft.Core.ObjectDB
-{
+namespace Furesoft.Core.ObjectDB;
+
 	/// <summary>
 	/// Factory class to create OIDs
 	/// </summary>
@@ -28,4 +28,3 @@ namespace Furesoft.Core.ObjectDB
 			return new ClassOID(oid);
 		}
 	}
-}

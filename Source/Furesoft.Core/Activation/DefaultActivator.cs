@@ -1,8 +1,7 @@
 ﻿using Furesoft.Core.Activation.Strategies;
 
-namespace Furesoft.Core.Activation
+namespace Furesoft.Core.Activation;
+
+public class DefaultActivator : Activator<DynamicDelegateActivation>
 {
-    public class DefaultActivator : Activator<DynamicDelegateActivation>
-    {
-    }
 }

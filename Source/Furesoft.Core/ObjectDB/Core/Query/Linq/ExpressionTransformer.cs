@@ -4,8 +4,8 @@ using System.Collections.ObjectModel;
 using System.Linq.Expressions;
 using Furesoft.Core.ObjectDB.Exceptions;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal abstract class ExpressionTransformer
 	{
 		protected virtual Expression Visit(Expression exp)
@@ -335,4 +335,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 			return iv;
 		}
 	}
-}

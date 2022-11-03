@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Furesoft.Core.ObjectDB.Api.Query;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Linq
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
+
 	internal sealed class UnoptimizedQuery<T> : ILinqQueryInternal<T>
 	{
 		private readonly IEnumerable<T> _result;
@@ -52,4 +52,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq
 
 		#endregion ILinqQueryInternal<T> Members
 	}
-}

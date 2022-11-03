@@ -3,12 +3,12 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Furesoft.Core.Measure
-{
-    /// <summary>
-    /// A MeasureContext manages a set of <see cref="MeasureUnit"/>.
-    /// </summary>
-    public partial class MeasureContext
+namespace Furesoft.Core.Measure;
+
+/// <summary>
+/// A MeasureContext manages a set of <see cref="MeasureUnit"/>.
+/// </summary>
+public partial class MeasureContext
 	{
 		private readonly ConcurrentDictionary<string, MeasureUnit> _allUnits;
 
@@ -321,4 +321,3 @@ namespace Furesoft.Core.Measure
 		}
 
 	}
-}

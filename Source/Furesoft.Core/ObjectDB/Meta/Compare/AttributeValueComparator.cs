@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Meta.Compare
-{
+namespace Furesoft.Core.ObjectDB.Meta.Compare;
+
 	internal static class AttributeValueComparator
 	{
 		/// <summary>
@@ -80,4 +80,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Compare
 			return value is decimal;
 		}
 	}
-}

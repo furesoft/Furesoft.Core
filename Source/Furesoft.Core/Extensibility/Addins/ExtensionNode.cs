@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace Furesoft.Core.Extensibility.Addins
-{
+namespace Furesoft.Core.Extensibility.Addins;
+
 	public class ExtensionNode
 	{
 		#region Fields
@@ -29,4 +29,3 @@ namespace Furesoft.Core.Extensibility.Addins
 
 		#endregion Public Methods and Operators
 	}
-}

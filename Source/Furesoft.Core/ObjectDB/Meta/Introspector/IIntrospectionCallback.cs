@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.Meta.Introspector
-{
+namespace Furesoft.Core.ObjectDB.Meta.Introspector;
+
 	internal interface IIntrospectionCallback
 	{
 		/// <summary>
@@ -7,4 +7,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector
 		/// </summary>
 		void ObjectFound(object @object);
 	}
-}

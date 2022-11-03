@@ -1,5 +1,5 @@
-﻿namespace Furesoft.Core.Extensibility.Addins
-{
+﻿namespace Furesoft.Core.Extensibility.Addins;
+
 	using System;
 
 	internal class AddinException : Exception
@@ -9,4 +9,3 @@
 		{
 		}
 	}
-}

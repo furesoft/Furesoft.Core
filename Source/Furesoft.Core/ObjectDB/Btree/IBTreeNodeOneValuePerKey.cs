@@ -1,7 +1,7 @@
 using System;
 
-namespace Furesoft.Core.ObjectDB.Btree
-{
+namespace Furesoft.Core.ObjectDB.Btree;
+
 	/// <summary>
 	///   The interface for btree nodes that accept multiple values for each key
 	/// </summary>
@@ -11,4 +11,3 @@ namespace Furesoft.Core.ObjectDB.Btree
 
 		object Search(IComparable key);
 	}
-}

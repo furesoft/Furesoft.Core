@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Furesoft.Core.Storage
-{
+namespace Furesoft.Core.Storage;
+
 	public class BlockStorage : IBlockStorage
 	{
 		private readonly Stream stream;
@@ -103,4 +103,3 @@ namespace Furesoft.Core.Storage
 			blocks.Remove(block.Id);
 		}
 	}
-}

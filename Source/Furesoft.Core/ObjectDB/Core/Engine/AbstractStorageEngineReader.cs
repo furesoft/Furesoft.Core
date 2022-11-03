@@ -20,8 +20,8 @@ using Furesoft.Core.ObjectDB.Tool;
 using Furesoft.Core.ObjectDB.Tool.Wrappers;
 using Furesoft.Core.ObjectDB.Triggers;
 
-namespace Furesoft.Core.ObjectDB.Core.Engine
-{
+namespace Furesoft.Core.ObjectDB.Core.Engine;
+
 	internal abstract class AbstractStorageEngineReader : IStorageEngine
 	{
 		private static readonly IDictionary<IStorageEngine, IInternalTriggerManager> triggerManagers =
@@ -270,4 +270,3 @@ namespace Furesoft.Core.ObjectDB.Core.Engine
 
 		#endregion IStorageEngine Members
 	}
-}

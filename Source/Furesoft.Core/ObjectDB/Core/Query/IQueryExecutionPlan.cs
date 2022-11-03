@@ -1,7 +1,7 @@
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query
-{
+namespace Furesoft.Core.ObjectDB.Core.Query;
+
 	internal interface IQueryExecutionPlan
 	{
 		bool UseIndex();
@@ -14,4 +14,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query
 
 		void End();
 	}
-}

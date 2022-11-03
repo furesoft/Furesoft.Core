@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 
-namespace Furesoft.Core.ObjectDB.Meta.Introspector
-{
+namespace Furesoft.Core.ObjectDB.Meta.Introspector;
+
 	/// <summary>
 	///   Interface for ObjectInstropector.
 	/// </summary>
@@ -21,4 +21,3 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector
 
 		void Clear();
 	}
-}

@@ -5,8 +5,8 @@ using Furesoft.Core.ObjectDB.Api.Query;
 using Furesoft.Core.ObjectDB.Exceptions;
 using Furesoft.Core.ObjectDB.Meta;
 
-namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
-{
+namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
+
 	internal sealed class ContainsEvaluation : AEvaluation
 	{
 		/// <summary>
@@ -214,4 +214,3 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations
 			return false;
 		}
 	}
-}

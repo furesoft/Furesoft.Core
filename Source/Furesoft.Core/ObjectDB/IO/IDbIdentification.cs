@@ -1,5 +1,5 @@
-namespace Furesoft.Core.ObjectDB.IO
-{
+namespace Furesoft.Core.ObjectDB.IO;
+
 	/// <summary>
 	///   An interface to get info about database parameters
 	/// </summary>
@@ -17,4 +17,3 @@ namespace Furesoft.Core.ObjectDB.IO
 
 		IDbIdentification GetTransactionIdentification(long creationDateTime, string sessionId);
 	}
-}
