@@ -42,6 +42,7 @@ public sealed class ComponentObject
             current = parent;
         }
         while (parent != null);
+        
         return null;
     }
 
@@ -98,13 +99,13 @@ public sealed class ComponentObject
         return null;
     }
 
-    public T GetComponentInChildren<T>(bool includeNotActive)
+    public T GetComponentInChildren<T>(bool includeNotEnabled)
         where T : Component
     {
         foreach (var component in Children)
         {
             var childComponent = component.GetComponent<T>();
-            if (childComponent is null || childComponent.Enabled != !includeNotActive)
+            if (childComponent is null || childComponent.Enabled != !includeNotEnabled)
             {
                 continue;
             }
