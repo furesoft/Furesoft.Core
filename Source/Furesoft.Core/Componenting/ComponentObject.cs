@@ -87,7 +87,8 @@ public sealed class ComponentObject
         }
     }
 
-    public T GetComponent<T>() where T : Component
+    public T GetComponent<T>() 
+        where T : Component
     {
         foreach (var comp in _comps)
         {
@@ -95,6 +96,28 @@ public sealed class ComponentObject
                 return matched;
         }
         return null;
+    }
+
+    public T GetComponentInChildren<T>(bool includeNotActive)
+        where T : Component
+    {
+        foreach (var component in Children)
+        {
+            var childComponent = component.GetComponent<T>();
+            if (childComponent is null || childComponent.Enabled != !includeNotActive)
+            {
+                continue;
+            }
+
+            return childComponent;
+        }
+
+        return null;
+    }
+
+    public bool HasComponent<T>() where T : Component
+    {
+        return GetComponent<T>() != null;
     }
 
     public bool RemoveComponent(Component comp)
