@@ -1,6 +1,6 @@
 ﻿using Backlang.Codeanalysis.Core.Attributes;
 
-namespace Backlang.Codeanalysis.Parsing;
+namespace Furesoft.Core.Parsing;
 
 public enum TokenType
 {

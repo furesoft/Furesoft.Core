@@ -1,10 +1,9 @@
-﻿using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Core.Attributes;
-using Backlang.Codeanalysis.Parsing.AST;
+﻿using Backlang.Codeanalysis.Parsing.AST;
 using Backlang.Codeanalysis.Parsing.AST.Expressions;
+using Furesoft.Core.Parsing.Attributes;
 using System.Reflection;
 
-namespace Backlang.Codeanalysis.Parsing;
+namespace Furesoft.Core.Parsing;
 
 public class Expression : SyntaxNode
 {
@@ -16,7 +15,7 @@ public class Expression : SyntaxNode
 
         foreach (var op in typeValues)
         {
-            var attributes = op.GetType().GetField(Enum.GetName<TokenType>(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
+            var attributes = op.GetType().GetField(Enum.GetName(op)).GetCustomAttributes<OperatorInfoAttribute>(true);
 
             if (attributes != null && attributes.Any())
             {
@@ -41,8 +40,8 @@ public class Expression : SyntaxNode
 
         if (unaryOperatorPrecedence != 0 && unaryOperatorPrecedence >= parentPrecedence)
         {
-            Token? operatorToken = parser.Iterator.NextToken();
-            Expression? operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
+            Token operatorToken = parser.Iterator.NextToken();
+            Expression operand = Parse(parser, parsePoints, unaryOperatorPrecedence + 1);
 
             left = new UnaryExpression(operatorToken, operand, false);
         }
@@ -52,7 +51,7 @@ public class Expression : SyntaxNode
 
             if (IsPostUnary(parser.Iterator.Current.Type))
             {
-                Token? operatorToken = parser.Iterator.NextToken();
+                Token operatorToken = parser.Iterator.NextToken();
 
                 left = new UnaryExpression(operatorToken, left, true);
             }
@@ -82,7 +81,7 @@ public class Expression : SyntaxNode
         var list = new List<Expression>();
         while (parser.Iterator.Current.Type != terminator) //ToDo: implement option to disallow empty list
         {
-            list.Add(Expression.Parse(parser));
+            list.Add(Parse(parser));
 
             if (parser.Iterator.Current.Type != terminator)
             {

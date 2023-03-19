@@ -1,7 +1,7 @@
-﻿using Backlang.Codeanalysis.Core.Attributes;
+﻿using Furesoft.Core.Parsing.Attributes;
 using System.Reflection;
 
-namespace Backlang.Codeanalysis.Parsing;
+namespace Furesoft.Core.Parsing;
 
 public static class TokenUtils
 {
@@ -13,7 +13,7 @@ public static class TokenUtils
 
         foreach (var keyword in typeValues)
         {
-            var attributes = keyword.GetType().GetField(Enum.GetName<TokenType>(keyword)).GetCustomAttributes<KeywordAttribute>(true);
+            var attributes = keyword.GetType().GetField(Enum.GetName(keyword)).GetCustomAttributes<KeywordAttribute>(true);
 
             if (attributes != null && attributes.Any())
             {

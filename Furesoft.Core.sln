@@ -27,6 +27,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furesoft.Core.CodeDom.Compi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furesoft.Core.ExpressionEvaluator", "Source\Furesoft.CodeDom\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj", "{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furesoft.Core.Parsing", "Source\Furesoft.Core.Parsing\Furesoft.Core.Parsing.csproj", "{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +117,14 @@ Global
 		{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}.Release|x86.ActiveCfg = Release|Any CPU
 		{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}.Release|x86.Build.0 = Release|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Debug|x86.Build.0 = Debug|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Release|x86.ActiveCfg = Release|Any CPU
+		{FA6FE214-DCCF-41DA-88C8-9216B4BCDFFF}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

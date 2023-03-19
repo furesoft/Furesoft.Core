@@ -1,4 +1,4 @@
-﻿namespace Backlang.Codeanalysis.Parsing.AST;
+﻿namespace Furesoft.Core.Parsing;
 
 public class Block : SyntaxNode
 {

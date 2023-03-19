@@ -1,4 +1,4 @@
-﻿namespace Backlang.Codeanalysis.Parsing;
+﻿namespace Furesoft.Core.Parsing;
 
 public enum MessageSeverity
 {

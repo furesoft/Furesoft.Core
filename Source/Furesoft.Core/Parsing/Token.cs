@@ -1,4 +1,4 @@
-﻿namespace Backlang.Codeanalysis.Parsing;
+﻿namespace Furesoft.Core.Parsing;
 
 public class Token
 {
@@ -17,7 +17,7 @@ public class Token
     public Token(TokenType type)
     {
         Type = type;
-        Text = String.Empty;
+        Text = string.Empty;
     }
 
     public Token(TokenType type, string text)

@@ -1,4 +1,4 @@
-﻿namespace Backlang.Codeanalysis.Core.Attributes;
+﻿namespace Furesoft.Core.Parsing.Attributes;
 
 [AttributeUsage(AttributeTargets.Field, AllowMultiple = true)]
 public class LexemeAttribute : Attribute

@@ -1,8 +1,7 @@
-﻿using Backlang.Codeanalysis.Core;
-using Backlang.Codeanalysis.Core.Attributes;
+﻿using Furesoft.Core.Parsing.Attributes;
 using System.Reflection;
 
-namespace Backlang.Codeanalysis.Parsing;
+namespace Furesoft.Core.Parsing;
 
 public class Lexer : BaseLexer
 {

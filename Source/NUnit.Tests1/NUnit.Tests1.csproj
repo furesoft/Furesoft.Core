@@ -15,6 +15,7 @@
   <ItemGroup>
 	<ProjectReference Include="..\Furesoft.CodeDom\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj" />
 	<ProjectReference Include="..\Furesoft.CodeDom\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj" />
+	<ProjectReference Include="..\Furesoft.Core.Parsing\Furesoft.Core.Parsing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

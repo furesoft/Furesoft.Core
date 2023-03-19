@@ -1,7 +1,6 @@
-﻿using Backlang.Codeanalysis.Parsing;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace Backlang.Codeanalysis.Core;
+namespace Furesoft.Core.Parsing;
 
 public abstract class BaseLexer
 {

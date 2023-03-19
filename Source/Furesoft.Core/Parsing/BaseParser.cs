@@ -1,6 +1,4 @@
-﻿using Backlang.Codeanalysis.Parsing;
-
-namespace Backlang.Codeanalysis.Core;
+﻿namespace Furesoft.Core.Parsing;
 
 public abstract class BaseParser<TNode, TLexer, TParser>
     where TParser : BaseParser<TNode, TLexer, TParser>
