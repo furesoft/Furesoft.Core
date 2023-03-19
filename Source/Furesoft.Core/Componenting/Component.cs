@@ -2,7 +2,7 @@
 
 public abstract class Component
 {
-    public ComponentObject GameObject { get; set; }
+    public ComponentObject Object { get; set; }
 
     public virtual void Initialize() { }
 

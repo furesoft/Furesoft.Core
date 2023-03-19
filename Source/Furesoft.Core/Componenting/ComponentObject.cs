@@ -70,14 +70,14 @@ public sealed class ComponentObject
         where T : Component, new()
     {
         var obj = new T();
-        obj.GameObject = this;
+        obj.Object = this;
 
         AddComponent(obj);
     }
 
     public void AddComponent(Component comp)
     {
-        comp.GameObject = this;
+        comp.Object = this;
         _comps.Add(comp);
 
         if (_isInitialized)
