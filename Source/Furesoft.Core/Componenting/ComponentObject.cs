@@ -7,6 +7,8 @@ public sealed class ComponentObject
     private ComponentObject _parent;
     public List<ComponentObject> Children { get; set; }
 
+    public Scene Scene { get; set; }
+
     private List<Component> _comps;
 
     public IReadOnlyList<Component> Components => _comps;
@@ -88,15 +90,15 @@ public sealed class ComponentObject
         }
     }
 
-    public T GetComponent<T>() 
-        where T : Component
+    public T GetComponent<T>()
     {
         foreach (var comp in _comps)
         {
             if (comp is T matched)
                 return matched;
         }
-        return null;
+        
+        return default;
     }
 
     public T GetComponentInChildren<T>(bool includeNotEnabled)

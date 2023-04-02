@@ -8,13 +8,13 @@ public static class SceneExtensions
 {
     public static void Update(this Scene scene, GameTime gameTime)
     {
-        foreach (var entity in scene.Objects)
+        foreach (var entity in scene._objects)
             entity.Update(gameTime);
     }
 
     public static void Draw(this Scene scene, SpriteBatch sb, GameTime gameTime)
     {
-        foreach (var entity in scene.Objects)
+        foreach (var entity in scene._objects)
             entity.Draw(sb, gameTime);
     }
 }

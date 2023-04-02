@@ -1,6 +1,4 @@
-﻿using Furesoft.Core.Componenting;
-using Furesoft.Core.Componenting.MonoGame;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 namespace Furesoft.Core.Componenting.MonoGame.Components;
@@ -8,8 +6,6 @@ namespace Furesoft.Core.Componenting.MonoGame.Components;
 public class Selectable : GameComponent
 {
     public bool IsSelected { get; private set; }
-
-    public event Action<ComponentObject> OnSelect;
 
     public override void Update(GameTime gameTime)
     {
@@ -39,7 +35,7 @@ public class Selectable : GameComponent
 
             if (!IsSelected) return;
 
-            OnSelect?.Invoke(Object);
+            Object.GetComponent<ISelection>()?.OnSelect(Object);
         }
     }
 }
