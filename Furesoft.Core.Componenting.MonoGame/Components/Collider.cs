@@ -4,45 +4,28 @@ namespace Furesoft.Core.Componenting.MonoGame.Components;
 
 public class Collider : GameComponent
 {
-    public Rectangle CollisionRec { get; set; }
-
-    public Collider(Rectangle collisionRec)
-    {
-        CollisionRec = collisionRec;
-    }
-
-    public Collider()
-    {
-        
-    }
-
-    public override void Initialize()
-    {
-        if (CollisionRec == default)
-        {
-            CollisionRec = Object.GetComponent<TransformComponent>().Bounds;
-        }
-    }
-
     public override void Update(GameTime gameTime)
     {
         foreach (var obj in Object.Scene.Objects)
         {
             var collider = obj.GetComponent<Collider>();
 
-            if (collider == null && !collider.Enabled)
+            if (collider is not {Enabled: true})
             {
                 continue;
             }
 
-            if (!CollisionRec.Intersects(collider.CollisionRec))
+            var collisionRec = Object.GetComponent<TransformComponent>().Bounds;
+            var otherCollisionRec = obj.GetComponent<TransformComponent>().Bounds;
+            
+            if (!collisionRec.Intersects(otherCollisionRec))
             {
                 continue;
             }
             
             obj.GetComponent<ICollision>()?.OnCollide(Object);
             
-            Object.GetComponent<ICollision>().OnCollide(obj);
+            Object.GetComponent<ICollision>()?.OnCollide(obj);
         }
     }
 }

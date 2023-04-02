@@ -1,3 +1,5 @@
+using System.Numerics;
+
 namespace Furesoft.Core.ExpressionEvaluator;
 
 public class Scope
