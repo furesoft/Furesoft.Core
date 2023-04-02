@@ -24,7 +24,7 @@ public class Selectable : GameComponent
             texture.GetData(pixels);
 
             var mouseVector = new Vector2(mouseState.Position.X, mouseState.Position.Y);
-            var position = Object.GetComponent<Transform>();
+            var position = Object.GetComponent<TransformComponent>();
             var relativePosition = mouseVector - position.Position;
             var index = (int)(relativePosition.Y / position.Size.Y * texture.Height * texture.Width +
                                relativePosition.X / position.Size.X * texture.Width);

@@ -21,7 +21,7 @@ public class TextureRenderer : GameComponent
     {
         sb.Begin();
 
-        var position = Object.GetComponent<Transform>();
+        var position = Object.GetComponent<TransformComponent>();
         var texture = Object.GetComponent<TextureComponent>().Texture;
 
         sb.Draw(texture, position.Bounds, _color);

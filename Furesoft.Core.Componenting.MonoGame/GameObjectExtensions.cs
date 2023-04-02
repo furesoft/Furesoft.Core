@@ -27,7 +27,7 @@ public static class GameObjectExtensions
         {
             var component = gameObject.Components[i];
 
-            if (component.Visible && component is GameComponent gameLoopComponent)
+            if (component.Enabled && component is GameComponent gameLoopComponent)
             {
                 gameLoopComponent.Render(sb, gameTime);
             }
@@ -38,6 +38,6 @@ public static class GameObjectExtensions
     {
         var mouseState = Mouse.GetState();
 
-        return gameObject.GetComponent<Transform>().Bounds.Contains(mouseState.Position);
+        return gameObject.GetComponent<TransformComponent>().Bounds.Contains(mouseState.Position);
     }
 }
