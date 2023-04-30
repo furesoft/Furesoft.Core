@@ -4,7 +4,7 @@ public sealed class ComponentObject
 {
     public string Name { get; }
 
-    private ComponentObject _parent;
+    public ComponentObject Parent { get; private set; }
     public List<ComponentObject> Children { get; set; }
 
     public Scene Scene { get; set; }
@@ -25,11 +25,11 @@ public sealed class ComponentObject
 
     public void SetParent(ComponentObject parent)
     {
-        if (_parent != null)
-            _parent.Children.Remove(this);
-        _parent = parent;
-        if (_parent != null)
-            _parent.Children.Add(this);
+        Parent?.Children.Remove(this);
+        
+        Parent = parent;
+        
+        Parent?.Children.Add(this);
     }
 
     public ComponentObject GetRootParent()
@@ -38,7 +38,7 @@ public sealed class ComponentObject
         ComponentObject parent;
         do
         {
-            parent = current._parent;
+            parent = current.Parent;
             if (parent == null)
                 return current;
             current = parent;
@@ -63,6 +63,7 @@ public sealed class ComponentObject
 
         foreach (var comp in _comps)
             comp.Initialize();
+        
         foreach (var comp in _comps)
             comp.Start();
 
@@ -72,8 +73,10 @@ public sealed class ComponentObject
     public void AddComponent<T>()
         where T : Component, new()
     {
-        var obj = new T();
-        obj.Object = this;
+        var obj = new T
+        {
+            Object = this
+        };
 
         AddComponent(obj);
     }
@@ -83,11 +86,10 @@ public sealed class ComponentObject
         comp.Object = this;
         _comps.Add(comp);
 
-        if (_isInitialized)
-        {
-            comp.Initialize();
-            comp.Start();
-        }
+        if (!_isInitialized) return;
+        
+        comp.Initialize();
+        comp.Start();
     }
 
     public T GetComponent<T>()
