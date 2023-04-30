@@ -103,7 +103,7 @@ public sealed class ComponentObject
         return default;
     }
 
-    public T GetComponentInChildren<T>(bool includeNotEnabled)
+    public T GetComponentInChildren<T>(bool includeNotEnabled = false)
         where T : Component
     {
         foreach (var component in Children)
