@@ -7,8 +7,18 @@ public class Scene
 
     public void Initialize()
     {
-        foreach (var entity in _objects)
+        for (var index = 0; index < _objects.Count; index++)
+        {
+            var entity = _objects[index];
             entity.Initialize();
+
+            for (int i = 0; i < entity.Children.Count; i++)
+            {
+                var child = entity.Children[i];
+
+                child.Initialize();
+            }
+        }
     }
 
     public void Add(ComponentObject obj)

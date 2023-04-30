@@ -14,10 +14,17 @@ public static class GameObjectExtensions
         {
             var component = gameObject.Components[i];
 
-            if (component.Enabled && component is GameComponent gameLoopComponent)
+            if (!component.Enabled)
+            {
+                continue;
+            }
+            
+            if (component is GameComponent gameLoopComponent)
             {
                 gameLoopComponent.Update(gameTime);
             }
+            
+            gameObject.GetComponentInChildren<GameComponent>()?.Update(gameTime);
         }
     }
 
@@ -27,10 +34,17 @@ public static class GameObjectExtensions
         {
             var component = gameObject.Components[i];
 
-            if (component.Enabled && component is GameComponent gameLoopComponent)
+            if (!component.Enabled)
+            {
+                continue;
+            }
+            
+            if (component is GameComponent gameLoopComponent)
             {
                 gameLoopComponent.Render(sb, gameTime);
             }
+
+            gameObject.GetComponentInChildren<GameComponent>()?.Render(sb, gameTime);
         }
     }
 
