@@ -23,9 +23,9 @@ public static class GameObjectExtensions
             {
                 gameLoopComponent.Update(gameTime);
             }
-            
-            gameObject.GetComponentInChildren<GameComponent>()?.Update(gameTime);
         }
+        
+        gameObject.GetComponentInChildren<GameComponent>()?.Update(gameTime);
     }
 
     public static void Draw(this ComponentObject gameObject, SpriteBatch sb, GameTime gameTime)
@@ -44,8 +44,9 @@ public static class GameObjectExtensions
                 gameLoopComponent.Render(sb, gameTime);
             }
 
-            gameObject.GetComponentInChildren<GameComponent>()?.Render(sb, gameTime);
         }
+        
+        gameObject.GetComponentInChildren<GameComponent>()?.Render(sb, gameTime);
     }
 
     public static bool IsMouseOverGameObject(this ComponentObject gameObject)

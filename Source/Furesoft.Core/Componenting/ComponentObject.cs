@@ -144,4 +144,6 @@ public sealed class ComponentObject
         foreach (var comp in Enumerable.Reverse(_comps))
             RemoveComponent(comp);
     }
+
+    public override string ToString() => Name;
 }
