@@ -17,4 +17,12 @@ public class Scene
         
         _objects.Add(obj);
     }
+    
+    public ComponentObject CreateComponent(string name) {
+        var co = new ComponentObject(name);
+
+        Add(co);
+
+        return co;
+    }
 }
