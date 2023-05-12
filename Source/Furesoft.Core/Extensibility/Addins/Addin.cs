@@ -31,13 +31,4 @@ namespace Furesoft.Core.Extensibility.Addins;
 		internal string IconPath { get; set; }
 
 		#endregion Properties
-
-		#region Public Methods and Operators
-
-		public void Unload()
-		{
-			AppDomain.Unload(Domain);
-		}
-
-		#endregion Public Methods and Operators
 	}

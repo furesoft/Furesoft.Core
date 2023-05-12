@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Furesoft.Core\Furesoft.Core.csproj" />
-    <ProjectReference Include="..\Source\Furesoft.Core\Furesoft.Core.csproj" />
   </ItemGroup>
 
 </Project>

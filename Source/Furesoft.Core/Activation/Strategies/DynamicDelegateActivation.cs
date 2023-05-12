@@ -12,7 +12,7 @@ public class DynamicDelegateActivation : IActivationStrategy
     public object Activate(Type type, object[] args)
     {
         var argTypes = args?.Select(_ => _.GetType()).ToArray();
-        var ctor = type.GetConstructor(argTypes);
+        var ctor = type.GetConstructor(argTypes!);
 
         if (ctor != null)
         {
