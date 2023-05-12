@@ -203,7 +203,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
 			return list == null
 				? original
-				: new ReadOnlyCollection<Expression>(list);
+				: new(list);
 		}
 
 		private MemberAssignment VisitMemberAssignment(MemberAssignment assignment)
@@ -256,7 +256,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 				}
 				else if (!EqualityComparer<TElement>.Default.Equals(element, original[i]))
 				{
-					list = new List<TElement>(n);
+					list = new(n);
 					for (var j = 0; j < i; j++)
 					{
 						list.Add(original[j]);

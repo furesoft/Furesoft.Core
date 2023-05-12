@@ -54,7 +54,7 @@ public partial class MeasureUnit
 
 		internal void SetPrefixedNormalization(PrefixedMeasureUnit n)
 		{
-			_normalizationFactor = new FullFactor(n.Prefix.Factor.Power(-1));
+			_normalizationFactor = new(n.Prefix.Factor.Power(-1));
 			_normalization = n;
 		}
 

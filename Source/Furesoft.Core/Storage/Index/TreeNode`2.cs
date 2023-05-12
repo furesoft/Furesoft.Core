@@ -136,8 +136,8 @@ namespace Furesoft.Core.Storage.Index;
 
 			// Setting up readonly attributes
 			this.nodeManager = nodeManager;
-			this.childrenIds = new List<uint>();
-			this.entries = new List<Tuple<K, V>>(this.nodeManager.MinEntriesPerNode * 2);
+			this.childrenIds = new();
+			this.entries = new(this.nodeManager.MinEntriesPerNode * 2);
 
 			// Loading up data
 			if (entries != null)
@@ -215,7 +215,7 @@ namespace Furesoft.Core.Storage.Index;
 			var parent = nodeManager.Find(parentId);
 			if (parent == null)
 			{
-				throw new Exception("IndexInParent fails to find parent node of " + id);
+				throw new("IndexInParent fails to find parent node of " + id);
 			}
 			var childrenIds = parent.ChildrenIds;
 			for (var i = 0; i < childrenIds.Length; i++)
@@ -226,7 +226,7 @@ namespace Furesoft.Core.Storage.Index;
 				}
 			}
 
-			throw new Exception("Failed to find index of node " + id + " in its parent");
+			throw new("Failed to find index of node " + id + " in its parent");
 		}
 
 		/// <summary>
@@ -275,7 +275,7 @@ namespace Furesoft.Core.Storage.Index;
 		{
 			Debug.Assert(IsLeaf, "Call this method on leaf node only");
 
-			entries.Insert(insertPosition, new Tuple<K, V>(key, value));
+			entries.Insert(insertPosition, new(key, value));
 			nodeManager.MarkAsChanged(this);
 		}
 
@@ -288,7 +288,7 @@ namespace Furesoft.Core.Storage.Index;
 			insertPosition = insertPosition >= 0 ? insertPosition : ~insertPosition;
 
 			// Insert entry first
-			entries.Insert(insertPosition, new Tuple<K, V>(key, value));
+			entries.Insert(insertPosition, new(key, value));
 
 			// Then insert and update child references
 			childrenIds.Insert(insertPosition, leftReference);
@@ -386,7 +386,7 @@ namespace Furesoft.Core.Storage.Index;
 		/// </summary>
 		public int BinarySearchEntriesForKey(K key)
 		{
-			return entries.BinarySearch(new Tuple<K, V>(key, default(V)), nodeManager.EntryComparer);
+			return entries.BinarySearch(new(key, default(V)), nodeManager.EntryComparer);
 		}
 
 		/// <summary>
@@ -398,11 +398,11 @@ namespace Furesoft.Core.Storage.Index;
 		{
 			if (firstOccurence)
 			{
-				return entries.BinarySearchFirst(new Tuple<K, V>(key, default(V)), nodeManager.EntryComparer);
+				return entries.BinarySearchFirst(new(key, default(V)), nodeManager.EntryComparer);
 			}
 			else
 			{
-				return entries.BinarySearchLast(new Tuple<K, V>(key, default(V)), nodeManager.EntryComparer);
+				return entries.BinarySearchLast(new(key, default(V)), nodeManager.EntryComparer);
 			}
 		}
 

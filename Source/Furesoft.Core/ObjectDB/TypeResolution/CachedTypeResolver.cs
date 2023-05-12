@@ -74,11 +74,11 @@ namespace Furesoft.Core.ObjectDB.TypeResolution;
 
 		private static TypeLoadException BuildTypeLoadException(string typeName)
 		{
-			return new TypeLoadException("Could not load type from string value '" + typeName + "'.");
+			return new("Could not load type from string value '" + typeName + "'.");
 		}
 
 		private static TypeLoadException BuildTypeLoadException(string typeName, Exception ex)
 		{
-			return new TypeLoadException("Could not load type from string value '" + typeName + "'.", ex);
+			return new("Could not load type from string value '" + typeName + "'.", ex);
 		}
 	}

@@ -34,7 +34,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query;
 
 			OrderByType = OrderByConstants.OrderByNone;
 			_underlyingType = underlyingType;
-			OrderByFields = new List<string>();
+			OrderByFields = new();
 		}
 
 		#region IInternalQuery Members

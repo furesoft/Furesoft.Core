@@ -16,7 +16,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
 		public MaxValueAction(string attributeName, string alias) : base(attributeName, alias, false)
 		{
-			_maxValue = new decimal(long.MinValue);
+			_maxValue = new(long.MinValue);
 			_oidOfMaxValues = null;
 		}
 

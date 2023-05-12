@@ -14,7 +14,7 @@ public partial class MeasureContext
 
 		internal MeasureContext(string name, bool isDefault)
 		{
-			_allUnits = new ConcurrentDictionary<string, MeasureUnit>(StringComparer.Ordinal);
+			_allUnits = new(StringComparer.Ordinal);
 			if (!isDefault)
 			{
 				if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Must not be null or empty.", nameof(name));
@@ -164,7 +164,7 @@ public partial class MeasureContext
 			if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Must not be null or white space.", nameof(name));
 			if (definitionFactor.IsZero) throw new ArgumentException("Must not be zero.", nameof(definitionFactor));
 			if (definition == null) throw new ArgumentNullException(nameof(definition));
-			if (definition != MeasureUnit.None && definition.Context != this) throw new Exception("Units' Context mismatch.");
+			if (definition != MeasureUnit.None && definition.Context != this) throw new("Units' Context mismatch.");
 			return RegisterAlias(abbreviation, name, definitionFactor, definition, autoStandardPrefix);
 		}
 

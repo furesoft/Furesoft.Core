@@ -91,9 +91,9 @@ namespace Furesoft.Core.Measure;
     /// <returns>A quantity with this <see cref="Unit"/>.</returns>
     public Quantity Add( Quantity q )
     {
-        if( q.Unit == Unit ) return new Quantity( Value + q.Value, Unit );
+        if( q.Unit == Unit ) return new( Value + q.Value, Unit );
         var qC = q.ConvertTo( Unit );
-        return new Quantity( Value + qC.Value, Unit );
+        return new( Value + qC.Value, Unit );
     }
 
     /// <summary>
@@ -134,12 +134,12 @@ namespace Furesoft.Core.Measure;
         if( Unit.Normalization == u.Normalization )
         {
             var ratio = Unit.NormalizationFactor.DivideBy( u.NormalizationFactor );
-            return new Quantity( Value * ratio.ToDouble(), u );
+            return new( Value * ratio.ToDouble(), u );
         }
         else
         {
             var ratio = Unit.NormalizationFactor.Multiply( u.NormalizationFactor );
-            return new Quantity( 1/(Value * ratio.ToDouble()), u );
+            return new( 1/(Value * ratio.ToDouble()), u );
         }
     }
 

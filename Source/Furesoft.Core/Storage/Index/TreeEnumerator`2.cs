@@ -85,7 +85,7 @@ namespace Furesoft.Core.Storage.Index;
 						// Validate move up result
 						if ((CurrentEntry < 0) || (CurrentNode == null))
 						{
-							throw new Exception("Something gone wrong with the BTree");
+							throw new("Something gone wrong with the BTree");
 						}
 					}
 					// If can't move up when we are done iterating
@@ -140,7 +140,7 @@ namespace Furesoft.Core.Storage.Index;
 						// Validate move result
 						if (CurrentNode == null)
 						{
-							throw new Exception("Something gone wrong with the BTree");
+							throw new("Something gone wrong with the BTree");
 						}
 					}
 					// If can't move up when we are done here
@@ -163,7 +163,7 @@ namespace Furesoft.Core.Storage.Index;
 					// Validate move result
 					if ((CurrentEntry < 0) || (CurrentNode == null))
 					{
-						throw new Exception("Something gone wrong with the BTree");
+						throw new("Something gone wrong with the BTree");
 					}
 				} while (!CurrentNode.IsLeaf);
 

@@ -290,7 +290,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine;
 																	 attributeIdentification);
 						// We do not read now, store the reading as pending and
 						// reads it later
-						pendingReadings.Add(new PendingReading(id, null, attributeOid));
+						pendingReadings.Add(new(id, null, attributeOid));
 					}
 					else
 					{
@@ -328,7 +328,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine;
 		private AtomicNativeObjectInfo ReadAtomicNativeObjectInfo(int odbTypeId)
 		{
 			var @object = _fileSystemReader.ReadAtomicNativeObjectInfoAsObject(odbTypeId);
-			return new AtomicNativeObjectInfo(@object, odbTypeId);
+			return new(@object, odbTypeId);
 		}
 
 		/// <summary>
@@ -1030,7 +1030,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine;
 				_storageEngine.GetSession().GetMetaModel().GetClassInfoFromId(
 					OIDFactory.BuildClassOID(enumClassInfoId));
 
-			return new EnumNativeObjectInfo(enumCi, enumValue);
+			return new(enumCi, enumValue);
 		}
 
 		/// <summary>

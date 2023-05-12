@@ -59,7 +59,7 @@ public sealed class MeasureStandardPrefix
         Name = name;
         Base = eBase;
         Exponent = exp;
-        Factor = eBase == 2 ? new ExpFactor( exp, 0 ) : new ExpFactor( 0, exp );
+        Factor = eBase == 2 ? new( exp, 0 ) : new ExpFactor( 0, exp );
     }
 
     /// <summary>
@@ -127,13 +127,13 @@ public sealed class MeasureStandardPrefix
         if( newExp.Exp10 != 0 && (stdPrefix&AutoStandardPrefix.Metric) != 0 )
         {
             var b10 = FindBest( newExp.Exp10, allMetricIndex, allMetric );
-            return (new ExpFactor(newExp.Exp2, b10.Item1), b10.Item2);
+            return (new(newExp.Exp2, b10.Item1), b10.Item2);
         }
         if( newExp.Exp2 != 0 && (stdPrefix&AutoStandardPrefix.Binary) != 0 )
         {
             Debug.Assert( newExp.Exp2 != 0 );
             var b2 = FindBest( newExp.Exp2, allBinaryIndex, allBinary );
-            return (new ExpFactor( b2.Item1, 0 ), b2.Item2);
+            return (new( b2.Item1, 0 ), b2.Item2);
         }
         return (newExp, None);
     }
@@ -167,37 +167,37 @@ public sealed class MeasureStandardPrefix
 
     static MeasureStandardPrefix()
     {
-        None = new MeasureStandardPrefix( "", "", 0, 0 );
+        None = new( "", "", 0, 0 );
 
-        Yocto = new MeasureStandardPrefix( "y", "Yocto", 10, -24 );
-        Zepto = new MeasureStandardPrefix( "z", "Zepto", 10, -21 );
-        Atto = new MeasureStandardPrefix( "a", "Atto", 10, -18 );
-        Femto = new MeasureStandardPrefix( "f", "Femto", 10, -15 );
-        Pico = new MeasureStandardPrefix( "p", "Pico", 10, -12 );
-        Nano = new MeasureStandardPrefix( "n", "Nano", 10, -9 );
-        Micro = new MeasureStandardPrefix( "µ", "Micro", 10, -6 );
-        Milli = new MeasureStandardPrefix( "m", "Milli", 10, -3 );
-        Centi = new MeasureStandardPrefix( "c", "Centi", 10, -2 );
-        Deci = new MeasureStandardPrefix( "d", "Deci", 10, -1 );
-        Deca = new MeasureStandardPrefix( "da", "Deca", 10, 1 );
-        Hecto = new MeasureStandardPrefix( "h", "Hecto", 10, 2 );
-        Kilo = new MeasureStandardPrefix( "k", "Kilo", 10, 3 );
-        Mega = new MeasureStandardPrefix( "M", "Mega", 10, 6 );
-        Giga = new MeasureStandardPrefix( "G", "Giga", 10, 9 );
-        Tera = new MeasureStandardPrefix( "T", "Tera", 10, 12 );
-        Peta = new MeasureStandardPrefix( "P", "Peta", 10, 15 );
-        Exa = new MeasureStandardPrefix( "E", "Exa", 10, 18 );
-        Zetta = new MeasureStandardPrefix( "Z", "Zetta", 10, 21 );
-        Yotta = new MeasureStandardPrefix( "Y", "Yotta", 10, 24 );
+        Yocto = new( "y", "Yocto", 10, -24 );
+        Zepto = new( "z", "Zepto", 10, -21 );
+        Atto = new( "a", "Atto", 10, -18 );
+        Femto = new( "f", "Femto", 10, -15 );
+        Pico = new( "p", "Pico", 10, -12 );
+        Nano = new( "n", "Nano", 10, -9 );
+        Micro = new( "µ", "Micro", 10, -6 );
+        Milli = new( "m", "Milli", 10, -3 );
+        Centi = new( "c", "Centi", 10, -2 );
+        Deci = new( "d", "Deci", 10, -1 );
+        Deca = new( "da", "Deca", 10, 1 );
+        Hecto = new( "h", "Hecto", 10, 2 );
+        Kilo = new( "k", "Kilo", 10, 3 );
+        Mega = new( "M", "Mega", 10, 6 );
+        Giga = new( "G", "Giga", 10, 9 );
+        Tera = new( "T", "Tera", 10, 12 );
+        Peta = new( "P", "Peta", 10, 15 );
+        Exa = new( "E", "Exa", 10, 18 );
+        Zetta = new( "Z", "Zetta", 10, 21 );
+        Yotta = new( "Y", "Yotta", 10, 24 );
 
-        Kibi = new MeasureStandardPrefix( "Ki", "Kibi", 2, 10 );
-        Mebi = new MeasureStandardPrefix( "Mi", "Mebi", 2, 20 );
-        Gibi = new MeasureStandardPrefix( "Gi", "Gibi", 2, 30 );
-        Tebi = new MeasureStandardPrefix( "Ti", "Tebi", 2, 40 );
-        Pebi = new MeasureStandardPrefix( "Pi", "Pebi", 2, 50 );
-        Exbi = new MeasureStandardPrefix( "Ei", "Exbi", 2, 60 );
-        Zebi = new MeasureStandardPrefix( "Zi", "Zebi", 2, 70 );
-        Yobi = new MeasureStandardPrefix( "Yi", "Yobi", 2, 80 );
+        Kibi = new( "Ki", "Kibi", 2, 10 );
+        Mebi = new( "Mi", "Mebi", 2, 20 );
+        Gibi = new( "Gi", "Gibi", 2, 30 );
+        Tebi = new( "Ti", "Tebi", 2, 40 );
+        Pebi = new( "Pi", "Pebi", 2, 50 );
+        Exbi = new( "Ei", "Exbi", 2, 60 );
+        Zebi = new( "Zi", "Zebi", 2, 70 );
+        Yobi = new( "Yi", "Yobi", 2, 80 );
 
         allMetric = new MeasureStandardPrefix[] {
             Yocto, Zepto, Atto, Femto, Pico, Nano, Micro, Milli, Centi, Deci, Deca,
@@ -207,7 +207,7 @@ public sealed class MeasureStandardPrefix
         allBinary = new MeasureStandardPrefix[] { Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi };
         allBinaryIndex = allBinary.Select( p => (int)p.Factor.Exp2 ).ToArray();
 
-			prefixes = new Dictionary<string, MeasureStandardPrefix>
+			prefixes = new()
 			{
 				{ string.Empty, None }
 			};

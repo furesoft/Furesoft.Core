@@ -49,13 +49,13 @@ namespace Furesoft.Core.ObjectDB.Meta;
 		private ClassInfo()
 		{
 			_attributes = null;
-			_original = new CommittedCIZoneInfo();
-			_committed = new CommittedCIZoneInfo();
-			_uncommitted = new CIZoneInfo();
-			_oidInfo = new OidInfo();
+			_original = new();
+			_committed = new();
+			_uncommitted = new();
+			_oidInfo = new();
 			Position = -1;
 			MaxAttributeId = -1;
-			_attributesCache = new AttributesCache();
+			_attributesCache = new();
 		}
 
 		public ClassInfo(Type underlyingType) : this()
@@ -257,7 +257,7 @@ namespace Furesoft.Core.ObjectDB.Meta;
 					if (classAttributeInfo.GetAttributeType().IsArray() &&
 						!classAttributeInfo.GetAttributeType().SubType.IsNative())
 					{
-						result.Add(new ClassAttributeInfo(-1, "subtype",
+						result.Add(new(-1, "subtype",
 														  classAttributeInfo.GetAttributeType().SubType.Name, null));
 					}
 				}

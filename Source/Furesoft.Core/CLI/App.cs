@@ -93,7 +93,7 @@ namespace Furesoft.Core.CLI;
 
 			//find correct processor and invoke it with new argumentvector
 			if (_commands.ContainsKey(name))
-				return _commands[name].Invoke(new CommandlineArguments(args));
+				return _commands[name].Invoke(new(args));
 			else if (name == "help")
 			{
 				PrintAllCommands();

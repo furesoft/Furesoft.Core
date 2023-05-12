@@ -132,7 +132,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine;
 			var hi = (buffer[8]) | (buffer[9] << 8) | (buffer[10] << 16) | (buffer[11] << 24);
 			var flags = (buffer[12]) | (buffer[13] << 8) | (buffer[14] << 16) | (buffer[15] << 24);
 
-			return new decimal(new[] { lo, mid, hi, flags });
+			return new(new[] { lo, mid, hi, flags });
 		}
 
 		internal static byte[] IntToByteArray(int l)
@@ -183,7 +183,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine;
 		internal static DateTime ByteArrayToDate(byte[] bytes)
 		{
 			var ticks = ByteArrayToLong(bytes);
-			return new DateTime(ticks);
+			return new(ticks);
 		}
 
 		internal static byte[] FloatToByteArray(float f)

@@ -11,7 +11,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
 		public SumAction(string attributeName, string alias) : base(attributeName, alias, false)
 		{
-			_sum = new decimal(0);
+			_sum = new(0);
 		}
 
 		public override void Execute(OID oid, AttributeValuesMap values)

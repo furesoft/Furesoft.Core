@@ -145,7 +145,7 @@
 					s += new string(' ', widths[i] - row[i].Length + 1) + row[i] + "|";
 			}
 			if (s == "|")
-				throw new Exception("PrintRow input must not be empty");
+				throw new("PrintRow input must not be empty");
 
 			Console.WriteLine(s);
 		}

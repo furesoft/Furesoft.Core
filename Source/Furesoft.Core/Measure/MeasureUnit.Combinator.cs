@@ -13,8 +13,8 @@ public partial class MeasureUnit
 
 			public Combinator(IEnumerable<ExponentMeasureUnit> units)
 			{
-				_normM = new List<AtomicMeasureUnit>();
-				_normE = new List<int>();
+				_normM = new();
+				_normE = new();
 				_dimensionLessFactor = ExpFactor.Neutral;
 				if (units != null) Add(units);
 			}
@@ -24,7 +24,7 @@ public partial class MeasureUnit
 				MeasureContext c = null;
 				foreach (var u in units)
 				{
-					if (c != u.Context && c != null) throw new Exception("Units' Context mismatch.");
+					if (c != u.Context && c != null) throw new("Units' Context mismatch.");
 					Add(u.AtomicMeasureUnit, u.Exponent);
 					c = u.Context;
 				}

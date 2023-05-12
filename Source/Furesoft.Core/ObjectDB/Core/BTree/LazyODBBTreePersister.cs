@@ -49,7 +49,7 @@ namespace Furesoft.Core.ObjectDB.Core.BTree;
 		public LazyOdbBtreePersister(IStorageEngine engine)
 		{
 			_oids = new OdbHashMap<OID, object>();
-			_modifiedObjectOids = new OdbHashMap<object, int>();
+			_modifiedObjectOids = new();
 			_modifiedObjectOidList = new OdbList<OID>(500);
 			_engine = engine;
 			_engine.AddCommitListener(this);

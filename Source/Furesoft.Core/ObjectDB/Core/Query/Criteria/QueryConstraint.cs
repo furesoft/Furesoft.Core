@@ -167,7 +167,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
 					   ? equalsEvaluation.GetValues()
 					   : _evaluation is IdentityEvaluation identityEvaluation
 							 ? identityEvaluation.GetValues()
-							 : new AttributeValuesMap();
+							 : new();
 		}
 
 		/// <summary>

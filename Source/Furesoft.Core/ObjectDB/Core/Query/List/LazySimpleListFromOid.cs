@@ -34,7 +34,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List;
 		{
 			_engine = engine;
 			_returnInstance = returnObjects;
-			_oids = new OdbList<OID>();
+			_oids = new();
 		}
 
 		#region IObjects<T> Members

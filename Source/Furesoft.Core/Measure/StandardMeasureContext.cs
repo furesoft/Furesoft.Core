@@ -23,7 +23,7 @@ public class StandardMeasureContext : MeasureContext
         Candela = DefineFundamental( "cd", "Candela", AutoStandardPrefix.Metric );
         Bit = DefineFundamental( "b", "Bit", AutoStandardPrefix.Both );
         Kilogram = (PrefixedMeasureUnit)this["kg"];
-        Byte = DefineAlias( "B", "Byte", new FullFactor( new ExpFactor( 3, 0 ) ), Bit, AutoStandardPrefix.Both );
+        Byte = DefineAlias( "B", "Byte", new( new ExpFactor( 3, 0 ) ), Bit, AutoStandardPrefix.Both );
     }
 
     /// <summary>

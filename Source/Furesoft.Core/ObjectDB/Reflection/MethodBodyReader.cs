@@ -54,7 +54,7 @@ namespace Furesoft.Core.ObjectDB.Reflection;
 			_parameters = method.GetParameters();
 			_locals = _body.LocalVariables;
 			_module = method.Module;
-			_il = new ByteBuffer(iLAsByteArray);
+			_il = new(iLAsByteArray);
 		}
 
 		private static Instruction GetInstruction(List<Instruction> instructions, int offset)

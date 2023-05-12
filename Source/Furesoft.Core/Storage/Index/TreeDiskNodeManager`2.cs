@@ -68,7 +68,7 @@ namespace Furesoft.Core.Storage.Index;
 				throw new ArgumentNullException("nodeStorge");
 
 			this.recordStorage = recordStorage;
-			_serializer = new TreeDiskNodeSerializer<K, V>(this, keySerializer, valueSerializer);
+			_serializer = new(this, keySerializer, valueSerializer);
 			KeyComparer = keyComparer;
 			EntryComparer = Comparer<Tuple<K, V>>.Create((a, b) =>
 			{
@@ -101,7 +101,7 @@ namespace Furesoft.Core.Storage.Index;
 			recordStorage.Create(nodeId =>
 			{
 				// Instantiate a new node
-				node = new TreeNode<K, V>(this, nodeId, 0, entries, childrenIds);
+				node = new(this, nodeId, 0, entries, childrenIds);
 
 				// Always keep reference to any node that we created
 				OnNodeInitialized(node);
@@ -112,7 +112,7 @@ namespace Furesoft.Core.Storage.Index;
 
 			if (node == null)
 			{
-				throw new Exception("dataGenerator never called by nodeStorage");
+				throw new("dataGenerator never called by nodeStorage");
 			}
 
 			return node;
@@ -221,7 +221,7 @@ namespace Furesoft.Core.Storage.Index;
 		private void OnNodeInitialized(TreeNode<K, V> node)
 		{
 			// Keep a weak reference to it
-			_nodeWeakRefs.Add(node.Id, new WeakReference<TreeNode<K, V>>(node));
+			_nodeWeakRefs.Add(node.Id, new(node));
 
 			// Keep a strong reference to prevent weak refs from being dellocated
 			_nodeStrongRefs.Enqueue(node);

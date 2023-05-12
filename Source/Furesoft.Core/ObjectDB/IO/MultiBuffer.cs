@@ -65,7 +65,7 @@ namespace Furesoft.Core.ObjectDB.IO;
 
 			Array.Clear(buffer, 0, maxPosition);
 
-			BufferPositions[bufferIndex] = new BufferPosition();
+			BufferPositions[bufferIndex] = new();
 			MaxPositionInBuffer[bufferIndex] = 0;
 			_bufferHasBeenUsedForWrite[bufferIndex] = false;
 		}
@@ -103,7 +103,7 @@ namespace Furesoft.Core.ObjectDB.IO;
 
 		public void SetPositions(int bufferIndex, long startPosition, long endPosition)
 		{
-			BufferPositions[bufferIndex] = new BufferPosition(startPosition, endPosition);
+			BufferPositions[bufferIndex] = new(startPosition, endPosition);
 			MaxPositionInBuffer[bufferIndex] = 0;
 		}
 

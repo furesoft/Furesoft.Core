@@ -16,8 +16,8 @@ namespace Furesoft.Core;
 		private ObjectDumper(int indentSize)
 		{
 			_indentSize = indentSize;
-			_stringBuilder = new StringBuilder();
-			_hashListOfFoundElements = new List<int>();
+			_stringBuilder = new();
+			_hashListOfFoundElements = new();
 		}
 
 		public static string Dump(object element)

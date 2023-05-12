@@ -115,7 +115,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
 
 		public AttributeValuesMap GetValues()
 		{
-			return new AttributeValuesMap();
+			return new();
 		}
 
 		public IOdbList<string> GetAllInvolvedFields()

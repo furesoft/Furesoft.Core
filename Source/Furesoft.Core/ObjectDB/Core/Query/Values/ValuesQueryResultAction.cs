@@ -80,7 +80,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 		{
 			ObjectValues dov = null;
 			if (!_query.IsMultiRow())
-				dov = new ObjectValues(_returnArraySize);
+				dov = new(_returnArraySize);
 
 			for (var i = 0; i < _returnArraySize; i++)
 			{

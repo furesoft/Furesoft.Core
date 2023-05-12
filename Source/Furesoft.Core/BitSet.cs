@@ -63,7 +63,7 @@ namespace Furesoft.Core;
 
 		public static implicit operator BitSet(int value)
 		{
-			return new BitSet(value);
+			return new(value);
 		}
 
 		public override string ToString()

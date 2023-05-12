@@ -17,7 +17,7 @@ namespace Furesoft.Core.CLI;
 		// Constructor
 		public CommandlineArguments(IEnumerable<string> args)
 		{
-			Parameters = new StringDictionary();
+			Parameters = new();
 			var spliter = new Regex(@"^-{1,2}|=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 			var remover = new Regex(@"^['""]?(.*?)['""]?$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 			string parameter = null;

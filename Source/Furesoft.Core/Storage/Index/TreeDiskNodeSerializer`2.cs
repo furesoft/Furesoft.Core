@@ -73,7 +73,7 @@ namespace Furesoft.Core.Storage.Index;
 				+ node.ChildrenIds.Length * 4;
 			if (size >= (1024 * 64))
 			{
-				throw new Exception("Serialized node size too large: " + size);
+				throw new("Serialized node size too large: " + size);
 			}
 			var buffer = new byte[size];
 
@@ -130,7 +130,7 @@ namespace Furesoft.Core.Storage.Index;
 				var value = _valueSerializer.Deserialize(buffer
 					, 12 + i * entrySize + _keySerializer.Length
 					, _valueSerializer.Length);
-				entries[i] = new Tuple<K, V>(key, value);
+				entries[i] = new(key, value);
 			}
 
 			// Decode child refs..
@@ -142,7 +142,7 @@ namespace Furesoft.Core.Storage.Index;
 			}
 
 			// Reconstuct the node
-			return new TreeNode<K, V>(_nodeManager, assignId, parentId, entries, children);
+			return new(_nodeManager, assignId, parentId, entries, children);
 		}
 
 		private TreeNode<K, V> VariableKeyLengthDeserialize(uint assignId, byte[] buffer)
@@ -169,7 +169,7 @@ namespace Furesoft.Core.Storage.Index;
 					, p + 4 + keyLength
 					, _valueSerializer.Length);
 
-				entries[i] = new Tuple<K, V>(key, value);
+				entries[i] = new(key, value);
 
 				p += 4 + keyLength + _valueSerializer.Length;
 			}
@@ -183,7 +183,7 @@ namespace Furesoft.Core.Storage.Index;
 			}
 
 			// Reconstuct the node
-			return new TreeNode<K, V>(_nodeManager, assignId, parentId, entries, children);
+			return new(_nodeManager, assignId, parentId, entries, children);
 		}
 
 		private byte[] VariableKeyLengthSerialize(TreeNode<K, V> node)

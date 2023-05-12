@@ -232,7 +232,7 @@ namespace Furesoft.Core.ObjectDB.Meta.Compare;
 			if (aoi1.GetOid() != null && aoi1.GetOid().Equals(aoi2.GetOid()))
 			{
 				_changedObjectMetaRepresentations.Add(aoi2);
-				_changes.Add(new ChangedObjectInfo(aoi1.GetClassInfo(), aoi2.GetClassInfo(), fieldId, oldValue,
+				_changes.Add(new(aoi1.GetClassInfo(), aoi2.GetClassInfo(), fieldId, oldValue,
 												   newValue, message, objectRecursionLevel));
 				// also the max recursion level
 				if (objectRecursionLevel > _maxObjectRecursionLevel)
@@ -253,7 +253,7 @@ namespace Furesoft.Core.ObjectDB.Meta.Compare;
 			if (aoi1 == null || aoi2 == null)
 				return;
 
-			_changes.Add(new ChangedObjectInfo(aoi1.GetClassInfo(), aoi2.GetClassInfo(), fieldId,
+			_changes.Add(new(aoi1.GetClassInfo(), aoi2.GetClassInfo(), fieldId,
 											   aoi1.GetAttributeValueFromId(fieldId),
 											   aoi2.GetAttributeValueFromId(fieldId), objectRecursionLevel));
 			// also the max recursion level

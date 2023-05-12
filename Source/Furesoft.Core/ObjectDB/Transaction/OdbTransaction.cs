@@ -210,13 +210,13 @@ namespace Furesoft.Core.ObjectDB.Transaction;
 				{
 					AddWriteAction(_currentWriteAction, true);
 				}
-				_currentWriteAction = new WriteAction(position);
+				_currentWriteAction = new(position);
 			}
 			else
 			{
 				if (_currentWriteAction == null)
 				{
-					_currentWriteAction = new WriteAction(position);
+					_currentWriteAction = new(position);
 					_currentWritePositionInWa = position;
 				}
 			}
@@ -228,7 +228,7 @@ namespace Furesoft.Core.ObjectDB.Transaction;
 			{
 				if (_currentWriteAction == null)
 				{
-					_currentWriteAction = new WriteAction(position);
+					_currentWriteAction = new(position);
 				}
 				_currentWriteAction.AddBytes(bytes);
 				_currentWritePositionInWa += bytes.Length;
@@ -239,7 +239,7 @@ namespace Furesoft.Core.ObjectDB.Transaction;
 				{
 					AddWriteAction(_currentWriteAction, true);
 				}
-				_currentWriteAction = new WriteAction(position, bytes);
+				_currentWriteAction = new(position, bytes);
 				_currentWritePositionInWa = position + bytes.Length;
 			}
 		}

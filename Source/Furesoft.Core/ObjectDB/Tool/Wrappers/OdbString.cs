@@ -10,7 +10,7 @@ namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 		internal static bool Matches(string regExp, string valueToCheck)
 		{
-			var regex = cache.GetOrAdd(regExp, pattern => new Regex(pattern));
+			var regex = cache.GetOrAdd(regExp, pattern => new(pattern));
 
 			return regex.IsMatch(valueToCheck);
 		}

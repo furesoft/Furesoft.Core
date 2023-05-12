@@ -15,7 +15,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
 		public MinValueAction(string attributeName, string alias) : base(attributeName, alias, false)
 		{
-			_minValue = new decimal(long.MaxValue);
+			_minValue = new(long.MaxValue);
 			_oidOfMinValues = null;
 		}
 

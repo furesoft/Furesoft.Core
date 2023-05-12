@@ -86,7 +86,7 @@ namespace Furesoft.Core.ObjectDB.Core.Engine;
 				// will be applied to this FileSystemInterface
 				_session.SetFileSystemInterfaceToApplyTransaction(_objectWriter.FileSystemProcessor.FileSystemInterface);
 
-				_objectIntrospectionDataProvider = new SessionDataProvider(_session);
+				_objectIntrospectionDataProvider = new(_session);
 
 				if (isNewDatabase)
 				{

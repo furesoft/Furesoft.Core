@@ -30,7 +30,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
 		private IQueryBuilderRecord CreateRecord(Expression expression)
 		{
-			Recorder = new QueryBuilderRecorder();
+			Recorder = new();
 			Visit(expression);
 			return Recorder.Record;
 		}

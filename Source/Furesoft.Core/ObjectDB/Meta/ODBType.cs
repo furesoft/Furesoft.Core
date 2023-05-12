@@ -114,7 +114,7 @@ namespace Furesoft.Core.ObjectDB.Meta;
 
 		public OdbType Copy(string name)
 		{
-			return new OdbType(_isPrimitive, _id, name, _size) { _subType = SubType };
+			return new(_isPrimitive, _id, name, _size) { _subType = SubType };
 		}
 
 		public OdbType Copy()
@@ -147,7 +147,7 @@ namespace Furesoft.Core.ObjectDB.Meta;
 		public static OdbType GetFromClass(Type clazz)
 		{
 			if (clazz.IsEnum)
-				return new OdbType(Enum._isPrimitive, EnumId, OdbClassNameResolver.GetFullName(clazz), 0);
+				return new(Enum._isPrimitive, EnumId, OdbClassNameResolver.GetFullName(clazz), 0);
 
 			var className = OdbClassNameResolver.GetFullName(clazz);
 

@@ -15,7 +15,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
 		public CountAction(string alias) : base(alias, alias, false)
 		{
-			_count = new decimal(0);
+			_count = new(0);
 		}
 
 		public override void Execute(OID oid, AttributeValuesMap values)

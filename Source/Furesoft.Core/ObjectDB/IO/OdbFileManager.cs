@@ -20,7 +20,7 @@ namespace Furesoft.Core.ObjectDB.IO;
 			{
 				try
 				{
-					return new FileStream(wholeFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
+					return new(wholeFileName, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
 										  DefaultBufferSize, FileOptions.RandomAccess);
 				}
 				catch (IOException e)

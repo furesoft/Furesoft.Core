@@ -253,7 +253,7 @@ namespace Furesoft.Core.Storage;
 						target = AllocateBlock();
 						if (target == null)
 						{
-							throw new Exception("Failed to allocate new block");
+							throw new("Failed to allocate new block");
 						}
 						blocks.Add(target);
 					}
@@ -325,7 +325,7 @@ namespace Furesoft.Core.Storage;
 						}
 						else
 						{
-							throw new Exception("Block not found by id: " + currentBlockId);
+							throw new("Block not found by id: " + currentBlockId);
 						}
 					}
 					blocks.Add(block);
@@ -369,7 +369,7 @@ namespace Furesoft.Core.Storage;
 				newBlock = storage.CreateNew();
 				if (newBlock == null)
 				{
-					throw new Exception("Failed to create new block");
+					throw new("Failed to create new block");
 				}
 			}
 			else
@@ -521,7 +521,7 @@ namespace Furesoft.Core.Storage;
 			{
 				if (blocks == null || (blocks.Count == 0))
 				{
-					throw new Exception("Failed to find blocks of record 0");
+					throw new("Failed to find blocks of record 0");
 				}
 
 				// Assign

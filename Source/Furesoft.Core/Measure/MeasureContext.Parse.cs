@@ -107,11 +107,11 @@ namespace Furesoft.Core.Measure;
 		{
 			if (s[0] == '2')
 			{
-				f = f.Multiply(new ExpFactor(short.Parse(s.Substring(2)), 0));
+				f = f.Multiply(new(short.Parse(s.Substring(2)), 0));
 			}
 			else
 			{
-				f = f.Multiply(new ExpFactor(0, short.Parse(s.Substring(3))));
+				f = f.Multiply(new(0, short.Parse(s.Substring(3))));
 			}
 
 			return f;

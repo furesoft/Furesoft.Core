@@ -212,7 +212,7 @@ namespace Furesoft.Core.ObjectDB.Cache;
 			}
 			else
 			{
-				idInfo = new IdInfo(-1, IDStatus.Deleted);
+				idInfo = new(-1, IDStatus.Deleted);
 				_objectPositionsByIds[oid] = idInfo;
 			}
 		}

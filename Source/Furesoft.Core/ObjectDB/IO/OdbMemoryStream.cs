@@ -13,7 +13,7 @@ namespace Furesoft.Core.ObjectDB.IO;
 		{
 			try
 			{
-				_memoryStream = new MemoryStream();
+				_memoryStream = new();
 			}
 			catch (Exception ex)
 			{

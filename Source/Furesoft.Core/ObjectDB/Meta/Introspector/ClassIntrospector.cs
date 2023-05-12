@@ -106,7 +106,7 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 										 ? new ClassInfo(fieldInfo.FieldType)
 										 : null;
 
-				attributes.Add(new ClassAttributeInfo(attributeId, fieldInfo.Name, fieldInfo.FieldType,
+				attributes.Add(new(attributeId, fieldInfo.Name, fieldInfo.FieldType,
 													  OdbClassNameResolver.GetFullName(fieldInfo.FieldType), fieldClassInfo));
 			}
 
@@ -182,7 +182,7 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 			var classInfo = new ClassInfo(type);
 
 			if (classInfoList == null)
-				classInfoList = new ClassInfoList(classInfo);
+				classInfoList = new(classInfo);
 			else
 				classInfoList.AddClassInfo(classInfo);
 
@@ -208,11 +208,11 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 					}
 					else
 					{
-						classInfoByName = new ClassInfo(field.FieldType);
+						classInfoByName = new(field.FieldType);
 					}
 				}
 
-				attributes.Add(new ClassAttributeInfo((i + 1), field.Name, field.FieldType,
+				attributes.Add(new((i + 1), field.Name, field.FieldType,
 													  OdbClassNameResolver.GetFullName(field.FieldType), classInfoByName));
 			}
 

@@ -91,7 +91,7 @@
 							}
 							else
 							{
-								en._nodes.Add(new ExtensionCommand { Name = cc.Name });
+								en._nodes.Add(new() { Name = cc.Name });
 							}
 						}
 					}

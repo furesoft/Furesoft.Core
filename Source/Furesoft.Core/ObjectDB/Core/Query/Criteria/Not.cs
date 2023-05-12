@@ -33,6 +33,6 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
 
 		public override AttributeValuesMap GetValues()
 		{
-			return new AttributeValuesMap();
+			return new();
 		}
 	}

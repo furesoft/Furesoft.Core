@@ -12,7 +12,7 @@ namespace Furesoft.Core.Storage;
 		{
 			var guidBuffer = new byte[16];
 			Buffer.BlockCopy(buffer, bufferOffset, guidBuffer, 0, 16);
-			return new Guid(guidBuffer);
+			return new(guidBuffer);
 		}
 
 		public static uint ReadBufferUInt32(byte[] buffer, int bufferOffset)

@@ -83,7 +83,7 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 					var realArrayClassName = OdbClassNameResolver.GetFullName(o.GetType().GetElementType());
 					var arrayObjectInfo = recursive
 											  ? IntrospectArray(o, alreadyReadObjects, type, callback)
-											  : new ArrayObjectInfo((object[])o);
+											  : new((object[])o);
 
 					arrayObjectInfo.SetRealArrayComponentClassName(realArrayClassName);
 					aoi = arrayObjectInfo;
@@ -261,7 +261,7 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 				}
 			}
 
-			return new ArrayObjectInfo(arrayCopy, odbType, type.Id);
+			return new(arrayCopy, odbType, type.Id);
 		}
 
 		private static ArrayObjectInfo IntropectAtomicNativeArray(object array, OdbType type)
@@ -285,6 +285,6 @@ namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 				}
 			}
 
-			return new ArrayObjectInfo(arrayCopy, OdbType.Array, type.Id);
+			return new(arrayCopy, OdbType.Array, type.Id);
 		}
 	}

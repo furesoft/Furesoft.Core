@@ -17,7 +17,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.List;
 		public ObjectValues(int size)
 		{
 			_valuesByIndex = new object[size];
-			_valuesByAlias = new OdbHashMap<string, object>();
+			_valuesByAlias = new();
 		}
 
 		#region IObjectValues Members

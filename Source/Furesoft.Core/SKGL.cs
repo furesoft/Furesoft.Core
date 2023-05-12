@@ -267,7 +267,7 @@ public class Validate : BaseConfiguration
     {
         decodeKeyToString();
         var _date = new System.DateTime();
-        _date = new DateTime(Convert.ToInt32(_res.Substring(9, 4)), Convert.ToInt32(_res.Substring(13, 2)), Convert.ToInt32(_res.Substring(15, 2)));
+        _date = new(Convert.ToInt32(_res.Substring(9, 4)), Convert.ToInt32(_res.Substring(13, 2)), Convert.ToInt32(_res.Substring(15, 2)));
 
         return _date;
     }

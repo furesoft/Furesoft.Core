@@ -19,7 +19,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
 		public AverageValueAction(string attributeName, string alias) : base(attributeName, alias, false)
 		{
-			_totalValue = new decimal(0);
+			_totalValue = new(0);
 			_nbValues = 0;
 			AttributeName = attributeName;
 			_scale = ScaleForAverageDivision;

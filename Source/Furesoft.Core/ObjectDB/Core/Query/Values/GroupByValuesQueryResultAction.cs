@@ -53,7 +53,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
 			if (result == null)
 			{
-				result = new ValuesQueryResultAction(_query, null, _instanceBuilder);
+				result = new(_query, null, _instanceBuilder);
 				result.Start();
 				_groupByResult.Add(groupByKey, result);
 			}

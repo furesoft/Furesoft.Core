@@ -41,7 +41,7 @@ namespace Furesoft.Core.ObjectDB.Meta;
 		protected NonNativeObjectInfo(ClassInfo classInfo) : base(null)
 		{
 			_classInfo = classInfo;
-			_objectHeader = new ObjectInfoHeader(-1, null, null, (classInfo != null
+			_objectHeader = new(-1, null, null, (classInfo != null
 																	  ? classInfo.ClassInfoId
 																	  : null), null, null);
 			if (classInfo != null)
@@ -68,7 +68,7 @@ namespace Furesoft.Core.ObjectDB.Meta;
 			if (_attributeValues == null)
 				_attributeValues = new AbstractObjectInfo[_maxNbattributes];
 
-			_objectHeader = new ObjectInfoHeader(-1, null, null, (_classInfo != null
+			_objectHeader = new(-1, null, null, (_classInfo != null
 																	  ? _classInfo.ClassInfoId
 																	  : null), attributesIdentification, attributeIds);
 		}
@@ -300,12 +300,12 @@ namespace Furesoft.Core.ObjectDB.Meta;
 			if (onlyData)
 			{
 				var oih = new ObjectInfoHeader();
-				nnoi = new NonNativeObjectInfo(_theObject, _classInfo, null, oih.GetAttributesIdentification(),
+				nnoi = new(_theObject, _classInfo, null, oih.GetAttributesIdentification(),
 											   oih.GetAttributeIds());
 			}
 			else
 			{
-				nnoi = new NonNativeObjectInfo(_theObject, _classInfo, null, _objectHeader.GetAttributesIdentification(),
+				nnoi = new(_theObject, _classInfo, null, _objectHeader.GetAttributesIdentification(),
 											   _objectHeader.GetAttributeIds());
 
 				nnoi.GetHeader().SetOid(GetHeader().GetOid());

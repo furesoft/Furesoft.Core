@@ -11,7 +11,7 @@ namespace Furesoft.Core.Storage;
 		/// </summary>
 		public static StreamReadWrapper ExpectStream(this Stream target, long length)
 		{
-			return new StreamReadWrapper(target, length);
+			return new(target, length);
 		}
 
 		/// <summary>
@@ -148,7 +148,7 @@ namespace Furesoft.Core.Storage;
 			var buff = new byte[16];
 			if (target.Read(buff) == 16)
 			{
-				return new Guid(buff);
+				return new(buff);
 			}
 			else
 			{
