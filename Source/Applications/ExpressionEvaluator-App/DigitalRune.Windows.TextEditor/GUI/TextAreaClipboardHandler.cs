@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DigitalRune.Windows.TextEditor.Document;
 using DigitalRune.Windows.TextEditor.Utilities;
+using Timer = System.Windows.Forms.Timer;
 
 
 namespace DigitalRune.Windows.TextEditor
