@@ -5,6 +5,15 @@ using Furesoft.Core.Rules.Services;
 
 namespace Furesoft.Core.Rules;
 
+public sealed class RuleEngine
+{
+    public static RuleEngine<T> GetInstance<T>(T model)
+        where T : class, new()
+    {
+        return RuleEngine<T>.GetInstance(model);
+    }
+}
+
 /// <summary>
 /// Rule Engine.
 /// </summary>
