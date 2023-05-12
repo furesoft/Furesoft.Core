@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Furesoft.Core.Rules;
+using Furesoft.Core.Rules.Interfaces;
 using RulesTest.AsyncRules;
 using RulesTest.Models;
 using Xunit;

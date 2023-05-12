@@ -18,7 +18,7 @@ public interface IGeneralRule<T> where T : class, new()
 
     Exception UnhandledException { get; set; }
 
-    IDependencyResolver Resolve { get; set; }
+    IDependencyResolver Resolver { get; set; }
 
     IConfiguration<T> Configuration { get; set; }
 

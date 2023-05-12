@@ -9,7 +9,7 @@ public class Binder
 {
     public Dictionary<string, List<FunctionArgumentConditionDefinition>> ArgumentConstraints = new();
 
-    public Dictionary<string, (object min, object max)> NumberRooms = new()
+    public Dictionary<string, (object min, object max)> NumberSets = new()
     {
         ["N"] = (uint.MinValue, uint.MaxValue),
         ["Z"] = (int.MinValue, int.MaxValue),
@@ -106,7 +106,7 @@ public class Binder
         return expr;
     }
 
-    public Expression BindNumberRoom(Expression expr, UnresolvedRef reference = null)
+    public Expression BindNumberSet(Expression expr, UnresolvedRef reference = null)
     {
         if (expr is UnresolvedRef uref && uref.Reference is string name)
         {
@@ -114,7 +114,7 @@ public class Binder
             {
                 return BindConditionParameter(ExpressionParser.RootScope.SetDefinitions[name], reference);
             }
-            else if (NumberRooms.ContainsKey(name))
+            else if (NumberSets.ContainsKey(name))
             {
                 // $x > min && $x < max
 
@@ -123,7 +123,7 @@ public class Binder
                     reference = new UnresolvedRef("$x");
                 }
 
-                var numberRoom = NumberRooms[name];
+                var numberRoom = NumberSets[name];
 
                 return BindConditionParameter(new And(new GreaterThan(reference, new Literal(numberRoom.min)), new LessThan(reference, new Literal(numberRoom.max))), reference);
             }

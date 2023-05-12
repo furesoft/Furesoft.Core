@@ -28,7 +28,7 @@ public abstract class RuleAsync<T> : IRuleAsync<T> where T : class, new()
 
     public Exception UnhandledException { get; set; }
 
-    public IDependencyResolver Resolve { get; set; }
+    public IDependencyResolver Resolver { get; set; }
 
     public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 

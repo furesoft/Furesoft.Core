@@ -69,7 +69,7 @@ public class FunctionArgumentConditionDefinition : Annotation, IBindable
 
         if (ep.RootScope.SetDefinitions.ContainsKey(NumberRoom))
         {
-            Condition = binder.BindNumberRoom(new UnresolvedRef(NumberRoom), (UnresolvedRef)Parameter);
+            Condition = binder.BindNumberSet(new UnresolvedRef(NumberRoom), (UnresolvedRef)Parameter);
         }
 
         if (binder.ArgumentConstraints.ContainsKey(Function))

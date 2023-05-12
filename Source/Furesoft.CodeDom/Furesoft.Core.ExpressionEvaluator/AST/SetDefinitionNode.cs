@@ -25,7 +25,7 @@ public class SetDefinitionNode : Statement, IBindable
             {
                 if (Condition != null)
                 {
-                    Condition = binder.BindNumberRoom(Condition); //ToDo: need to fix no variables
+                    Condition = binder.BindNumberSet(Condition); //ToDo: need to fix no variables
                 }
 
                 if (!ep.RootScope.SetDefinitions.ContainsKey(name))

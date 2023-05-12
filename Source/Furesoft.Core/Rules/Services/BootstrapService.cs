@@ -96,7 +96,7 @@ internal sealed class BootstrapService<T> where T : class, new()
             }
         }
 
-        rule.Resolve = _dependencyResolver;
+        rule.Resolver = _dependencyResolver;
     }
 
     private TK ResolveRule<TK>(object ruleObject) where TK : class
