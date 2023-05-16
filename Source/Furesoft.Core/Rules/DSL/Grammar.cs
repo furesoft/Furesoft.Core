@@ -1,10 +1,10 @@
 ﻿using Furesoft.PrattParser;
-using Furesoft.PrattParser.Expressions;
+using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Parselets;
 
 namespace Furesoft.Core.Rules.DSL;
 
-public class Grammar : Parser<IAstNode>
+public class Grammar : Parser<AstNode>
 {
     public Grammar(ILexer lexer) : base(lexer)
     {
@@ -16,6 +16,7 @@ public class Grammar : Parser<IAstNode>
         Prefix("-", (int)BindingPower.Prefix);
         Prefix("~", (int)BindingPower.Prefix);
         Prefix("!", (int)BindingPower.Prefix);
+        Prefix("not", (int)BindingPower.Prefix);
 
         Postfix("!", (int)BindingPower.PostFix);
 
