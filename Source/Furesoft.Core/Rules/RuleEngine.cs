@@ -1,7 +1,9 @@
-﻿using Furesoft.Core.Rules.Exceptions;
+﻿using Furesoft.Core.Rules.DSL;
+using Furesoft.Core.Rules.Exceptions;
 using Furesoft.Core.Rules.Interfaces;
 using Furesoft.Core.Rules.Models;
 using Furesoft.Core.Rules.Services;
+using Furesoft.PrattParser;
 
 namespace Furesoft.Core.Rules;
 
@@ -73,6 +75,19 @@ public sealed class RuleEngine<T> where T : class, new()
         }
 
         _rules.AddRange(rules);
+    }
+
+    public RuleResult Evaluate(string source)
+    {
+        var lexer = new Lexer(source);
+        lexer.Ignore(' ');
+        lexer.Ignore('\t');
+
+        var parser = new Grammar(lexer);
+        var tree = parser.Parse();
+        
+        //ToDo: implement rule dsl evaluation
+        return null;
     }
 
     /// <summary>
