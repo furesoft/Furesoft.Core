@@ -1,12 +1,13 @@
-﻿using Furesoft.PrattParser;
+﻿using System.Linq.Expressions;
+using Furesoft.PrattParser;
 using Furesoft.PrattParser.Nodes;
 
 namespace Furesoft.Core.Rules.DSL;
 
-public class EvaluationVisitor : IVisitor<object>
+public class EvaluationVisitor : IVisitor<Expression>
 {
-    public object Visit(AstNode node)
+    public Expression Visit(AstNode node)
     {
-        return null;
+        return Expression.Empty();
     }
 }
