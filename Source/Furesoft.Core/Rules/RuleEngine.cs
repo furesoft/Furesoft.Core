@@ -85,6 +85,9 @@ public sealed class RuleEngine<T> where T : class, new()
 
         var parser = new Grammar(lexer);
         var tree = parser.Parse();
+        var visitor = new EvaluationVisitor();
+        
+        var evaluationResult = tree.Accept(visitor);
         
         //ToDo: implement rule dsl evaluation
         return null;
