@@ -1,4 +1,6 @@
-﻿using Furesoft.PrattParser;
+﻿using Furesoft.Core.Rules;
+using Furesoft.PrattParser;
+using RulesTest.Models;
 using Xunit;
 
 namespace RulesTest;
@@ -17,5 +19,15 @@ public class TestDsl
         var parser = new Furesoft.Core.Rules.DSL.Grammar(lexer);
 
         var node = parser.Parse();
+    }
+
+    [Fact]
+    public void SimpleRule_Should_Pass()
+    {
+        var engine = RuleEngine<Product>.GetInstance();
+        
+        engine.AddRule("1 + 1");
+
+        var result = engine.Execute();
     }
 }

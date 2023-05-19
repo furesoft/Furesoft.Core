@@ -77,20 +77,9 @@ public sealed class RuleEngine<T> where T : class, new()
         _rules.AddRange(rules);
     }
 
-    public RuleResult Evaluate(string source)
+    public void AddRule(string source)
     {
-        var lexer = new Lexer(source);
-        lexer.Ignore(' ');
-        lexer.Ignore('\t');
-
-        var parser = new Grammar(lexer);
-        var tree = parser.Parse();
-        var visitor = new EvaluationVisitor();
-        
-        var evaluationResult = tree.Accept(visitor);
-        
-        //ToDo: implement rule dsl evaluation
-        return null;
+        AddRule(new DslRule<T>(source));
     }
 
     /// <summary>
