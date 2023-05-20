@@ -77,6 +77,10 @@ public sealed class RuleEngine<T> where T : class, new()
         _rules.AddRange(rules);
     }
 
+    /// <summary>
+    /// Add a dynamic rule
+    /// </summary>
+    /// <param name="source"></param>
     public void AddRule(string source)
     {
         AddRule(new DslRule<T>(source));
