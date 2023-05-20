@@ -7,29 +7,56 @@ namespace Furesoft.Core.Rules.DSL.Parselets;
 
 public class ConditionParselet : IInfixParselet<AstNode>
 {
+    private readonly Dictionary<string[], Symbol> tokenMappins = new();
+
+    public ConditionParselet()
+    {
+        tokenMappins.Add(new[]{"less", "than"}, "<");
+        tokenMappins.Add(new[]{"greater", "than"}, ">");
+        tokenMappins.Add(new[]{"equal", "to"}, "==");
+    }
+
     private AstNode BuildNode(Parser<AstNode> parser, Symbol op, AstNode left)
     {
         var right = parser.Parse(GetBindingPower() - 1);
 
         return new BinaryOperatorNode(left, "<", right);
     }
+
+    private Symbol MatchesMultipleTokensAsSingleToken(Parser<AstNode> parser, out int matchedTokenCount)
+    {
+        foreach (var mapping in tokenMappins)
+        {
+            for (uint i = 0; i < mapping.Key.Length; i++)
+            {
+                if (!parser.IsMatch(mapping.Key[i], i))
+                {
+                    goto nextMapping;
+                }
+            }
+            
+            found:
+                matchedTokenCount = mapping.Key.Length;
+                return mapping.Value;
+            
+            nextMapping:
+                continue;
+
+        }
+
+        matchedTokenCount = 0;
+        return "";
+    }
     
     public AstNode Parse(Parser<AstNode> parser, AstNode left, Token token)
     {
-        //ToDo: Cleanup ConditionParselet
-        if (parser.Match("less"))
+        var symbol = MatchesMultipleTokensAsSingleToken(parser, out var matchedtokens);
+
+        if (symbol.Name != "")
         {
-            if (parser.Match("than"))
-            {
-                return BuildNode(parser, "<", left);
-            }
-        }
-        else if (parser.Match("greater"))
-        {
-            if (parser.Match("than"))
-            {
-                return BuildNode(parser, ">", left);
-            }
+            //ToDo: Consume all tokens
+            
+            return BuildNode(parser, symbol, left);
         }
 
         var currentToken = parser.Consume();
