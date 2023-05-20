@@ -1,4 +1,5 @@
-﻿using Furesoft.PrattParser;
+﻿using Furesoft.Core.Rules.DSL.Parselets;
+using Furesoft.PrattParser;
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Parselets;
 using Furesoft.PrattParser.Parselets.Literals;
@@ -21,7 +22,8 @@ public class Grammar : Parser<AstNode>
         Prefix("-", (int)BindingPower.Prefix);
         Prefix("~", (int)BindingPower.Prefix);
         Prefix("!", (int)BindingPower.Prefix);
-        Prefix("not", (int)BindingPower.Prefix);
+        
+        Register("is", new ConditionParselet());
 
         Postfix("!", (int)BindingPower.PostFix);
 

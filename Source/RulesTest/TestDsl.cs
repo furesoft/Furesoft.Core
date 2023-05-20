@@ -20,6 +20,25 @@ public class TestDsl
 
         var node = parser.Parse();
     }
+    
+    [Fact]
+    public void Comparison_Should_Pass()
+    {
+        var lexer = new Lexer("5 is less than 10", "test.dsl");
+        lexer.Ignore('\r');
+        lexer.Ignore(' ');
+        lexer.Ignore('\t');
+        lexer.AddSymbol("not");
+        lexer.AddSymbol("equals");
+        lexer.AddSymbol("less");
+        lexer.AddSymbol("greater");
+        lexer.AddSymbol("than");
+        lexer.AddSymbol("is");
+
+        var parser = new Furesoft.Core.Rules.DSL.Grammar(lexer);
+
+        var node = parser.Parse();
+    }
 
     [Fact]
     public void SimpleRule_Should_Pass()
