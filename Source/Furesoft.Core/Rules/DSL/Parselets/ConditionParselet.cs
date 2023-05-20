@@ -23,7 +23,7 @@ public class ConditionParselet : IInfixParselet<AstNode>
         return new BinaryOperatorNode(left, "<", right);
     }
 
-    private Symbol MatchesMultipleTokensAsSingleToken(Parser<AstNode> parser, out int matchedTokenCount)
+    private Symbol MatchesMultipleTokensAsSingleToken(Parser<AstNode> parser, out uint matchedTokenCount)
     {
         foreach (var mapping in tokenMappins)
         {
@@ -36,7 +36,7 @@ public class ConditionParselet : IInfixParselet<AstNode>
             }
             
             found:
-                matchedTokenCount = mapping.Key.Length;
+                matchedTokenCount = (uint)mapping.Key.Length;
                 return mapping.Value;
             
             nextMapping:
@@ -54,7 +54,10 @@ public class ConditionParselet : IInfixParselet<AstNode>
 
         if (symbol.Name != "")
         {
-            //ToDo: Consume all tokens
+            for (int i = 0; i < matchedtokens; i++)
+            {
+                parser.Consume();
+            }
             
             return BuildNode(parser, symbol, left);
         }

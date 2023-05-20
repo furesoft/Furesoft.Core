@@ -24,7 +24,7 @@ public class TestDsl
     [Fact]
     public void Comparison_Should_Pass()
     {
-        var lexer = new Lexer("5 is not less than 10", "test.dsl");
+        var lexer = new Lexer("5 is less than 10", "test.dsl");
         lexer.Ignore('\r');
         lexer.Ignore(' ');
         lexer.Ignore('\t');
