@@ -11,15 +11,11 @@ public class DslRule<T> : Rule<T>
     private Func<T, IRuleResult> _evaluate;
     public DslRule(string source)
     {
-        var lexer = new Lexer(source);
-        lexer.Ignore(' ');
-        lexer.Ignore('\t');
-
-        var parser = new Grammar(lexer);
-        var tree = parser.Parse();
+        var tree = Grammar.Parse<Grammar>(source);
+        
         var visitor = new EvaluationVisitor<T>();
         
-        var evaluationResult = (LambdaExpression)tree.Accept(visitor);
+        var evaluationResult = (LambdaExpression)tree.Tree.Accept(visitor);
 
         _evaluate = (Func<T, RuleResult>)evaluationResult.Compile();
     }

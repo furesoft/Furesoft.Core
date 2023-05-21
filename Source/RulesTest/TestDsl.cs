@@ -1,4 +1,5 @@
 ﻿using Furesoft.Core.Rules;
+using Furesoft.Core.Rules.DSL;
 using Furesoft.PrattParser;
 using RulesTest.Models;
 using Xunit;
@@ -10,36 +11,13 @@ public class TestDsl
     [Fact]
     public void Not_Should_Pass()
     {
-        var lexer = new Lexer("not 5", "test.dsl");
-        lexer.Ignore('\r');
-        lexer.Ignore(' ');
-        lexer.Ignore('\t');
-        lexer.AddSymbol("not");
-
-        var parser = new Furesoft.Core.Rules.DSL.Grammar(lexer);
-
-        var node = parser.Parse();
+        var node = Grammar.Parse<Grammar>("not 5", "test.dsl");
     }
     
     [Fact]
     public void Comparison_Should_Pass()
     {
-        var lexer = new Lexer("error 'something went wrong'", "test.dsl");
-        lexer.Ignore('\r');
-        lexer.Ignore(' ');
-        lexer.Ignore('\t');
-        lexer.AddSymbol("not");
-        lexer.AddSymbol("equals");
-        lexer.AddSymbol("less");
-        lexer.AddSymbol("greater");
-        lexer.AddSymbol("than");
-        lexer.AddSymbol("is");
-        lexer.AddSymbol("error");
-        lexer.UseString("'", "'");
-
-        var parser = new Furesoft.Core.Rules.DSL.Grammar(lexer);
-
-        var node = parser.Parse();
+        var node = Grammar.Parse<Grammar>("5 is equal to 5", "test.dsl");
     }
 
     [Fact]

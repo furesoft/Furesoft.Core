@@ -23,7 +23,7 @@ public class ConditionParselet : IInfixParselet<AstNode>
     {
         var right = parser.Parse(GetBindingPower() - 1);
 
-        return new BinaryOperatorNode(left, "<", right);
+        return new BinaryOperatorNode(left, op, right);
     }
 
     private Symbol MatchesMultipleTokensAsSingleToken(Parser<AstNode> parser)

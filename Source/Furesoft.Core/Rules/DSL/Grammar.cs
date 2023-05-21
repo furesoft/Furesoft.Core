@@ -1,14 +1,14 @@
 ﻿using Furesoft.Core.Rules.DSL.Parselets;
 using Furesoft.PrattParser;
+using Furesoft.PrattParser.Matcher;
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Parselets;
-using Furesoft.PrattParser.Parselets.Literals;
 
 namespace Furesoft.Core.Rules.DSL;
 
 public class Grammar : Parser<AstNode>
 {
-    public Grammar(Lexer tokens) : base(tokens)
+    public Grammar()
     {
         Register(PredefinedSymbols.Name, new NameParselet());
         this.AddCommonLiterals();
@@ -27,6 +27,7 @@ public class Grammar : Parser<AstNode>
         Prefix("!", (int)BindingPower.Prefix);
         
         Register("is", new ConditionParselet());
+        //Register("if", new IfParselet());
 
         Postfix("!", (int)BindingPower.PostFix);
 
@@ -37,5 +38,21 @@ public class Grammar : Parser<AstNode>
         InfixRight("^", (int)BindingPower.Exponent);
         
         InfixLeft("->", (int)BindingPower.Product);
+    }
+
+    protected override void InitLexer(Lexer lexer)
+    {
+        lexer.Ignore(' ');
+        lexer.Ignore('\t');
+        lexer.UseString("'", "'");
+        lexer.AddPart(new IntegerMatcher());
+        
+        lexer.AddSymbol("is");
+        lexer.AddSymbol("equal");
+        lexer.AddSymbol("not");
+        lexer.AddSymbol("less");
+        lexer.AddSymbol("greater");
+        lexer.AddSymbol("than");
+        lexer.AddSymbol("to");
     }
 }
