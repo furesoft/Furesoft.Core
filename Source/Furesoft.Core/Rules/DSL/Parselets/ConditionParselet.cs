@@ -7,13 +7,16 @@ namespace Furesoft.Core.Rules.DSL.Parselets;
 
 public class ConditionParselet : IInfixParselet<AstNode>
 {
-    private readonly Dictionary<string[], Symbol> tokenMappins = new();
+    private readonly Dictionary<string[], Symbol> _tokenMappins = new();
 
     public ConditionParselet()
     {
-        tokenMappins.Add(new[]{"less", "than"}, "<");
-        tokenMappins.Add(new[]{"greater", "than"}, ">");
-        tokenMappins.Add(new[]{"equal", "to"}, "==");
+        _tokenMappins.Add(new[]{"less", "than"}, "<");
+        _tokenMappins.Add(new[]{"less", "than", "or", "equal"}, "=<");
+        _tokenMappins.Add(new[]{"greater", "than", "or", "equal"}, "=<");
+        _tokenMappins.Add(new[]{"greater", "than"}, ">");
+        _tokenMappins.Add(new[]{"equal", "to"}, "==");
+        _tokenMappins.Add(new[]{"not", "equal", "to"}, "!=");
     }
 
     private AstNode BuildNode(Parser<AstNode> parser, Symbol op, AstNode left)
@@ -23,9 +26,9 @@ public class ConditionParselet : IInfixParselet<AstNode>
         return new BinaryOperatorNode(left, "<", right);
     }
 
-    private Symbol MatchesMultipleTokensAsSingleToken(Parser<AstNode> parser, out uint matchedTokenCount)
+    private Symbol MatchesMultipleTokensAsSingleToken(Parser<AstNode> parser)
     {
-        foreach (var mapping in tokenMappins)
+        foreach (var mapping in _tokenMappins)
         {
             for (uint i = 0; i < mapping.Key.Length; i++)
             {
@@ -35,30 +38,23 @@ public class ConditionParselet : IInfixParselet<AstNode>
                 }
             }
             
-            found:
-                matchedTokenCount = (uint)mapping.Key.Length;
-                return mapping.Value;
+            parser.ConsumeMany((uint)mapping.Key.Length);
+            return mapping.Value;
             
             nextMapping:
                 continue;
 
         }
-
-        matchedTokenCount = 0;
+        
         return "";
     }
     
     public AstNode Parse(Parser<AstNode> parser, AstNode left, Token token)
     {
-        var symbol = MatchesMultipleTokensAsSingleToken(parser, out var matchedtokens);
+        var symbol = MatchesMultipleTokensAsSingleToken(parser);
 
         if (symbol.Name != "")
         {
-            for (int i = 0; i < matchedtokens; i++)
-            {
-                parser.Consume();
-            }
-            
             return BuildNode(parser, symbol, left);
         }
 
