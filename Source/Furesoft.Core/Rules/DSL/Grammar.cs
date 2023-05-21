@@ -11,12 +11,15 @@ public class Grammar : Parser<AstNode>
     public Grammar(Lexer tokens) : base(tokens)
     {
         Register(PredefinedSymbols.Name, new NameParselet());
-        Register(PredefinedSymbols.Integer, new IntegerLiteralParselet());
+        this.AddCommonLiterals();
+        
         Register("=", new AssignParselet());
 
         Ternary("?", ":", (int)BindingPower.Conditional);
         Register("(", new CallParselet());
         Group("(", ")");
+        
+        Register("error", new ErrorParselet());
 
         Prefix("+", (int)BindingPower.Prefix);
         Prefix("-", (int)BindingPower.Prefix);

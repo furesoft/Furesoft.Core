@@ -24,7 +24,7 @@ public class TestDsl
     [Fact]
     public void Comparison_Should_Pass()
     {
-        var lexer = new Lexer("5 is less than 10", "test.dsl");
+        var lexer = new Lexer("error 'something went wrong'", "test.dsl");
         lexer.Ignore('\r');
         lexer.Ignore(' ');
         lexer.Ignore('\t');
@@ -34,6 +34,8 @@ public class TestDsl
         lexer.AddSymbol("greater");
         lexer.AddSymbol("than");
         lexer.AddSymbol("is");
+        lexer.AddSymbol("error");
+        lexer.UseString("'", "'");
 
         var parser = new Furesoft.Core.Rules.DSL.Grammar(lexer);
 
