@@ -18,6 +18,6 @@ public class IfParselet : IInfixParselet<AstNode>
 
     public int GetBindingPower()
     {
-        return (int)BindingPower.Conditional;
+        return (int)BindingPower.Conditional + 1;
     }
 }

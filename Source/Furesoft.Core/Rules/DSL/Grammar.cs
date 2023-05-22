@@ -27,7 +27,7 @@ public class Grammar : Parser<AstNode>
         Prefix("!", (int)BindingPower.Prefix);
         
         Register("is", new ConditionParselet());
-        //Register("if", new IfParselet());
+        Register("if", new IfParselet());
 
         Postfix("!", (int)BindingPower.PostFix);
 
@@ -53,6 +53,9 @@ public class Grammar : Parser<AstNode>
         lexer.AddSymbol("less");
         lexer.AddSymbol("greater");
         lexer.AddSymbol("than");
+        lexer.AddSymbol("then");
         lexer.AddSymbol("to");
+
+        lexer.AddSymbol("if");
     }
 }
