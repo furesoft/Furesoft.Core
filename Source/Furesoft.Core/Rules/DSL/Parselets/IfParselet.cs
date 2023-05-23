@@ -9,7 +9,7 @@ public class IfParselet : IPrefixParselet<AstNode>
 {
     public int GetBindingPower()
     {
-        return (int)BindingPower.Conditional + 1;
+        return (int)BindingPower.Product -1;
     }
 
     public AstNode Parse(Parser<AstNode> parser, Token token)

@@ -12,32 +12,18 @@ public class Grammar : Parser<AstNode>
     {
         Register(PredefinedSymbols.Name, new NameParselet());
         this.AddCommonLiterals();
+        this.AddArithmeticOperators();
+        this.AddLogicalOperators();
         
         Register("=", new AssignParselet());
 
         Ternary("?", ":", (int)BindingPower.Conditional);
         Register("(", new CallParselet());
-        Group("(", ")");
-        
+
         Register("error", new ErrorParselet());
 
-        Prefix("+", (int)BindingPower.Prefix);
-        Prefix("-", (int)BindingPower.Prefix);
-        Prefix("~", (int)BindingPower.Prefix);
-        Prefix("!", (int)BindingPower.Prefix);
-        
         Register("is", new ConditionParselet());
         Register("if", new IfParselet());
-
-        Postfix("!", (int)BindingPower.PostFix);
-
-        InfixLeft("+", (int)BindingPower.Sum);
-        InfixLeft("-", (int)BindingPower.Sum);
-        InfixLeft("*", (int)BindingPower.Product);
-        InfixLeft("/", (int)BindingPower.Product);
-        InfixRight("^", (int)BindingPower.Exponent);
-        
-        InfixLeft("->", (int)BindingPower.Product);
     }
 
     protected override void InitLexer(Lexer lexer)
