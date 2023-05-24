@@ -31,7 +31,7 @@ public class Grammar : Parser<AstNode>
         lexer.Ignore(' ');
         lexer.Ignore('\t');
         lexer.UseString("'", "'");
-        lexer.AddPart(new IntegerMatcher());
+        lexer.AddMatcher(new NumberMatcher());
         
         lexer.AddSymbol("is");
         lexer.AddSymbol("equal");
