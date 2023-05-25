@@ -21,8 +21,8 @@ public class TestDsl
         var prefixOperator = (PrefixOperatorNode)node.Tree;
 
         Assert.Equal("not", prefixOperator.Operator.Name);
-        Assert.True(prefixOperator.Expr is LiteralNode<int>);
-        Assert.Equal(5, ((LiteralNode<int>)prefixOperator.Expr).Value);
+        Assert.True(prefixOperator.Expr is LiteralNode<uint>);
+        Assert.Equal(5u, ((LiteralNode<uint>)prefixOperator.Expr).Value);
     }
     
     [Fact]
@@ -35,10 +35,10 @@ public class TestDsl
         var binary = (BinaryOperatorNode)node.Tree;
 
         Assert.Equal("==", binary.Operator.Name);
-        Assert.True(binary.LeftExpr is LiteralNode<int>);
-        Assert.True(binary.RightExpr is LiteralNode<int>);
-        Assert.Equal(5, ((LiteralNode<int>)binary.LeftExpr).Value);
-        Assert.Equal(5, ((LiteralNode<int>)binary.RightExpr).Value);
+        Assert.True(binary.LeftExpr is LiteralNode<uint>);
+        Assert.True(binary.RightExpr is LiteralNode<uint>);
+        Assert.Equal(5u, ((LiteralNode<uint>)binary.LeftExpr).Value);
+        Assert.Equal(5u, ((LiteralNode<uint>)binary.RightExpr).Value);
     }
 
     [Fact]
@@ -53,10 +53,10 @@ public class TestDsl
 
         // Asserts for Condition
         Assert.Equal("==", binary.Operator.Name);
-        Assert.True(binary.LeftExpr is LiteralNode<int>);
-        Assert.True(binary.RightExpr is LiteralNode<int>);
-        Assert.Equal(5, ((LiteralNode<int>)binary.LeftExpr).Value);
-        Assert.Equal(5, ((LiteralNode<int>)binary.RightExpr).Value);
+        Assert.True(binary.LeftExpr is LiteralNode<uint>);
+        Assert.True(binary.RightExpr is LiteralNode<uint>);
+        Assert.Equal(5u, ((LiteralNode<uint>)binary.LeftExpr).Value);
+        Assert.Equal(5u, ((LiteralNode<uint>)binary.RightExpr).Value);
 
         // Asserts for Body
         Assert.True(ifNode.Body is ErrorNode);

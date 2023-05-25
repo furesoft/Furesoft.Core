@@ -14,6 +14,7 @@ public class Grammar : Parser<AstNode>
         this.AddCommonLiterals();
         this.AddArithmeticOperators();
         this.AddLogicalOperators();
+        Prefix("not", BindingPower.Prefix);
         
         Register("=", new AssignParselet());
 
