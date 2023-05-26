@@ -1,6 +1,5 @@
 ﻿using Furesoft.Core.Rules.DSL.Parselets;
 using Furesoft.PrattParser;
-using Furesoft.PrattParser.Matcher;
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Parselets;
 
@@ -16,10 +15,10 @@ public class Grammar : Parser<AstNode>
         this.AddArithmeticOperators();
         this.AddLogicalOperators();
         Prefix("not", BindingPower.Prefix);
-        
+
         Register("=", new AssignParselet());
 
-        Ternary("?", ":", (int)BindingPower.Conditional);
+        Ternary("?", ":", (int) BindingPower.Conditional);
         Register("(", new CallParselet());
 
 
@@ -34,16 +33,11 @@ public class Grammar : Parser<AstNode>
         lexer.MatchString("'", "'");
         lexer.MatchNumber(true, true);
         
-        lexer.AddSymbol("is");
         lexer.AddSymbol("equal");
-        lexer.AddSymbol("not");
         lexer.AddSymbol("less");
         lexer.AddSymbol("greater");
         lexer.AddSymbol("than");
         lexer.AddSymbol("then");
         lexer.AddSymbol("to");
-
-        lexer.AddSymbol("if");
-        lexer.AddSymbol("error");
     }
 }
