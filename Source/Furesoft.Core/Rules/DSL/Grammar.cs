@@ -10,6 +10,7 @@ public class Grammar : Parser<AstNode>
 {
     public Grammar()
     {
+        Register("error", new ErrorParselet());
         Register(PredefinedSymbols.Name, new NameParselet());
         this.AddCommonLiterals();
         this.AddArithmeticOperators();
@@ -21,7 +22,6 @@ public class Grammar : Parser<AstNode>
         Ternary("?", ":", (int)BindingPower.Conditional);
         Register("(", new CallParselet());
 
-        Register("error", new ErrorParselet());
 
         Register("is", new ConditionParselet());
         Register("if", new IfParselet());
@@ -31,8 +31,8 @@ public class Grammar : Parser<AstNode>
     {
         lexer.Ignore(' ');
         lexer.Ignore('\t');
-        lexer.UseString("'", "'");
-        lexer.AddMatcher(new NumberMatcher());
+        lexer.MatchString("'", "'");
+        lexer.MatchNumber(true, true);
         
         lexer.AddSymbol("is");
         lexer.AddSymbol("equal");
@@ -44,5 +44,6 @@ public class Grammar : Parser<AstNode>
         lexer.AddSymbol("to");
 
         lexer.AddSymbol("if");
+        lexer.AddSymbol("error");
     }
 }
