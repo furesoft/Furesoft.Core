@@ -11,19 +11,25 @@ public class Grammar : Parser<AstNode>
     {
         Register("error", new ErrorParselet());
         Register(PredefinedSymbols.Name, new NameParselet());
+        
         this.AddCommonLiterals();
         this.AddArithmeticOperators();
         this.AddLogicalOperators();
-        Prefix("not", BindingPower.Prefix);
+        
+        AddOperators();
 
         Register("=", new AssignParselet());
-
-        Ternary("?", ":", (int) BindingPower.Conditional);
         Register("(", new CallParselet());
-
-
+        
         Register("is", new ConditionParselet());
         Register("if", new IfParselet());
+    }
+
+    private void AddOperators()
+    {
+        Prefix("not", BindingPower.Prefix);
+        Prefix("and", BindingPower.Product);
+        Prefix("or", BindingPower.Sum);
     }
 
     protected override void InitLexer(Lexer lexer)
