@@ -11,6 +11,8 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     where T : class, new()
 {
     private readonly ParameterExpression _modelParameterExpression = Expression.Parameter(typeof(T), "model");
+    private readonly ParameterExpression _errorsParameterExpression = Expression.Parameter(typeof(List<string>), "errors");
+    private readonly List<string> _errors = new();
 
     public Expression Visit(AstNode node)
     {
@@ -47,7 +49,10 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             return;
         }
 
-        body = Expression.Block(Expression.Throw(Expression.Constant(new Exception(error.Message))), Expression.Constant(false));
+        var msg = Expression.Constant(error.Message);
+        var addMethod = _errors.Add;
+        
+        body = Expression.Block(Expression.Call(_errorsParameterExpression, addMethod.Method, msg), Expression.Constant(false));
     }
 
     private bool VisitName(AstNode node, out Expression expression)
@@ -70,7 +75,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
     public LambdaExpression ToLambda(Expression body)
     {
-        return Expression.Lambda(body, true, _modelParameterExpression);
+        return Expression.Lambda(body, true, _modelParameterExpression, _errorsParameterExpression);
     }
 
     private static bool VisitConstant(AstNode node, out Expression visit)
