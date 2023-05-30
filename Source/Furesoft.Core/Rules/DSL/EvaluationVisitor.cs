@@ -15,9 +15,9 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     {
         Expression body = null;
         
-        body = VisitBinary(node, body);
-        body = VisitPrefix(node, body);
-        body = VisitPostfix(node, body);
+        VisitBinary(node, ref body);
+        VisitPrefix(node, ref body);
+        VisitPostfix(node, ref body);
 
         // ToDo: remove temporary fix
         if (node is BinaryOperatorNode bin && bin.Operator.Name == "=")
@@ -90,43 +90,43 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         }
     }
 
-    private Expression VisitPrefix(AstNode node, Expression result)
+    private void VisitPrefix(AstNode node, ref Expression result)
     {
         if (node is not PrefixOperatorNode prefixOperatorNode) 
-            return result;
+            return;
         
         var visited = Visit(prefixOperatorNode.Expr);
 
-        return prefixOperatorNode.Operator.Name switch
+        result = prefixOperatorNode.Operator.Name switch
         {
             "-" => Expression.Negate(visited),
             _ => result
         };
     }
     
-    private Expression VisitPostfix(AstNode node, Expression result)
+    private void VisitPostfix(AstNode node, ref Expression result)
     {
         if (node is not PostfixOperatorNode postfix) 
-            return result;
+            return;
         
         var visited = Visit(postfix.Expr);
 
-        return postfix.Operator.Name switch
+        result = postfix.Operator.Name switch
         {
             "%" => Expression.Divide( Expression.Convert(visited, typeof(double)), Expression.Constant(100.0)),
             _ => result
         };
     }
 
-    private Expression VisitBinary(AstNode node, Expression result)
+    private void VisitBinary(AstNode node, ref Expression result)
     {
         if (node is not BinaryOperatorNode binaryOperatorNode) 
-            return result;
+             return;
 
         var leftVisited = Visit(binaryOperatorNode.LeftExpr);
         var rightVisited = Visit(binaryOperatorNode.RightExpr);
 
-        return binaryOperatorNode.Operator.Name switch
+        result = binaryOperatorNode.Operator.Name switch
         {
             "+" => Expression.Add(leftVisited, rightVisited),
             "-" => Expression.Subtract(leftVisited, rightVisited),
