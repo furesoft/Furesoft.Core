@@ -23,7 +23,7 @@ internal class ProductExceptionHandlerAsync : RuleAsync<Product>
 
         if (UnhandledException?.GetType() == typeof(Exception))
         {
-            ruleResult.Error = new Error { Exception = UnhandledException };
+            ruleResult.Error = new Error(UnhandledException);
         }
 
         return RuleResult.CreateAsync(ruleResult);

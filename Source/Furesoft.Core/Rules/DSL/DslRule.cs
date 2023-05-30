@@ -8,20 +8,27 @@ namespace Furesoft.Core.Rules.DSL;
 public class DslRule<T> : Rule<T>
     where T : class, new()
 {
-    private Func<T, IRuleResult> _evaluate;
+    private Func<T, bool> _evaluate;
     public DslRule(string source)
     {
         var tree = Grammar.Parse<Grammar>(source);
         
         var visitor = new EvaluationVisitor<T>();
         
-        var evaluationResult = (LambdaExpression)tree.Tree.Accept(visitor);
+        var evaluationResult = visitor.ToLambda(tree.Tree.Accept(visitor));
 
-        _evaluate = (Func<T, RuleResult>)evaluationResult.Compile();
+        _evaluate = (Func<T, bool>)evaluationResult.Compile();
     }
 
     public override IRuleResult Invoke()
     {
-        return _evaluate(Model);
+        var success = _evaluate(Model);
+
+        if (success)
+        {
+            return new RuleResult() { Result = Model };
+        }
+
+        return new RuleResult() { Error = new Error("Error") };
     }
 }

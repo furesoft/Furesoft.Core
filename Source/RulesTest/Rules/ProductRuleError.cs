@@ -12,6 +12,6 @@ class ProductRuleError : Rule<Product>
     {
         Model.Description = "Product Description";
 
-        return new RuleResult { Error = new Error { Message = "Error", Exception = new Exception() } };
+        return new RuleResult { Error = new Error("Error") };
     }
 }

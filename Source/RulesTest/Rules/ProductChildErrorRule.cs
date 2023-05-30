@@ -11,6 +11,6 @@ class ProductChildErrorRule : Rule<Product>
     {
         Model.Description = "Product Description";
 
-        return new RuleResult { Result = Model.Description, Error = new Error { Message = "Error" } };
+        return new RuleResult { Result = Model.Description, Error = new Error("Error") };
     }
 }

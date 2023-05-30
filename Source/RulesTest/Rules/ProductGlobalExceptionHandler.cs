@@ -20,7 +20,7 @@ internal class ProductGlobalExceptionHandler : Rule<Product>
 
         if (UnhandledException?.GetType() == typeof(Exception))
         {
-            ruleResult.Error = new Error { Exception = UnhandledException };
+            ruleResult.Error = new Error(UnhandledException);
         }
 
         return ruleResult;
@@ -41,7 +41,7 @@ internal class ProductGlobalExceptionHandlerAsync : RuleAsync<Product>
 
         if (UnhandledException?.GetType() == typeof(Exception))
         {
-            ruleResult.Error = new Error { Exception = UnhandledException };
+            ruleResult.Error = new Error(UnhandledException);
         }
 
         return RuleResult.CreateAsync(ruleResult);

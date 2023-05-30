@@ -12,18 +12,21 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 {
     public Expression Visit(AstNode node)
     {
-        Expression result = null;
-        result = VisitBinary(node, result);
-
-        result = VisitPrefix(node, result);
+        Expression body = null;
+        
+        body = VisitBinary(node, body);
+        body = VisitPrefix(node, body);
 
         if (VisitConstant(node, out var visit))
         {
             return visit;
         }
-        
-        var body = Expression.Constant(new RuleResult() { Result = result });
-        
+
+        return body;
+    }
+
+    public LambdaExpression ToLambda(Expression body)
+    {
         return Expression.Lambda(body, true, Expression.Parameter(typeof(T)));
     }
 

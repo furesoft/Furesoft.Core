@@ -68,9 +68,9 @@ public class TestDsl
     [Fact]
     public void SimpleRule_Should_Pass()
     {
-        var engine = RuleEngine<Product>.GetInstance();
+        var engine = RuleEngine<Product>.GetInstance(new Product());
         
-        engine.AddRule("1 + 1 == true");
+        engine.AddRule("1 + 1 == 2");
 
         var result = engine.Execute();
     }

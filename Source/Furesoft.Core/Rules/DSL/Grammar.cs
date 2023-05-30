@@ -30,7 +30,7 @@ public class Grammar : Parser<AstNode>
         Prefix("not", BindingPower.Prefix);
         Prefix("and", BindingPower.Product);
         Prefix("or", BindingPower.Sum);
-        Prefix("==", BindingPower.Product);
+        InfixLeft("==", BindingPower.Sum);
     }
 
     protected override void InitLexer(Lexer lexer)
@@ -39,6 +39,7 @@ public class Grammar : Parser<AstNode>
         lexer.Ignore('\t');
         lexer.MatchString("'", "'");
         lexer.MatchNumber(true, true);
+        lexer.MatchBoolean();
         
         lexer.AddSymbol("equal");
         lexer.AddSymbol("less");
