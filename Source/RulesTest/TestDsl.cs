@@ -1,7 +1,6 @@
 ﻿using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
 using Furesoft.Core.Rules.DSL.Nodes;
-using Furesoft.PrattParser;
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Nodes.Operators;
 using RulesTest.Models;
@@ -21,8 +20,8 @@ public class TestDsl
         var prefixOperator = (PrefixOperatorNode)node.Tree;
 
         Assert.Equal("not", prefixOperator.Operator.Name);
-        Assert.True(prefixOperator.Expr is LiteralNode<uint>);
-        Assert.Equal(5u, ((LiteralNode<uint>)prefixOperator.Expr).Value);
+        Assert.True(prefixOperator.Expr is LiteralNode<ulong>);
+        Assert.Equal(5u, ((LiteralNode<ulong>)prefixOperator.Expr).Value);
     }
     
     [Fact]
@@ -35,10 +34,10 @@ public class TestDsl
         var binary = (BinaryOperatorNode)node.Tree;
 
         Assert.Equal("==", binary.Operator.Name);
-        Assert.True(binary.LeftExpr is LiteralNode<uint>);
-        Assert.True(binary.RightExpr is LiteralNode<uint>);
-        Assert.Equal(5u, ((LiteralNode<uint>)binary.LeftExpr).Value);
-        Assert.Equal(5u, ((LiteralNode<uint>)binary.RightExpr).Value);
+        Assert.True(binary.LeftExpr is LiteralNode<ulong>);
+        Assert.True(binary.RightExpr is LiteralNode<ulong>);
+        Assert.Equal(5u, ((LiteralNode<ulong>)binary.LeftExpr).Value);
+        Assert.Equal(5u, ((LiteralNode<ulong>)binary.RightExpr).Value);
     }
 
     [Fact]
@@ -53,10 +52,10 @@ public class TestDsl
 
         // Asserts for Condition
         Assert.Equal("==", binary.Operator.Name);
-        Assert.True(binary.LeftExpr is LiteralNode<uint>);
-        Assert.True(binary.RightExpr is LiteralNode<uint>);
-        Assert.Equal(5u, ((LiteralNode<uint>)binary.LeftExpr).Value);
-        Assert.Equal(5u, ((LiteralNode<uint>)binary.RightExpr).Value);
+        Assert.True(binary.LeftExpr is LiteralNode<ulong>);
+        Assert.True(binary.RightExpr is LiteralNode<ulong>);
+        Assert.Equal(5u, ((LiteralNode<ulong>)binary.LeftExpr).Value);
+        Assert.Equal(5u, ((LiteralNode<ulong>)binary.RightExpr).Value);
 
         // Asserts for Body
         Assert.True(ifNode.Body is ErrorNode);
