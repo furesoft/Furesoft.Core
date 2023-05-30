@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
+using Furesoft.Core.Rules.DSL.Nodes;
 using Furesoft.PrattParser;
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Nodes.Operators;
@@ -10,7 +11,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     where T : class, new()
 {
     private readonly ParameterExpression _modelParameterExpression = Expression.Parameter(typeof(T), "model");
-    
+
     public Expression Visit(AstNode node)
     {
         Expression body = null;
@@ -18,6 +19,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         VisitBinary(node, ref body);
         VisitPrefix(node, ref body);
         VisitPostfix(node, ref body);
+        VisitError(node, ref body);
 
         // ToDo: remove temporary fix
         if (node is BinaryOperatorNode bin && bin.Operator.Name == "=")
@@ -36,6 +38,16 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         }
 
         return body;
+    }
+
+    private void VisitError(AstNode node, ref Expression body)
+    {
+        if (node is not ErrorNode error)
+        {
+            return;
+        }
+
+        body = Expression.Block(Expression.Throw(Expression.Constant(new Exception(error.Message))), Expression.Constant(false));
     }
 
     private bool VisitName(AstNode node, out Expression expression)

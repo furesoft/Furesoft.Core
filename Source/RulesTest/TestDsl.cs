@@ -70,7 +70,7 @@ public class TestDsl
     {
         var engine = RuleEngine<Product>.GetInstance(new Product() { Description = "hello world"});
         
-        engine.AddRule("12% == 0.12");
+        engine.AddRule("error 'an error occured'");
 
         var result = engine.Execute();
     }
