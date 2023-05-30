@@ -71,7 +71,7 @@ public class TestDsl
     {
         var engine = RuleEngine<Product>.GetInstance();
         
-        engine.AddRule("1 + 1");
+        engine.AddRule("1 + 1 == true");
 
         var result = engine.Execute();
     }

@@ -31,11 +31,11 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     {
         switch (node)
         {
-            case LiteralNode<int> ci:
+            case LiteralNode<long> ci:
                 visit = Expression.Constant(ci.Value);
                 return true;
             
-            case LiteralNode<uint> uic:
+            case LiteralNode<ulong> uic:
                 visit = Expression.Constant(uic.Value);
                 return true;
             
@@ -84,6 +84,10 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             "-" => Expression.Subtract(leftVisited, rightVisited),
             "*" => Expression.Multiply(leftVisited, rightVisited),
             "/" => Expression.Divide(leftVisited, rightVisited),
+            
+            "==" => Expression.Equal(leftVisited, rightVisited),
+            "!=" => Expression.NotEqual(leftVisited, rightVisited),
+            
             _ => result
         };
     }

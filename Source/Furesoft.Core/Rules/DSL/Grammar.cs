@@ -30,6 +30,7 @@ public class Grammar : Parser<AstNode>
         Prefix("not", BindingPower.Prefix);
         Prefix("and", BindingPower.Product);
         Prefix("or", BindingPower.Sum);
+        Prefix("==", BindingPower.Product);
     }
 
     protected override void InitLexer(Lexer lexer)
