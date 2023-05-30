@@ -2,6 +2,7 @@
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Nodes.Operators;
 using Furesoft.PrattParser.Parselets;
+using Furesoft.PrattParser.Text;
 
 namespace Furesoft.Core.Rules.DSL.Parselets;
 

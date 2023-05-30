@@ -29,43 +29,31 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
     private static bool VisitConstant(AstNode node, out Expression visit)
     {
-        Expression result;
         switch (node)
         {
             case LiteralNode<int> ci:
-                result = Expression.Constant(ci.Value);
-            {
-                visit = result;
+                visit = Expression.Constant(ci.Value);
                 return true;
-            }
+            
             case LiteralNode<uint> uic:
-                result = Expression.Constant(uic.Value);
-            {
-                visit = result;
+                visit = Expression.Constant(uic.Value);
                 return true;
-            }
+            
             case LiteralNode<string> cs:
-                result = Expression.Constant(cs.Value);
-            {
-                visit = result;
+                visit = Expression.Constant(cs.Value);
                 return true;
-            }
+            
             case LiteralNode<bool> cb:
-                result = Expression.Constant(cb.Value);
-            {
-                visit = result;
+                visit = Expression.Constant(cb.Value);
                 return true;
-            }
+            
             case LiteralNode<double> cbd:
-                result = Expression.Constant(cbd.Value);
-            {
-                visit = result;
+                visit = Expression.Constant(cbd.Value);
                 return true;
-            }
+            default:
+                visit = Expression.Empty();
+                return false;
         }
-
-        visit = Expression.Empty();
-        return false;
     }
 
     private Expression VisitPrefix(AstNode node, Expression result)
@@ -87,28 +75,18 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
     private Expression VisitBinary(AstNode node, Expression result)
     {
-        if (node is BinaryOperatorNode binaryOperatorNode)
+        if (node is not BinaryOperatorNode binaryOperatorNode) return result;
+        
+        var leftVisited = Visit(binaryOperatorNode.LeftExpr);
+        var rightVisited = Visit(binaryOperatorNode.RightExpr);
+
+        return binaryOperatorNode.Operator.Name switch
         {
-            var leftVisited = Visit(binaryOperatorNode.LeftExpr);
-            var rightVisited = Visit(binaryOperatorNode.RightExpr);
-
-            switch (binaryOperatorNode.Operator.Name)
-            {
-                case "+":
-                    result = Expression.Add(leftVisited, rightVisited);
-                    break;
-                case "-":
-                    result = Expression.Subtract(leftVisited, rightVisited);
-                    break;
-                case "*":
-                    result = Expression.Multiply(leftVisited, rightVisited);
-                    break;
-                case "/":
-                    result = Expression.Divide(leftVisited, rightVisited);
-                    break;
-            }
-        }
-
-        return result;
+            "+" => Expression.Add(leftVisited, rightVisited),
+            "-" => Expression.Subtract(leftVisited, rightVisited),
+            "*" => Expression.Multiply(leftVisited, rightVisited),
+            "/" => Expression.Divide(leftVisited, rightVisited),
+            _ => result
+        };
     }
 }
