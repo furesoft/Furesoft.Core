@@ -1,6 +1,5 @@
 ﻿using System.Linq.Expressions;
-using Furesoft.Core.Rules.Interfaces;
-using Furesoft.Core.Rules.Models;
+using System.Reflection;
 using Furesoft.PrattParser;
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Nodes.Operators;
@@ -10,6 +9,8 @@ namespace Furesoft.Core.Rules.DSL;
 public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     where T : class, new()
 {
+    private readonly ParameterExpression _modelParameterExpression = Expression.Parameter(typeof(T), "model");
+    
     public Expression Visit(AstNode node)
     {
         Expression body = null;
@@ -22,12 +23,35 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             return visit;
         }
 
+        if (VisitName(node, out var expression))
+        {
+            return expression;
+        }
+
         return body;
+    }
+
+    private bool VisitName(AstNode node, out Expression expression)
+    {
+        if (node is NameAstNode name)
+        {
+            expression = Expression.MakeMemberAccess(_modelParameterExpression, GetMemberInfo(name));
+            
+            return true;
+        }
+        
+        expression = Expression.Empty();
+        return false;
+    }
+
+    private MemberInfo GetMemberInfo(NameAstNode name)
+    {
+        return typeof(T).GetProperty(name.Name);
     }
 
     public LambdaExpression ToLambda(Expression body)
     {
-        return Expression.Lambda(body, true, Expression.Parameter(typeof(T)));
+        return Expression.Lambda(body, true, _modelParameterExpression);
     }
 
     private static bool VisitConstant(AstNode node, out Expression visit)
