@@ -58,24 +58,22 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
     private Expression VisitPrefix(AstNode node, Expression result)
     {
-        if (node is PrefixOperatorNode prefixOperatorNode)
+        if (node is not PrefixOperatorNode prefixOperatorNode) 
+            return result;
+        
+        var visited = Visit(prefixOperatorNode.Expr);
+
+        return prefixOperatorNode.Operator.Name switch
         {
-            var visited = Visit(prefixOperatorNode.Expr);
-
-            switch (prefixOperatorNode.Operator.Name)
-            {
-                case "-":
-                    result = Expression.Negate(visited);
-                    break;
-            }
-        }
-
-        return result;
+            "-" => Expression.Negate(visited),
+            _ => result
+        };
     }
 
     private Expression VisitBinary(AstNode node, Expression result)
     {
-        if (node is not BinaryOperatorNode binaryOperatorNode) return result;
+        if (node is not BinaryOperatorNode binaryOperatorNode) 
+            return result;
         
         var leftVisited = Visit(binaryOperatorNode.LeftExpr);
         var rightVisited = Visit(binaryOperatorNode.RightExpr);
