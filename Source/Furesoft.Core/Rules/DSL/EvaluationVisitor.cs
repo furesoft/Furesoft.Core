@@ -17,6 +17,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         
         body = VisitBinary(node, body);
         body = VisitPrefix(node, body);
+        body = VisitPostfix(node, body);
 
         // ToDo: remove temporary fix
         if (node is BinaryOperatorNode bin && bin.Operator.Name == "=")
@@ -102,6 +103,20 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             _ => result
         };
     }
+    
+    private Expression VisitPostfix(AstNode node, Expression result)
+    {
+        if (node is not PostfixOperatorNode postfix) 
+            return result;
+        
+        var visited = Visit(postfix.Expr);
+
+        return postfix.Operator.Name switch
+        {
+            "%" => Expression.Divide(visited, Expression.Constant(100ul)),
+            _ => result
+        };
+    }
 
     private Expression VisitBinary(AstNode node, Expression result)
     {
@@ -118,7 +133,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             "*" => Expression.Multiply(leftVisited, rightVisited),
             "/" => Expression.Divide(leftVisited, rightVisited),
             
-            "==" => Expression.Equal(leftVisited, rightVisited),
+            "==" => Expression.Equal(leftVisited, rightVisited), //ToDo: Replace Expression.Equal with CompareTo Method From IComparable
             "!=" => Expression.NotEqual(leftVisited, rightVisited),
             
             "=" => Expression.Assign(leftVisited, rightVisited),
