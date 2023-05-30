@@ -113,7 +113,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
         return postfix.Operator.Name switch
         {
-            "%" => Expression.Divide(visited, Expression.Constant(100ul)),
+            "%" => Expression.Divide( Expression.Convert(visited, typeof(double)), Expression.Constant(100.0)),
             _ => result
         };
     }
@@ -133,7 +133,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             "*" => Expression.Multiply(leftVisited, rightVisited),
             "/" => Expression.Divide(leftVisited, rightVisited),
             
-            "==" => Expression.Equal(leftVisited, rightVisited), //ToDo: Replace Expression.Equal with CompareTo Method From IComparable
+            "==" => Expression.Equal(leftVisited, rightVisited),
             "!=" => Expression.NotEqual(leftVisited, rightVisited),
             
             "=" => Expression.Assign(leftVisited, rightVisited),
