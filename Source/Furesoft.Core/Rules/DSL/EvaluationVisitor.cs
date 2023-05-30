@@ -18,6 +18,12 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         body = VisitBinary(node, body);
         body = VisitPrefix(node, body);
 
+        // ToDo: remove temporary fix
+        if (node is BinaryOperatorNode bin && bin.Operator.Name == "=")
+        {
+            body = Expression.Block(body, Expression.Constant(true));
+        }
+
         if (VisitConstant(node, out var visit))
         {
             return visit;
@@ -101,7 +107,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     {
         if (node is not BinaryOperatorNode binaryOperatorNode) 
             return result;
-        
+
         var leftVisited = Visit(binaryOperatorNode.LeftExpr);
         var rightVisited = Visit(binaryOperatorNode.RightExpr);
 
@@ -114,6 +120,8 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             
             "==" => Expression.Equal(leftVisited, rightVisited),
             "!=" => Expression.NotEqual(leftVisited, rightVisited),
+            
+            "=" => Expression.Assign(leftVisited, rightVisited),
             
             _ => result
         };

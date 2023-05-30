@@ -15,10 +15,10 @@ public class Grammar : Parser<AstNode>
         this.AddCommonLiterals();
         this.AddArithmeticOperators();
         this.AddLogicalOperators();
+        this.AddCommonAssignmentOperators();
         
         AddOperators();
-
-        Register("=", new AssignParselet());
+        
         Register("(", new CallParselet());
         
         Register("is", new ConditionParselet());
@@ -31,6 +31,8 @@ public class Grammar : Parser<AstNode>
         Prefix("and", BindingPower.Product);
         Prefix("or", BindingPower.Sum);
         InfixLeft("==", BindingPower.Sum);
+        
+        Register("set", new AssignmentParselet());
     }
 
     protected override void InitLexer(Lexer lexer)
@@ -47,5 +49,7 @@ public class Grammar : Parser<AstNode>
         lexer.AddSymbol("than");
         lexer.AddSymbol("then");
         lexer.AddSymbol("to");
+        
+        lexer.AddSymbol("set");
     }
 }

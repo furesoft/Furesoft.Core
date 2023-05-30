@@ -70,7 +70,7 @@ public class TestDsl
     {
         var engine = RuleEngine<Product>.GetInstance(new Product() { Description = "hello world"});
         
-        engine.AddRule("Description == 'hello world'");
+        engine.AddRule("set Description to 'baum'");
 
         var result = engine.Execute();
     }
