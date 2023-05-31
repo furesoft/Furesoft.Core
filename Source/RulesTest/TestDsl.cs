@@ -68,9 +68,9 @@ public class TestDsl
     [Fact]
     public void SimpleRule_Should_Pass()
     {
-        var engine = RuleEngine<Product>.GetInstance(new Product() { Description = "hello world", Price = 999.0});
+        var engine = RuleEngine<Product>.GetInstance(new Product() { Description = "hello world", Price = 999});
         
-        engine.AddRule("if Price == 999.0 then error 'wrong key'");
+        engine.AddRule("if Description == 'hello world' then error 'wrong key'");
 
         var result = engine.Execute();
     }

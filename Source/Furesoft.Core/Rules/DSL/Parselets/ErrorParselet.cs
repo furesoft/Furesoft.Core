@@ -11,6 +11,6 @@ public class ErrorParselet : IPrefixParselet<AstNode>
     {
         var messageToken = parser.Consume(PredefinedSymbols.String);
 
-        return new ErrorNode(messageToken.Text).WithRange(token, messageToken);
+        return new ErrorNode(messageToken.Text.Span.ToString()).WithRange(token, messageToken);
     }
 }
