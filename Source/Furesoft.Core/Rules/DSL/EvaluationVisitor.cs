@@ -22,6 +22,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         VisitPrefix(node, ref body);
         VisitPostfix(node, ref body);
         VisitError(node, ref body);
+        VisitIf(node, ref body);
 
         // ToDo: remove temporary fix
         if (node is BinaryOperatorNode bin && bin.Operator.Name == "=")
@@ -40,6 +41,16 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         }
 
         return body;
+    }
+
+    private void VisitIf(AstNode node, ref Expression body)
+    {
+        if (node is not IfNode ifNode)
+        {
+            return;
+        }
+
+        body = Expression.Block(Expression.IfThen(Visit(ifNode.Condition), Visit(ifNode.Body)), Expression.Constant(true));
     }
 
     private void VisitError(AstNode node, ref Expression body)
