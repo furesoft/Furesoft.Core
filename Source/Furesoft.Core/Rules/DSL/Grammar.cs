@@ -23,6 +23,8 @@ public class Grammar : Parser<AstNode>
         
         Register("is", new ConditionParselet());
         Register("if", new IfParselet());
+        
+        Block(PredefinedSymbols.Dot, PredefinedSymbols.EOF);
     }
 
     private void AddOperators()
