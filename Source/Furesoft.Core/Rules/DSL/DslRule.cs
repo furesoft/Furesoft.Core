@@ -29,6 +29,6 @@ public class DslRule<T> : Rule<T>
             return new RuleResult() {Result = Model};
         }
 
-        return null;
+        return new RuleResult(){ Error = new Error(string.Join(Environment.NewLine, _errors))};
     }
 }
