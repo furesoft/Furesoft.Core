@@ -164,6 +164,11 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             "==" => Expression.Equal(leftVisited, rightVisited),
             "!=" => Expression.NotEqual(leftVisited, rightVisited),
             
+            "<=" => Expression.LessThanOrEqual(leftVisited, rightVisited),
+            ">=" => Expression.GreaterThanOrEqual(leftVisited, rightVisited),
+            "<" => Expression.LessThan(leftVisited, rightVisited),
+            ">" => Expression.GreaterThan(leftVisited, rightVisited),
+            
             "=" => Expression.Assign(leftVisited, rightVisited),
             
             _ => result

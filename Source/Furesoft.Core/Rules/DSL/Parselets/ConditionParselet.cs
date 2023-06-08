@@ -13,8 +13,8 @@ public class ConditionParselet : IInfixParselet<AstNode>
     public ConditionParselet()
     {
         _tokenMappins.Add(new[]{"less", "than"}, "<");
-        _tokenMappins.Add(new[]{"less", "than", "or", "equal"}, "=<");
-        _tokenMappins.Add(new[]{"greater", "than", "or", "equal"}, "=<");
+        _tokenMappins.Add(new[]{"less", "than", "or", "equal"}, "<=");
+        _tokenMappins.Add(new[]{"greater", "than", "or", "equal"}, ">=");
         _tokenMappins.Add(new[]{"greater", "than"}, ">");
         _tokenMappins.Add(new[]{"equal", "to"}, "==");
         _tokenMappins.Add(new[]{"not", "equal", "to"}, "!=");
