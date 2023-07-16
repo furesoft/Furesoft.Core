@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Furesoft.Core.Measure;
 
 public partial class MeasureUnit

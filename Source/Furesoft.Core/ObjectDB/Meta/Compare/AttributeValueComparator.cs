@@ -1,5 +1,3 @@
-using System;
-
 namespace Furesoft.Core.ObjectDB.Meta.Compare;
 
 	internal static class AttributeValueComparator

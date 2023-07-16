@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Commands;
+﻿namespace Furesoft.Core.Commands;
 
 	public static class CommandParser
 	{

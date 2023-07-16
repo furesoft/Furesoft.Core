@@ -1,5 +1,3 @@
-using System;
-
 namespace Furesoft.Core.Measure;
 
 /// <summary>

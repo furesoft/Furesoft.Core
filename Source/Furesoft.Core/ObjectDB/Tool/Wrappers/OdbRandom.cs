@@ -1,5 +1,3 @@
-using System;
-
 namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 	internal static class OdbRandom

@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace Furesoft.Core.ObjectDB.Api.Query;
 
 	internal interface ILinqQueryInternal<out T> : ILinqQuery<T>

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Storage.Serializers;
+﻿namespace Furesoft.Core.Storage.Serializers;
 
 	public class TreeLongSerializer : ISerializer<long>
 	{

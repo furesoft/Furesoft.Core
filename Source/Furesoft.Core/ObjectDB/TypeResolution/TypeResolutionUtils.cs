@@ -1,5 +1,3 @@
-using System;
-
 namespace Furesoft.Core.ObjectDB.TypeResolution;
 
 	/// <summary>

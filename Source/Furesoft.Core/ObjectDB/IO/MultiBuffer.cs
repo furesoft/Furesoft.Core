@@ -1,5 +1,3 @@
-using System;
-
 namespace Furesoft.Core.ObjectDB.IO;
 
 	internal sealed class MultiBuffer : IMultiBuffer

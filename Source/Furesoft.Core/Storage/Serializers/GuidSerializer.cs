@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Storage.Serializers;
+﻿namespace Furesoft.Core.Storage.Serializers;
 
 	/// <summary>
 	/// Just a thin wrapper around Guid.ToByteArray() to make it compatible with ISerializer[Guid]

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 
 	/// <summary>

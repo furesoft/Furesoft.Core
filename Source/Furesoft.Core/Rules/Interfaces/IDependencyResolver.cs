@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Serialization;
-
-namespace Furesoft.Core.Rules.Interfaces;
+﻿namespace Furesoft.Core.Rules.Interfaces;
 
 public interface IDependencyResolver
 {

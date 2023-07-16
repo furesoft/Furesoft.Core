@@ -1,0 +1,455 @@
+﻿{
+  Tree: {
+    Operator: {
+      Id: -60,
+      Name: not,
+      Pool: [
+        {
+          Name: ,
+          IsGlobal: true
+        },
+        {
+          Id: -1,
+          Name: #eof,
+          IsGlobal: true
+        },
+        {
+          Id: -2,
+          Name:
+,
+          IsGlobal: true
+        },
+        {
+          Id: -3,
+          Name: (,
+          IsGlobal: true
+        },
+        {
+          Id: -4,
+          Name: ),
+          IsGlobal: true
+        },
+        {
+          Id: -5,
+          Name: [,
+          IsGlobal: true
+        },
+        {
+          Id: -6,
+          Name: ],
+          IsGlobal: true
+        },
+        {
+          Id: -7,
+          Name: <,
+          IsGlobal: true
+        },
+        {
+          Id: -8,
+          Name: >,
+          IsGlobal: true
+        },
+        {
+          Id: -9,
+          Name: <<,
+          IsGlobal: true
+        },
+        {
+          Id: -10,
+          Name: >>,
+          IsGlobal: true
+        },
+        {
+          Id: -11,
+          Name: ?,
+          IsGlobal: true
+        },
+        {
+          Id: -12,
+          Name: &,
+          IsGlobal: true
+        },
+        {
+          Id: -13,
+          Name: @,
+          IsGlobal: true
+        },
+        {
+          Id: -14,
+          Name: +,
+          IsGlobal: true
+        },
+        {
+          Id: -15,
+          Name: -,
+          IsGlobal: true
+        },
+        {
+          Id: -16,
+          Name: *,
+          IsGlobal: true
+        },
+        {
+          Id: -17,
+          Name: /,
+          IsGlobal: true
+        },
+        {
+          Id: -18,
+          Name: ^,
+          IsGlobal: true
+        },
+        {
+          Id: -19,
+          Name: ~,
+          IsGlobal: true
+        },
+        {
+          Id: -20,
+          Name: !,
+          IsGlobal: true
+        },
+        {
+          Id: -21,
+          Name: .,
+          IsGlobal: true
+        },
+        {
+          Id: -22,
+          Name: _,
+          IsGlobal: true
+        },
+        {
+          Id: -23,
+          Name: ",
+          IsGlobal: true
+        },
+        {
+          Id: -24,
+          Name: ',
+          IsGlobal: true
+        },
+        {
+          Id: -25,
+          Name: ,,
+          IsGlobal: true
+        },
+        {
+          Id: -26,
+          Name: :,
+          IsGlobal: true
+        },
+        {
+          Id: -27,
+          Name: =,
+          IsGlobal: true
+        },
+        {
+          Id: -28,
+          Name: |,
+          IsGlobal: true
+        },
+        {
+          Id: -29,
+          Name: ;,
+          IsGlobal: true
+        },
+        {
+          Id: -30,
+          Name: $,
+          IsGlobal: true
+        },
+        {
+          Id: -31,
+          Name: %,
+          IsGlobal: true
+        },
+        {
+          Id: -32,
+          Name: {,
+          IsGlobal: true
+        },
+        {
+          Id: -33,
+          Name: },
+          IsGlobal: true
+        },
+        {
+          Id: -34,
+          Name: \,
+          IsGlobal: true
+        },
+        {
+          Id: -35,
+          Name: §,
+          IsGlobal: true
+        },
+        {
+          Id: -36,
+          Name: °,
+          IsGlobal: true
+        },
+        {
+          Id: -37,
+          Name: #string,
+          IsGlobal: true
+        },
+        {
+          Id: -38,
+          Name: #number,
+          IsGlobal: true
+        },
+        {
+          Id: -39,
+          Name: #boolean,
+          IsGlobal: true
+        },
+        {
+          Id: -40,
+          Name: #name,
+          IsGlobal: true
+        },
+        {
+          Id: -41,
+          Name: &&,
+          IsGlobal: true
+        },
+        {
+          Id: -42,
+          Name: ||,
+          IsGlobal: true
+        },
+        {
+          Id: -43,
+          Name: ==,
+          IsGlobal: true
+        },
+        {
+          Id: -44,
+          Name: ..,
+          IsGlobal: true
+        },
+        {
+          Id: -45,
+          Name: ??,
+          IsGlobal: true
+        },
+        {
+          Id: -46,
+          Name: ?.,
+          IsGlobal: true
+        },
+        {
+          Id: -47,
+          Name: :?,
+          IsGlobal: true
+        },
+        {
+          Id: -48,
+          Name: ->,
+          IsGlobal: true
+        },
+        {
+          Id: -49,
+          Name: =>,
+          IsGlobal: true
+        },
+        {
+          Id: -50,
+          Name: //,
+          IsGlobal: true
+        },
+        {
+          Id: -51,
+          Name: /*,
+          IsGlobal: true
+        },
+        {
+          Id: -52,
+          Name: */,
+          IsGlobal: true
+        },
+        {
+          Id: -53,
+          Name: error,
+          IsGlobal: true
+        },
+        {
+          Id: -54,
+          Name: +=,
+          IsGlobal: true
+        },
+        {
+          Id: -55,
+          Name: -=,
+          IsGlobal: true
+        },
+        {
+          Id: -56,
+          Name: *=,
+          IsGlobal: true
+        },
+        {
+          Id: -57,
+          Name: /=,
+          IsGlobal: true
+        },
+        {
+          Id: -58,
+          Name: ++,
+          IsGlobal: true
+        },
+        {
+          Id: -59,
+          Name: --,
+          IsGlobal: true
+        },
+        {
+          Id: -61,
+          Name: and,
+          IsGlobal: true
+        },
+        {
+          Id: -62,
+          Name: or,
+          IsGlobal: true
+        },
+        {
+          Id: -63,
+          Name: set,
+          IsGlobal: true
+        },
+        {
+          Id: -64,
+          Name: is,
+          IsGlobal: true
+        },
+        {
+          Id: -65,
+          Name: <=,
+          IsGlobal: true
+        },
+        {
+          Id: -66,
+          Name: >=,
+          IsGlobal: true
+        },
+        {
+          Id: -67,
+          Name: !=,
+          IsGlobal: true
+        },
+        {
+          Id: -68,
+          Name: if,
+          IsGlobal: true
+        },
+        {
+          Id: -69,
+          Name: equal,
+          IsGlobal: true
+        },
+        {
+          Id: -70,
+          Name: less,
+          IsGlobal: true
+        },
+        {
+          Id: -71,
+          Name: greater,
+          IsGlobal: true
+        },
+        {
+          Id: -72,
+          Name: than,
+          IsGlobal: true
+        },
+        {
+          Id: -73,
+          Name: then,
+          IsGlobal: true
+        },
+        {
+          Id: -74,
+          Name: to,
+          IsGlobal: true
+        },
+        {
+          Id: -75,
+          Name:  ,
+          IsGlobal: true
+        },
+        {
+          Id: -76,
+          Name: 	,
+          IsGlobal: true
+        },
+        {
+          Id: -77,
+          Name: 0x,
+          IsGlobal: true
+        },
+        {
+          Id: -78,
+          Name: 0b,
+          IsGlobal: true
+        },
+        {
+          Id: -79,
+          Name: true,
+          IsGlobal: true
+        },
+        {
+          Id: -80,
+          Name: false,
+          IsGlobal: true
+        }
+      ],
+      IsGlobal: true
+    },
+    Expr: {
+      Value: 5,
+      Range: {
+        Document: {
+          Filename: test.dsl,
+          Source: {
+            Length: 5,
+            IsEmpty: false
+          }
+        },
+        Start: {
+          Line: 1,
+          Column: 5
+        },
+        End: {
+          Line: 1,
+          Column: 5
+        }
+      }
+    },
+    Range: {
+      Document: {
+        Filename: test.dsl,
+        Source: {
+          Length: 5,
+          IsEmpty: false
+        }
+      },
+      Start: {
+        Line: 1,
+        Column: 1
+      },
+      End: {
+        Line: 1,
+        Column: 5
+      }
+    }
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: {
+      Length: 5,
+      IsEmpty: false
+    }
+  }
+}

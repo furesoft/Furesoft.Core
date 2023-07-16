@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Furesoft.Core.Storage.Index;
+﻿namespace Furesoft.Core.Storage.Index;
 
 	internal static class TreeHelper
 	{

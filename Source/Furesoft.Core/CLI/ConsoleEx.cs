@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.CLI;
+﻿namespace Furesoft.Core.CLI;
 
 	public static class ConsoleEx
 	{

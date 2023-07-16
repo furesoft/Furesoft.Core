@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.ObjectDB.Api;
+﻿namespace Furesoft.Core.ObjectDB.Api;
 
 	/// <summary>
 	/// Use when you want to enrich your class with OID.

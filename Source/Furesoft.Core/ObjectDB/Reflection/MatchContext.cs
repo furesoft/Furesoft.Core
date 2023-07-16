@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Furesoft.Core.ObjectDB.Reflection;
+﻿namespace Furesoft.Core.ObjectDB.Reflection;
 
 	internal sealed class MatchContext
 	{

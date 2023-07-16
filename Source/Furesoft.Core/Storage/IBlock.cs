@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Storage;
+﻿namespace Furesoft.Core.Storage;
 
 	public interface IBlock : IDisposable
 	{

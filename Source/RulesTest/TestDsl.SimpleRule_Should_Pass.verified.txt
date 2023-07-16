@@ -1,0 +1,10 @@
+﻿[
+  {
+    Name: DslRule`1,
+    Result: {
+      Name: Desktop Computer,
+      Price: 999.0,
+      Description: hello world
+    }
+  }
+]

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Activation.Strategies;
+﻿namespace Furesoft.Core.Activation.Strategies;
 
 public class SlowActivation : IActivationStrategy
 {

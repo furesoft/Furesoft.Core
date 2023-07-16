@@ -1,4 +1,3 @@
-using System;
 using Furesoft.Core.ObjectDB.Api.Triggers;
 
 namespace Furesoft.Core.ObjectDB.Triggers;

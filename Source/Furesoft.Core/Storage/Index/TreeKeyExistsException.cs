@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Storage.Index;
+﻿namespace Furesoft.Core.Storage.Index;
 
 	public class TreeKeyExistsException : Exception
 	{

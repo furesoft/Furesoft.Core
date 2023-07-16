@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Furesoft.Core.ObjectDB.Container;
+﻿namespace Furesoft.Core.ObjectDB.Container;
 
 	internal static class DependencyContainer
 	{

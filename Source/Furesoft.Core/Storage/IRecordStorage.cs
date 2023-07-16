@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Storage;
+﻿namespace Furesoft.Core.Storage;
 
 	/// <summary>
 	/// While IBlockStorage allows client to see a Stream as individual equal length blocks,

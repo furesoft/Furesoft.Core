@@ -2,7 +2,6 @@
 using Furesoft.Core.Rules.Models;
 using RulesTest.Models;
 using RulesTest.Rules;
-using Xunit;
 
 namespace RulesTest;
 

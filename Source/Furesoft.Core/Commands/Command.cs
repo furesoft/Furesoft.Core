@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Furesoft.Core.Commands;
+﻿namespace Furesoft.Core.Commands;
 
 	public class Command
 	{

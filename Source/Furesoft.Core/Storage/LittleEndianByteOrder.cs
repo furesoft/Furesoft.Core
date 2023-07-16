@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Furesoft.Core.Storage;
+﻿namespace Furesoft.Core.Storage;
 
 	/// <summary>
 	/// Helper class contains static methods to read and write
