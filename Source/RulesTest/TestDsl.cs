@@ -29,6 +29,13 @@ public class TestDsl
 
         return Verify(node);
     }
+    
+    [Fact]
+    public Task Set_Should_Pass() {
+        var node = Grammar.Parse<Grammar>("set x to 42.", "test.dsl");
+
+        return Verify(node);
+    }
 
     [Fact]
     public Task SimpleRule_Should_Pass()
