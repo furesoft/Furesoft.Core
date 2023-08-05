@@ -4,6 +4,7 @@
 	<TargetFramework>net7.0</TargetFramework>
 	<LangVersion>latest</LangVersion>
 	<EnablePreviewFeatures>True</EnablePreviewFeatures>
+	<Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
