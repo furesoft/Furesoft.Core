@@ -2,8 +2,7 @@
 using Argon;
 using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
-using Furesoft.PrattParser;
-using Furesoft.PrattParser.Text;
+using Furesoft.PrattParser.Testing;
 using RulesTest.Models;
 
 namespace RulesTest;
@@ -11,37 +10,6 @@ namespace RulesTest;
 [UsesVerify]
 public class TestDsl
 {
-    class SymbolConverter : WriteOnlyJsonConverter<Symbol>
-    {
-        public override void Write(VerifyJsonWriter writer, Symbol value)
-        {
-            writer.WriteRawValue($"{value.Name}");
-        }
-    }
-    
-    class RangeConverter : WriteOnlyJsonConverter<SourceRange>
-    {
-        public override void Write(VerifyJsonWriter writer, SourceRange value)
-        {
-            writer.WriteRawValue($"{value.Start}-{value.End}");
-        }
-    }
-    
-    class DocumentConverter : WriteOnlyJsonConverter<SourceDocument>
-    {
-        public override void Write(VerifyJsonWriter writer, SourceDocument value)
-        {
-            writer.WriteStartObject();
-            writer.WritePropertyName("Filename");
-            writer.WriteRawValue(value.Filename);
-            
-            writer.WritePropertyName("Source");
-            writer.WriteRawValue(value.Source.ToString());
-            
-            writer.WriteEndObject();
-        }
-    }
-    
     [ModuleInitializer]
     public static void Init()
     {
