@@ -26,18 +26,18 @@ public class TestDsl
     public Task Not_Should_Pass()
     {
         var node = Grammar.Parse<Grammar>("not 5", "test.dsl");
-        
+
         return Verify(node);
     }
-    
+
     [Fact]
     public Task Percent_Should_Pass()
     {
         var node = Grammar.Parse<Grammar>("5%", "test.dsl");
-        
+
         return Verify(node);
     }
-    
+
     [Fact]
     public Task Comparison_Should_Pass()
     {
@@ -47,28 +47,51 @@ public class TestDsl
     }
 
     [Fact]
-    public Task If_Should_Pass() {
+    public Task If_Should_Pass()
+    {
         var node = Grammar.Parse<Grammar>("if 5 is equal to 5 then error 'something went wrong'", "test.dsl");
 
         return Verify(node);
     }
-    
+
     [Fact]
-    public Task Set_Should_Pass() {
+    public Task Set_Should_Pass()
+    {
         var node = Grammar.Parse<Grammar>("set x to 42.", "test.dsl");
 
         return Verify(node);
     }
 
     [Fact]
+    public Task Parse_Time_Seconds_Should_Pass()
+    {
+        var node = Grammar.Parse<Grammar>("set x to 12s.", "test.dsl");
+
+        return Verify(node);
+    }
+
+    [Fact]
+    public Task Evaluate_Time_Seconds_Should_Pass()
+    {
+        var node = Grammar.Parse<Grammar>("12s", "test.dsl");
+        var visitor = new EvaluationVisitor<object>();
+
+        var evaluationResult = visitor.ToLambda(node.Tree.Accept(visitor));
+
+        var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
+
+        return Verify(_evaluate(new { }, new()));
+    }
+
+    [Fact]
     public Task SimpleRule_Should_Pass()
     {
-        var engine = RuleEngine<Product>.GetInstance(new Product() { Description = "hello world", Price = 999});
-        
+        var engine = RuleEngine<Product>.GetInstance(new() {Description = "hello world", Price = 999});
+
         engine.AddRule("if Description == 'hello world' then error 'wrong key'");
 
         var result = engine.Execute();
-        
+
         return Verify(result);
     }
 }

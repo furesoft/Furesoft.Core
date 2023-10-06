@@ -37,6 +37,14 @@ public class Grammar : Parser<AstNode>
         Register("set", new AssignmentParselet());
         
         Postfix("%", BindingPower.PostFix);
+
+
+        Postfix("d", BindingPower.PostFix);
+        Postfix("h", BindingPower.PostFix);
+        Postfix("m", BindingPower.PostFix);
+        Postfix("s", BindingPower.PostFix);
+        Postfix("ms", BindingPower.PostFix);
+        Postfix("qs", BindingPower.PostFix);
     }
 
     protected override void InitLexer(Lexer lexer)

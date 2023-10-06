@@ -1,15 +1,13 @@
-﻿using System.Linq;
-using Furesoft.Core.Rules;
+﻿using Furesoft.Core.Rules;
 using RulesTest.AsyncRules;
 using RulesTest.Models;
-using Xunit;
 
 namespace RulesTest;
 
 public class TestParallelRule
 {
     [Fact]
-    public void TestParallelRules()
+    public async void TestParallelRules()
     {
         var product = new Product();
         var engineExecutor = RuleEngine<Product>.GetInstance(product);
@@ -20,7 +18,7 @@ public class TestParallelRule
             new ProductParallelUpdateDescriptionRuleAsync(),
             new ProductParallelUpdatePriceRuleAsync());
 
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
 
         Assert.NotNull(ruleResults);
         Assert.Equal("Product", product.Name);
@@ -29,7 +27,7 @@ public class TestParallelRule
     }
 
     [Fact]
-    public void TestNestedParallelRules()
+    public async void TestNestedParallelRules()
     {
         var product = new Product();
         var engineExecutor = RuleEngine<Product>.GetInstance(product);
@@ -40,7 +38,7 @@ public class TestParallelRule
             new ProductNestedParallelUpdateB(),
             new ProductNestedParallelUpdateC());
 
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
         Assert.Equal(8, ruleResults.Count());
     }
 }

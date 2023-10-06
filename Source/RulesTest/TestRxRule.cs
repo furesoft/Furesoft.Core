@@ -2,7 +2,6 @@
 using RulesTest.AsyncRules;
 using RulesTest.Models;
 using RulesTest.Rules;
-using Xunit;
 
 namespace RulesTest;
 
@@ -41,12 +40,12 @@ public class TestRxRule
     }        
 
     [Fact]
-    public void TestExceptionHandlerAsync()
+    public async void TestExceptionHandlerAsync()
     {
         var product = new Product();
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(product);
         ruleEngineExecutor.AddRules(new ProductExceptionHandlerAsync(), new ProductExceptionThrownAsync());
-        var rr = ruleEngineExecutor.ExecuteAsync().Result;
+        var rr = await ruleEngineExecutor.ExecuteAsync();
         Assert.NotNull(rr.FindRuleResult<ProductExceptionHandlerAsync>().Error.Exception);
     }
 
@@ -61,12 +60,12 @@ public class TestRxRule
     }
 
     [Fact]
-    public void TestGlobalExceptionHandlerAsync()
+    public async void TestGlobalExceptionHandlerAsync()
     {
         var product = new Product();
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(product);
         ruleEngineExecutor.AddRules(new ProductGlobalExceptionHandlerAsync(), new ProductExceptionThrownAsync());
-        var rr = ruleEngineExecutor.ExecuteAsync().Result;
+        var rr = await ruleEngineExecutor.ExecuteAsync();
         Assert.NotNull(rr.FindRuleResult<ProductGlobalExceptionHandlerAsync>().Error.Exception);
     }
 }

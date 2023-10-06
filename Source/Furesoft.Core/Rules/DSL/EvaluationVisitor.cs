@@ -10,14 +10,27 @@ namespace Furesoft.Core.Rules.DSL;
 public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     where T : class, new()
 {
-    private readonly ParameterExpression _modelParameterExpression = Expression.Parameter(typeof(T), "model");
-    private readonly ParameterExpression _errorsParameterExpression = Expression.Parameter(typeof(List<string>), "errors");
     private readonly List<string> _errors = new();
+
+    private readonly ParameterExpression _errorsParameterExpression =
+        Expression.Parameter(typeof(List<string>), "errors");
+
+    private readonly ParameterExpression _modelParameterExpression = Expression.Parameter(typeof(T), "model");
+
+    private readonly Dictionary<string, string> _timePostfixConverters = new()
+    {
+        ["s"] = "FromSeconds",
+        ["m"] = "FromMinutes",
+        ["d"] = "FromDays",
+        ["h"] = "FromHours",
+        ["ms"] = "FromMilliseconds",
+        ["qs"] = "FromMicroseconds"
+    };
 
     public Expression Visit(AstNode node)
     {
         Expression body = null;
-        
+
         VisitBinary(node, ref body);
         VisitPrefix(node, ref body);
         VisitPostfix(node, ref body);
@@ -26,44 +39,32 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
         // ToDo: remove temporary fix
         if (node is BinaryOperatorNode bin && bin.Operator.Name == "=")
-        {
             body = Expression.Block(body, Expression.Constant(true));
-        }
 
-        if (VisitConstant(node, out var visit))
-        {
-            return visit;
-        }
+        if (VisitConstant(node, out var visit)) return visit;
 
-        if (VisitName(node, out var expression))
-        {
-            return expression;
-        }
+        if (VisitName(node, out var expression)) return expression;
 
         return body;
     }
 
     private void VisitIf(AstNode node, ref Expression body)
     {
-        if (node is not IfNode ifNode)
-        {
-            return;
-        }
+        if (node is not IfNode ifNode) return;
 
-        body = Expression.Block(Expression.IfThen(Visit(ifNode.Condition), Visit(ifNode.Body)), Expression.Constant(true));
+        body = Expression.Block(Expression.IfThen(Visit(ifNode.Condition), Visit(ifNode.Body)),
+            Expression.Constant(true));
     }
 
     private void VisitError(AstNode node, ref Expression body)
     {
-        if (node is not ErrorNode error)
-        {
-            return;
-        }
+        if (node is not ErrorNode error) return;
 
         var msg = Expression.Constant(error.Message);
         var addMethod = _errors.Add;
-        
-        body = Expression.Block(Expression.Call(_errorsParameterExpression, addMethod.Method, msg), Expression.Constant(false));
+
+        body = Expression.Block(Expression.Call(_errorsParameterExpression, addMethod.Method, msg),
+            Expression.Constant(false));
     }
 
     private bool VisitName(AstNode node, out Expression expression)
@@ -71,10 +72,10 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         if (node is NameAstNode name)
         {
             expression = Expression.MakeMemberAccess(_modelParameterExpression, GetMemberInfo(name));
-            
+
             return true;
         }
-        
+
         expression = Expression.Empty();
         return false;
     }
@@ -96,19 +97,19 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             case LiteralNode<long> ci:
                 visit = Expression.Constant(ci.Value);
                 return true;
-            
+
             case LiteralNode<ulong> uic:
                 visit = Expression.Constant(uic.Value);
                 return true;
-            
+
             case LiteralNode<string> cs:
                 visit = Expression.Constant(cs.Value);
                 return true;
-            
+
             case LiteralNode<bool> cb:
                 visit = Expression.Constant(cb.Value);
                 return true;
-            
+
             case LiteralNode<double> cbd:
                 visit = Expression.Constant(cbd.Value);
                 return true;
@@ -120,9 +121,9 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
     private void VisitPrefix(AstNode node, ref Expression result)
     {
-        if (node is not PrefixOperatorNode prefixOperatorNode) 
+        if (node is not PrefixOperatorNode prefixOperatorNode)
             return;
-        
+
         var visited = Visit(prefixOperatorNode.Expr);
 
         result = prefixOperatorNode.Operator.Name switch
@@ -131,25 +132,44 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             _ => result
         };
     }
-    
+
     private void VisitPostfix(AstNode node, ref Expression result)
     {
-        if (node is not PostfixOperatorNode postfix) 
+        if (node is not PostfixOperatorNode postfix)
             return;
-        
+
         var visited = Visit(postfix.Expr);
+
+        if (_timePostfixConverters.TryGetValue(postfix.Operator.Name, out var timeConverter))
+        {
+            result = VisitTimePostFix(postfix, timeConverter);
+
+            return;
+        }
 
         result = postfix.Operator.Name switch
         {
-            "%" => Expression.Divide( Expression.Convert(visited, typeof(double)), Expression.Constant(100.0)),
+            "%" => Expression.Divide(Expression.Convert(visited, typeof(double)), Expression.Constant(100.0)),
             _ => result
         };
     }
 
+    private Expression VisitTimePostFix(PostfixOperatorNode node, string timeConverter)
+    {
+        var arg = Visit(node.Expr);
+
+        if (arg.Type != typeof(double))
+        {
+            arg = Expression.Convert(arg, typeof(double));
+        }
+
+        return Expression.Call(typeof(TimeSpan), timeConverter, null, arg);
+    }
+
     private void VisitBinary(AstNode node, ref Expression result)
     {
-        if (node is not BinaryOperatorNode binaryOperatorNode) 
-             return;
+        if (node is not BinaryOperatorNode binaryOperatorNode)
+            return;
 
         var leftVisited = Visit(binaryOperatorNode.LeftExpr);
         var rightVisited = Visit(binaryOperatorNode.RightExpr);
@@ -160,17 +180,17 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
             "-" => Expression.Subtract(leftVisited, rightVisited),
             "*" => Expression.Multiply(leftVisited, rightVisited),
             "/" => Expression.Divide(leftVisited, rightVisited),
-            
+
             "==" => Expression.Equal(leftVisited, rightVisited),
             "!=" => Expression.NotEqual(leftVisited, rightVisited),
-            
+
             "<=" => Expression.LessThanOrEqual(leftVisited, rightVisited),
             ">=" => Expression.GreaterThanOrEqual(leftVisited, rightVisited),
             "<" => Expression.LessThan(leftVisited, rightVisited),
             ">" => Expression.GreaterThan(leftVisited, rightVisited),
-            
+
             "=" => Expression.Assign(leftVisited, rightVisited),
-            
+
             _ => result
         };
     }

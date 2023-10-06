@@ -1,31 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Furesoft.Core.Rules;
-using Furesoft.Core.Rules.Interfaces;
+﻿using Furesoft.Core.Rules;
 using RulesTest.AsyncRules;
 using RulesTest.Models;
-using Xunit;
 
 namespace RulesTest;
 
 public class TestRuleAsync
 {
     [Fact]
-    public void TestInvokeAsync()
+    public async void TestInvokeAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
         ruleEngineExecutor.AddRules(new ProductRuleAsync());
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
         Assert.Equal("Product Description", ruleResults.First().Result);
     }
 
     [Fact]
-    public void TestBeforeInvokeAsync()
+    public async void TestBeforeInvokeAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
         ruleEngineExecutor.AddRules(new ProductRuleAsync());
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
 
         object value;
         ruleResults.First().Data.TryGetValue("Description", out value);
@@ -33,56 +28,56 @@ public class TestRuleAsync
     }
 
     [Fact]
-    public void TestAfterInvokeAsync()
+    public async void TestAfterInvokeAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
         ruleEngineExecutor.AddRules(new ProductTerminateAsyncA(), new ProductTerminateAsyncB());
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults =await ruleEngineExecutor.ExecuteAsync();
         Assert.Single(ruleResults);
     }
 
     [Fact]
-    public void TestSkipAsync()
+    public async void TestSkipAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
         ruleEngineExecutor.AddRules(new ProductSkipAsync());
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
         Assert.False(ruleResults.Any());
     }
 
     [Fact]
-    public void TestTerminateAsync()
+    public async void TestTerminateAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
         ruleEngineExecutor.AddRules(new ProductTerminateAsyncA(), new ProductTerminateAsyncB());
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
         Assert.Single(ruleResults);
     }
 
     [Fact]
-    public void TestConstraintAsync()
+    public async void TestConstraintAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
         ruleEngineExecutor.AddRules(new ProductConstraintAsyncA(), new ProductConstraintAsyncB());
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
         Assert.Single(ruleResults);
     }
 
     [Fact]
-    public void TestTryAddTryGetValueAsync()
+    public async void TestTryAddTryGetValueAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
         ruleEngineExecutor.AddRules(new ProductTryAddAsync(), new ProductTryGetValueAsync());
-        var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+        var ruleResults = await ruleEngineExecutor.ExecuteAsync();
         Assert.Equal("Product Description", ruleResults.First().Result);
     }
 
     [Fact]
-    public void TestExecutionOrder()
+    public async void TestExecutionOrder()
     {
-        var ruleResults = RuleEngine<Product>.GetInstance(new Product())
+        var ruleResults = await RuleEngine<Product>.GetInstance(new Product())
             .ApplyRules(new ProductAExecutionOrderRuleAsync(), new ProductBExecutionOrderRuleAsync())
-            .ExecuteAsync().Result;
+            .ExecuteAsync();
 
         var productBExecutionOrderRuleAsync = ruleResults.FindRuleResult<ProductBExecutionOrderRuleAsync>();
         var productAExecutionOrderRuleAsync = ruleResults.FindRuleResult<ProductAExecutionOrderRuleAsync>();
