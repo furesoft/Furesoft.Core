@@ -24,7 +24,7 @@ public class Grammar : Parser<AstNode>
         Register("is", new ConditionParselet());
         Register("if", new IfParselet());
         
-        Block(PredefinedSymbols.Dot, PredefinedSymbols.EOF);
+        Block(PredefinedSymbols.Dot, PredefinedSymbols.EOF, 0);
     }
 
     private void AddOperators()
