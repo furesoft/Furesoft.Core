@@ -1,0 +1,12 @@
+﻿{
+  $type: TranslationUnit<AstNode>,
+  Tree: {
+    $type: LiteralNode<ulong>,
+    Value: 1,
+    Range: 1:1-1:1
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: 1m 12s.
+  }
+}

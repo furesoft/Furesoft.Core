@@ -71,6 +71,27 @@ public class TestDsl
     }
 
     [Fact]
+    public Task Time_Seconds_Should_Pass()
+    {
+        var node = Grammar.Parse<Grammar>("12s.", "test.dsl");
+
+        return Verify(node);
+    }
+
+    [Fact]
+    public Task Add_Time_Seconds_Should_Pass()
+    {
+        var node = Grammar.Parse<Grammar>("1m + 12s", "test.dsl");
+        var visitor = new EvaluationVisitor<object>();
+
+        var evaluationResult = visitor.ToLambda(node.Tree.Accept(visitor));
+
+        var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
+
+        return Verify(_evaluate(new { }, new()));
+    }
+
+    [Fact]
     public Task Evaluate_Time_Seconds_Should_Pass()
     {
         var node = Grammar.Parse<Grammar>("12s", "test.dsl");
