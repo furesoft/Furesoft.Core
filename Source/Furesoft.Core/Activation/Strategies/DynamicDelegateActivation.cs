@@ -5,8 +5,6 @@ namespace Furesoft.Core.Activation.Strategies;
 
 public class DynamicDelegateActivation : IActivationStrategy
 {
-    private delegate object ObjectActivator(object[] args);
-
     public object Activate(Type type, object[] args)
     {
         var argTypes = args?.Select(_ => _.GetType()).ToArray();
@@ -53,6 +51,8 @@ public class DynamicDelegateActivation : IActivationStrategy
         var lambda = Expression.Lambda(typeof(ObjectActivator), newExp, param);
 
         //compile it
-        return (ObjectActivator)lambda.Compile();
+        return (ObjectActivator) lambda.Compile();
     }
+
+    private delegate object ObjectActivator(object[] args);
 }

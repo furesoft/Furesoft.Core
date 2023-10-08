@@ -3,286 +3,285 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 
-	/// <summary>
-	///   The local implementation of the Object Introspector.
-	/// </summary>
-	internal sealed class ObjectIntrospector : IObjectIntrospector
-	{
-		private readonly IObjectIntrospectionDataProvider _classInfoProvider;
+/// <summary>
+///     The local implementation of the Object Introspector.
+/// </summary>
+internal sealed class ObjectIntrospector : IObjectIntrospector
+{
+    private readonly IObjectIntrospectionDataProvider _classInfoProvider;
 
-		public ObjectIntrospector(IObjectIntrospectionDataProvider classInfoProvider)
-		{
-			_classInfoProvider = classInfoProvider;
-		}
+    public ObjectIntrospector(IObjectIntrospectionDataProvider classInfoProvider)
+    {
+        _classInfoProvider = classInfoProvider;
+    }
 
-		#region IObjectIntrospector Members
+    private NonNativeObjectInfo BuildNnoi(object o, ClassInfo classInfo)
+    {
+        var nnoi = new NonNativeObjectInfo(o, classInfo);
 
-		public AbstractObjectInfo GetMetaRepresentation(object plainObject, bool recursive,
-														IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
-														IIntrospectionCallback callback)
-		{
-			if (plainObject == null)
-				return GetObjectInfo(null, null, recursive, alreadyReadObjects, callback);
+        return _classInfoProvider.EnrichWithOid(nnoi, o);
+    }
 
-			// The object must be transformed into meta representation
-			var type = plainObject.GetType();
+    /// <summary>
+    ///     retrieve object data
+    /// </summary>
+    /// <returns> The object info </returns>
+    private AbstractObjectInfo GetObjectInfo(object o, ClassInfo ci, bool recursive,
+        IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
+        IIntrospectionCallback callback)
+    {
+        return GetObjectInfoInternal(null, o, ci, recursive, alreadyReadObjects, callback);
+    }
 
-			var classInfo = _classInfoProvider.GetClassInfo(type);
+    private AbstractObjectInfo GetNativeObjectInfoInternal(OdbType type, object o, bool recursive,
+        IDictionary<object, NonNativeObjectInfo>
+            alreadyReadObjects, IIntrospectionCallback callback)
+    {
+        AbstractObjectInfo aoi = null;
+        if (type.IsAtomicNative())
+        {
+            if (o == null)
+                aoi = new NullNativeObjectInfo(type.Id);
+            else
+                aoi = new AtomicNativeObjectInfo(o, type.Id);
+        }
+        else if (type.IsArray())
+        {
+            if (o == null)
+            {
+                aoi = new ArrayObjectInfo(null);
+            }
+            else
+            {
+                // Gets the type of the elements of the array
+                var realArrayClassName = OdbClassNameResolver.GetFullName(o.GetType().GetElementType());
+                var arrayObjectInfo = recursive
+                    ? IntrospectArray(o, alreadyReadObjects, type, callback)
+                    : new((object[]) o);
 
-			return GetObjectInfo(plainObject, classInfo, recursive, alreadyReadObjects, callback);
-		}
+                arrayObjectInfo.SetRealArrayComponentClassName(realArrayClassName);
+                aoi = arrayObjectInfo;
+            }
+        }
+        else if (type.IsEnum())
+        {
+            var enumObject = (Enum) o;
 
-		public void Clear()
-		{
-			_classInfoProvider.Clear();
-		}
+            // Here we must check if the enum is already in the meta model. Enum must be stored in the meta
+            // model to optimize its storing as we need to keep track of the enum class
+            // for each enum stored. So instead of storing the enum class name, we can store enum class id, a long
+            // instead of the full enum class name string
+            var classInfo = GetClassInfo(enumObject.GetType());
+            var enumValue = enumObject.ToString();
+            aoi = new EnumNativeObjectInfo(classInfo, enumValue);
+        }
 
-		#endregion IObjectIntrospector Members
+        return aoi;
+    }
 
-		private NonNativeObjectInfo BuildNnoi(object o, ClassInfo classInfo)
-		{
-			var nnoi = new NonNativeObjectInfo(o, classInfo);
+    /// <summary>
+    ///     Build a meta representation of an object
+    ///     <pre>
+    ///         warning: When an object has two fields with the same name
+    ///         (a private field with the same name in a parent class, the deeper field (of the parent) is ignored!)
+    ///     </pre>
+    /// </summary>
+    /// <returns> The ObjectInfo </returns>
+    private AbstractObjectInfo GetObjectInfoInternal(AbstractObjectInfo nnoi, object o, ClassInfo classInfo,
+        bool recursive,
+        IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
+        IIntrospectionCallback callback)
+    {
+        if (o == null)
+            return NullNativeObjectInfo.GetInstance();
 
-			return _classInfoProvider.EnrichWithOid(nnoi, o);
-		}
+        var clazz = o.GetType();
+        var type = OdbType.GetFromClass(clazz);
+        if (type.IsNative())
+            return GetNativeObjectInfoInternal(type, o, recursive, alreadyReadObjects, callback);
 
-		/// <summary>
-		///   retrieve object data
-		/// </summary>
-		/// <returns> The object info </returns>
-		private AbstractObjectInfo GetObjectInfo(object o, ClassInfo ci, bool recursive,
-												 IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
-												 IIntrospectionCallback callback)
-		{
-			return GetObjectInfoInternal(null, o, ci, recursive, alreadyReadObjects, callback);
-		}
+        // sometimes the type.getName() may not match the ci.getClassName()
+        // It happens when the attribute is an interface or superclass of the
+        // real attribute class
+        // In this case, ci must be updated to the real class info
+        if (classInfo != null && !classInfo.FullClassName.Equals(OdbClassNameResolver.GetFullName(clazz)))
+        {
+            classInfo = GetClassInfo(clazz);
+            nnoi = null;
+        }
 
-		private AbstractObjectInfo GetNativeObjectInfoInternal(OdbType type, object o, bool recursive,
-															   IDictionary<object, NonNativeObjectInfo>
-																   alreadyReadObjects, IIntrospectionCallback callback)
-		{
-			AbstractObjectInfo aoi = null;
-			if (type.IsAtomicNative())
-			{
-				if (o == null)
-					aoi = new NullNativeObjectInfo(type.Id);
-				else
-					aoi = new AtomicNativeObjectInfo(o, type.Id);
-			}
-			else if (type.IsArray())
-			{
-				if (o == null)
-				{
-					aoi = new ArrayObjectInfo(null);
-				}
-				else
-				{
-					// Gets the type of the elements of the array
-					var realArrayClassName = OdbClassNameResolver.GetFullName(o.GetType().GetElementType());
-					var arrayObjectInfo = recursive
-											  ? IntrospectArray(o, alreadyReadObjects, type, callback)
-											  : new((object[])o);
+        var mainAoi = (NonNativeObjectInfo) nnoi;
+        var isRootObject = false;
 
-					arrayObjectInfo.SetRealArrayComponentClassName(realArrayClassName);
-					aoi = arrayObjectInfo;
-				}
-			}
-			else if (type.IsEnum())
-			{
-				var enumObject = (Enum)o;
+        if (alreadyReadObjects == null)
+        {
+            alreadyReadObjects = new OdbHashMap<object, NonNativeObjectInfo>();
+            isRootObject = true;
+        }
 
-				// Here we must check if the enum is already in the meta model. Enum must be stored in the meta
-				// model to optimize its storing as we need to keep track of the enum class
-				// for each enum stored. So instead of storing the enum class name, we can store enum class id, a long
-				// instead of the full enum class name string
-				var classInfo = GetClassInfo(enumObject.GetType());
-				var enumValue = enumObject.ToString();
-				aoi = new EnumNativeObjectInfo(classInfo, enumValue);
-			}
+        alreadyReadObjects.TryGetValue(o, out var cachedNnoi);
 
-			return aoi;
-		}
+        if (cachedNnoi != null)
+            return new ObjectReference(cachedNnoi);
 
-		/// <summary>
-		///   Build a meta representation of an object
-		///   <pre>warning: When an object has two fields with the same name
-		///        (a private field with the same name in a parent class, the deeper field (of the parent) is ignored!)</pre>
-		/// </summary>
-		/// <returns> The ObjectInfo </returns>
-		private AbstractObjectInfo GetObjectInfoInternal(AbstractObjectInfo nnoi, object o, ClassInfo classInfo,
-														 bool recursive,
-														 IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
-														 IIntrospectionCallback callback)
-		{
-			if (o == null)
-				return NullNativeObjectInfo.GetInstance();
+        if (callback != null)
+            callback.ObjectFound(o);
 
-			var clazz = o.GetType();
-			var type = OdbType.GetFromClass(clazz);
-			if (type.IsNative())
-				return GetNativeObjectInfoInternal(type, o, recursive, alreadyReadObjects, callback);
+        if (mainAoi == null)
+            mainAoi = BuildNnoi(o, classInfo);
 
-			// sometimes the type.getName() may not match the ci.getClassName()
-			// It happens when the attribute is an interface or superclass of the
-			// real attribute class
-			// In this case, ci must be updated to the real class info
-			if (classInfo != null && !classInfo.FullClassName.Equals(OdbClassNameResolver.GetFullName(clazz)))
-			{
-				classInfo = GetClassInfo(clazz);
-				nnoi = null;
-			}
-			var mainAoi = (NonNativeObjectInfo)nnoi;
-			var isRootObject = false;
+        alreadyReadObjects[o] = mainAoi;
 
-			if (alreadyReadObjects == null)
-			{
-				alreadyReadObjects = new OdbHashMap<object, NonNativeObjectInfo>();
-				isRootObject = true;
-			}
+        var fields = ClassIntrospector.GetAllFieldsFrom(clazz);
 
-			alreadyReadObjects.TryGetValue(o, out var cachedNnoi);
+        foreach (var field in fields)
+            try
+            {
+                var value = field.GetValue(o);
+                var attributeId = classInfo.GetAttributeId(field.Name);
+                if (attributeId == -1)
+                    throw new OdbRuntimeException(
+                        NDatabaseError.ObjectIntrospectorNoFieldWithName.AddParameter(classInfo.FullClassName)
+                            .AddParameter(field.Name));
 
-			if (cachedNnoi != null)
-				return new ObjectReference(cachedNnoi);
+                var valueType = OdbType.GetFromClass(value == null
+                    ? field.FieldType
+                    : value.GetType());
+                // for native fields
+                AbstractObjectInfo abstractObjectInfo;
 
-			if (callback != null)
-				callback.ObjectFound(o);
+                if (valueType.IsNative())
+                {
+                    abstractObjectInfo = GetNativeObjectInfoInternal(valueType, value, recursive, alreadyReadObjects,
+                        callback);
+                    mainAoi.SetAttributeValue(attributeId, abstractObjectInfo);
+                }
+                else
+                {
+                    // Non Native Objects
+                    if (value == null)
+                    {
+                        var classInfo1 = GetClassInfo(field.GetType());
 
-			if (mainAoi == null)
-				mainAoi = BuildNnoi(o, classInfo);
+                        abstractObjectInfo = new NonNativeNullObjectInfo(classInfo1);
+                        mainAoi.SetAttributeValue(attributeId, abstractObjectInfo);
+                    }
+                    else
+                    {
+                        var classInfo2 = GetClassInfo(value.GetType());
+                        if (recursive)
+                        {
+                            abstractObjectInfo = GetObjectInfoInternal(null, value, classInfo2, true,
+                                alreadyReadObjects, callback);
+                            mainAoi.SetAttributeValue(attributeId, abstractObjectInfo);
+                        }
+                        else
+                        {
+                            // When it is not recursive, simply add the object
+                            // values.add(value);
+                            throw new OdbRuntimeException(
+                                NDatabaseError.InternalError.AddParameter(
+                                    "Should not enter here - ObjectIntrospector - 'simply add the object'"));
+                        }
+                    }
+                }
+            }
+            catch (ArgumentException e)
+            {
+                throw new OdbRuntimeException(
+                    NDatabaseError.InternalError.AddParameter("in getObjectInfoInternal"), e);
+            }
+            catch (MemberAccessException e)
+            {
+                throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter("getObjectInfoInternal"), e);
+            }
 
-			alreadyReadObjects[o] = mainAoi;
+        if (isRootObject)
+            alreadyReadObjects.Clear();
 
-			var fields = ClassIntrospector.GetAllFieldsFrom(clazz);
+        return mainAoi;
+    }
 
-			foreach (var field in fields)
-			{
-				try
-				{
-					var value = field.GetValue(o);
-					var attributeId = classInfo.GetAttributeId(field.Name);
-					if (attributeId == -1)
-					{
-						throw new OdbRuntimeException(
-							NDatabaseError.ObjectIntrospectorNoFieldWithName.AddParameter(classInfo.FullClassName).
-								AddParameter(field.Name));
-					}
+    private ClassInfo GetClassInfo(Type type)
+    {
+        return _classInfoProvider.GetClassInfo(type);
+    }
 
-					var valueType = OdbType.GetFromClass(value == null
-															 ? field.FieldType
-															 : value.GetType());
-					// for native fields
-					AbstractObjectInfo abstractObjectInfo;
+    private ArrayObjectInfo IntrospectArray(object array,
+        IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
+        OdbType odbType, IIntrospectionCallback callback)
+    {
+        var length = ((Array) array).GetLength(0);
+        var elementType = array.GetType().GetElementType();
+        var type = OdbType.GetFromClass(elementType);
 
-					if (valueType.IsNative())
-					{
-						abstractObjectInfo = GetNativeObjectInfoInternal(valueType, value, recursive, alreadyReadObjects,
-																		 callback);
-						mainAoi.SetAttributeValue(attributeId, abstractObjectInfo);
-					}
-					else
-					{
-						// Non Native Objects
-						if (value == null)
-						{
-							var classInfo1 = GetClassInfo(field.GetType());
+        if (type.IsAtomicNative())
+            return IntropectAtomicNativeArray(array, type);
 
-							abstractObjectInfo = new NonNativeNullObjectInfo(classInfo1);
-							mainAoi.SetAttributeValue(attributeId, abstractObjectInfo);
-						}
-						else
-						{
-							var classInfo2 = GetClassInfo(value.GetType());
-							if (recursive)
-							{
-								abstractObjectInfo = GetObjectInfoInternal(null, value, classInfo2, true,
-																		   alreadyReadObjects, callback);
-								mainAoi.SetAttributeValue(attributeId, abstractObjectInfo);
-							}
-							else
-							{
-								// When it is not recursive, simply add the object
-								// values.add(value);
-								throw new OdbRuntimeException(
-									NDatabaseError.InternalError.AddParameter(
-										"Should not enter here - ObjectIntrospector - 'simply add the object'"));
-							}
-						}
-					}
-				}
-				catch (ArgumentException e)
-				{
-					throw new OdbRuntimeException(
-						NDatabaseError.InternalError.AddParameter("in getObjectInfoInternal"), e);
-				}
-				catch (MemberAccessException e)
-				{
-					throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter("getObjectInfoInternal"), e);
-				}
-			}
+        var arrayCopy = new object[length];
+        for (var i = 0; i < length; i++)
+        {
+            var o = ((Array) array).GetValue(i);
+            if (o != null)
+            {
+                var classInfo = GetClassInfo(o.GetType());
+                var abstractObjectInfo = GetObjectInfo(o, classInfo, true, alreadyReadObjects, callback);
+                arrayCopy[i] = abstractObjectInfo;
+            }
+            else
+            {
+                arrayCopy[i] = NullNativeObjectInfo.GetInstance();
+            }
+        }
 
-			if (isRootObject)
-				alreadyReadObjects.Clear();
+        return new(arrayCopy, odbType, type.Id);
+    }
 
-			return mainAoi;
-		}
+    private static ArrayObjectInfo IntropectAtomicNativeArray(object array, OdbType type)
+    {
+        var length = ((Array) array).GetLength(0);
+        var arrayCopy = new object[length];
+        for (var i = 0; i < length; i++)
+        {
+            var o = ((Array) array).GetValue(i);
+            if (o != null)
+            {
+                // If object is not null, try to get the exact type
+                var typeId = OdbType.GetFromClass(o.GetType()).Id;
+                var atomicNativeObjectInfo = new AtomicNativeObjectInfo(o, typeId);
+                arrayCopy[i] = atomicNativeObjectInfo;
+            }
+            else
+            {
+                // Else take the declared type
+                arrayCopy[i] = new NullNativeObjectInfo(type.Id);
+            }
+        }
 
-		private ClassInfo GetClassInfo(Type type)
-		{
-			return _classInfoProvider.GetClassInfo(type);
-		}
+        return new(arrayCopy, OdbType.Array, type.Id);
+    }
 
-		private ArrayObjectInfo IntrospectArray(object array,
-												IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
-												OdbType odbType, IIntrospectionCallback callback)
-		{
-			var length = ((Array)array).GetLength(0);
-			var elementType = array.GetType().GetElementType();
-			var type = OdbType.GetFromClass(elementType);
+    #region IObjectIntrospector Members
 
-			if (type.IsAtomicNative())
-				return IntropectAtomicNativeArray(array, type);
+    public AbstractObjectInfo GetMetaRepresentation(object plainObject, bool recursive,
+        IDictionary<object, NonNativeObjectInfo> alreadyReadObjects,
+        IIntrospectionCallback callback)
+    {
+        if (plainObject == null)
+            return GetObjectInfo(null, null, recursive, alreadyReadObjects, callback);
 
-			var arrayCopy = new object[length];
-			for (var i = 0; i < length; i++)
-			{
-				var o = ((Array)array).GetValue(i);
-				if (o != null)
-				{
-					var classInfo = GetClassInfo(o.GetType());
-					var abstractObjectInfo = GetObjectInfo(o, classInfo, true, alreadyReadObjects, callback);
-					arrayCopy[i] = abstractObjectInfo;
-				}
-				else
-				{
-					arrayCopy[i] = NullNativeObjectInfo.GetInstance();
-				}
-			}
+        // The object must be transformed into meta representation
+        var type = plainObject.GetType();
 
-			return new(arrayCopy, odbType, type.Id);
-		}
+        var classInfo = _classInfoProvider.GetClassInfo(type);
 
-		private static ArrayObjectInfo IntropectAtomicNativeArray(object array, OdbType type)
-		{
-			var length = ((Array)array).GetLength(0);
-			var arrayCopy = new object[length];
-			for (var i = 0; i < length; i++)
-			{
-				var o = ((Array)array).GetValue(i);
-				if (o != null)
-				{
-					// If object is not null, try to get the exact type
-					var typeId = OdbType.GetFromClass(o.GetType()).Id;
-					var atomicNativeObjectInfo = new AtomicNativeObjectInfo(o, typeId);
-					arrayCopy[i] = atomicNativeObjectInfo;
-				}
-				else
-				{
-					// Else take the declared type
-					arrayCopy[i] = new NullNativeObjectInfo(type.Id);
-				}
-			}
+        return GetObjectInfo(plainObject, classInfo, recursive, alreadyReadObjects, callback);
+    }
 
-			return new(arrayCopy, OdbType.Array, type.Id);
-		}
-	}
+    public void Clear()
+    {
+        _classInfoProvider.Clear();
+    }
+
+    #endregion IObjectIntrospector Members
+}

@@ -1,8 +1,8 @@
 namespace Furesoft.Core.ObjectDB.Btree;
 
-	public interface IKeyAndValue
-	{
-		IComparable GetKey();
+public interface IKeyAndValue
+{
+    IComparable GetKey();
 
-		object GetValue();
-	}
+    object GetValue();
+}

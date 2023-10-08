@@ -1,95 +1,100 @@
 namespace Furesoft.Core.ObjectDB.Btree;
 
-	/// <summary>
-	///   The interface for btree node.
-	/// </summary>
-	public interface IBTreeNode
-	{
-		int GetNbKeys();
+/// <summary>
+///     The interface for btree node.
+/// </summary>
+public interface IBTreeNode
+{
+    int GetNbKeys();
 
-		bool IsFull();
+    bool IsFull();
 
-		bool IsLeaf();
+    bool IsLeaf();
 
-		IKeyAndValue GetKeyAndValueAt(int index);
+    IKeyAndValue GetKeyAndValueAt(int index);
 
-		IComparable GetKeyAt(int index);
+    IComparable GetKeyAt(int index);
 
-		object GetValueAsObjectAt(int index);
+    object GetValueAsObjectAt(int index);
 
-		IKeyAndValue GetLastKeyAndValue();
+    IKeyAndValue GetLastKeyAndValue();
 
-		IBTreeNode GetChildAt(int index, bool throwExceptionIfNotExist);
+    IBTreeNode GetChildAt(int index, bool throwExceptionIfNotExist);
 
-		IBTreeNode GetParent();
+    IBTreeNode GetParent();
 
-		object GetParentId();
+    object GetParentId();
 
-		void SetKeyAndValueAt(IComparable key, object value, int index);
+    void SetKeyAndValueAt(IComparable key, object value, int index);
 
-		void SetKeyAndValueAt(IKeyAndValue keyAndValue, int index);
+    void SetKeyAndValueAt(IKeyAndValue keyAndValue, int index);
 
-		void SetKeyAndValueAt(IComparable key, object value, int index, bool shiftIfAlreadyExist, bool incrementNbKeys);
+    void SetKeyAndValueAt(IComparable key, object value, int index, bool shiftIfAlreadyExist, bool incrementNbKeys);
 
-		void SetKeyAndValueAt(IKeyAndValue keyAndValue, int index, bool shiftIfAlreadyExist, bool incrementNbKeys);
+    void SetKeyAndValueAt(IKeyAndValue keyAndValue, int index, bool shiftIfAlreadyExist, bool incrementNbKeys);
 
-		IBTreeNode ExtractRightPart();
+    IBTreeNode ExtractRightPart();
 
-		IKeyAndValue GetMedian();
+    IKeyAndValue GetMedian();
 
-		void SetChildAt(IBTreeNode node, int childIndex, int indexDestination, bool throwExceptionIfDoesNotExist);
+    void SetChildAt(IBTreeNode node, int childIndex, int indexDestination, bool throwExceptionIfDoesNotExist);
 
-		void SetChildAt(IBTreeNode child, int index);
+    void SetChildAt(IBTreeNode child, int index);
 
-		void IncrementNbChildren();
+    void IncrementNbChildren();
 
-		/// <summary>
-		///   Returns the position of the key.
-		/// </summary>
-		/// <remarks>
-		///   Returns the position of the key. If the key does not exist in node, returns the position where this key should be,multiplied by -1
-		///
-		///  <pre>or example for node of degree 3 : [1 89 452 789 - ],
-		///    calling getPositionOfKey(89) returns 2 (starts with 1)
-		///    calling getPositionOfKey(99) returns -2 (starts with 1),because the position should be done, but it does not exist so multiply by -1
-		///    his is used to know the child we should descend to!in this case the getChild(2).</pre>
-		///
-		/// </remarks>
-		/// <param name="key"> </param>
-		/// <returns> The position of the key,as a negative number if key does not exist, warning, the position starts with 1and not 0! </returns>
-		int GetPositionOfKey(IComparable key);
+    /// <summary>
+    ///     Returns the position of the key.
+    /// </summary>
+    /// <remarks>
+    ///     Returns the position of the key. If the key does not exist in node, returns the position where this key should
+    ///     be,multiplied by -1
+    ///     <pre>
+    ///         or example for node of degree 3 : [1 89 452 789 - ],
+    ///         calling getPositionOfKey(89) returns 2 (starts with 1)
+    ///         calling getPositionOfKey(99) returns -2 (starts with 1),because the position should be done, but it does not
+    ///         exist so multiply by -1
+    ///         his is used to know the child we should descend to!in this case the getChild(2).
+    ///     </pre>
+    /// </remarks>
+    /// <param name="key"> </param>
+    /// <returns>
+    ///     The position of the key,as a negative number if key does not exist, warning, the position starts with 1and
+    ///     not 0!
+    /// </returns>
+    int GetPositionOfKey(IComparable key);
 
-		void InsertKeyAndValue(IComparable key, object value);
+    void InsertKeyAndValue(IComparable key, object value);
 
-		void MergeWith(IBTreeNode node);
+    void MergeWith(IBTreeNode node);
 
-		void SetNbKeys(int nbKeys);
+    void SetNbKeys(int nbKeys);
 
-		void SetNbChildren(int nbChildren);
+    void SetNbChildren(int nbChildren);
 
-		int GetDegree();
+    int GetDegree();
 
-		int GetNbChildren();
+    int GetNbChildren();
 
-		void SetParent(IBTreeNode node);
+    void SetParent(IBTreeNode node);
 
-		object DeleteKeyForLeafNode(IKeyAndValue keyAndValue);
+    object DeleteKeyForLeafNode(IKeyAndValue keyAndValue);
 
-		void DeleteKeyAndValueAt(int index, bool shiftChildren);
+    void DeleteKeyAndValueAt(int index, bool shiftChildren);
 
-		bool HasParent();
+    bool HasParent();
 
-		object GetId();
+    object GetId();
 
-		void SetId(object id);
+    void SetId(object id);
 
-		void SetBTree(IBTree btree);
+    void SetBTree(IBTree btree);
 
-		IBTree GetBTree();
+    IBTree GetBTree();
 
-		void Clear();
+    void Clear();
 
-		void DeleteChildAt(int index);
+    void DeleteChildAt(int index);
 
-		object GetChildIdAt(int childIndex, bool throwExceptionIfDoesNotExist);
-	}
+    object GetChildIdAt(int childIndex, bool throwExceptionIfDoesNotExist);
+}

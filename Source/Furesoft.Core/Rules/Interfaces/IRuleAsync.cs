@@ -13,7 +13,7 @@ public interface IRuleAsync<T> : IGeneralRule<T> where T : class, new()
     Task BeforeInvokeAsync();
 
     Task AfterInvokeAsync();
-        
+
     Task<IRuleResult> InvokeAsync();
 
     Task<object> TryGetValueAsync(string key, int timeoutInMs);

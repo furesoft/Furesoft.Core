@@ -2,16 +2,16 @@ using Furesoft.Core.ObjectDB.Meta;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Execution;
 
-	internal interface IMultiClassQueryExecutor : IQueryExecutor
-	{
-		void SetExecuteStartAndEndOfQueryAction(bool yes);
+internal interface IMultiClassQueryExecutor : IQueryExecutor
+{
+    void SetExecuteStartAndEndOfQueryAction(bool yes);
 
-		IStorageEngine GetStorageEngine();
+    IStorageEngine GetStorageEngine();
 
-		IInternalQuery GetQuery();
+    IInternalQuery GetQuery();
 
-		/// <summary>
-		///   The class on which to execute the query
-		/// </summary>
-		void SetClassInfo(ClassInfo ci);
-	}
+    /// <summary>
+    ///     The class on which to execute the query
+    /// </summary>
+    void SetClassInfo(ClassInfo ci);
+}

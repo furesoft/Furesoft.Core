@@ -2,33 +2,34 @@ using Furesoft.Core.ObjectDB.Api;
 
 namespace Furesoft.Core.ObjectDB.Core;
 
+/// <summary>
+///     The interface used to implement the classes that are called by the generic query executor when an object matches
+///     the query
+/// </summary>
+public interface IMatchingObjectAction
+{
 	/// <summary>
-	///   The interface used to implement the classes that are called by the generic query executor when an object matches the query
+	///     Called at the beginning of the query execution - used to prepare result object
 	/// </summary>
-	public interface IMatchingObjectAction
-	{
-		/// <summary>
-		///   Called at the beginning of the query execution - used to prepare result object
-		/// </summary>
-		void Start();
+	void Start();
 
-		/// <summary>
-		///   Called (by the GenericQueryExecutor) when an object matches with lazy loading, only stores the OID
-		/// </summary>
-		void ObjectMatch(OID oid, IOdbComparable orderByKey);
+	/// <summary>
+	///     Called (by the GenericQueryExecutor) when an object matches with lazy loading, only stores the OID
+	/// </summary>
+	void ObjectMatch(OID oid, IOdbComparable orderByKey);
 
-		/// <summary>
-		///   Called (by the GenericQueryExecutor) when an object matches the query
-		/// </summary>
-		void ObjectMatch(OID oid, object @object, IOdbComparable orderByKey);
+	/// <summary>
+	///     Called (by the GenericQueryExecutor) when an object matches the query
+	/// </summary>
+	void ObjectMatch(OID oid, object @object, IOdbComparable orderByKey);
 
-		/// <summary>
-		///   Called at the end of the query execution - used to clean or finish some task
-		/// </summary>
-		void End();
+	/// <summary>
+	///     Called at the end of the query execution - used to clean or finish some task
+	/// </summary>
+	void End();
 
-		/// <summary>
-		///   Returns the resulting objects
-		/// </summary>
-		IInternalObjectSet<T> GetObjects<T>();
-	}
+	/// <summary>
+	///     Returns the resulting objects
+	/// </summary>
+	IInternalObjectSet<T> GetObjects<T>();
+}

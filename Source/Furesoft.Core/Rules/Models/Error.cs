@@ -4,10 +4,6 @@ namespace Furesoft.Core.Rules.Models;
 
 public class Error : IError
 {
-    public string Message { get; set; }
-
-    public Exception Exception { get; set; }
-
     public Error(string msg)
     {
         Message = msg;
@@ -17,4 +13,8 @@ public class Error : IError
     {
         Exception = exception;
     }
+
+    public string Message { get; set; }
+
+    public Exception Exception { get; set; }
 }

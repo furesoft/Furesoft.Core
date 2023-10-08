@@ -5,11 +5,11 @@ namespace Furesoft.Core.Rules.Services;
 
 internal sealed class AsyncRuleService<T> where T : class, new()
 {
-    private readonly IEnumerable<IRuleAsync<T>> _rules;
-    private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
-    private readonly RxRuleService<IRuleAsync<T>, T> _rxRuleService;
     private readonly ConcurrentBag<IRuleResult> _asyncRuleResults = new();
     private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = new();
+    private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
+    private readonly IEnumerable<IRuleAsync<T>> _rules;
+    private readonly RxRuleService<IRuleAsync<T>, T> _rxRuleService;
 
     public AsyncRuleService(IEnumerable<IRuleAsync<T>> rules,
         IRuleEngineConfiguration<T> ruleEngineTerminated)
@@ -46,7 +46,6 @@ internal sealed class AsyncRuleService<T> where T : class, new()
             await InvokeNestedRulesAsync(rule.Configuration.InvokeNestedRulesFirst, rule);
 
             if (rule.CanInvoke() && !_ruleEngineConfiguration.IsRuleEngineTerminated())
-            {
                 try
                 {
                     await InvokeProactiveRulesAsync(rule);
@@ -71,16 +70,14 @@ internal sealed class AsyncRuleService<T> where T : class, new()
                         if (globalExceptionHandler is IRuleAsync<T> ruleAsync)
                         {
                             globalExceptionHandler.UnhandledException = exception;
-                            await ExecuteAsyncRules(new List<IRuleAsync<T>> { ruleAsync });
+                            await ExecuteAsyncRules(new List<IRuleAsync<T>> {ruleAsync});
                         }
                         else
                         {
                             throw;
-                        }                            
+                        }
                     }
                 }
-
-            }
 
             await InvokeNestedRulesAsync(!rule.Configuration.InvokeNestedRulesFirst, rule);
         }
@@ -118,17 +115,16 @@ internal sealed class AsyncRuleService<T> where T : class, new()
                                 if (globalExceptionHandler is IRuleAsync<T> ruleAsync)
                                 {
                                     globalExceptionHandler.UnhandledException = exception;
-                                    await ExecuteAsyncRules(new List<IRuleAsync<T>> { ruleAsync });
+                                    await ExecuteAsyncRules(new List<IRuleAsync<T>> {ruleAsync});
                                 }
                                 else
                                 {
                                     throw;
-                                }                                
+                                }
                             }
                         }
 
                         return ruleResult;
-
                     }, rule.ParallelConfiguration.CancellationTokenSource?.Token ?? CancellationToken.None,
                     rule.ParallelConfiguration.TaskCreationOptions,
                     rule.ParallelConfiguration.TaskScheduler));
@@ -146,9 +142,7 @@ internal sealed class AsyncRuleService<T> where T : class, new()
 
         if (rule.IsParallel && rule.ParallelConfiguration.CancellationTokenSource != null &&
             rule.ParallelConfiguration.CancellationTokenSource.Token.IsCancellationRequested)
-        {
             return null;
-        }
 
         var ruleResult = await rule.InvokeAsync();
 
@@ -162,17 +156,13 @@ internal sealed class AsyncRuleService<T> where T : class, new()
     private async Task InvokeReactiveRulesAsync(IRuleAsync<T> asyncRule)
     {
         if (_rxRuleService.GetReactiveRules().ContainsKey(asyncRule.GetType()))
-        {
             await ExecuteAsyncRules(_rxRuleService.GetReactiveRules()[asyncRule.GetType()]);
-        }
     }
 
     private async Task InvokeProactiveRulesAsync(IRuleAsync<T> asyncRule)
     {
         if (_rxRuleService.GetProactiveRules().ContainsKey(asyncRule.GetType()))
-        {
             await ExecuteAsyncRules(_rxRuleService.GetProactiveRules()[asyncRule.GetType()]);
-        }
     }
 
     private async Task InvokeExceptionRulesAsync(IRuleAsync<T> asyncRule)
@@ -191,9 +181,7 @@ internal sealed class AsyncRuleService<T> where T : class, new()
     private async Task InvokeNestedRulesAsync(bool invokeNestedRules, IRuleAsync<T> rule)
     {
         if (invokeNestedRules && rule.IsNested)
-        {
             await ExecuteAsyncRules(_rxRuleService.FilterRxRules(rule.GetRules().OfType<IRuleAsync<T>>().ToList()));
-        }
     }
 
     private void AddToAsyncRuleResults(IRuleResult ruleResult)
@@ -204,7 +192,8 @@ internal sealed class AsyncRuleService<T> where T : class, new()
     private static IEnumerable<IRuleAsync<T>> OrderByExecutionOrder(IEnumerable<IRuleAsync<T>> rules)
     {
         return rules.GetRulesWithExecutionOrder().OfType<IRuleAsync<T>>()
-            .Concat(rules.GetRulesWithoutExecutionOrder(rule => !((IRuleAsync<T>)rule).IsParallel).OfType<IRuleAsync<T>>());
+            .Concat(rules.GetRulesWithoutExecutionOrder(rule => !((IRuleAsync<T>) rule).IsParallel)
+                .OfType<IRuleAsync<T>>());
     }
 
     private static IEnumerable<IRuleAsync<T>> GetParallelRules(IEnumerable<IRuleAsync<T>> rules)

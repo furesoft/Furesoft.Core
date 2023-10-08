@@ -6,142 +6,136 @@ using Furesoft.Core.ObjectDB.Exceptions;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.List;
 
-	/// <summary>
-	///   A collection that uses a BTree as an underlying system to provide ordered by Collections <p></p>
-	/// </summary>
-	internal abstract class AbstractBTreeCollection<TItem> : IInternalObjectSet<TItem>
-	{
-		private readonly OrderByConstants _orderByType;
-		private readonly IBTree _tree;
+/// <summary>
+///     A collection that uses a BTree as an underlying system to provide ordered by Collections <p></p>
+/// </summary>
+internal abstract class AbstractBTreeCollection<TItem> : IInternalObjectSet<TItem>
+{
+    private readonly OrderByConstants _orderByType;
+    private readonly IBTree _tree;
 
-		[NonPersistent]
-		private IEnumerator<TItem> _currentIterator;
+    [NonPersistent] private IEnumerator<TItem> _currentIterator;
 
-		private int _size;
+    private int _size;
 
-		protected AbstractBTreeCollection(OrderByConstants orderByType)
-		{
-			// TODO compute degree best value for the size value
-			_tree = BuildTree(OdbConfiguration.GetIndexBTreeDegree());
-			_orderByType = orderByType;
-		}
+    protected AbstractBTreeCollection(OrderByConstants orderByType)
+    {
+        // TODO compute degree best value for the size value
+        _tree = BuildTree(OdbConfiguration.GetIndexBTreeDegree());
+        _orderByType = orderByType;
+    }
 
-		#region IInternalObjectSet<TItem> Members
+    protected abstract IBTree BuildTree(int degree);
 
-		/// <summary>
-		///   Adds the object in the btree with the specific key
-		/// </summary>
-		public virtual void AddWithKey(IOdbComparable key, TItem o)
-		{
-			_tree.Insert(key, o);
-			_size++;
-		}
+    protected IBTree GetTree()
+    {
+        return _tree;
+    }
 
-		protected virtual IEnumerator<TItem> Iterator(OrderByConstants newOrderByType)
-		{
-			return (IEnumerator<TItem>)_tree.Iterator<TItem>(newOrderByType);
-		}
+    public override string ToString()
+    {
+        var s = new StringBuilder();
+        s.Append("size=").Append(_size).Append(" [");
+        var iterator = GetEnumerator();
+        while (iterator.MoveNext())
+        {
+            s.Append(iterator.Current);
+            if (iterator.MoveNext())
+                s.Append(" , ");
+        }
 
-		public void AddOid(OID oid)
-		{
-			throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter("Add Oid not implemented "));
-		}
+        s.Append("]");
+        return s.ToString();
+    }
 
-		public void Add(TItem o)
-		{
-			_tree.Insert(_size, o);
-			_size++;
-		}
+    #region IInternalObjectSet<TItem> Members
 
-		public virtual void Clear()
-		{
-			_tree.Clear();
-		}
+    /// <summary>
+    ///     Adds the object in the btree with the specific key
+    /// </summary>
+    public virtual void AddWithKey(IOdbComparable key, TItem o)
+    {
+        _tree.Insert(key, o);
+        _size++;
+    }
 
-		public virtual bool Contains(TItem o)
-		{
-			throw new OdbRuntimeException(NDatabaseError.OperationNotImplemented.AddParameter("contains"));
-		}
+    protected virtual IEnumerator<TItem> Iterator(OrderByConstants newOrderByType)
+    {
+        return (IEnumerator<TItem>) _tree.Iterator<TItem>(newOrderByType);
+    }
 
-		public virtual IEnumerator<TItem> GetEnumerator()
-		{
-			return Iterator(_orderByType);
-		}
+    public void AddOid(OID oid)
+    {
+        throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter("Add Oid not implemented "));
+    }
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _tree.Iterator<TItem>(_orderByType);
-		}
+    public void Add(TItem o)
+    {
+        _tree.Insert(_size, o);
+        _size++;
+    }
 
-		public virtual bool Remove(TItem o)
-		{
-			throw new OdbRuntimeException(NDatabaseError.OperationNotImplemented.AddParameter("remove"));
-		}
+    public virtual void Clear()
+    {
+        _tree.Clear();
+    }
 
-		public virtual int Count
-		{
-			get { return _size; }
-		}
+    public virtual bool Contains(TItem o)
+    {
+        throw new OdbRuntimeException(NDatabaseError.OperationNotImplemented.AddParameter("contains"));
+    }
 
-		public virtual bool IsReadOnly
-		{
-			get { return true; }
-		}
+    public virtual IEnumerator<TItem> GetEnumerator()
+    {
+        return Iterator(_orderByType);
+    }
 
-		public void CopyTo(TItem[] ee, int arrayIndex)
-		{
-			throw new OdbRuntimeException(NDatabaseError.OperationNotImplemented.AddParameter("CopyTo"));
-		}
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _tree.Iterator<TItem>(_orderByType);
+    }
 
-		#endregion IInternalObjectSet<TItem> Members
+    public virtual bool Remove(TItem o)
+    {
+        throw new OdbRuntimeException(NDatabaseError.OperationNotImplemented.AddParameter("remove"));
+    }
 
-		#region IObjects<TItem> Members
+    public virtual int Count => _size;
 
-		public virtual TItem GetFirst()
-		{
-			return Iterator(_orderByType).Current;
-		}
+    public virtual bool IsReadOnly => true;
 
-		public virtual bool HasNext()
-		{
-			if (_currentIterator == null)
-				_currentIterator = Iterator(_orderByType);
-			return _currentIterator.MoveNext();
-		}
+    public void CopyTo(TItem[] ee, int arrayIndex)
+    {
+        throw new OdbRuntimeException(NDatabaseError.OperationNotImplemented.AddParameter("CopyTo"));
+    }
 
-		public virtual TItem Next()
-		{
-			if (_currentIterator == null)
-				_currentIterator = Iterator(_orderByType);
-			return _currentIterator.Current;
-		}
+    #endregion IInternalObjectSet<TItem> Members
 
-		public virtual void Reset()
-		{
-			_currentIterator = Iterator(_orderByType);
-		}
+    #region IObjects<TItem> Members
 
-		#endregion IObjects<TItem> Members
+    public virtual TItem GetFirst()
+    {
+        return Iterator(_orderByType).Current;
+    }
 
-		protected abstract IBTree BuildTree(int degree);
+    public virtual bool HasNext()
+    {
+        if (_currentIterator == null)
+            _currentIterator = Iterator(_orderByType);
+        return _currentIterator.MoveNext();
+    }
 
-		protected IBTree GetTree()
-		{
-			return _tree;
-		}
+    public virtual TItem Next()
+    {
+        if (_currentIterator == null)
+            _currentIterator = Iterator(_orderByType);
+        return _currentIterator.Current;
+    }
 
-		public override string ToString()
-		{
-			var s = new StringBuilder();
-			s.Append("size=").Append(_size).Append(" [");
-			var iterator = GetEnumerator();
-			while (iterator.MoveNext())
-			{
-				s.Append(iterator.Current);
-				if (iterator.MoveNext())
-					s.Append(" , ");
-			}
-			s.Append("]");
-			return s.ToString();
-		}
-	}
+    public virtual void Reset()
+    {
+        _currentIterator = Iterator(_orderByType);
+    }
+
+    #endregion IObjects<TItem> Members
+}

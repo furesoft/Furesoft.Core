@@ -5,63 +5,63 @@ using Furesoft.Core.ObjectDB.Oid;
 
 namespace Furesoft.Core.ObjectDB;
 
-	internal sealed class OdbExt : IOdbExt
-	{
-		private readonly IStorageEngine _storageEngine;
+internal sealed class OdbExt : IOdbExt
+{
+    private readonly IStorageEngine _storageEngine;
 
-		internal OdbExt(IStorageEngine storageEngine)
-		{
-			_storageEngine = storageEngine;
-		}
+    internal OdbExt(IStorageEngine storageEngine)
+    {
+        _storageEngine = storageEngine;
+    }
 
-		#region IOdbExt Members
+    #region IOdbExt Members
 
-		public IExternalOID ConvertToExternalOID(OID oid)
-		{
-			return new ExternalObjectOID(oid, _storageEngine.GetDatabaseId());
-		}
+    public IExternalOID ConvertToExternalOID(OID oid)
+    {
+        return new ExternalObjectOID(oid, _storageEngine.GetDatabaseId());
+    }
 
-		public IDatabaseId GetDatabaseId()
-		{
-			return _storageEngine.GetDatabaseId();
-		}
+    public IDatabaseId GetDatabaseId()
+    {
+        return _storageEngine.GetDatabaseId();
+    }
 
-		public IExternalOID GetObjectExternalOID<T>(T plainObject) where T : class
-		{
-			return ConvertToExternalOID(_storageEngine.GetObjectId(plainObject, true));
-		}
+    public IExternalOID GetObjectExternalOID<T>(T plainObject) where T : class
+    {
+        return ConvertToExternalOID(_storageEngine.GetObjectId(plainObject, true));
+    }
 
-		public int GetObjectVersion(OID oid)
-		{
-			var objectInfoHeader = _storageEngine.GetObjectInfoHeaderFromOid(oid);
-			if (objectInfoHeader == null)
-				throw new OdbRuntimeException(NDatabaseError.ObjectWithOidDoesNotExistInCache.AddParameter(oid));
+    public int GetObjectVersion(OID oid)
+    {
+        var objectInfoHeader = _storageEngine.GetObjectInfoHeaderFromOid(oid);
+        if (objectInfoHeader == null)
+            throw new OdbRuntimeException(NDatabaseError.ObjectWithOidDoesNotExistInCache.AddParameter(oid));
 
-			return objectInfoHeader.GetObjectVersion();
-		}
+        return objectInfoHeader.GetObjectVersion();
+    }
 
-		public long GetObjectCreationDate(OID oid)
-		{
-			var objectInfoHeader = _storageEngine.GetObjectInfoHeaderFromOid(oid);
-			if (objectInfoHeader == null)
-				throw new OdbRuntimeException(NDatabaseError.ObjectWithOidDoesNotExistInCache.AddParameter(oid));
+    public long GetObjectCreationDate(OID oid)
+    {
+        var objectInfoHeader = _storageEngine.GetObjectInfoHeaderFromOid(oid);
+        if (objectInfoHeader == null)
+            throw new OdbRuntimeException(NDatabaseError.ObjectWithOidDoesNotExistInCache.AddParameter(oid));
 
-			return objectInfoHeader.GetCreationDate();
-		}
+        return objectInfoHeader.GetCreationDate();
+    }
 
-		public long GetObjectUpdateDate(OID oid)
-		{
-			var objectInfoHeader = _storageEngine.GetObjectInfoHeaderFromOid(oid);
-			if (objectInfoHeader == null)
-				throw new OdbRuntimeException(NDatabaseError.ObjectWithOidDoesNotExistInCache.AddParameter(oid));
+    public long GetObjectUpdateDate(OID oid)
+    {
+        var objectInfoHeader = _storageEngine.GetObjectInfoHeaderFromOid(oid);
+        if (objectInfoHeader == null)
+            throw new OdbRuntimeException(NDatabaseError.ObjectWithOidDoesNotExistInCache.AddParameter(oid));
 
-			return objectInfoHeader.GetUpdateDate();
-		}
+        return objectInfoHeader.GetUpdateDate();
+    }
 
-		public string GetDbId()
-		{
-			return _storageEngine.GetBaseIdentification().Id;
-		}
+    public string GetDbId()
+    {
+        return _storageEngine.GetBaseIdentification().Id;
+    }
 
-		#endregion IOdbExt Members
-	}
+    #endregion IOdbExt Members
+}

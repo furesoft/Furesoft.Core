@@ -1,31 +1,31 @@
 namespace Furesoft.Core.ObjectDB;
 
+/// <summary>
+///     Base interface for creacting custom logger
+/// </summary>
+public interface ILogger
+{
 	/// <summary>
-	/// Base interface for creacting custom logger
+	///     Log message with warn level
 	/// </summary>
-	public interface ILogger
-	{
-		/// <summary>
-		/// Log message with warn level
-		/// </summary>
-		/// <param name="message">Mssage to log</param>
-		void Warning(string message);
+	/// <param name="message">Mssage to log</param>
+	void Warning(string message);
 
-		/// <summary>
-		/// Log message with debug level
-		/// </summary>
-		/// <param name="message">Mssage to log</param>
-		void Debug(string message);
+	/// <summary>
+	///     Log message with debug level
+	/// </summary>
+	/// <param name="message">Mssage to log</param>
+	void Debug(string message);
 
-		/// <summary>
-		/// Log message with info level
-		/// </summary>
-		/// <param name="message">Mssage to log</param>
-		void Info(string message);
+	/// <summary>
+	///     Log message with info level
+	/// </summary>
+	/// <param name="message">Mssage to log</param>
+	void Info(string message);
 
-		/// <summary>
-		/// Log message with error level
-		/// </summary>
-		/// <param name="message">Mssage to log</param>
-		void Error(string message);
-	}
+	/// <summary>
+	///     Log message with error level
+	/// </summary>
+	/// <param name="message">Mssage to log</param>
+	void Error(string message);
+}

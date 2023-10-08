@@ -3,110 +3,107 @@ using Furesoft.Core.ObjectDB.Tool;
 
 namespace Furesoft.Core.ObjectDB.IO;
 
-	internal sealed class NonBufferedFileIO : INonBufferedFileIO
-	{
-		private readonly string _wholeFileName;
+internal sealed class NonBufferedFileIO : INonBufferedFileIO
+{
+    private readonly string _wholeFileName;
 
-		private IOdbStream _odbWriter;
+    private IOdbStream _odbWriter;
 
-		internal NonBufferedFileIO(string fileName)
-		{
-			CurrentPositionForDirectWrite = -1;
+    internal NonBufferedFileIO(string fileName)
+    {
+        CurrentPositionForDirectWrite = -1;
 
-			_wholeFileName = fileName;
-			_odbWriter = new OdbFileStream(_wholeFileName);
-		}
+        _wholeFileName = fileName;
+        _odbWriter = new OdbFileStream(_wholeFileName);
+    }
 
-		internal NonBufferedFileIO()
-		{
-			CurrentPositionForDirectWrite = -1;
+    internal NonBufferedFileIO()
+    {
+        CurrentPositionForDirectWrite = -1;
 
-			_odbWriter = new OdbMemoryStream();
-		}
+        _odbWriter = new OdbMemoryStream();
+    }
 
-		#region INonBufferedFileIO Members
+    private void CloseIO()
+    {
+        try
+        {
+            _odbWriter.Dispose();
+        }
+        catch (IOException e)
+        {
+            DLogger.Error("NonBufferedFileIO" + e);
+            throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter(e.Message), e);
+        }
 
-		public long Length
-		{
-			get { return _odbWriter.Length; }
-		}
+        _odbWriter = null;
+    }
 
-		/// <summary>
-		///   Current position for direct write to IO
-		/// </summary>
-		public long CurrentPositionForDirectWrite { get; private set; }
+    #region INonBufferedFileIO Members
 
-		public void Dispose()
-		{
-			CloseIO();
-		}
+    public long Length => _odbWriter.Length;
 
-		public void SetCurrentPosition(long currentPosition)
-		{
-			CurrentPositionForDirectWrite = currentPosition;
-			GoToPosition(currentPosition);
-		}
+    /// <summary>
+    ///     Current position for direct write to IO
+    /// </summary>
+    public long CurrentPositionForDirectWrite { get; private set; }
 
-		private void GoToPosition(long position)
-		{
-			_odbWriter.SetPosition(position);
-		}
+    public void Dispose()
+    {
+        CloseIO();
+    }
 
-		public void WriteByte(byte b)
-		{
-			GoToPosition(CurrentPositionForDirectWrite);
-			_odbWriter.Write(b);
-			CurrentPositionForDirectWrite++;
-		}
+    public void SetCurrentPosition(long currentPosition)
+    {
+        CurrentPositionForDirectWrite = currentPosition;
+        GoToPosition(currentPosition);
+    }
 
-		public byte[] ReadBytes(int size)
-		{
-			GoToPosition(CurrentPositionForDirectWrite);
+    private void GoToPosition(long position)
+    {
+        _odbWriter.SetPosition(position);
+    }
 
-			var bytes = new byte[size];
-			var realSize = _odbWriter.Read(bytes, size);
+    public void WriteByte(byte b)
+    {
+        GoToPosition(CurrentPositionForDirectWrite);
+        _odbWriter.Write(b);
+        CurrentPositionForDirectWrite++;
+    }
 
-			CurrentPositionForDirectWrite += realSize;
-			return bytes;
-		}
+    public byte[] ReadBytes(int size)
+    {
+        GoToPosition(CurrentPositionForDirectWrite);
 
-		public byte ReadByte()
-		{
-			GoToPosition(CurrentPositionForDirectWrite);
+        var bytes = new byte[size];
+        var realSize = _odbWriter.Read(bytes, size);
 
-			var b = (byte)_odbWriter.Read();
-			CurrentPositionForDirectWrite++;
+        CurrentPositionForDirectWrite += realSize;
+        return bytes;
+    }
 
-			return b;
-		}
+    public byte ReadByte()
+    {
+        GoToPosition(CurrentPositionForDirectWrite);
 
-		public void WriteBytes(byte[] bytes, int length)
-		{
-			GoToPosition(CurrentPositionForDirectWrite);
-			_odbWriter.Write(bytes, length);
-			CurrentPositionForDirectWrite += length;
-		}
+        var b = (byte) _odbWriter.Read();
+        CurrentPositionForDirectWrite++;
 
-		public long Read(long position, byte[] buffer, int size)
-		{
-			GoToPosition(position);
-			return _odbWriter.Read(buffer, size);
-		}
+        return b;
+    }
 
-		#endregion INonBufferedFileIO Members
+    public void WriteBytes(byte[] bytes, int length)
+    {
+        GoToPosition(CurrentPositionForDirectWrite);
+        _odbWriter.Write(bytes, length);
+        CurrentPositionForDirectWrite += length;
+    }
 
-		private void CloseIO()
-		{
-			try
-			{
-				_odbWriter.Dispose();
-			}
-			catch (IOException e)
-			{
-				DLogger.Error("NonBufferedFileIO" + e);
-				throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter(e.Message), e);
-			}
+    public long Read(long position, byte[] buffer, int size)
+    {
+        GoToPosition(position);
+        return _odbWriter.Read(buffer, size);
+    }
 
-			_odbWriter = null;
-		}
-	}
+    #endregion INonBufferedFileIO Members
+}

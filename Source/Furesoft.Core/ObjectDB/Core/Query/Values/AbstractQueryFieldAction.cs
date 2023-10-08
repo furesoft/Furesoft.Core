@@ -4,73 +4,73 @@ using Furesoft.Core.ObjectDB.Meta;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
-	internal abstract class AbstractQueryFieldAction : IQueryFieldAction
-	{
-		protected readonly string Alias;
-		protected string AttributeName;
+internal abstract class AbstractQueryFieldAction : IQueryFieldAction
+{
+    protected readonly string Alias;
 
-		private IInstanceBuilder _instanceBuilder;
-		private bool _isMultiRow;
-		private bool _returnInstance;
+    private IInstanceBuilder _instanceBuilder;
+    private bool _isMultiRow;
+    private bool _returnInstance;
+    protected string AttributeName;
 
-		protected AbstractQueryFieldAction(string attributeName, string alias, bool isMultiRow)
-		{
-			AttributeName = attributeName;
-			Alias = alias;
-			_isMultiRow = isMultiRow;
-		}
+    protected AbstractQueryFieldAction(string attributeName, string alias, bool isMultiRow)
+    {
+        AttributeName = attributeName;
+        Alias = alias;
+        _isMultiRow = isMultiRow;
+    }
 
-		#region IQueryFieldAction Members
+    public abstract void Execute(OID oid, AttributeValuesMap values);
 
-		public virtual string GetAttributeName()
-		{
-			return AttributeName;
-		}
+    internal IInstanceBuilder GetInstanceBuilder()
+    {
+        return _instanceBuilder;
+    }
 
-		public virtual string GetAlias()
-		{
-			return Alias;
-		}
+    internal void SetInstanceBuilder(IInstanceBuilder instanceBuilder)
+    {
+        _instanceBuilder = instanceBuilder;
+    }
 
-		public virtual bool IsMultiRow()
-		{
-			return _isMultiRow;
-		}
+    protected bool ReturnInstance()
+    {
+        return _returnInstance;
+    }
 
-		public virtual void SetMultiRow(bool isMultiRow)
-		{
-			_isMultiRow = isMultiRow;
-		}
+    #region IQueryFieldAction Members
 
-		public virtual void SetReturnInstance(bool returnInstance)
-		{
-			_returnInstance = returnInstance;
-		}
+    public virtual string GetAttributeName()
+    {
+        return AttributeName;
+    }
 
-		public abstract IQueryFieldAction Copy();
+    public virtual string GetAlias()
+    {
+        return Alias;
+    }
 
-		public abstract void End();
+    public virtual bool IsMultiRow()
+    {
+        return _isMultiRow;
+    }
 
-		public abstract object GetValue();
+    public virtual void SetMultiRow(bool isMultiRow)
+    {
+        _isMultiRow = isMultiRow;
+    }
 
-		public abstract void Start();
+    public virtual void SetReturnInstance(bool returnInstance)
+    {
+        _returnInstance = returnInstance;
+    }
 
-		#endregion IQueryFieldAction Members
+    public abstract IQueryFieldAction Copy();
 
-		public abstract void Execute(OID oid, AttributeValuesMap values);
+    public abstract void End();
 
-		internal IInstanceBuilder GetInstanceBuilder()
-		{
-			return _instanceBuilder;
-		}
+    public abstract object GetValue();
 
-		internal void SetInstanceBuilder(IInstanceBuilder instanceBuilder)
-		{
-			_instanceBuilder = instanceBuilder;
-		}
+    public abstract void Start();
 
-		protected bool ReturnInstance()
-		{
-			return _returnInstance;
-		}
-	}
+    #endregion IQueryFieldAction Members
+}

@@ -5,4 +5,6 @@ public enum OSName
     Windows,
     Linux,
     OSX,
+    Browser,
+    FreeBsd
 }

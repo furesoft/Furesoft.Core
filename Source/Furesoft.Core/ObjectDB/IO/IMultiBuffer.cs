@@ -1,36 +1,36 @@
 namespace Furesoft.Core.ObjectDB.IO;
 
-	internal interface IMultiBuffer
-	{
-		byte[][] Buffers { get; }
+internal interface IMultiBuffer
+{
+    byte[][] Buffers { get; }
 
-		///<summary>
-		///  The max position in the buffer, used to optimize the flush - to flush only new data and not all the buffer
-		///</summary>
-		int[] MaxPositionInBuffer { get; }
+    /// <summary>
+    ///     The max position in the buffer, used to optimize the flush - to flush only new data and not all the buffer
+    /// </summary>
+    int[] MaxPositionInBuffer { get; }
 
-		BufferPosition[] BufferPositions { get; }
+    BufferPosition[] BufferPositions { get; }
 
-		///<summary>
-		///  The buffer size.
-		///</summary>
-		int Size { get; }
+    /// <summary>
+    ///     The buffer size.
+    /// </summary>
+    int Size { get; }
 
-		void ClearBuffer(int bufferIndex);
+    void ClearBuffer(int bufferIndex);
 
-		void SetByte(int bufferIndex, int positionInBuffer, byte value);
+    void SetByte(int bufferIndex, int positionInBuffer, byte value);
 
-		int GetBufferIndexForPosition(long position, int size);
+    int GetBufferIndexForPosition(long position, int size);
 
-		void SetCreationDate(int bufferIndex, long currentTimeInMs);
+    void SetCreationDate(int bufferIndex, long currentTimeInMs);
 
-		void SetPositions(int bufferIndex, long startPosition, long endPosition);
+    void SetPositions(int bufferIndex, long startPosition, long endPosition);
 
-		void WriteBytes(int bufferIndex, byte[] bytes, int startIndex, int offsetWhereToCopy, int lengthToCopy);
+    void WriteBytes(int bufferIndex, byte[] bytes, int startIndex, int offsetWhereToCopy, int lengthToCopy);
 
-		bool HasBeenUsedForWrite(int bufferIndex);
+    bool HasBeenUsedForWrite(int bufferIndex);
 
-		void Clear();
+    void Clear();
 
-		long GetCreationDate(int bufferIndex);
-	}
+    long GetCreationDate(int bufferIndex);
+}

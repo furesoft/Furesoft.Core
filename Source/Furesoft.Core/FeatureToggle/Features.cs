@@ -15,7 +15,7 @@ public static class Features
     }
 
     public static void Enable<T1, T2, T3>()
-            where T1 : IFeature
+        where T1 : IFeature
         where T2 : IFeature
         where T3 : IFeature
     {
@@ -30,7 +30,7 @@ public static class Features
 
         foreach (var type in types)
         {
-            var featureType = typeof(Feature<>).MakeGenericType(new Type[] { type });
+            var featureType = typeof(Feature<>).MakeGenericType(type);
             featureType?.GetMethod("Enable")?.Invoke(null, null);
         }
     }

@@ -5,116 +5,113 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
 
-	internal class SodaQuery : AbstractQuery
-	{
-		private string _attributeName;
+internal class SodaQuery : AbstractQuery
+{
+    private string _attributeName;
 
-		public SodaQuery(Type underlyingType)
-			: base(underlyingType)
-		{
-		}
+    public SodaQuery(Type underlyingType)
+        : base(underlyingType)
+    {
+    }
 
-		public bool HasCriteria()
-		{
-			return Constraint != null;
-		}
+    public bool HasCriteria()
+    {
+        return Constraint != null;
+    }
 
-		public bool Match(IDictionary map)
-		{
-			return Constraint == null || Constraint.Match(map);
-		}
+    public bool Match(IDictionary map)
+    {
+        return Constraint == null || Constraint.Match(map);
+    }
 
-		public IConstraint GetCriteria()
-		{
-			return Constraint;
-		}
+    public IConstraint GetCriteria()
+    {
+        return Constraint;
+    }
 
-		public override string ToString()
-		{
-			return Constraint == null
-					   ? "no criterion"
-					   : Constraint.ToString();
-		}
+    public override string ToString()
+    {
+        return Constraint == null
+            ? "no criterion"
+            : Constraint.ToString();
+    }
 
-		public virtual IOdbList<string> GetAllInvolvedFields()
-		{
-			return Constraint == null
-					   ? new OdbList<string>()
-					   : Constraint.GetAllInvolvedFields();
-		}
+    public virtual IOdbList<string> GetAllInvolvedFields()
+    {
+        return Constraint == null
+            ? new OdbList<string>()
+            : Constraint.GetAllInvolvedFields();
+    }
 
-		public override void Add(IConstraint criterion)
-		{
-			if (criterion == null)
-				return;
+    public override void Add(IConstraint criterion)
+    {
+        if (criterion == null)
+            return;
 
-			Constraint = (IInternalConstraint)criterion;
-		}
+        Constraint = (IInternalConstraint) criterion;
+    }
 
-		public override IQuery Descend(string attributeName)
-		{
-			if (string.IsNullOrEmpty(attributeName))
-				throw new ArgumentNullException("attributeName", "Attribute name name cannot be null or empty");
+    public override IQuery Descend(string attributeName)
+    {
+        if (string.IsNullOrEmpty(attributeName))
+            throw new ArgumentNullException("attributeName", "Attribute name name cannot be null or empty");
 
-			_attributeName = _attributeName == null ? attributeName : string.Join(".", _attributeName, attributeName);
+        _attributeName = _attributeName == null ? attributeName : string.Join(".", _attributeName, attributeName);
 
-			return this;
-		}
+        return this;
+    }
 
-		public override IQuery OrderAscending()
-		{
-			if (string.IsNullOrEmpty(_attributeName))
-				throw new ArgumentException("Descend field not set.");
+    public override IQuery OrderAscending()
+    {
+        if (string.IsNullOrEmpty(_attributeName))
+            throw new ArgumentException("Descend field not set.");
 
-			OrderByFields.Add(_attributeName);
-			OrderByType = OrderByConstants.OrderByAsc;
-			_attributeName = null;
+        OrderByFields.Add(_attributeName);
+        OrderByType = OrderByConstants.OrderByAsc;
+        _attributeName = null;
 
-			return this;
-		}
+        return this;
+    }
 
-		public override IQuery OrderDescending()
-		{
-			if (string.IsNullOrEmpty(_attributeName))
-				throw new ArgumentException("Descend field not set.");
+    public override IQuery OrderDescending()
+    {
+        if (string.IsNullOrEmpty(_attributeName))
+            throw new ArgumentException("Descend field not set.");
 
-			OrderByFields.Add(_attributeName);
-			OrderByType = OrderByConstants.OrderByDesc;
-			_attributeName = null;
+        OrderByFields.Add(_attributeName);
+        OrderByType = OrderByConstants.OrderByDesc;
+        _attributeName = null;
 
-			return this;
-		}
+        return this;
+    }
 
-		public override IConstraint Constrain(object value)
-		{
-			if (string.IsNullOrEmpty(_attributeName))
-			{
-				return new EmptyConstraint(value);
-			}
+    public override IConstraint Constrain(object value)
+    {
+        if (string.IsNullOrEmpty(_attributeName)) return new EmptyConstraint(value);
 
-			return new QueryConstraint(this, ApplyAttributeName(), value);
-		}
+        return new QueryConstraint(this, ApplyAttributeName(), value);
+    }
 
-		public override IObjectSet<TItem> Execute<TItem>()
-		{
-			return ((IInternalQuery)this).GetQueryEngine().GetObjects<TItem>(this, true, -1, -1);
-		}
+    public override IObjectSet<TItem> Execute<TItem>()
+    {
+        return ((IInternalQuery) this).GetQueryEngine().GetObjects<TItem>(this, true, -1, -1);
+    }
 
-		public override IObjectSet<TItem> Execute<TItem>(bool inMemory)
-		{
-			return ((IInternalQuery)this).GetQueryEngine().GetObjects<TItem>(this, inMemory, -1, -1);
-		}
+    public override IObjectSet<TItem> Execute<TItem>(bool inMemory)
+    {
+        return ((IInternalQuery) this).GetQueryEngine().GetObjects<TItem>(this, inMemory, -1, -1);
+    }
 
-		public override IObjectSet<TItem> Execute<TItem>(bool inMemory, int startIndex, int endIndex)
-		{
-			return ((IInternalQuery)this).GetQueryEngine().GetObjects<TItem>(this, inMemory, startIndex, endIndex);
-		}
+    public override IObjectSet<TItem> Execute<TItem>(bool inMemory, int startIndex, int endIndex)
+    {
+        return ((IInternalQuery) this).GetQueryEngine().GetObjects<TItem>(this, inMemory, startIndex, endIndex);
+    }
 
-		private string ApplyAttributeName()
-		{
-			var attributeName = string.Copy(_attributeName);
-			_attributeName = null;
+    private string ApplyAttributeName()
+    {
+        var attributeName = string.Copy(_attributeName);
+        _attributeName = null;
 
-			return attributeName;
-		}
-	}
+        return attributeName;
+    }
+}

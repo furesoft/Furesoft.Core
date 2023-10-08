@@ -1,10 +1,10 @@
 namespace Furesoft.Core.ObjectDB.Meta.Introspector;
 
-	public interface IObjectIntrospectionDataProvider
-	{
-		ClassInfo GetClassInfo(Type type);
+public interface IObjectIntrospectionDataProvider
+{
+    ClassInfo GetClassInfo(Type type);
 
-		void Clear();
+    void Clear();
 
-		NonNativeObjectInfo EnrichWithOid(NonNativeObjectInfo nnoi, object o);
-	}
+    NonNativeObjectInfo EnrichWithOid(NonNativeObjectInfo nnoi, object o);
+}

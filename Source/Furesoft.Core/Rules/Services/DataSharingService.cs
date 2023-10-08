@@ -7,6 +7,7 @@ namespace Furesoft.Core.Rules.Services;
 
 internal sealed class DataSharingService
 {
+    internal const int DefaultTimeoutInMs = 15000;
     private static readonly Lazy<DataSharingService> DataManager = new(() => new(), true);
 
     private DataSharingService()
@@ -20,8 +21,6 @@ internal sealed class DataSharingService
     private Lazy<ConcurrentDictionary<string, object>> Data { get; } =
         new(
             () => new(), true);
-
-    internal const int DefaultTimeoutInMs = 15000;
 
     public async Task AddOrUpdateAsync<T>(string key, Task<object> value, IConfiguration<T> configuration)
     {
@@ -72,11 +71,18 @@ internal sealed class DataSharingService
         throw new DotNetRuleEngineTimeOutException($"Unable to get {key}");
     }
 
-    public static DataSharingService GetInstance() => DataManager.Value;
+    public static DataSharingService GetInstance()
+    {
+        return DataManager.Value;
+    }
 
-    private static string[] BuildKey(string key, string ruleEngineId) =>
-        new[] {string.Join("_", ruleEngineId, key), key};
+    private static string[] BuildKey(string key, string ruleEngineId)
+    {
+        return new[] {string.Join("_", ruleEngineId, key), key};
+    }
 
-    private static string GetRuleEngineId<T>(IConfiguration<T> configuration) =>
-        ((RuleEngineConfiguration<T>) configuration).RuleEngineId.ToString();
+    private static string GetRuleEngineId<T>(IConfiguration<T> configuration)
+    {
+        return ((RuleEngineConfiguration<T>) configuration).RuleEngineId.ToString();
+    }
 }

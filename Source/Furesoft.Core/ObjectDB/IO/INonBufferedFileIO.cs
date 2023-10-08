@@ -1,20 +1,20 @@
 namespace Furesoft.Core.ObjectDB.IO;
 
-	internal interface INonBufferedFileIO : IDisposable
-	{
-		long Length { get; }
+internal interface INonBufferedFileIO : IDisposable
+{
+    long Length { get; }
 
-		long CurrentPositionForDirectWrite { get; }
+    long CurrentPositionForDirectWrite { get; }
 
-		void SetCurrentPosition(long currentPosition);
+    void SetCurrentPosition(long currentPosition);
 
-		void WriteByte(byte b);
+    void WriteByte(byte b);
 
-		byte[] ReadBytes(int size);
+    byte[] ReadBytes(int size);
 
-		byte ReadByte();
+    byte ReadByte();
 
-		void WriteBytes(byte[] bytes, int length);
+    void WriteBytes(byte[] bytes, int length);
 
-		long Read(long position, byte[] buffer, int size);
-	}
+    long Read(long position, byte[] buffer, int size);
+}

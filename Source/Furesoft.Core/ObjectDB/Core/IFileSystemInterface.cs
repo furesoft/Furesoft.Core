@@ -3,97 +3,97 @@ using Furesoft.Core.ObjectDB.Meta;
 
 namespace Furesoft.Core.ObjectDB.Core;
 
-	public interface IFileSystemInterface : IDisposable
-	{
-		void Flush();
+public interface IFileSystemInterface : IDisposable
+{
+    void Flush();
 
-		long GetPosition();
+    long GetPosition();
 
-		long GetLength();
+    long GetLength();
 
-		/// <summary>
-		///   Does the same thing than setWritePosition, but do not control write position
-		/// </summary>
-		/// <param name="position"> </param>
-		/// <param name="writeInTransacation"> </param>
-		void SetWritePositionNoVerification(long position, bool writeInTransacation);
+    /// <summary>
+    ///     Does the same thing than setWritePosition, but do not control write position
+    /// </summary>
+    /// <param name="position"> </param>
+    /// <param name="writeInTransacation"> </param>
+    void SetWritePositionNoVerification(long position, bool writeInTransacation);
 
-		void SetWritePosition(long position, bool writeInTransacation);
+    void SetWritePosition(long position, bool writeInTransacation);
 
-		void SetReadPosition(long position);
+    void SetReadPosition(long position);
 
-		long GetAvailablePosition();
+    long GetAvailablePosition();
 
-		void EnsureSpaceFor(OdbType type);
+    void EnsureSpaceFor(OdbType type);
 
-		void WriteByte(byte i, bool writeInTransaction);
+    void WriteByte(byte i, bool writeInTransaction);
 
-		byte ReadByte();
+    byte ReadByte();
 
-		void WriteBytes(byte[] bytes, bool writeInTransaction);
+    void WriteBytes(byte[] bytes, bool writeInTransaction);
 
-		byte[] ReadBytes(int length);
+    byte[] ReadBytes(int length);
 
-		void WriteChar(char c, bool writeInTransaction);
+    void WriteChar(char c, bool writeInTransaction);
 
-		char ReadChar();
+    char ReadChar();
 
-		void WriteShort(short s, bool writeInTransaction);
+    void WriteShort(short s, bool writeInTransaction);
 
-		short ReadShort();
+    short ReadShort();
 
-		void WriteInt(int i, bool writeInTransaction);
+    void WriteInt(int i, bool writeInTransaction);
 
-		int ReadInt();
+    int ReadInt();
 
-		void WriteLong(long i, bool writeInTransaction);
+    void WriteLong(long i, bool writeInTransaction);
 
-		long ReadLong();
+    long ReadLong();
 
-		void WriteFloat(float f, bool writeInTransaction);
+    void WriteFloat(float f, bool writeInTransaction);
 
-		float ReadFloat();
+    float ReadFloat();
 
-		void WriteDouble(double d, bool writeInTransaction);
+    void WriteDouble(double d, bool writeInTransaction);
 
-		double ReadDouble();
+    double ReadDouble();
 
-		void WriteBigDecimal(decimal d, bool writeInTransaction);
+    void WriteBigDecimal(decimal d, bool writeInTransaction);
 
-		decimal ReadBigDecimal();
+    decimal ReadBigDecimal();
 
-		void WriteDate(DateTime d, bool writeInTransaction);
+    void WriteDate(DateTime d, bool writeInTransaction);
 
-		DateTime ReadDate();
+    DateTime ReadDate();
 
-		void WriteString(string s, bool writeInTransaction);
+    void WriteString(string s, bool writeInTransaction);
 
-		void WriteString(string s, bool writeInTransaction, int totalSpace);
+    void WriteString(string s, bool writeInTransaction, int totalSpace);
 
-		string ReadString();
+    string ReadString();
 
-		void WriteBoolean(bool b, bool writeInTransaction);
+    void WriteBoolean(bool b, bool writeInTransaction);
 
-		bool ReadBoolean();
+    bool ReadBoolean();
 
-		void Close();
+    void Close();
 
-		/// <returns> Returns the parameters. </returns>
-		IDbIdentification GetFileIdentification();
+    /// <returns> Returns the parameters. </returns>
+    IDbIdentification GetFileIdentification();
 
-		void WriteUShort(ushort s, bool writeInTransaction);
+    void WriteUShort(ushort s, bool writeInTransaction);
 
-		ushort ReadUShort();
+    ushort ReadUShort();
 
-		void WriteUInt(uint i, bool writeInTransaction);
+    void WriteUInt(uint i, bool writeInTransaction);
 
-		uint ReadUInt();
+    uint ReadUInt();
 
-		void WriteULong(ulong i, bool writeInTransaction);
+    void WriteULong(ulong i, bool writeInTransaction);
 
-		ulong ReadULong();
+    ulong ReadULong();
 
-		void WriteSByte(sbyte i, bool writeInTransaction);
+    void WriteSByte(sbyte i, bool writeInTransaction);
 
-		sbyte ReadSByte();
-	}
+    sbyte ReadSByte();
+}

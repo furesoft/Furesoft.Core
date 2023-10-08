@@ -3,33 +3,33 @@ using Furesoft.Core.ObjectDB.Meta;
 
 namespace Furesoft.Core.ObjectDB.Core.Session;
 
-	public interface ISession : IComparable
-	{
-		IOdbCache GetCache();
+public interface ISession : IComparable
+{
+    IOdbCache GetCache();
 
-		IReadObjectsCache GetTmpCache();
+    IReadObjectsCache GetTmpCache();
 
-		void Rollback();
+    void Rollback();
 
-		void Close();
+    void Close();
 
-		bool IsRollbacked();
+    bool IsRollbacked();
 
-		IStorageEngine GetStorageEngine();
+    IStorageEngine GetStorageEngine();
 
-		bool TransactionIsPending();
+    bool TransactionIsPending();
 
-		void Commit();
+    void Commit();
 
-		ITransaction GetTransaction();
+    ITransaction GetTransaction();
 
-		void SetFileSystemInterfaceToApplyTransaction(IFileSystemInterface fsi);
+    void SetFileSystemInterfaceToApplyTransaction(IFileSystemInterface fsi);
 
-		IMetaModel GetMetaModel();
+    IMetaModel GetMetaModel();
 
-		string GetId();
+    string GetId();
 
-		void RemoveObjectFromCache(object @object);
+    void RemoveObjectFromCache(object @object);
 
-		IObjectWriter GetObjectWriter();
-	}
+    IObjectWriter GetObjectWriter();
+}

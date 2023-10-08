@@ -1,70 +1,62 @@
 namespace Furesoft.Core.ObjectDB.IO;
 
-	/// <summary>
-	///   Database Parameters for local database access
-	/// </summary>
-	internal sealed class FileIdentification : IDbIdentification
-	{
-		private readonly string _fileName;
+/// <summary>
+///     Database Parameters for local database access
+/// </summary>
+internal sealed class FileIdentification : IDbIdentification
+{
+    internal FileIdentification(string name)
+    {
+        FileName = name;
+    }
 
-		internal FileIdentification(string name)
-		{
-			_fileName = name;
-		}
+    public override string ToString()
+    {
+        return FileName;
+    }
 
-		#region IFileIdentification Members
+    private string GetCleanFileName()
+    {
+        return Path.GetFileName(FileName);
+    }
 
-		public string Directory
-		{
-			get
-			{
-				var fullPath = Path.GetFullPath(_fileName);
-				return Path.GetDirectoryName(fullPath);
-			}
-		}
+    #region IFileIdentification Members
 
-		public string Id
-		{
-			get { return GetCleanFileName(); }
-		}
+    public string Directory
+    {
+        get
+        {
+            var fullPath = Path.GetFullPath(FileName);
+            return Path.GetDirectoryName(fullPath);
+        }
+    }
 
-		public bool IsNew()
-		{
-			return !File.Exists(_fileName);
-		}
+    public string Id => GetCleanFileName();
 
-		public void EnsureDirectories()
-		{
-			OdbDirectory.Mkdirs(FileName);
-		}
+    public bool IsNew()
+    {
+        return !File.Exists(FileName);
+    }
 
-		public IMultiBufferedFileIO GetIO(int bufferSize)
-		{
-			return new MultiBufferedFileIO(FileName, bufferSize);
-		}
+    public void EnsureDirectories()
+    {
+        OdbDirectory.Mkdirs(FileName);
+    }
 
-		public IDbIdentification GetTransactionIdentification(long creationDateTime, string sessionId)
-		{
-			var filename =
-				string.Format("{0}-{1}-{2}.transaction", Id, creationDateTime, sessionId);
+    public IMultiBufferedFileIO GetIO(int bufferSize)
+    {
+        return new MultiBufferedFileIO(FileName, bufferSize);
+    }
 
-			return new InMemoryIdentification(filename);
-		}
+    public IDbIdentification GetTransactionIdentification(long creationDateTime, string sessionId)
+    {
+        var filename =
+            string.Format("{0}-{1}-{2}.transaction", Id, creationDateTime, sessionId);
 
-		public string FileName
-		{
-			get { return _fileName; }
-		}
+        return new InMemoryIdentification(filename);
+    }
 
-		#endregion IFileIdentification Members
+    public string FileName { get; }
 
-		public override string ToString()
-		{
-			return _fileName;
-		}
-
-		private string GetCleanFileName()
-		{
-			return Path.GetFileName(_fileName);
-		}
-	}
+    #endregion IFileIdentification Members
+}

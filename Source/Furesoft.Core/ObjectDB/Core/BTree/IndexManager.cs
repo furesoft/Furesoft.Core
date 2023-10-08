@@ -7,95 +7,91 @@ using Furesoft.Core.ObjectDB.Services;
 
 namespace Furesoft.Core.ObjectDB.Core.BTree;
 
-	internal sealed class IndexManager : IIndexManager
-	{
-		private readonly ClassInfo _classInfo;
+internal sealed class IndexManager : IIndexManager
+{
+    private readonly ClassInfo _classInfo;
+    private readonly IReflectionService _reflectionService;
 
-		private readonly IStorageEngine _storageEngine;
-		private readonly IReflectionService _reflectionService;
+    private readonly IStorageEngine _storageEngine;
 
-		internal IndexManager(IStorageEngine storageEngine, ClassInfo classInfo)
-		{
-			_storageEngine = storageEngine;
-			_classInfo = classInfo;
+    internal IndexManager(IStorageEngine storageEngine, ClassInfo classInfo)
+    {
+        _storageEngine = storageEngine;
+        _classInfo = classInfo;
 
-			_reflectionService = DependencyContainer.Resolve<IReflectionService>();
-		}
+        _reflectionService = DependencyContainer.Resolve<IReflectionService>();
+    }
 
-		#region IClassRepresentation Members
+    private string[] ValidateFields(string indexName, IEnumerable<string> indexFields)
+    {
+        var withoutDuplicates = indexFields.Distinct().ToArray();
 
-		public void AddUniqueIndexOn(string indexName, params string[] indexFields)
-		{
-			if (indexFields.Length == 0)
-			{
-				throw new OdbRuntimeException(
-					NDatabaseError.InternalError.AddParameter("Index has to have at least one field"));
-			}
+        var members = _reflectionService.GetFieldsAndProperties(_classInfo.UnderlyingType);
 
-			indexFields = ValidateFields(indexName, indexFields);
+        foreach (var indexField in withoutDuplicates)
+        {
+            var memberInfo = members.FirstOrDefault(x => x.Name.Equals(indexField));
 
-			_storageEngine.AddIndexOn(_classInfo.FullClassName, indexName, indexFields, false);
-		}
+            var memberType = !(memberInfo is PropertyInfo)
+                ? ((PropertyInfo) memberInfo).PropertyType
+                : ((FieldInfo) memberInfo).FieldType;
 
-		public void AddIndexOn(string indexName, params string[] indexFields)
-		{
-			if (indexFields.Length == 0)
-			{
-				throw new OdbRuntimeException(
-					NDatabaseError.InternalError.AddParameter("Index has to have at least one field"));
-			}
+            if (memberInfo != null && typeof(IComparable).IsAssignableFrom(memberType))
+                continue;
 
-			indexFields = ValidateFields(indexName, indexFields);
+            var fieldType = memberInfo == null || memberInfo.DeclaringType == null
+                ? "Field doesn't exist"
+                : memberType.FullName;
 
-			_storageEngine.AddIndexOn(_classInfo.FullClassName, indexName, indexFields, true);
-		}
+            throw new OdbRuntimeException(NDatabaseError.IndexKeysMustImplementComparable.AddParameter(indexName)
+                .AddParameter(indexField)
+                .AddParameter(fieldType));
+        }
 
-		public bool ExistIndex(string indexName)
-		{
-			return _classInfo.HasIndex(indexName);
-		}
+        return withoutDuplicates;
+    }
 
-		/// <summary>
-		///   Used to rebuild an index
-		/// </summary>
-		public void RebuildIndex(string indexName)
-		{
-			_storageEngine.RebuildIndex(_classInfo.FullClassName, indexName);
-		}
+    #region IClassRepresentation Members
 
-		public void DeleteIndex(string indexName)
-		{
-			_storageEngine.DeleteIndex(_classInfo.FullClassName, indexName);
-		}
+    public void AddUniqueIndexOn(string indexName, params string[] indexFields)
+    {
+        if (indexFields.Length == 0)
+            throw new OdbRuntimeException(
+                NDatabaseError.InternalError.AddParameter("Index has to have at least one field"));
 
-		#endregion IClassRepresentation Members
+        indexFields = ValidateFields(indexName, indexFields);
 
-		private string[] ValidateFields(string indexName, IEnumerable<string> indexFields)
-		{
-			var withoutDuplicates = indexFields.Distinct().ToArray();
+        _storageEngine.AddIndexOn(_classInfo.FullClassName, indexName, indexFields, false);
+    }
 
-			var members = _reflectionService.GetFieldsAndProperties(_classInfo.UnderlyingType);
+    public void AddIndexOn(string indexName, params string[] indexFields)
+    {
+        if (indexFields.Length == 0)
+            throw new OdbRuntimeException(
+                NDatabaseError.InternalError.AddParameter("Index has to have at least one field"));
 
-			foreach (var indexField in withoutDuplicates)
-			{
-				var memberInfo = members.FirstOrDefault(x => x.Name.Equals(indexField));
+        indexFields = ValidateFields(indexName, indexFields);
 
-				var memberType = !(memberInfo is PropertyInfo)
-									 ? ((PropertyInfo)memberInfo).PropertyType
-									 : ((FieldInfo)memberInfo).FieldType;
+        _storageEngine.AddIndexOn(_classInfo.FullClassName, indexName, indexFields, true);
+    }
 
-				if (memberInfo != null && (typeof(IComparable)).IsAssignableFrom(memberType))
-					continue;
+    public bool ExistIndex(string indexName)
+    {
+        return _classInfo.HasIndex(indexName);
+    }
 
-				var fieldType = (memberInfo == null || memberInfo.DeclaringType == null)
-									? "Field doesn't exist"
-									: memberType.FullName;
+    /// <summary>
+    ///     Used to rebuild an index
+    /// </summary>
+    public void RebuildIndex(string indexName)
+    {
+        _storageEngine.RebuildIndex(_classInfo.FullClassName, indexName);
+    }
 
-				throw new OdbRuntimeException(NDatabaseError.IndexKeysMustImplementComparable.AddParameter(indexName)
-															.AddParameter(indexField)
-															.AddParameter(fieldType));
-			}
+    public void DeleteIndex(string indexName)
+    {
+        _storageEngine.DeleteIndex(_classInfo.FullClassName, indexName);
+    }
 
-			return withoutDuplicates;
-		}
-	}
+    #endregion IClassRepresentation Members
+}

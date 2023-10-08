@@ -2,20 +2,17 @@
 
 namespace Furesoft.Core.ObjectDB.Btree;
 
-	internal abstract class IterarorAdapter : IEnumerator
-	{
-		#region IEnumerator Members
+internal abstract class IterarorAdapter : IEnumerator
+{
+    protected abstract object GetCurrent();
 
-		public object Current
-		{
-			get { return GetCurrent(); }
-		}
+    #region IEnumerator Members
 
-		public abstract bool MoveNext();
+    public object Current => GetCurrent();
 
-		public abstract void Reset();
+    public abstract bool MoveNext();
 
-		#endregion IEnumerator Members
+    public abstract void Reset();
 
-		protected abstract object GetCurrent();
-	}
+    #endregion IEnumerator Members
+}

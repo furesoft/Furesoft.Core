@@ -4,10 +4,10 @@ namespace Furesoft.Core.Rules.Services;
 
 internal class RuleService<T> where T : class, new()
 {
-    private readonly IEnumerable<IRule<T>> _rules;
     private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
-    private readonly RxRuleService<IRule<T>, T> _rxRuleService;
     private readonly ICollection<IRuleResult> _ruleResults = new List<IRuleResult>();
+    private readonly IEnumerable<IRule<T>> _rules;
+    private readonly RxRuleService<IRule<T>, T> _rxRuleService;
 
     public RuleService(IEnumerable<IRule<T>> rules,
         IRuleEngineConfiguration<T> ruleEngineConfiguration)
@@ -17,9 +17,15 @@ internal class RuleService<T> where T : class, new()
         _ruleEngineConfiguration = ruleEngineConfiguration;
     }
 
-    public void Invoke() => Execute(_rxRuleService.FilterRxRules(_rules));
+    public void Invoke()
+    {
+        Execute(_rxRuleService.FilterRxRules(_rules));
+    }
 
-    public IEnumerable<IRuleResult> GetRuleResults() => _ruleResults;
+    public IEnumerable<IRuleResult> GetRuleResults()
+    {
+        return _ruleResults;
+    }
 
     private void Execute(IEnumerable<IRule<T>> rules)
     {
@@ -54,12 +60,12 @@ internal class RuleService<T> where T : class, new()
                         if (globalExceptionHandler is IRule<T>)
                         {
                             globalExceptionHandler.UnhandledException = exception;
-                            Execute(new List<IRule<T>> { (IRule<T>)globalExceptionHandler });
+                            Execute(new List<IRule<T>> {(IRule<T>) globalExceptionHandler});
                         }
                         else
                         {
                             throw;
-                        }                            
+                        }
                     }
                 }
 
@@ -75,17 +81,13 @@ internal class RuleService<T> where T : class, new()
     private void InvokeReactiveRules(IGeneralRule<T> rule)
     {
         if (_rxRuleService.GetReactiveRules().ContainsKey(rule.GetType()))
-        {
             Execute(_rxRuleService.GetReactiveRules()[rule.GetType()]);
-        }
     }
 
     private void InvokeProactiveRules(IRule<T> rule)
     {
         if (_rxRuleService.GetProactiveRules().ContainsKey(rule.GetType()))
-        {
             Execute(_rxRuleService.GetProactiveRules()[rule.GetType()]);
-        }
     }
 
     private void InvokeExceptionRules(IRule<T> rule)
@@ -109,9 +111,7 @@ internal class RuleService<T> where T : class, new()
     private void InvokeNestedRules(bool invokeNestedRules, IRule<T> rule)
     {
         if (invokeNestedRules && rule.IsNested)
-        {
             Execute(_rxRuleService.FilterRxRules(OrderByExecutionOrder(rule.GetRules().OfType<IRule<T>>())));
-        }
     }
 
     private static IEnumerable<IRule<T>> OrderByExecutionOrder(IEnumerable<IRule<T>> rules)

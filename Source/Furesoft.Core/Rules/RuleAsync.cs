@@ -32,27 +32,55 @@ public abstract class RuleAsync<T> : IRuleAsync<T> where T : class, new()
 
     public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 
-    public async Task<object> TryGetValueAsync(string key, int timeoutInMs = DataSharingService.DefaultTimeoutInMs) => 
-        await DataSharingService.GetInstance().GetValueAsync(key, Configuration, timeoutInMs);
+    public async Task<object> TryGetValueAsync(string key, int timeoutInMs = DataSharingService.DefaultTimeoutInMs)
+    {
+        return await DataSharingService.GetInstance().GetValueAsync(key, Configuration, timeoutInMs);
+    }
 
-    public async Task TryAddAsync(string key, Task<object> value) => 
+    public async Task TryAddAsync(string key, Task<object> value)
+    {
         await DataSharingService.GetInstance().AddOrUpdateAsync(key, value, Configuration);
+    }
 
-    public IList<object> GetRules() => Rules;
+    public IList<object> GetRules()
+    {
+        return Rules;
+    }
 
-    public void AddRules(params object[] rules) => Rules = rules.ToList();
+    public void AddRules(params object[] rules)
+    {
+        Rules = rules.ToList();
+    }
 
-    public void AddRule(IGeneralRule<T> rule) => Rules.Add(rule);
+    public void AddRule(IGeneralRule<T> rule)
+    {
+        Rules.Add(rule);
+    }
 
-    public void AddRule<TK>() where TK : IGeneralRule<T> => Rules.Add(typeof(TK));
+    public void AddRule<TK>() where TK : IGeneralRule<T>
+    {
+        Rules.Add(typeof(TK));
+    }
 
-    public void ObserveRule<TK>() where TK : IRuleAsync<T> => ObservedRule = typeof(TK);        
+    public void ObserveRule<TK>() where TK : IRuleAsync<T>
+    {
+        ObservedRule = typeof(TK);
+    }
 
-    public virtual async Task InitializeAsync() => await Task.FromResult<object>(null);
+    public virtual async Task InitializeAsync()
+    {
+        await Task.FromResult<object>(null);
+    }
 
-    public virtual async Task BeforeInvokeAsync() => await Task.FromResult<object>(null);
+    public virtual async Task BeforeInvokeAsync()
+    {
+        await Task.FromResult<object>(null);
+    }
 
-    public virtual async Task AfterInvokeAsync() => await Task.FromResult<object>(null);
+    public virtual async Task AfterInvokeAsync()
+    {
+        await Task.FromResult<object>(null);
+    }
 
     public abstract Task<IRuleResult> InvokeAsync();
 }

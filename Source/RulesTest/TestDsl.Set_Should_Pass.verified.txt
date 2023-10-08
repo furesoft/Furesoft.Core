@@ -9,9 +9,9 @@
     },
     Operator: =,
     RightExpr: {
-      $type: LiteralNode<double>,
-      Value: 42.0,
-      Range: 1:10-1:12
+      $type: LiteralNode<ulong>,
+      Value: 42,
+      Range: 1:10-1:11
     }
   },
   Document: {

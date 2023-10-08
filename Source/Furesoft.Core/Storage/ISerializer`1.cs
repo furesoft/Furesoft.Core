@@ -1,18 +1,12 @@
 ﻿namespace Furesoft.Core.Storage;
 
-	public interface ISerializer<K>
-	{
-		byte[] Serialize(K value);
+public interface ISerializer<K>
+{
+    bool IsFixedSize { get; }
 
-		K Deserialize(byte[] buffer, int offset, int length);
+    int Length { get; }
 
-		bool IsFixedSize
-		{
-			get;
-		}
+    byte[] Serialize(K value);
 
-		int Length
-		{
-			get;
-		}
-	}
+    K Deserialize(byte[] buffer, int offset, int length);
+}

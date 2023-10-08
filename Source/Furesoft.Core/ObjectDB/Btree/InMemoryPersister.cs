@@ -1,45 +1,45 @@
 namespace Furesoft.Core.ObjectDB.Btree;
 
-	/// <summary>
-	///   In memory persister
-	/// </summary>
-	internal sealed class InMemoryPersister : IBTreePersister
-	{
-		#region IBTreePersister Members
+/// <summary>
+///     In memory persister
+/// </summary>
+internal sealed class InMemoryPersister : IBTreePersister
+{
+    #region IBTreePersister Members
 
-		public IBTreeNode LoadNodeById(object id)
-		{
-			return null;
-		}
+    public IBTreeNode LoadNodeById(object id)
+    {
+        return null;
+    }
 
-		public void SaveNode(IBTreeNode node)
-		{
-		}
+    public void SaveNode(IBTreeNode node)
+    {
+    }
 
-		public void Close()
-		{
-		}
+    public void Close()
+    {
+    }
 
-		public void DeleteNode(IBTreeNode parent)
-		{
-		}
+    public void DeleteNode(IBTreeNode parent)
+    {
+    }
 
-		public IBTree LoadBTree(object id)
-		{
-			return null;
-		}
+    public IBTree LoadBTree(object id)
+    {
+        return null;
+    }
 
-		public void SaveBTree(IBTree tree)
-		{
-		}
+    public void SaveBTree(IBTree tree)
+    {
+    }
 
-		public void SetBTree(IBTree tree)
-		{
-		}
+    public void SetBTree(IBTree tree)
+    {
+    }
 
-		public void Flush()
-		{
-		}
+    public void Flush()
+    {
+    }
 
-		#endregion IBTreePersister Members
-	}
+    #endregion IBTreePersister Members
+}

@@ -5,208 +5,206 @@ using Furesoft.Core.ObjectDB.Storage;
 
 namespace Furesoft.Core.ObjectDB.Core.Engine;
 
-	/// <summary>
-	///   Class to manage the ids of all the objects of the database.
-	/// </summary>
-	internal sealed class IdManager : IIdManager
-	{
-		private const int IdBufferSize = 10;
+/// <summary>
+///     Class to manage the ids of all the objects of the database.
+/// </summary>
+internal sealed class IdManager : IIdManager
+{
+    private const int IdBufferSize = 10;
 
-		private int _currentBlockIdNumber;
-		private long _currentBlockIdPosition;
-		private int _lastIdIndex;
-		private long[] _lastIdPositions;
+    private readonly object _syncRoot = new();
 
-		/// <summary>
-		///   Contains the last ids: id value,id position, id value, id position=&gt; the array is created with twice the size
-		/// </summary>
-		private OID[] _lastIds;
+    private int _currentBlockIdNumber;
+    private long _currentBlockIdPosition;
+    private int _lastIdIndex;
+    private long[] _lastIdPositions;
 
-		private OID _maxId;
-		private OID _nextId;
+    /// <summary>
+    ///     Contains the last ids: id value,id position, id value, id position=&gt; the array is created with twice the size
+    /// </summary>
+    private OID[] _lastIds;
 
-		private IObjectReader _objectReader;
-		private IObjectWriter _objectWriter;
+    private OID _maxId;
+    private OID _nextId;
 
-		private readonly object _syncRoot = new();
+    private IObjectReader _objectReader;
+    private IObjectWriter _objectWriter;
 
-		/// <param name="objectWriter"> The object writer </param>
-		/// <param name="objectReader"> The object reader </param>
-		/// <param name="currentIdBlock">Current Id block data </param>
-		public IdManager(IObjectWriter objectWriter, IObjectReader objectReader, CurrentIdBlockInfo currentIdBlock)
-		{
-			_objectWriter = objectWriter;
-			_objectReader = objectReader;
-			_currentBlockIdPosition = currentIdBlock.CurrentIdBlockPosition;
-			_currentBlockIdNumber = currentIdBlock.CurrentIdBlockNumber;
-			_maxId = new ObjectOID((long)currentIdBlock.CurrentIdBlockNumber * StorageEngineConstant.NbIdsPerBlock);
-			_nextId = new ObjectOID(currentIdBlock.CurrentIdBlockMaxOid.ObjectId + 1);
+    /// <param name="objectWriter"> The object writer </param>
+    /// <param name="objectReader"> The object reader </param>
+    /// <param name="currentIdBlock">Current Id block data </param>
+    public IdManager(IObjectWriter objectWriter, IObjectReader objectReader, CurrentIdBlockInfo currentIdBlock)
+    {
+        _objectWriter = objectWriter;
+        _objectReader = objectReader;
+        _currentBlockIdPosition = currentIdBlock.CurrentIdBlockPosition;
+        _currentBlockIdNumber = currentIdBlock.CurrentIdBlockNumber;
+        _maxId = new ObjectOID((long) currentIdBlock.CurrentIdBlockNumber * StorageEngineConstant.NbIdsPerBlock);
+        _nextId = new ObjectOID(currentIdBlock.CurrentIdBlockMaxOid.ObjectId + 1);
 
-			_lastIds = new OID[IdBufferSize];
-			for (var i = 0; i < IdBufferSize; i++)
-				_lastIds[i] = StorageEngineConstant.NullObjectId;
+        _lastIds = new OID[IdBufferSize];
+        for (var i = 0; i < IdBufferSize; i++)
+            _lastIds[i] = StorageEngineConstant.NullObjectId;
 
-			_lastIdPositions = new long[IdBufferSize];
-			_lastIdIndex = 0;
-		}
+        _lastIdPositions = new long[IdBufferSize];
+        _lastIdIndex = 0;
+    }
 
-		#region IIdManager Members
+    /// <summary>
+    ///     Gets an id for an object (instance)
+    /// </summary>
+    /// <param name="objectPosition"> the object position (instance) </param>
+    /// <param name="idType"> The type id : object,class, unknown </param>
+    /// <param name="idStatus"> </param>
+    /// <returns> The id </returns>
+    private OID GetNextId(long objectPosition, byte idType, byte idStatus)
+    {
+        lock (_syncRoot)
+        {
+            if (MustShift())
+                ShiftBlock();
 
-		/// <summary>
-		///   To check if the id block must shift: that a new id block must be created
-		/// </summary>
-		/// <returns> a boolean value to check if block of id is full </returns>
-		public bool MustShift()
-		{
-			lock (_syncRoot)
-			{
-				return _nextId.CompareTo(_maxId) > 0;
-			}
-		}
+            // Keep the current id
+            var currentNextId = _nextId;
+            if (idType == IdTypes.Class)
+                // If its a class, build a class OID instead.
+                currentNextId = new ClassOID(currentNextId.ObjectId);
 
-		public OID GetNextObjectId(long objectPosition)
-		{
-			lock (_syncRoot)
-			{
-				return GetNextId(objectPosition, IdTypes.Object, IDStatus.Active);
-			}
-		}
+            // Compute the new index to be used to store id and its position in the lastIds and lastIdPositions array
+            var currentIndex = (_lastIdIndex + 1) % IdBufferSize;
 
-		public OID GetNextClassId(long objectPosition)
-		{
-			lock (_syncRoot)
-			{
-				return GetNextId(objectPosition, IdTypes.Class, IDStatus.Active);
-			}
-		}
+            // Stores the id
+            _lastIds[currentIndex] = currentNextId;
 
-		public void UpdateObjectPositionForOid(OID oid, long objectPosition, bool writeInTransaction)
-		{
-			var idPosition = GetIdPosition(oid);
-			_objectWriter.FileSystemProcessor.UpdateObjectPositionForObjectOIDWithPosition(idPosition, objectPosition, writeInTransaction);
-		}
+            // really associate id to the object position
+            var idPosition = AssociateIdToObject(idType, idStatus, objectPosition);
 
-		public void UpdateClassPositionForId(OID classId, long objectPosition, bool writeInTransaction)
-		{
-			var idPosition = GetIdPosition(classId);
-			_objectWriter.FileSystemProcessor.UpdateClassPositionForClassOIDWithPosition(idPosition, objectPosition,
-																						 writeInTransaction);
-		}
+            // Store the id position
+            _lastIdPositions[currentIndex] = idPosition;
 
-		public void UpdateIdStatus(OID id, byte newStatus)
-		{
-			var idPosition = GetIdPosition(id);
-			_objectWriter.FileSystemProcessor.UpdateStatusForIdWithPosition(idPosition, newStatus, true);
-		}
+            // Update the id buffer index
+            _lastIdIndex = currentIndex;
 
-		public long GetObjectPositionWithOid(OID oid, bool useCache)
-		{
-			return _objectReader.GetObjectPositionFromItsOid(oid, useCache, true);
-		}
+            return currentNextId;
+        }
+    }
 
-		public void Clear()
-		{
-			_objectReader = null;
-			_objectWriter = null;
-			_lastIdPositions = null;
-			_lastIds = null;
-		}
+    private long GetIdPosition(OID oid)
+    {
+        // first check if it is the last
+        if (_lastIds[_lastIdIndex] != null && _lastIds[_lastIdIndex].Equals(oid))
+            return _lastIdPositions[_lastIdIndex];
 
-		#endregion IIdManager Members
+        for (var i = 0; i < IdBufferSize; i++)
+            if (_lastIds[i] != null && _lastIds[i].Equals(oid))
+                return _lastIdPositions[i];
 
-		/// <summary>
-		///   Gets an id for an object (instance)
-		/// </summary>
-		/// <param name="objectPosition"> the object position (instance) </param>
-		/// <param name="idType"> The type id : object,class, unknown </param>
-		/// <param name="idStatus"> </param>
-		/// <returns> The id </returns>
-		private OID GetNextId(long objectPosition, byte idType, byte idStatus)
-		{
-			lock (_syncRoot)
-			{
-				if (MustShift())
-					ShiftBlock();
+        // object id is not is cache
+        return _objectReader.ReadOidPosition(oid);
+    }
 
-				// Keep the current id
-				var currentNextId = _nextId;
-				if (idType == IdTypes.Class)
-				{
-					// If its a class, build a class OID instead.
-					currentNextId = new ClassOID(currentNextId.ObjectId);
-				}
+    private long AssociateIdToObject(byte idType, byte idStatus, long objectPosition)
+    {
+        var idPosition = _objectWriter.FileSystemProcessor.AssociateIdToObject(idType, idStatus,
+            _currentBlockIdPosition, _nextId,
+            objectPosition, false);
 
-				// Compute the new index to be used to store id and its position in the lastIds and lastIdPositions array
-				var currentIndex = (_lastIdIndex + 1) % IdBufferSize;
+        _nextId = new ObjectOID(_nextId.ObjectId + 1);
 
-				// Stores the id
-				_lastIds[currentIndex] = currentNextId;
+        return idPosition;
+    }
 
-				// really associate id to the object position
-				var idPosition = AssociateIdToObject(idType, idStatus, objectPosition);
+    private void ShiftBlock()
+    {
+        var currentBlockPosition = _currentBlockIdPosition;
 
-				// Store the id position
-				_lastIdPositions[currentIndex] = idPosition;
+        // the block has reached the end, , must create a new id block
+        var newBlockPosition = CreateNewBlock();
 
-				// Update the id buffer index
-				_lastIdIndex = currentIndex;
+        // Mark the current block as full
+        MarkBlockAsFull(currentBlockPosition, newBlockPosition);
 
-				return currentNextId;
-			}
-		}
+        _currentBlockIdNumber++;
+        _currentBlockIdPosition = newBlockPosition;
+        _maxId = new ObjectOID((long) _currentBlockIdNumber * StorageEngineConstant.NbIdsPerBlock);
+    }
 
-		private long GetIdPosition(OID oid)
-		{
-			// first check if it is the last
-			if (_lastIds[_lastIdIndex] != null && _lastIds[_lastIdIndex].Equals(oid))
-				return _lastIdPositions[(_lastIdIndex)];
+    private void MarkBlockAsFull(long currentBlockIdPosition, long nextBlockPosition)
+    {
+        _objectWriter.FileSystemProcessor.MarkIdBlockAsFull(currentBlockIdPosition, nextBlockPosition, false);
+    }
 
-			for (var i = 0; i < IdBufferSize; i++)
-			{
-				if (_lastIds[i] != null && _lastIds[i].Equals(oid))
-					return _lastIdPositions[i];
-			}
+    private long CreateNewBlock()
+    {
+        var position = _objectWriter.FileSystemProcessor.WriteIdBlock(-1, StorageEngineConstant.IdBlockSize,
+            BlockStatus.BlockNotFull,
+            _currentBlockIdNumber + 1,
+            _currentBlockIdPosition, false);
+        return position;
+    }
 
-			// object id is not is cache
-			return _objectReader.ReadOidPosition(oid);
-		}
+    #region IIdManager Members
 
-		private long AssociateIdToObject(byte idType, byte idStatus, long objectPosition)
-		{
-			var idPosition = _objectWriter.FileSystemProcessor.AssociateIdToObject(idType, idStatus, _currentBlockIdPosition, _nextId,
-															   objectPosition, false);
+    /// <summary>
+    ///     To check if the id block must shift: that a new id block must be created
+    /// </summary>
+    /// <returns> a boolean value to check if block of id is full </returns>
+    public bool MustShift()
+    {
+        lock (_syncRoot)
+        {
+            return _nextId.CompareTo(_maxId) > 0;
+        }
+    }
 
-			_nextId = new ObjectOID(_nextId.ObjectId + 1);
+    public OID GetNextObjectId(long objectPosition)
+    {
+        lock (_syncRoot)
+        {
+            return GetNextId(objectPosition, IdTypes.Object, IDStatus.Active);
+        }
+    }
 
-			return idPosition;
-		}
+    public OID GetNextClassId(long objectPosition)
+    {
+        lock (_syncRoot)
+        {
+            return GetNextId(objectPosition, IdTypes.Class, IDStatus.Active);
+        }
+    }
 
-		private void ShiftBlock()
-		{
-			var currentBlockPosition = _currentBlockIdPosition;
+    public void UpdateObjectPositionForOid(OID oid, long objectPosition, bool writeInTransaction)
+    {
+        var idPosition = GetIdPosition(oid);
+        _objectWriter.FileSystemProcessor.UpdateObjectPositionForObjectOIDWithPosition(idPosition, objectPosition,
+            writeInTransaction);
+    }
 
-			// the block has reached the end, , must create a new id block
-			var newBlockPosition = CreateNewBlock();
+    public void UpdateClassPositionForId(OID classId, long objectPosition, bool writeInTransaction)
+    {
+        var idPosition = GetIdPosition(classId);
+        _objectWriter.FileSystemProcessor.UpdateClassPositionForClassOIDWithPosition(idPosition, objectPosition,
+            writeInTransaction);
+    }
 
-			// Mark the current block as full
-			MarkBlockAsFull(currentBlockPosition, newBlockPosition);
+    public void UpdateIdStatus(OID id, byte newStatus)
+    {
+        var idPosition = GetIdPosition(id);
+        _objectWriter.FileSystemProcessor.UpdateStatusForIdWithPosition(idPosition, newStatus, true);
+    }
 
-			_currentBlockIdNumber++;
-			_currentBlockIdPosition = newBlockPosition;
-			_maxId = new ObjectOID((long)_currentBlockIdNumber * StorageEngineConstant.NbIdsPerBlock);
-		}
+    public long GetObjectPositionWithOid(OID oid, bool useCache)
+    {
+        return _objectReader.GetObjectPositionFromItsOid(oid, useCache, true);
+    }
 
-		private void MarkBlockAsFull(long currentBlockIdPosition, long nextBlockPosition)
-		{
-			_objectWriter.FileSystemProcessor.MarkIdBlockAsFull(currentBlockIdPosition, nextBlockPosition, false);
-		}
+    public void Clear()
+    {
+        _objectReader = null;
+        _objectWriter = null;
+        _lastIdPositions = null;
+        _lastIds = null;
+    }
 
-		private long CreateNewBlock()
-		{
-			var position = _objectWriter.FileSystemProcessor.WriteIdBlock(-1, StorageEngineConstant.IdBlockSize,
-																		  BlockStatus.BlockNotFull,
-																		  _currentBlockIdNumber + 1,
-																		  _currentBlockIdPosition, false);
-			return position;
-		}
-	}
+    #endregion IIdManager Members
+}

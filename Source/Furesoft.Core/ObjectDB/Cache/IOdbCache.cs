@@ -3,50 +3,50 @@ using Furesoft.Core.ObjectDB.Meta;
 
 namespace Furesoft.Core.ObjectDB.Cache;
 
-	public interface IOdbCache
-	{
-		void AddObject(OID oid, object @object, ObjectInfoHeader objectInfoHeader);
+public interface IOdbCache
+{
+    void AddObject(OID oid, object @object, ObjectInfoHeader objectInfoHeader);
 
-		void StartInsertingObjectWithOid<T>(T plainObject, OID oid) where T : class;
+    void StartInsertingObjectWithOid<T>(T plainObject, OID oid) where T : class;
 
-		void UpdateIdOfInsertingObject<T>(T plainObject, OID oid) where T : class;
+    void UpdateIdOfInsertingObject<T>(T plainObject, OID oid) where T : class;
 
-		void AddObjectInfoOfNonCommitedObject(ObjectInfoHeader objectInfoHeader);
+    void AddObjectInfoOfNonCommitedObject(ObjectInfoHeader objectInfoHeader);
 
-		void RemoveObjectByOid(OID oid);
+    void RemoveObjectByOid(OID oid);
 
-		void RemoveObject(object @object);
+    void RemoveObject(object @object);
 
-		bool Contains(object @object);
+    bool Contains(object @object);
 
-		object GetObject(OID oid);
+    object GetObject(OID oid);
 
-		ObjectInfoHeader GetObjectInfoHeaderFromObject(object @object);
+    ObjectInfoHeader GetObjectInfoHeaderFromObject(object @object);
 
-		ObjectInfoHeader GetObjectInfoHeaderByOid(OID oid, bool throwExceptionIfNotFound);
+    ObjectInfoHeader GetObjectInfoHeaderByOid(OID oid, bool throwExceptionIfNotFound);
 
-		OID GetOid(object @object);
+    OID GetOid(object @object);
 
-		/// <summary>
-		///   To resolve uncommitted updates where the oid change and is not committed yet
-		/// </summary>
-		void SavePositionOfObjectWithOid(OID oid, long objectPosition);
+    /// <summary>
+    ///     To resolve uncommitted updates where the oid change and is not committed yet
+    /// </summary>
+    void SavePositionOfObjectWithOid(OID oid, long objectPosition);
 
-		void MarkIdAsDeleted(OID oid);
+    void MarkIdAsDeleted(OID oid);
 
-		bool IsDeleted(OID oid);
+    bool IsDeleted(OID oid);
 
-		long GetObjectPositionByOid(OID oid);
+    long GetObjectPositionByOid(OID oid);
 
-		void ClearOnCommit();
+    void ClearOnCommit();
 
-		void Clear(bool setToNull);
+    void Clear(bool setToNull);
 
-		void ClearInsertingObjects();
+    void ClearInsertingObjects();
 
-		OID IdOfInsertingObject<T>(T plainObject) where T : class;
+    OID IdOfInsertingObject<T>(T plainObject) where T : class;
 
-		bool IsInCommitedZone(OID oid);
+    bool IsInCommitedZone(OID oid);
 
-		void AddOIDToUnconnectedZone(OID oid);
-	}
+    void AddOIDToUnconnectedZone(OID oid);
+}

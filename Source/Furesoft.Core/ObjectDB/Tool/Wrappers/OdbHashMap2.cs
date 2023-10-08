@@ -2,132 +2,120 @@ using System.Collections;
 
 namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-	internal sealed class OdbHashMap<TKey, TValue> : IDictionary<TKey, TValue>
-	{
-		private readonly IDictionary<TKey, TValue> _dictionary;
+internal sealed class OdbHashMap<TKey, TValue> : IDictionary<TKey, TValue>
+{
+    private readonly IDictionary<TKey, TValue> _dictionary;
 
-		public OdbHashMap()
-		{
-			_dictionary = new Dictionary<TKey, TValue>();
-		}
+    public OdbHashMap()
+    {
+        _dictionary = new Dictionary<TKey, TValue>();
+    }
 
-		public OdbHashMap(int capacity)
-		{
-			_dictionary = new Dictionary<TKey, TValue>(capacity);
-		}
+    public OdbHashMap(int capacity)
+    {
+        _dictionary = new Dictionary<TKey, TValue>(capacity);
+    }
 
-		public OdbHashMap(IDictionary<TKey, TValue> dic)
-		{
-			_dictionary = new Dictionary<TKey, TValue>();
-			PutAll(dic);
-		}
+    public OdbHashMap(IDictionary<TKey, TValue> dic)
+    {
+        _dictionary = new Dictionary<TKey, TValue>();
+        PutAll(dic);
+    }
 
-		#region IDictionary<TKey,TValue> Members
+    private void PutAll(IDictionary<TKey, TValue> map)
+    {
+        var keys = map.Keys;
+        foreach (var key in keys)
+            Add(key, map[key]);
+    }
 
-		public TValue this[TKey key]
-		{
-			get
-			{
-				TryGetValue(key, out var value);
-				return value;
-			}
-			set { _dictionary[key] = value; }
-		}
+    public TValue Remove2(TKey key)
+    {
+        var success = TryGetValue(key, out var value);
+        if (success)
+            Remove(key);
 
-		public void Add(TKey key, TValue v)
-		{
-			var success = TryGetValue(key, out var vnull);
-			if (success)
-				Remove(key);
+        return value;
+    }
 
-			_dictionary.Add(key, v);
-		}
+    #region IDictionary<TKey,TValue> Members
 
-		public void Add(KeyValuePair<TKey, TValue> item)
-		{
-			_dictionary.Add(item);
-		}
+    public TValue this[TKey key]
+    {
+        get
+        {
+            TryGetValue(key, out var value);
+            return value;
+        }
+        set => _dictionary[key] = value;
+    }
 
-		public void Clear()
-		{
-			_dictionary.Clear();
-		}
+    public void Add(TKey key, TValue v)
+    {
+        var success = TryGetValue(key, out var vnull);
+        if (success)
+            Remove(key);
 
-		public bool ContainsKey(TKey key)
-		{
-			return _dictionary.ContainsKey(key);
-		}
+        _dictionary.Add(key, v);
+    }
 
-		public bool Contains(KeyValuePair<TKey, TValue> item)
-		{
-			return _dictionary.Contains(item);
-		}
+    public void Add(KeyValuePair<TKey, TValue> item)
+    {
+        _dictionary.Add(item);
+    }
 
-		public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-		{
-			_dictionary.CopyTo(array, arrayIndex);
-		}
+    public void Clear()
+    {
+        _dictionary.Clear();
+    }
 
-		public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-		{
-			return _dictionary.GetEnumerator();
-		}
+    public bool ContainsKey(TKey key)
+    {
+        return _dictionary.ContainsKey(key);
+    }
 
-		public bool TryGetValue(TKey key, out TValue v)
-		{
-			return _dictionary.TryGetValue(key, out v);
-		}
+    public bool Contains(KeyValuePair<TKey, TValue> item)
+    {
+        return _dictionary.Contains(item);
+    }
 
-		public bool Remove(KeyValuePair<TKey, TValue> item)
-		{
-			return _dictionary.Remove(item);
-		}
+    public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+    {
+        _dictionary.CopyTo(array, arrayIndex);
+    }
 
-		public bool Remove(TKey key)
-		{
-			return _dictionary.Remove(key);
-		}
+    public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
+    {
+        return _dictionary.GetEnumerator();
+    }
 
-		public int Count
-		{
-			get { return _dictionary.Count; }
-		}
+    public bool TryGetValue(TKey key, out TValue v)
+    {
+        return _dictionary.TryGetValue(key, out v);
+    }
 
-		public bool IsReadOnly
-		{
-			get { return _dictionary.IsReadOnly; }
-		}
+    public bool Remove(KeyValuePair<TKey, TValue> item)
+    {
+        return _dictionary.Remove(item);
+    }
 
-		public ICollection<TValue> Values
-		{
-			get { return _dictionary.Values; }
-		}
+    public bool Remove(TKey key)
+    {
+        return _dictionary.Remove(key);
+    }
 
-		public ICollection<TKey> Keys
-		{
-			get { return _dictionary.Keys; }
-		}
+    public int Count => _dictionary.Count;
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return _dictionary.GetEnumerator();
-		}
+    public bool IsReadOnly => _dictionary.IsReadOnly;
 
-		#endregion IDictionary<TKey,TValue> Members
+    public ICollection<TValue> Values => _dictionary.Values;
 
-		private void PutAll(IDictionary<TKey, TValue> map)
-		{
-			var keys = map.Keys;
-			foreach (var key in keys)
-				Add(key, map[key]);
-		}
+    public ICollection<TKey> Keys => _dictionary.Keys;
 
-		public TValue Remove2(TKey key)
-		{
-			var success = TryGetValue(key, out var value);
-			if (success)
-				Remove(key);
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _dictionary.GetEnumerator();
+    }
 
-			return value;
-		}
-	}
+    #endregion IDictionary<TKey,TValue> Members
+}

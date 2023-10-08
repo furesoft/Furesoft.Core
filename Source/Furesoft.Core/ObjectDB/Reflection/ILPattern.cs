@@ -3,133 +3,133 @@ using System.Reflection.Emit;
 
 namespace Furesoft.Core.ObjectDB.Reflection;
 
-	internal abstract class ILPattern
-	{
-		protected static Instruction GetLastMatchingInstruction(MatchContext context)
-		{
-			return context.Instruction == null ? null : context.Instruction.Previous;
-		}
+internal abstract class ILPattern
+{
+    protected static Instruction GetLastMatchingInstruction(MatchContext context)
+    {
+        return context.Instruction == null ? null : context.Instruction.Previous;
+    }
 
-		internal abstract void Match(MatchContext context);
+    internal abstract void Match(MatchContext context);
 
-		internal static MatchContext Match(MethodBase method, ILPattern pattern)
-		{
-			if (method == null)
-				throw new ArgumentNullException("method");
+    internal static MatchContext Match(MethodBase method, ILPattern pattern)
+    {
+        if (method == null)
+            throw new ArgumentNullException("method");
 
-			if (pattern == null)
-				throw new ArgumentNullException("pattern");
+        if (pattern == null)
+            throw new ArgumentNullException("pattern");
 
-			var instructions = (IList<Instruction>)MethodBodyReader.GetInstructions(method).AsReadOnly();
-			if (instructions.Count == 0)
-				throw new ArgumentException();
+        var instructions = (IList<Instruction>) MethodBodyReader.GetInstructions(method).AsReadOnly();
+        if (instructions.Count == 0)
+            throw new ArgumentException();
 
-			var context = new MatchContext(instructions[0]);
-			pattern.Match(context);
-			return context;
-		}
+        var context = new MatchContext(instructions[0]);
+        pattern.Match(context);
+        return context;
+    }
 
-		internal static ILPattern OpCode(OpCode opcode)
-		{
-			return new OpCodePattern(opcode);
-		}
+    internal static ILPattern OpCode(OpCode opcode)
+    {
+        return new OpCodePattern(opcode);
+    }
 
-		private static ILPattern Optional(ILPattern pattern)
-		{
-			return new OptionalPattern(pattern);
-		}
+    private static ILPattern Optional(ILPattern pattern)
+    {
+        return new OptionalPattern(pattern);
+    }
 
-		internal static ILPattern Optional(params OpCode[] opcodes)
-		{
-			return Optional(Sequence((from opcode in opcodes select OpCode(opcode)).ToArray<ILPattern>()));
-		}
+    internal static ILPattern Optional(params OpCode[] opcodes)
+    {
+        return Optional(Sequence((from opcode in opcodes select OpCode(opcode)).ToArray()));
+    }
 
-		protected static ILPattern Optional(OpCode opcode)
-		{
-			return Optional(OpCode(opcode));
-		}
+    protected static ILPattern Optional(OpCode opcode)
+    {
+        return Optional(OpCode(opcode));
+    }
 
-		internal static ILPattern Sequence(params ILPattern[] patterns)
-		{
-			return new SequencePattern(patterns);
-		}
+    internal static ILPattern Sequence(params ILPattern[] patterns)
+    {
+        return new SequencePattern(patterns);
+    }
 
-		private void TryMatch(MatchContext context)
-		{
-			var instruction = context.Instruction;
-			Match(context);
+    private void TryMatch(MatchContext context)
+    {
+        var instruction = context.Instruction;
+        Match(context);
 
-			if (!context.Success)
-				context.Reset(instruction);
-		}
+        if (!context.Success)
+            context.Reset(instruction);
+    }
 
-		#region Nested type: OpCodePattern
+    #region Nested type: OpCodePattern
 
-		private sealed class OpCodePattern : ILPattern
-		{
-			private readonly OpCode _opcode;
+    private sealed class OpCodePattern : ILPattern
+    {
+        private readonly OpCode _opcode;
 
-			internal OpCodePattern(OpCode opcode)
-			{
-				_opcode = opcode;
-			}
+        internal OpCodePattern(OpCode opcode)
+        {
+            _opcode = opcode;
+        }
 
-			internal override void Match(MatchContext context)
-			{
-				if (context.Instruction == null)
-				{
-					context.Success = false;
-				}
-				else
-				{
-					context.Success = context.Instruction.OpCode == _opcode;
-					context.Advance();
-				}
-			}
-		}
+        internal override void Match(MatchContext context)
+        {
+            if (context.Instruction == null)
+            {
+                context.Success = false;
+            }
+            else
+            {
+                context.Success = context.Instruction.OpCode == _opcode;
+                context.Advance();
+            }
+        }
+    }
 
-		#endregion Nested type: OpCodePattern
+    #endregion Nested type: OpCodePattern
 
-		#region Nested type: OptionalPattern
+    #region Nested type: OptionalPattern
 
-		private sealed class OptionalPattern : ILPattern
-		{
-			private readonly ILPattern _pattern;
+    private sealed class OptionalPattern : ILPattern
+    {
+        private readonly ILPattern _pattern;
 
-			internal OptionalPattern(ILPattern optional)
-			{
-				_pattern = optional;
-			}
+        internal OptionalPattern(ILPattern optional)
+        {
+            _pattern = optional;
+        }
 
-			internal override void Match(MatchContext context)
-			{
-				_pattern.TryMatch(context);
-			}
-		}
+        internal override void Match(MatchContext context)
+        {
+            _pattern.TryMatch(context);
+        }
+    }
 
-		#endregion Nested type: OptionalPattern
+    #endregion Nested type: OptionalPattern
 
-		#region Nested type: SequencePattern
+    #region Nested type: SequencePattern
 
-		private sealed class SequencePattern : ILPattern
-		{
-			private readonly ILPattern[] _patterns;
+    private sealed class SequencePattern : ILPattern
+    {
+        private readonly ILPattern[] _patterns;
 
-			internal SequencePattern(ILPattern[] patterns)
-			{
-				_patterns = patterns;
-			}
+        internal SequencePattern(ILPattern[] patterns)
+        {
+            _patterns = patterns;
+        }
 
-			internal override void Match(MatchContext context)
-			{
-				foreach (var pattern in _patterns)
-				{
-					pattern.Match(context);
-					if (!context.Success)
-						return;
-				}
-			}
-		}
+        internal override void Match(MatchContext context)
+        {
+            foreach (var pattern in _patterns)
+            {
+                pattern.Match(context);
+                if (!context.Success)
+                    return;
+            }
+        }
+    }
 
-		#endregion Nested type: SequencePattern
-	}
+    #endregion Nested type: SequencePattern
+}

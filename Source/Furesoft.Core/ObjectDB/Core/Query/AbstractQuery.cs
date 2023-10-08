@@ -5,122 +5,118 @@ using Furesoft.Core.ObjectDB.Exceptions;
 
 namespace Furesoft.Core.ObjectDB.Core.Query;
 
-	internal abstract class AbstractQuery : IInternalQuery
-	{
-		protected IInternalConstraint Constraint;
-		private readonly Type _underlyingType;
+internal abstract class AbstractQuery : IInternalQuery
+{
+    protected readonly List<string> OrderByFields;
 
-		private IQueryExecutionPlan _executionPlan;
-		protected readonly List<string> OrderByFields;
+    private IQueryExecutionPlan _executionPlan;
 
-		/// <summary>
-		///   The OID attribute is used when the query must be restricted the object with this OID
-		/// </summary>
-		private OID _oidOfObjectToQuery;
+    /// <summary>
+    ///     The OID attribute is used when the query must be restricted the object with this OID
+    /// </summary>
+    private OID _oidOfObjectToQuery;
 
-		protected OrderByConstants OrderByType;
+    [NonPersistent] private IQueryEngine _storageEngine;
+    protected IInternalConstraint Constraint;
 
-		[NonPersistent] private IQueryEngine _storageEngine;
+    protected OrderByConstants OrderByType;
 
-		protected AbstractQuery(Type underlyingType)
-		{
-			if (underlyingType == null)
-				throw new ArgumentNullException("underlyingType");
+    protected AbstractQuery(Type underlyingType)
+    {
+        if (underlyingType == null)
+            throw new ArgumentNullException("underlyingType");
 
-			if (underlyingType.IsValueType)
-				throw new ArgumentException("Underlying type for query cannot to be value type.", "underlyingType");
+        if (underlyingType.IsValueType)
+            throw new ArgumentException("Underlying type for query cannot to be value type.", "underlyingType");
 
-			OrderByType = OrderByConstants.OrderByNone;
-			_underlyingType = underlyingType;
-			OrderByFields = new();
-		}
+        OrderByType = OrderByConstants.OrderByNone;
+        UnderlyingType = underlyingType;
+        OrderByFields = new();
+    }
 
-		#region IInternalQuery Members
+    public abstract IConstraint Constrain(object value);
 
-		IQueryExecutionPlan IInternalQuery.GetExecutionPlan()
-		{
-			if (_executionPlan == null)
-				throw new OdbRuntimeException(NDatabaseError.ExecutionPlanIsNullQueryHasNotBeenExecuted);
-			return _executionPlan;
-		}
+    internal void SetOidOfObjectToQuery(OID oidOfObjectToQuery)
+    {
+        _oidOfObjectToQuery = oidOfObjectToQuery;
+    }
 
-		void IInternalQuery.SetExecutionPlan(IQueryExecutionPlan plan)
-		{
-			_executionPlan = plan;
-		}
+    #region IInternalQuery Members
 
-		IQueryEngine IInternalQuery.GetQueryEngine()
-		{
-			return _storageEngine;
-		}
+    IQueryExecutionPlan IInternalQuery.GetExecutionPlan()
+    {
+        if (_executionPlan == null)
+            throw new OdbRuntimeException(NDatabaseError.ExecutionPlanIsNullQueryHasNotBeenExecuted);
+        return _executionPlan;
+    }
 
-		void IInternalQuery.SetQueryEngine(IQueryEngine storageEngine)
-		{
-			_storageEngine = storageEngine;
-		}
+    void IInternalQuery.SetExecutionPlan(IQueryExecutionPlan plan)
+    {
+        _executionPlan = plan;
+    }
 
-		#endregion IInternalQuery Members
+    IQueryEngine IInternalQuery.GetQueryEngine()
+    {
+        return _storageEngine;
+    }
 
-		#region IQuery Members
+    void IInternalQuery.SetQueryEngine(IQueryEngine storageEngine)
+    {
+        _storageEngine = storageEngine;
+    }
 
-		public abstract IObjectSet<TItem> Execute<TItem>();
+    #endregion IInternalQuery Members
 
-		public abstract IObjectSet<TItem> Execute<TItem>(bool inMemory) where TItem : class;
+    #region IQuery Members
 
-		public abstract IObjectSet<TItem> Execute<TItem>(bool inMemory, int startIndex, int endIndex) where TItem : class;
+    public abstract IObjectSet<TItem> Execute<TItem>();
 
-		public abstract IQuery OrderAscending();
+    public abstract IObjectSet<TItem> Execute<TItem>(bool inMemory) where TItem : class;
 
-		public abstract IQuery OrderDescending();
+    public abstract IObjectSet<TItem> Execute<TItem>(bool inMemory, int startIndex, int endIndex) where TItem : class;
 
-		public IList<string> GetOrderByFieldNames()
-		{
-			return OrderByFields;
-		}
+    public abstract IQuery OrderAscending();
 
-		public OrderByConstants GetOrderByType()
-		{
-			return OrderByType;
-		}
+    public abstract IQuery OrderDescending();
 
-		public bool HasOrderBy()
-		{
-			return !OrderByType.IsOrderByNone();
-		}
+    public IList<string> GetOrderByFieldNames()
+    {
+        return OrderByFields;
+    }
 
-		public OID GetOidOfObjectToQuery()
-		{
-			return _oidOfObjectToQuery;
-		}
+    public OrderByConstants GetOrderByType()
+    {
+        return OrderByType;
+    }
 
-		public Type UnderlyingType
-		{
-			get { return _underlyingType; }
-		}
+    public bool HasOrderBy()
+    {
+        return !OrderByType.IsOrderByNone();
+    }
 
-		public abstract IQuery Descend(string attributeName);
+    public OID GetOidOfObjectToQuery()
+    {
+        return _oidOfObjectToQuery;
+    }
 
-		public abstract void Add(IConstraint criterion);
+    public Type UnderlyingType { get; }
 
-		/// <summary>
-		///   Returns true is query must apply on a single object OID
-		/// </summary>
-		public bool IsForSingleOid()
-		{
-			return _oidOfObjectToQuery != null;
-		}
+    public abstract IQuery Descend(string attributeName);
 
-		public long Count()
-		{
-			return ((IInternalQuery)this).GetQueryEngine().Count(_underlyingType, Constraint);
-		}
+    public abstract void Add(IConstraint criterion);
 
-		#endregion IQuery Members
+    /// <summary>
+    ///     Returns true is query must apply on a single object OID
+    /// </summary>
+    public bool IsForSingleOid()
+    {
+        return _oidOfObjectToQuery != null;
+    }
 
-		internal void SetOidOfObjectToQuery(OID oidOfObjectToQuery)
-		{
-			_oidOfObjectToQuery = oidOfObjectToQuery;
-		}
+    public long Count()
+    {
+        return ((IInternalQuery) this).GetQueryEngine().Count(UnderlyingType, Constraint);
+    }
 
-		public abstract IConstraint Constrain(object value);
-	}
+    #endregion IQuery Members
+}

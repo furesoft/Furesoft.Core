@@ -1,13 +1,14 @@
 ﻿using System.Linq.Expressions;
 using System.Reflection;
 using Furesoft.Core.Rules.DSL.Nodes;
+using Furesoft.Core.Rules.DSL.Parselets;
 using Furesoft.PrattParser;
 using Furesoft.PrattParser.Nodes;
 using Furesoft.PrattParser.Nodes.Operators;
 
 namespace Furesoft.Core.Rules.DSL;
 
-public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
+public class EvaluationVisitor<T> : IVisitor<Expression>
     where T : class, new()
 {
     private readonly List<string> _errors = new();
@@ -17,20 +18,11 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
     private readonly ParameterExpression _modelParameterExpression = Expression.Parameter(typeof(T), "model");
 
-    private readonly Dictionary<string, string> _timePostfixConverters = new()
-    {
-        ["s"] = "FromSeconds",
-        ["m"] = "FromMinutes",
-        ["d"] = "FromDays",
-        ["h"] = "FromHours",
-        ["ms"] = "FromMilliseconds",
-        ["qs"] = "FromMicroseconds"
-    };
-
     public Expression Visit(AstNode node)
     {
         Expression body = null;
 
+        VisitTimeLiteral(node, ref body);
         VisitBinary(node, ref body);
         VisitPrefix(node, ref body);
         VisitPostfix(node, ref body);
@@ -119,6 +111,30 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
         }
     }
 
+    private void VisitTimeLiteral(AstNode node, ref Expression result)
+    {
+        if (node is not TimeLiteral timeLiteral)
+            return;
+
+        Expression tmp = null;
+        for (var index = 0; index < timeLiteral.SubLiterals.Count; index++)
+        {
+            var subLiteral = timeLiteral.SubLiterals[index];
+            var visitTimePostFix = VisitTimePostFix(subLiteral,
+                TimeLiteralParselet.TimePostfixConverters[subLiteral.Operator.Name]);
+
+            if (index == 0)
+            {
+                tmp = visitTimePostFix;
+                continue;
+            }
+
+            tmp = Expression.Add(tmp!, visitTimePostFix);
+        }
+
+        result = tmp;
+    }
+
     private void VisitPrefix(AstNode node, ref Expression result)
     {
         if (node is not PrefixOperatorNode prefixOperatorNode)
@@ -140,7 +156,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
 
         var visited = Visit(postfix.Expr);
 
-        if (_timePostfixConverters.TryGetValue(postfix.Operator.Name, out var timeConverter))
+        if (TimeLiteralParselet.TimePostfixConverters.TryGetValue(postfix.Operator.Name, out var timeConverter))
         {
             result = VisitTimePostFix(postfix, timeConverter);
 
@@ -158,10 +174,7 @@ public class EvaluationVisitor<T> : IVisitor<AstNode, Expression>
     {
         var arg = Visit(node.Expr);
 
-        if (arg.Type != typeof(double))
-        {
-            arg = Expression.Convert(arg, typeof(double));
-        }
+        if (arg.Type != typeof(double)) arg = Expression.Convert(arg, typeof(double));
 
         return Expression.Call(typeof(TimeSpan), timeConverter, null, arg);
     }

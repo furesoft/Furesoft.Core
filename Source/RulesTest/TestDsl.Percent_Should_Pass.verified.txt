@@ -8,10 +8,10 @@
       Range: 1:1-1:1
     },
     Operator: %,
-    Range: 1:1-1:2
+    Range: 1:1-1:3
   },
   Document: {
     Filename: test.dsl,
-    Source: 5%
+    Source: 5 %
   }
 }

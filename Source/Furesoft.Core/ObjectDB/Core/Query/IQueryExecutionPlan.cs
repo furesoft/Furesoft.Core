@@ -2,15 +2,15 @@ using Furesoft.Core.ObjectDB.Meta;
 
 namespace Furesoft.Core.ObjectDB.Core.Query;
 
-	internal interface IQueryExecutionPlan
-	{
-		bool UseIndex();
+internal interface IQueryExecutionPlan
+{
+    bool UseIndex();
 
-		ClassInfoIndex GetIndex();
+    ClassInfoIndex GetIndex();
 
-		string GetDetails();
+    string GetDetails();
 
-		void Start();
+    void Start();
 
-		void End();
-	}
+    void End();
+}

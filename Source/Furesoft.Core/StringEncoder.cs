@@ -2,107 +2,95 @@
 
 namespace Furesoft.Core;
 
-	/// <summary>
-	/// A Class To Encode Strings in a SerialKey Format
-	/// </summary>
-	public static class StringEncoder
-	{
-		/// <summary>
-		/// Encode Integer Values To String
-		/// </summary>
-		/// <param name="values">The Values To Encode</param>
-		/// <returns></returns>
-		public static string Encode(params int[] values)
-		{
-			var sb = new StringBuilder();
+/// <summary>
+///     A Class To Encode Strings in a SerialKey Format
+/// </summary>
+public static class StringEncoder
+{
+    private const string Alphabet = "ACBZXJHFRTKNLMUV";
 
-			//convert values to string
-			foreach (var v in values)
-			{
-				sb.Append(GetLetter(v)).Append("-");
-			}
+    /// <summary>
+    ///     Encode Integer Values To String
+    /// </summary>
+    /// <param name="values">The Values To Encode</param>
+    /// <returns></returns>
+    public static string Encode(params int[] values)
+    {
+        var sb = new StringBuilder();
 
-			var result = sb.ToString();
+        //convert values to string
+        foreach (var v in values) sb.Append(GetLetter(v)).Append("-");
 
-			//build checksum and append to stringbuilder
-			var checksum = (result.Length - values.Length) ^ 3;
-			var checksumConverted = GetLetter(checksum);
-			sb.Append(checksumConverted);
+        var result = sb.ToString();
 
-			return sb.ToString();
-		}
+        //build checksum and append to stringbuilder
+        var checksum = (result.Length - values.Length) ^ 3;
+        var checksumConverted = GetLetter(checksum);
+        sb.Append(checksumConverted);
 
-		/// <summary>
-		/// Validates A Encoded String
-		/// </summary>
-		/// <param name="code">The encoded String</param>
-		/// <returns></returns>
-		public static bool Validate(string code)
-		{
-			var spl = code.Split('-', StringSplitOptions.RemoveEmptyEntries);
-			if (spl.Length == 0) return false;
-			if (spl.Length == 1) return false;
+        return sb.ToString();
+    }
 
-			var checksum = (code.Length - spl.Length) ^ 3;
-			var checksumLetter = GetLetter(checksum);
+    /// <summary>
+    ///     Validates A Encoded String
+    /// </summary>
+    /// <param name="code">The encoded String</param>
+    /// <returns></returns>
+    public static bool Validate(string code)
+    {
+        var spl = code.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        if (spl.Length == 0) return false;
+        if (spl.Length == 1) return false;
 
-			return spl[^1] == checksumLetter;
-		}
+        var checksum = (code.Length - spl.Length) ^ 3;
+        var checksumLetter = GetLetter(checksum);
 
-		/// <summary>
-		/// Decode a EncodedString to Integer Values
-		/// </summary>
-		/// <param name="code">The Encoded String to Decode</param>
-		/// <returns></returns>
-		public static int[] Decode(string code)
-		{
-			var spl = code.Split('-', StringSplitOptions.RemoveEmptyEntries);
-			var buffer = new int[spl.Length - 1];
+        return spl[^1] == checksumLetter;
+    }
 
-			for (var i = 0; i < spl.Length - 1; i++)
-			{
-				buffer[i] = int.Parse(GetNumberString(spl[i]));
-			}
+    /// <summary>
+    ///     Decode a EncodedString to Integer Values
+    /// </summary>
+    /// <param name="code">The Encoded String to Decode</param>
+    /// <returns></returns>
+    public static int[] Decode(string code)
+    {
+        var spl = code.Split('-', StringSplitOptions.RemoveEmptyEntries);
+        var buffer = new int[spl.Length - 1];
 
-			var checksum = (code.Length - spl.Length) ^ 3;
-			var checksumLetter = GetLetter(checksum);
+        for (var i = 0; i < spl.Length - 1; i++) buffer[i] = int.Parse(GetNumberString(spl[i]));
 
-			if (spl[^1] == checksumLetter)
-			{
-				return buffer;
-			}
+        var checksum = (code.Length - spl.Length) ^ 3;
+        var checksumLetter = GetLetter(checksum);
 
-			return null;
-		}
+        if (spl[^1] == checksumLetter) return buffer;
 
-		private static string GetNumberString(string v)
-		{
-			var sb = new StringBuilder();
+        return null;
+    }
 
-			foreach (var l in v)
-			{
-				var index = Alphabet.IndexOf(l);
-				var digit = index.ToString();
+    private static string GetNumberString(string v)
+    {
+        var sb = new StringBuilder();
 
-				sb.Append(digit);
-			}
+        foreach (var l in v)
+        {
+            var index = Alphabet.IndexOf(l);
+            var digit = index.ToString();
 
-			return sb.ToString();
-		}
+            sb.Append(digit);
+        }
 
-		private const string Alphabet = "ACBZXJHFRTKNLMUV";
+        return sb.ToString();
+    }
 
-		private static string GetLetter(int v)
-		{
-			var str = v.ToString().ToCharArray();
+    private static string GetLetter(int v)
+    {
+        var str = v.ToString().ToCharArray();
 
-			var sb = new StringBuilder();
+        var sb = new StringBuilder();
 
-			foreach (var d in str)
-			{
-				sb.Append(Alphabet[d - '0']);
-			}
+        foreach (var d in str) sb.Append(Alphabet[d - '0']);
 
-			return sb.ToString();
-		}
-	}
+        return sb.ToString();
+    }
+}

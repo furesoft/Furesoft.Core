@@ -4,65 +4,65 @@ using Furesoft.Core.ObjectDB.Api.Query;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
-	internal sealed class LinqQuery<T> : ILinqQueryInternal<T>
-	{
-		private readonly IOdb _odb;
-		private readonly IQueryBuilderRecord _record;
+internal sealed class LinqQuery<T> : ILinqQueryInternal<T>
+{
+    private readonly IOdb _odb;
+    private readonly IQueryBuilderRecord _record;
 
-		public LinqQuery(IOdb odb)
-		{
-			if (odb == null)
-				throw new ArgumentNullException("odb");
+    public LinqQuery(IOdb odb)
+    {
+        if (odb == null)
+            throw new ArgumentNullException("odb");
 
-			_odb = odb;
-			_record = NullQueryBuilderRecord.Instance;
-		}
+        _odb = odb;
+        _record = NullQueryBuilderRecord.Instance;
+    }
 
-		public LinqQuery(LinqQuery<T> parent, IQueryBuilderRecord record)
-		{
-			_odb = parent._odb;
-			_record = new CompositeQueryBuilderRecord(parent._record, record);
-		}
+    public LinqQuery(LinqQuery<T> parent, IQueryBuilderRecord record)
+    {
+        _odb = parent._odb;
+        _record = new CompositeQueryBuilderRecord(parent._record, record);
+    }
 
-		public int Count
-		{
-			get
-			{
-				var query = _odb.Query<T>();
-				_record.Playback(query);
+    public int Count
+    {
+        get
+        {
+            var query = _odb.Query<T>();
+            _record.Playback(query);
 
-				return (int)query.Count();
-			}
-		}
+            return (int) query.Count();
+        }
+    }
 
-		#region ILinqQueryInternal<T> Members
+    #region ILinqQueryInternal<T> Members
 
-		public IEnumerator<T> GetEnumerator()
-		{
-			var query = _odb.Query<T>();
-			_record.Playback(query);
-			return query.Execute<T>().GetEnumerator();
-		}
+    public IEnumerator<T> GetEnumerator()
+    {
+        var query = _odb.Query<T>();
+        _record.Playback(query);
+        return query.Execute<T>().GetEnumerator();
+    }
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
-		public IEnumerable<T> UnoptimizedThenBy<TKey>(Func<T, TKey> function)
-		{
-			throw new NotSupportedException();
-		}
+    public IEnumerable<T> UnoptimizedThenBy<TKey>(Func<T, TKey> function)
+    {
+        throw new NotSupportedException();
+    }
 
-		public IEnumerable<T> UnoptimizedThenByDescending<TKey>(Func<T, TKey> function)
-		{
-			throw new NotSupportedException();
-		}
+    public IEnumerable<T> UnoptimizedThenByDescending<TKey>(Func<T, TKey> function)
+    {
+        throw new NotSupportedException();
+    }
 
-		public IEnumerable<T> UnoptimizedWhere(Func<T, bool> func)
-		{
-			return _odb.Query<T>().Execute<T>().Where(func);
-		}
+    public IEnumerable<T> UnoptimizedWhere(Func<T, bool> func)
+    {
+        return _odb.Query<T>().Execute<T>().Where(func);
+    }
 
-		#endregion ILinqQueryInternal<T> Members
-	}
+    #endregion ILinqQueryInternal<T> Members
+}

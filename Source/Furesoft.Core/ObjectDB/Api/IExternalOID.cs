@@ -1,13 +1,13 @@
 namespace Furesoft.Core.ObjectDB.Api;
 
+/// <summary>
+///     External OID, which contains database id
+/// </summary>
+public interface IExternalOID : OID
+{
 	/// <summary>
-	/// External OID, which contains database id
+	///     Get database id
 	/// </summary>
-	public interface IExternalOID : OID
-	{
-		/// <summary>
-		/// Get database id
-		/// </summary>
-		/// <returns>Database Id</returns>
-		IDatabaseId GetDatabaseId();
-	}
+	/// <returns>Database Id</returns>
+	IDatabaseId GetDatabaseId();
+}

@@ -1,17 +1,18 @@
 ﻿using Furesoft.Core.Rules.Interfaces;
 using Furesoft.Core.Rules.Models;
+using Furesoft.PrattParser;
 
 namespace Furesoft.Core.Rules.DSL;
 
 public class DslRule<T> : Rule<T>
     where T : class, new()
 {
-    private readonly Func<T, List<string>, bool> _evaluate;
     private readonly List<string> _errors = new();
+    private readonly Func<T, List<string>, bool> _evaluate;
 
     public DslRule(string source)
     {
-        var tree = Grammar.Parse<Grammar>(source);
+        var tree = Parser.Parse<Grammar>(source);
 
         var visitor = new EvaluationVisitor<T>();
 
@@ -24,11 +25,8 @@ public class DslRule<T> : Rule<T>
     {
         var success = _evaluate(Model, _errors);
 
-        if (success)
-        {
-            return new RuleResult() {Result = Model};
-        }
+        if (success) return new RuleResult {Result = Model};
 
-        return new RuleResult(){ Error = new Error(string.Join(Environment.NewLine, _errors))};
+        return new RuleResult {Error = new Error(string.Join(Environment.NewLine, _errors))};
     }
 }

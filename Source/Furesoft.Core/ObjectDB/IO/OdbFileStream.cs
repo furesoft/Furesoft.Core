@@ -2,174 +2,171 @@ using Furesoft.Core.ObjectDB.Exceptions;
 
 namespace Furesoft.Core.ObjectDB.IO;
 
-	internal sealed class OdbFileStream : IOdbStream
-	{
-		private readonly object _lockObject = new();
-		private bool _disposed;
+internal sealed class OdbFileStream : IOdbStream
+{
+    private readonly object _lockObject = new();
+    private bool _disposed;
 
-		private FileStream _fileAccess;
-		private long _position;
+    private FileStream _fileAccess;
+    private long _position;
 
-		internal OdbFileStream(string wholeFileName)
-		{
-			try
-			{
-				_fileAccess = OdbFileManager.GetStream(wholeFileName);
-				_disposed = false;
-			}
-			catch (OdbRuntimeException)
-			{
-				throw;
-			}
-			catch (IOException e)
-			{
-				throw new OdbRuntimeException(NDatabaseError.FileNotFoundOrItIsAlreadyUsed.AddParameter(wholeFileName), e);
-			}
-			catch (Exception ex)
-			{
-				throw new OdbRuntimeException(
-					NDatabaseError.InternalError.AddParameter("Error during opening FileStream"), ex);
-			}
-		}
+    internal OdbFileStream(string wholeFileName)
+    {
+        try
+        {
+            _fileAccess = OdbFileManager.GetStream(wholeFileName);
+            _disposed = false;
+        }
+        catch (OdbRuntimeException)
+        {
+            throw;
+        }
+        catch (IOException e)
+        {
+            throw new OdbRuntimeException(NDatabaseError.FileNotFoundOrItIsAlreadyUsed.AddParameter(wholeFileName), e);
+        }
+        catch (Exception ex)
+        {
+            throw new OdbRuntimeException(
+                NDatabaseError.InternalError.AddParameter("Error during opening FileStream"), ex);
+        }
+    }
 
-		#region IO Members
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-		/// <summary>
-		///     Gets the length in bytes of the stream
-		/// </summary>
-		public long Length
-		{
-			get { return _fileAccess.Length; }
-		}
+    private void Dispose(bool disposing)
+    {
+        lock (_lockObject)
+        {
+            if (_disposed)
+                return;
 
-		/// <summary>
-		///     Sets the current position of this stream to the given value
-		/// </summary>
-		/// <param name="position">offset</param>
-		public void SetPosition(long position)
-		{
-			if (position < 0)
-				throw new OdbRuntimeException(NDatabaseError.NegativePosition.AddParameter(position));
+            if (disposing && _fileAccess != null)
+                _fileAccess.Dispose();
 
-			_position = position;
-		}
+            _fileAccess = null;
+            _disposed = true;
+        }
+    }
 
-		public void Write(byte b)
-		{
-			try
-			{
-				Seek(_position);
-				_fileAccess.WriteByte(b);
-				_position = _fileAccess.Position;
-			}
-			catch (IOException e)
-			{
-				throw new OdbRuntimeException(e, "Error while writing a byte");
-			}
-		}
+    ~OdbFileStream()
+    {
+        Dispose(false);
+    }
 
-		public void Write(byte[] buffer, int size)
-		{
-			try
-			{
-				Seek(_position);
-				_fileAccess.Write(buffer, 0, size);
-				_position = _fileAccess.Position;
-			}
-			catch (IOException e)
-			{
-				throw new OdbRuntimeException(e, "Error while writing an array of byte");
-			}
-		}
+    #region IO Members
 
-		public int Read()
-		{
-			try
-			{
-				Seek(_position);
-				var data = _fileAccess.ReadByte();
-				if (data == -1)
-					throw new IOException("End of file");
+    /// <summary>
+    ///     Gets the length in bytes of the stream
+    /// </summary>
+    public long Length => _fileAccess.Length;
 
-				_position = _fileAccess.Position;
+    /// <summary>
+    ///     Sets the current position of this stream to the given value
+    /// </summary>
+    /// <param name="position">offset</param>
+    public void SetPosition(long position)
+    {
+        if (position < 0)
+            throw new OdbRuntimeException(NDatabaseError.NegativePosition.AddParameter(position));
 
-				return (byte)data;
-			}
-			catch (IOException e)
-			{
-				throw new OdbRuntimeException(e, "Error while reading a byte");
-			}
-		}
+        _position = position;
+    }
 
-		public int Read(byte[] buffer, int size)
-		{
-			try
-			{
-				Seek(_position);
-				var read = _fileAccess.Read(buffer, 0, size);
-				_position = _fileAccess.Position;
-				return read;
-			}
-			catch (IOException e)
-			{
-				throw new OdbRuntimeException(e, "Error while reading an array of byte");
-			}
-		}
+    public void Write(byte b)
+    {
+        try
+        {
+            Seek(_position);
+            _fileAccess.WriteByte(b);
+            _position = _fileAccess.Position;
+        }
+        catch (IOException e)
+        {
+            throw new OdbRuntimeException(e, "Error while writing a byte");
+        }
+    }
 
-		private void Seek(long position)
-		{
-			try
-			{
-				if (position < 0)
-					throw new OdbRuntimeException(NDatabaseError.NegativePosition.AddParameter(position));
+    public void Write(byte[] buffer, int size)
+    {
+        try
+        {
+            Seek(_position);
+            _fileAccess.Write(buffer, 0, size);
+            _position = _fileAccess.Position;
+        }
+        catch (IOException e)
+        {
+            throw new OdbRuntimeException(e, "Error while writing an array of byte");
+        }
+    }
 
-				_fileAccess.Seek(position, SeekOrigin.Begin);
-			}
-			catch (IOException e)
-			{
-				long l = -1;
-				try
-				{
-					l = _fileAccess.Length;
-				}
-				catch (IOException)
-				{
-				}
+    public int Read()
+    {
+        try
+        {
+            Seek(_position);
+            var data = _fileAccess.ReadByte();
+            if (data == -1)
+                throw new IOException("End of file");
 
-				throw new OdbRuntimeException(NDatabaseError.GoToPosition.AddParameter(position).AddParameter(l), e);
-			}
-			catch (Exception ex)
-			{
-				var parameter = string.Concat("Error during seek operation, position: ", position.ToString());
-				throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter(parameter), ex);
-			}
-		}
+            _position = _fileAccess.Position;
 
-		#endregion IO Members
+            return (byte) data;
+        }
+        catch (IOException e)
+        {
+            throw new OdbRuntimeException(e, "Error while reading a byte");
+        }
+    }
 
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
+    public int Read(byte[] buffer, int size)
+    {
+        try
+        {
+            Seek(_position);
+            var read = _fileAccess.Read(buffer, 0, size);
+            _position = _fileAccess.Position;
+            return read;
+        }
+        catch (IOException e)
+        {
+            throw new OdbRuntimeException(e, "Error while reading an array of byte");
+        }
+    }
 
-		private void Dispose(bool disposing)
-		{
-			lock (_lockObject)
-			{
-				if (_disposed)
-					return;
+    private void Seek(long position)
+    {
+        try
+        {
+            if (position < 0)
+                throw new OdbRuntimeException(NDatabaseError.NegativePosition.AddParameter(position));
 
-				if (disposing && _fileAccess != null)
-					_fileAccess.Dispose();
+            _fileAccess.Seek(position, SeekOrigin.Begin);
+        }
+        catch (IOException e)
+        {
+            long l = -1;
+            try
+            {
+                l = _fileAccess.Length;
+            }
+            catch (IOException)
+            {
+            }
 
-				_fileAccess = null;
-				_disposed = true;
-			}
-		}
+            throw new OdbRuntimeException(NDatabaseError.GoToPosition.AddParameter(position).AddParameter(l), e);
+        }
+        catch (Exception ex)
+        {
+            var parameter = string.Concat("Error during seek operation, position: ", position.ToString());
+            throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter(parameter), ex);
+        }
+    }
 
-		~OdbFileStream()
-		{
-			Dispose(false);
-		}
-	}
+    #endregion IO Members
+}

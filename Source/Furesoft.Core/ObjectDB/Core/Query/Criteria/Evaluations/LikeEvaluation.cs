@@ -3,55 +3,53 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Criteria.Evaluations;
 
-	internal sealed class LikeEvaluation : AEvaluation
-	{
-		private const string LikePattern = "(.)*{0}(.)*";
-		private readonly bool _isCaseSensitive;
+internal sealed class LikeEvaluation : AEvaluation
+{
+    private const string LikePattern = "(.)*{0}(.)*";
+    private readonly bool _isCaseSensitive;
 
-		public LikeEvaluation(object theObject, string attributeName, bool isCaseSensitive = true)
-			: base(theObject, attributeName)
-		{
-			_isCaseSensitive = isCaseSensitive;
-		}
+    public LikeEvaluation(object theObject, string attributeName, bool isCaseSensitive = true)
+        : base(theObject, attributeName)
+    {
+        _isCaseSensitive = isCaseSensitive;
+    }
 
-		public override bool Evaluate(object candidate)
-		{
-			string regExp;
-			if (candidate == null)
-				return false;
+    public override bool Evaluate(object candidate)
+    {
+        string regExp;
+        if (candidate == null)
+            return false;
 
-			candidate = AsAttributeValuesMapValue(candidate);
+        candidate = AsAttributeValuesMapValue(candidate);
 
-			if (candidate == null)
-				return false;
+        if (candidate == null)
+            return false;
 
-			// Like operator only work with String
-			if (!(candidate is string))
-			{
-				throw new OdbRuntimeException(
-					NDatabaseError.QueryAttributeTypeNotSupportedInLikeExpression.AddParameter(
-						candidate.GetType().FullName));
-			}
+        // Like operator only work with String
+        if (!(candidate is string))
+            throw new OdbRuntimeException(
+                NDatabaseError.QueryAttributeTypeNotSupportedInLikeExpression.AddParameter(
+                    candidate.GetType().FullName));
 
-			var value = (string)candidate;
-			var criterionValue = (string)TheObject;
+        var value = (string) candidate;
+        var criterionValue = (string) TheObject;
 
-			if (criterionValue.IndexOf("%", StringComparison.Ordinal) != -1)
-			{
-				regExp = criterionValue.Replace("%", "(.)*");
+        if (criterionValue.IndexOf("%", StringComparison.Ordinal) != -1)
+        {
+            regExp = criterionValue.Replace("%", "(.)*");
 
-				return _isCaseSensitive
-						   ? OdbString.Matches(regExp, value)
-						   : OdbString.Matches(regExp.ToLower(), value.ToLower());
-			}
+            return _isCaseSensitive
+                ? OdbString.Matches(regExp, value)
+                : OdbString.Matches(regExp.ToLower(), value.ToLower());
+        }
 
-			if (!_isCaseSensitive)
-			{
-				criterionValue = criterionValue.ToLower();
-				value = value.ToLower();
-			}
+        if (!_isCaseSensitive)
+        {
+            criterionValue = criterionValue.ToLower();
+            value = value.ToLower();
+        }
 
-			regExp = string.Format(LikePattern, criterionValue);
-			return OdbString.Matches(regExp, value);
-		}
-	}
+        regExp = string.Format(LikePattern, criterionValue);
+        return OdbString.Matches(regExp, value);
+    }
+}

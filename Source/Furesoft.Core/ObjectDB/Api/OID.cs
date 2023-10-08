@@ -1,12 +1,12 @@
 namespace Furesoft.Core.ObjectDB.Api;
 
+/// <summary>
+///     Object ID interface
+/// </summary>
+public interface OID : IComparable<OID>, IComparable
+{
 	/// <summary>
-	/// Object ID interface
+	///     Underlying long number - oid
 	/// </summary>
-	public interface OID : IComparable<OID>, IComparable
-	{
-		/// <summary>
-		/// Underlying long number - oid
-		/// </summary>
-		long ObjectId { get; }
-	}
+	long ObjectId { get; }
+}

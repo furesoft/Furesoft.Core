@@ -2,71 +2,71 @@ using Furesoft.Core.ObjectDB.Api.Query;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
-	internal sealed class QueryBuilderContext
-	{
-		private readonly Stack<IConstraint> _constraints = new();
-		private readonly Stack<IQuery> _descendStack = new();
-		private readonly IQuery _root;
+internal sealed class QueryBuilderContext
+{
+    private readonly Stack<IConstraint> _constraints = new();
+    private readonly Stack<IQuery> _descendStack = new();
+    private readonly IQuery _root;
 
-		private Type _descendigFieldEnum;
+    private Type _descendigFieldEnum;
 
-		public QueryBuilderContext(IQuery root)
-		{
-			_root = root;
-			CurrentQuery = _root;
-		}
+    public QueryBuilderContext(IQuery root)
+    {
+        _root = root;
+        CurrentQuery = _root;
+    }
 
-		public IQuery CurrentQuery { get; private set; }
+    public IQuery CurrentQuery { get; private set; }
 
-		internal void PushDescendigFieldEnumType(Type descendigFieldEnum)
-		{
-			_descendigFieldEnum = descendigFieldEnum;
-		}
+    internal void PushDescendigFieldEnumType(Type descendigFieldEnum)
+    {
+        _descendigFieldEnum = descendigFieldEnum;
+    }
 
-		private Type PopDescendigFieldEnumType()
-		{
-			var returnType = _descendigFieldEnum;
-			_descendigFieldEnum = null;
+    private Type PopDescendigFieldEnumType()
+    {
+        var returnType = _descendigFieldEnum;
+        _descendigFieldEnum = null;
 
-			return returnType;
-		}
+        return returnType;
+    }
 
-		public void PushConstraint(IConstraint constraint)
-		{
-			_constraints.Push(constraint);
-		}
+    public void PushConstraint(IConstraint constraint)
+    {
+        _constraints.Push(constraint);
+    }
 
-		public IConstraint PopConstraint()
-		{
-			return _constraints.Pop();
-		}
+    public IConstraint PopConstraint()
+    {
+        return _constraints.Pop();
+    }
 
-		public void ApplyConstraint(Func<IConstraint, IConstraint> constraint)
-		{
-			PushConstraint(constraint(PopConstraint()));
-		}
+    public void ApplyConstraint(Func<IConstraint, IConstraint> constraint)
+    {
+        PushConstraint(constraint(PopConstraint()));
+    }
 
-		internal object ResolveValue(object value)
-		{
-			var type = PopDescendigFieldEnumType();
+    internal object ResolveValue(object value)
+    {
+        var type = PopDescendigFieldEnumType();
 
-			return type != null
-				? Enum.ToObject(type, value)
-				: value;
-		}
+        return type != null
+            ? Enum.ToObject(type, value)
+            : value;
+    }
 
-		public void Descend(string name)
-		{
-			CurrentQuery = CurrentQuery.Descend(name);
-		}
+    public void Descend(string name)
+    {
+        CurrentQuery = CurrentQuery.Descend(name);
+    }
 
-		public void SaveQuery()
-		{
-			_descendStack.Push(CurrentQuery);
-		}
+    public void SaveQuery()
+    {
+        _descendStack.Push(CurrentQuery);
+    }
 
-		public void RestoreQuery()
-		{
-			CurrentQuery = _descendStack.Pop();
-		}
-	}
+    public void RestoreQuery()
+    {
+        CurrentQuery = _descendStack.Pop();
+    }
+}

@@ -5,10 +5,10 @@ namespace Furesoft.Core.Rules.Services;
 
 internal sealed class RxRuleService<TK, T> where T : class, new() where TK : IGeneralRule<T>
 {
-    private readonly IEnumerable<TK> _rules;
+    private readonly Lazy<ConcurrentDictionary<Type, IList<TK>>> _exceptionRules;
     private readonly Lazy<ConcurrentDictionary<Type, IList<TK>>> _proactiveRules;
     private readonly Lazy<ConcurrentDictionary<Type, IList<TK>>> _reactiveRules;
-    private readonly Lazy<ConcurrentDictionary<Type, IList<TK>>> _exceptionRules;
+    private readonly IEnumerable<TK> _rules;
 
     public RxRuleService(IEnumerable<TK> rules)
     {
@@ -18,13 +18,25 @@ internal sealed class RxRuleService<TK, T> where T : class, new() where TK : IGe
         _exceptionRules = new(CreateExceptionRules, true);
     }
 
-    public ConcurrentDictionary<Type, IList<TK>> GetReactiveRules() => _reactiveRules.Value;
-    public ConcurrentDictionary<Type, IList<TK>> GetProactiveRules() => _proactiveRules.Value;
-    public ConcurrentDictionary<Type, IList<TK>> GetExceptionRules() => _exceptionRules.Value;
+    public ConcurrentDictionary<Type, IList<TK>> GetReactiveRules()
+    {
+        return _reactiveRules.Value;
+    }
+
+    public ConcurrentDictionary<Type, IList<TK>> GetProactiveRules()
+    {
+        return _proactiveRules.Value;
+    }
+
+    public ConcurrentDictionary<Type, IList<TK>> GetExceptionRules()
+    {
+        return _exceptionRules.Value;
+    }
 
     public IList<TK> FilterRxRules(IEnumerable<TK> rules)
     {
-        return rules.Where(r => !r.IsReactive && !r.IsProactive && !r.IsExceptionHandler && !r.IsGlobalExceptionHandler).ToList();
+        return rules.Where(r => !r.IsReactive && !r.IsProactive && !r.IsExceptionHandler && !r.IsGlobalExceptionHandler)
+            .ToList();
     }
 
     private ConcurrentDictionary<Type, IList<TK>> CreateProactiveRules()
@@ -57,13 +69,11 @@ internal sealed class RxRuleService<TK, T> where T : class, new() where TK : IGe
         Parallel.ForEach(rules, r =>
         {
             if (predicate(r))
-            {
-                rxRules.AddOrUpdate(r.ObservedRule, new List<TK> { r }, (type, list) =>
+                rxRules.AddOrUpdate(r.ObservedRule, new List<TK> {r}, (type, list) =>
                 {
                     list.Add(r);
                     return list;
                 });
-            }
             if (r.IsNested) GetRxRules(r.GetRules().OfType<TK>(), rxRules, predicate);
         });
     }

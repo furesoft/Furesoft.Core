@@ -3,49 +3,44 @@ using Furesoft.Core.ObjectDB.Api.Query;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
-	internal sealed class UnoptimizedQuery<T> : ILinqQueryInternal<T>
-	{
-		private readonly IEnumerable<T> _result;
+internal sealed class UnoptimizedQuery<T> : ILinqQueryInternal<T>
+{
+    public UnoptimizedQuery(IEnumerable<T> result)
+    {
+        if (result == null)
+            throw new ArgumentNullException("result");
 
-		public UnoptimizedQuery(IEnumerable<T> result)
-		{
-			if (result == null)
-				throw new ArgumentNullException("result");
+        Result = result;
+    }
 
-			_result = result;
-		}
+    public IEnumerable<T> Result { get; }
 
-		public IEnumerable<T> Result
-		{
-			get { return _result; }
-		}
+    #region ILinqQueryInternal<T> Members
 
-		#region ILinqQueryInternal<T> Members
+    public IEnumerator<T> GetEnumerator()
+    {
+        return Result.GetEnumerator();
+    }
 
-		public IEnumerator<T> GetEnumerator()
-		{
-			return _result.GetEnumerator();
-		}
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+    public IEnumerable<T> UnoptimizedThenBy<TKey>(Func<T, TKey> function)
+    {
+        return ((IOrderedEnumerable<T>) Result).ThenBy(function);
+    }
 
-		public IEnumerable<T> UnoptimizedThenBy<TKey>(Func<T, TKey> function)
-		{
-			return ((IOrderedEnumerable<T>)_result).ThenBy(function);
-		}
+    public IEnumerable<T> UnoptimizedThenByDescending<TKey>(Func<T, TKey> function)
+    {
+        return ((IOrderedEnumerable<T>) Result).ThenByDescending(function);
+    }
 
-		public IEnumerable<T> UnoptimizedThenByDescending<TKey>(Func<T, TKey> function)
-		{
-			return ((IOrderedEnumerable<T>)_result).ThenByDescending(function);
-		}
+    public IEnumerable<T> UnoptimizedWhere(Func<T, bool> func)
+    {
+        return Result.Where(func);
+    }
 
-		public IEnumerable<T> UnoptimizedWhere(Func<T, bool> func)
-		{
-			return _result.Where(func);
-		}
-
-		#endregion ILinqQueryInternal<T> Members
-	}
+    #endregion ILinqQueryInternal<T> Members
+}

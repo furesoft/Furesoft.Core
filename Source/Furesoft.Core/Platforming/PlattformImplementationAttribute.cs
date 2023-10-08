@@ -1,6 +1,6 @@
 ﻿namespace Furesoft.Core.Platforming;
 
-[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Class)]
 public class PlattformImplementationAttribute : Attribute
 {
     public PlattformImplementationAttribute(OSName platform)

@@ -2,44 +2,44 @@ using System.Text;
 
 namespace Furesoft.Core.ObjectDB.Tool.Wrappers;
 
-	internal class OdbList<TItem> : List<TItem>, IOdbList<TItem>
-	{
-		public OdbList()
-		{
-		}
+internal class OdbList<TItem> : List<TItem>, IOdbList<TItem>
+{
+    public OdbList()
+    {
+    }
 
-		public OdbList(int size) : base(size)
-		{
-		}
+    public OdbList(int size) : base(size)
+    {
+    }
 
-		#region IOdbList<E> Members
+    public override string ToString()
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.Append("[");
 
-		public void AddAll(IEnumerable<TItem> collection)
-		{
-			AddRange(collection);
-		}
+        foreach (var item in this)
+            stringBuilder.Append(item + ", ");
 
-		public void RemoveAll(IEnumerable<TItem> collection)
-		{
-			foreach (var item in collection)
-				Remove(item);
-		}
+        if (stringBuilder.Length > 3)
+            stringBuilder.Remove(stringBuilder.Length - 3, 2);
 
-		#endregion IOdbList<E> Members
+        stringBuilder.Append("]");
 
-		public override string ToString()
-		{
-			var stringBuilder = new StringBuilder();
-			stringBuilder.Append("[");
+        return stringBuilder.ToString();
+    }
 
-			foreach (var item in this)
-				stringBuilder.Append(item + ", ");
+    #region IOdbList<E> Members
 
-			if (stringBuilder.Length > 3)
-				stringBuilder.Remove(stringBuilder.Length - 3, 2);
+    public void AddAll(IEnumerable<TItem> collection)
+    {
+        AddRange(collection);
+    }
 
-			stringBuilder.Append("]");
+    public void RemoveAll(IEnumerable<TItem> collection)
+    {
+        foreach (var item in collection)
+            Remove(item);
+    }
 
-			return stringBuilder.ToString();
-		}
-	}
+    #endregion IOdbList<E> Members
+}

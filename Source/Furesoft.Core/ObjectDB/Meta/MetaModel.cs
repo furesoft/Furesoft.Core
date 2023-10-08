@@ -6,169 +6,169 @@ using Furesoft.Core.ObjectDB.TypeResolution;
 
 namespace Furesoft.Core.ObjectDB.Meta;
 
+/// <summary>
+///     The database meta-model
+/// </summary>
+internal sealed class MetaModel : IMetaModel
+{
 	/// <summary>
-	///   The database meta-model
+	///     A simple list to hold all class infos.
 	/// </summary>
-	internal sealed class MetaModel : IMetaModel
-	{
-		/// <summary>
-		///   A simple list to hold all class infos.
-		/// </summary>
-		/// <remarks>
-		///   A simple list to hold all class infos. It is redundant with the maps, but in some cases, we need sequential access to classes :-(
-		/// </remarks>
-		private readonly IList<ClassInfo> _allClassInfos;
+	/// <remarks>
+	///     A simple list to hold all class infos. It is redundant with the maps, but in some cases, we need sequential access
+	///     to classes :-(
+	/// </remarks>
+	private readonly IList<ClassInfo> _allClassInfos;
 
-		/// <summary>
-		///   A list of changed classes - that must be persisted back when commit is done
-		/// </summary>
-		private readonly OdbHashMap<ClassInfo, ClassInfo> _changedClasses;
+	/// <summary>
+	///     A list of changed classes - that must be persisted back when commit is done
+	/// </summary>
+	private readonly OdbHashMap<ClassInfo, ClassInfo> _changedClasses;
 
-		private readonly IDictionary<OID, ClassInfo> _rapidAccessForClassesByOid;
-		private readonly IList<Type> _existingClasses;
+    private readonly IList<Type> _existingClasses;
 
-		/// <summary>
-		///   to identify if meta model has changed
-		/// </summary>
-		private bool _hasChanged;
+    private readonly IDictionary<OID, ClassInfo> _rapidAccessForClassesByOid;
 
-		/// <summary>
-		///   A hash map to speed up the access of class info by full class name
-		/// </summary>
-		private IDictionary<Type, ClassInfo> _rapidAccessForClassesByName;
+    /// <summary>
+    ///     to identify if meta model has changed
+    /// </summary>
+    private bool _hasChanged;
 
-		public MetaModel()
-		{
-			_rapidAccessForClassesByName = new OdbHashMap<Type, ClassInfo>(10);
-			_rapidAccessForClassesByOid = new OdbHashMap<OID, ClassInfo>(10);
-			_existingClasses = new List<Type>(10);
-			_allClassInfos = new List<ClassInfo>();
-			_changedClasses = new();
-		}
+    /// <summary>
+    ///     A hash map to speed up the access of class info by full class name
+    /// </summary>
+    private IDictionary<Type, ClassInfo> _rapidAccessForClassesByName;
 
-		public void AddClass(ClassInfo classInfo)
-		{
-			_rapidAccessForClassesByName.Add(classInfo.UnderlyingType, classInfo);
-			_existingClasses.Add(classInfo.UnderlyingType);
-			_rapidAccessForClassesByOid.Add(classInfo.ClassInfoId, classInfo);
-			_allClassInfos.Add(classInfo);
-		}
+    public MetaModel()
+    {
+        _rapidAccessForClassesByName = new OdbHashMap<Type, ClassInfo>(10);
+        _rapidAccessForClassesByOid = new OdbHashMap<OID, ClassInfo>(10);
+        _existingClasses = new List<Type>(10);
+        _allClassInfos = new List<ClassInfo>();
+        _changedClasses = new();
+    }
 
-		public bool ExistClass(Type type)
-		{
-			return _existingClasses.Contains(type);
-		}
+    public void AddClass(ClassInfo classInfo)
+    {
+        _rapidAccessForClassesByName.Add(classInfo.UnderlyingType, classInfo);
+        _existingClasses.Add(classInfo.UnderlyingType);
+        _rapidAccessForClassesByOid.Add(classInfo.ClassInfoId, classInfo);
+        _allClassInfos.Add(classInfo);
+    }
 
-		public IEnumerable<ClassInfo> GetAllClasses()
-		{
-			return _allClassInfos;
-		}
+    public bool ExistClass(Type type)
+    {
+        return _existingClasses.Contains(type);
+    }
 
-		public int GetNumberOfClasses()
-		{
-			return _allClassInfos.Count;
-		}
+    public IEnumerable<ClassInfo> GetAllClasses()
+    {
+        return _allClassInfos;
+    }
 
-		/// <summary>
-		///   Gets the class info from the OID.
-		/// </summary>
-		/// <remarks>
-		///   Gets the class info from the OID.
-		/// </remarks>
-		/// <param name="id"> </param>
-		/// <returns> the class info with the OID </returns>
-		public ClassInfo GetClassInfoFromId(OID id)
-		{
-			return _rapidAccessForClassesByOid[id];
-		}
+    public int GetNumberOfClasses()
+    {
+        return _allClassInfos.Count;
+    }
 
-		public ClassInfo GetClassInfo(Type type, bool throwExceptionIfDoesNotExist)
-		{
-			_rapidAccessForClassesByName.TryGetValue(type, out var classInfo);
-			if (classInfo != null)
-				return classInfo;
+    /// <summary>
+    ///     Gets the class info from the OID.
+    /// </summary>
+    /// <remarks>
+    ///     Gets the class info from the OID.
+    /// </remarks>
+    /// <param name="id"> </param>
+    /// <returns> the class info with the OID </returns>
+    public ClassInfo GetClassInfoFromId(OID id)
+    {
+        return _rapidAccessForClassesByOid[id];
+    }
 
-			return throwExceptionIfDoesNotExist
-				? throw new OdbRuntimeException(
-					NDatabaseError.MetaModelClassNameDoesNotExist.AddParameter(type.AssemblyQualifiedName))
-				: (ClassInfo)null;
-		}
+    public ClassInfo GetClassInfo(Type type, bool throwExceptionIfDoesNotExist)
+    {
+        _rapidAccessForClassesByName.TryGetValue(type, out var classInfo);
+        if (classInfo != null)
+            return classInfo;
 
-		public ClassInfo GetClassInfo(string fullClassName, bool throwExceptionIfDoesNotExist)
-		{
-			var type = TypeResolutionUtils.ResolveType(fullClassName);
-			return GetClassInfo(type, throwExceptionIfDoesNotExist);
-		}
+        return throwExceptionIfDoesNotExist
+            ? throw new OdbRuntimeException(
+                NDatabaseError.MetaModelClassNameDoesNotExist.AddParameter(type.AssemblyQualifiedName))
+            : null;
+    }
 
-		/// <returns> The Last class info </returns>
-		public ClassInfo GetLastClassInfo()
-		{
-			return _allClassInfos[_allClassInfos.Count - 1];
-		}
+    public ClassInfo GetClassInfo(string fullClassName, bool throwExceptionIfDoesNotExist)
+    {
+        var type = TypeResolutionUtils.ResolveType(fullClassName);
+        return GetClassInfo(type, throwExceptionIfDoesNotExist);
+    }
 
-		/// <param name="index"> The index of the class info to get </param>
-		/// <returns> The class info at the specified index </returns>
-		public ClassInfo GetClassInfo(int index)
-		{
-			return _allClassInfos[index];
-		}
+    /// <returns> The Last class info </returns>
+    public ClassInfo GetLastClassInfo()
+    {
+        return _allClassInfos[_allClassInfos.Count - 1];
+    }
 
-		public void Clear()
-		{
-			_rapidAccessForClassesByName.Clear();
-			_rapidAccessForClassesByName = null;
-			_allClassInfos.Clear();
-		}
+    /// <param name="index"> The index of the class info to get </param>
+    /// <returns> The class info at the specified index </returns>
+    public ClassInfo GetClassInfo(int index)
+    {
+        return _allClassInfos[index];
+    }
 
-		public bool HasChanged()
-		{
-			return _hasChanged;
-		}
+    public void Clear()
+    {
+        _rapidAccessForClassesByName.Clear();
+        _rapidAccessForClassesByName = null;
+        _allClassInfos.Clear();
+    }
 
-		public IEnumerable<ClassInfo> GetChangedClassInfo()
-		{
-			IOdbList<ClassInfo> list = new OdbList<ClassInfo>();
-			list.AddAll(_changedClasses.Keys);
+    public bool HasChanged()
+    {
+        return _hasChanged;
+    }
 
-			return new ReadOnlyCollection<ClassInfo>(list);
-		}
+    public IEnumerable<ClassInfo> GetChangedClassInfo()
+    {
+        IOdbList<ClassInfo> list = new OdbList<ClassInfo>();
+        list.AddAll(_changedClasses.Keys);
 
-		public void ResetChangedClasses()
-		{
-			_changedClasses.Clear();
-			_hasChanged = false;
-		}
+        return new ReadOnlyCollection<ClassInfo>(list);
+    }
 
-		/// <summary>
-		///   Saves the fact that something has changed in the class (number of objects or last object oid)
-		/// </summary>
-		public void AddChangedClass(ClassInfo classInfo)
-		{
-			_changedClasses[classInfo] = classInfo;
-			_hasChanged = true;
-		}
+    public void ResetChangedClasses()
+    {
+        _changedClasses.Clear();
+        _hasChanged = false;
+    }
 
-		/// <summary>
-		///   Gets all the persistent classes that are subclasses or equal to the parameter class
-		/// </summary>
-		/// <returns> The list of class info of persistent classes that are subclasses or equal to the class </returns>
-		public IList<ClassInfo> GetPersistentSubclassesOf(Type type)
-		{
-			var result = new List<ClassInfo>();
+    /// <summary>
+    ///     Saves the fact that something has changed in the class (number of objects or last object oid)
+    /// </summary>
+    public void AddChangedClass(ClassInfo classInfo)
+    {
+        _changedClasses[classInfo] = classInfo;
+        _hasChanged = true;
+    }
 
-			foreach (var userClass in _rapidAccessForClassesByName.Keys)
-			{
-				if (userClass == type)
-				{
-					result.Add(GetClassInfo(userClass, true));
-				}
-				else
-				{
-					if (type.IsAssignableFrom(userClass))
-						result.Add(GetClassInfo(userClass, true));
-				}
-			}
+    /// <summary>
+    ///     Gets all the persistent classes that are subclasses or equal to the parameter class
+    /// </summary>
+    /// <returns> The list of class info of persistent classes that are subclasses or equal to the class </returns>
+    public IList<ClassInfo> GetPersistentSubclassesOf(Type type)
+    {
+        var result = new List<ClassInfo>();
 
-			return result;
-		}
-	}
+        foreach (var userClass in _rapidAccessForClassesByName.Keys)
+            if (userClass == type)
+            {
+                result.Add(GetClassInfo(userClass, true));
+            }
+            else
+            {
+                if (type.IsAssignableFrom(userClass))
+                    result.Add(GetClassInfo(userClass, true));
+            }
+
+        return result;
+    }
+}

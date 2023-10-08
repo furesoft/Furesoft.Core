@@ -3,37 +3,37 @@ using Furesoft.Core.ObjectDB.Api;
 
 namespace Furesoft.Core.ObjectDB.Btree;
 
-	public interface IBTree
-	{
-		void Insert(IComparable key, object value);
+public interface IBTree
+{
+    void Insert(IComparable key, object value);
 
-		void Split(IBTreeNode parent, IBTreeNode node2Split, int childIndex);
+    void Split(IBTreeNode parent, IBTreeNode node2Split, int childIndex);
 
-		object Delete(IComparable key, object value);
+    object Delete(IComparable key, object value);
 
-		int GetDegree();
+    int GetDegree();
 
-		long GetSize();
+    long GetSize();
 
-		int GetHeight();
+    int GetHeight();
 
-		IBTreeNode GetRoot();
+    IBTreeNode GetRoot();
 
-		IBTreePersister GetPersister();
+    IBTreePersister GetPersister();
 
-		void SetPersister(IBTreePersister persister);
+    void SetPersister(IBTreePersister persister);
 
-		IBTreeNode BuildNode();
+    IBTreeNode BuildNode();
 
-		object GetId();
+    object GetId();
 
-		void SetId(object id);
+    void SetId(object id);
 
-		void Clear();
+    void Clear();
 
-		IKeyAndValue GetBiggest(IBTreeNode node, bool delete);
+    IKeyAndValue GetBiggest(IBTreeNode node, bool delete);
 
-		IKeyAndValue GetSmallest(IBTreeNode node, bool delete);
+    IKeyAndValue GetSmallest(IBTreeNode node, bool delete);
 
-		IEnumerator Iterator<T>(OrderByConstants orderBy);
-	}
+    IEnumerator Iterator<T>(OrderByConstants orderBy);
+}

@@ -5,100 +5,89 @@ using Furesoft.Core.ObjectDB.Api.Query;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
-	internal sealed class LinqQueryable<TElement> : ILinqQueryable<TElement>, IQueryProvider
-	{
-		private readonly Expression _expression;
-		private readonly ILinqQuery<TElement> _query;
+internal sealed class LinqQueryable<TElement> : ILinqQueryable<TElement>, IQueryProvider
+{
+    private readonly ILinqQuery<TElement> _query;
 
-		private LinqQueryable(Expression expression)
-		{
-			if (expression == null)
-				throw new ArgumentNullException("expression");
+    private LinqQueryable(Expression expression)
+    {
+        if (expression == null)
+            throw new ArgumentNullException("expression");
 
-			if (!typeof(IQueryable<TElement>).IsAssignableFrom(expression.Type))
-				throw new ArgumentOutOfRangeException("expression");
+        if (!typeof(IQueryable<TElement>).IsAssignableFrom(expression.Type))
+            throw new ArgumentOutOfRangeException("expression");
 
-			_expression = expression;
-		}
+        Expression = expression;
+    }
 
-		public LinqQueryable(ILinqQuery<TElement> query)
-		{
-			_expression = Expression.Constant(this);
-			_query = query;
-		}
+    public LinqQueryable(ILinqQuery<TElement> query)
+    {
+        Expression = Expression.Constant(this);
+        _query = query;
+    }
 
-		#region ILinqQueryable<TElement> Members
+    private static Expression TranslateQuery(Expression expression)
+    {
+        return LinqQueryTranslator.Translate(expression);
+    }
 
-		public IEnumerator<TElement> GetEnumerator()
-		{
-			return Execute<IEnumerable<TElement>>(_expression).GetEnumerator();
-		}
+    #region ILinqQueryable<TElement> Members
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return GetEnumerator();
-		}
+    public IEnumerator<TElement> GetEnumerator()
+    {
+        return Execute<IEnumerable<TElement>>(Expression).GetEnumerator();
+    }
 
-		public Expression Expression
-		{
-			get { return _expression; }
-		}
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
 
-		public Type ElementType
-		{
-			get { return typeof(TElement); }
-		}
+    public Expression Expression { get; }
 
-		public IQueryProvider Provider
-		{
-			get { return this; }
-		}
+    public Type ElementType => typeof(TElement);
 
-		public ILinqQuery GetQuery()
-		{
-			return _query;
-		}
+    public IQueryProvider Provider => this;
 
-		#endregion ILinqQueryable<TElement> Members
+    public ILinqQuery GetQuery()
+    {
+        return _query;
+    }
 
-		#region IQueryProvider Members
+    #endregion ILinqQueryable<TElement> Members
 
-		public IQueryable<T> CreateQuery<T>(Expression expression)
-		{
-			return new LinqQueryable<T>(expression);
-		}
+    #region IQueryProvider Members
 
-		public IQueryable CreateQuery(Expression expression)
-		{
-			var elementType = TypeSystem.GetElementType(expression.Type);
+    public IQueryable<T> CreateQuery<T>(Expression expression)
+    {
+        return new LinqQueryable<T>(expression);
+    }
 
-			try
-			{
-				return
-					(IQueryable)
-					Activator.CreateInstance(typeof(LinqQueryable<>).MakeGenericType(elementType),
-											 new object[] { expression });
-			}
-			catch (TargetInvocationException tie)
-			{
-				throw tie.InnerException;
-			}
-		}
+    public IQueryable CreateQuery(Expression expression)
+    {
+        var elementType = TypeSystem.GetElementType(expression.Type);
 
-		public TResult Execute<TResult>(Expression expression)
-		{
-			return Expression.Lambda<Func<TResult>>(TranslateQuery(expression)).Compile().Invoke();
-		}
+        try
+        {
+            return
+                (IQueryable)
+                Activator.CreateInstance(typeof(LinqQueryable<>).MakeGenericType(elementType), expression);
+        }
+        catch (TargetInvocationException tie)
+        {
+            throw tie.InnerException;
+        }
+    }
 
-		public object Execute(Expression expression)
-		{
-			return Expression.Lambda(TranslateQuery(expression)).Compile().DynamicInvoke();
-		}
+    public TResult Execute<TResult>(Expression expression)
+    {
+        return Expression.Lambda<Func<TResult>>(TranslateQuery(expression)).Compile().Invoke();
+    }
 
-		#endregion IQueryProvider Members
+    public object Execute(Expression expression)
+    {
+        return Expression.Lambda(TranslateQuery(expression)).Compile().DynamicInvoke();
+    }
 
-		private static Expression TranslateQuery(Expression expression)
-		{
-			return LinqQueryTranslator.Translate(expression);
-		}
-	}
+    #endregion IQueryProvider Members
+}

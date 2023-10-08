@@ -3,154 +3,154 @@ using Furesoft.Core.ObjectDB.Exceptions;
 
 namespace Furesoft.Core.ObjectDB.Btree;
 
-	internal abstract class AbstractBTreeIterator<T> : IterarorAdapter, IEnumerator<T>
-	{
-		private readonly IBTree _btree;
-		private readonly OrderByConstants _orderByType;
+internal abstract class AbstractBTreeIterator<T> : IterarorAdapter, IEnumerator<T>
+{
+    private readonly IBTree _btree;
+    private readonly OrderByConstants _orderByType;
 
-		/// <summary>
-		///   The current node where the iterator is
-		/// </summary>
-		protected IBTreeNode CurrentNode;
+    /// <summary>
+    ///     The current key in the current node where the iterator is
+    /// </summary>
+    private int _currentKeyIndex;
 
-		/// <summary>
-		///   The number of returned elements ; it may be different from the number of keys in the case f multileValues btree where a key can contain more than one value
-		/// </summary>
-		protected int NbReturnedElements;
+    /// <summary>
+    ///     The current node where the iterator is
+    /// </summary>
+    protected IBTreeNode CurrentNode;
 
-		/// <summary>
-		///   The current key in the current node where the iterator is
-		/// </summary>
-		private int _currentKeyIndex;
+    /// <summary>
+    ///     The number of returned elements ; it may be different from the number of keys in the case f multileValues btree
+    ///     where a key can contain more than one value
+    /// </summary>
+    protected int NbReturnedElements;
 
-		protected AbstractBTreeIterator(IBTree tree, OrderByConstants orderByType)
-		{
-			_btree = tree;
-			CurrentNode = tree.GetRoot();
-			_orderByType = orderByType;
+    protected AbstractBTreeIterator(IBTree tree, OrderByConstants orderByType)
+    {
+        _btree = tree;
+        CurrentNode = tree.GetRoot();
+        _orderByType = orderByType;
 
-			_currentKeyIndex = orderByType.IsOrderByDesc()
-								   ? CurrentNode.GetNbKeys()
-								   : 0;
-		}
+        _currentKeyIndex = orderByType.IsOrderByDesc()
+            ? CurrentNode.GetNbKeys()
+            : 0;
+    }
 
-		#region IEnumerator<T> Members
+    protected abstract object GetValueAt(IBTreeNode node, int currentIndex);
 
-		public override bool MoveNext()
-		{
-			return NbReturnedElements < _btree.GetSize();
-		}
+    protected override object GetCurrent()
+    {
+        return Current;
+    }
 
-		public new virtual T Current
-		{
-			get
-			{
-				if (_currentKeyIndex > CurrentNode.GetNbKeys() || NbReturnedElements >= _btree.GetSize())
-					throw new OdbRuntimeException(NDatabaseError.NoMoreObjectsInCollection);
+    private T NextAsc()
+    {
+        // Try to go down till a leaf
+        while (!CurrentNode.IsLeaf())
+        {
+            CurrentNode = CurrentNode.GetChildAt(_currentKeyIndex, true);
+            _currentKeyIndex = 0;
+        }
 
-				return _orderByType.IsOrderByDesc()
-						   ? NextDesc()
-						   : NextAsc();
-			}
-		}
+        // If leaf has more keys
+        if (_currentKeyIndex < CurrentNode.GetNbKeys())
+        {
+            NbReturnedElements++;
+            var nodeValue = GetValueAt(CurrentNode, _currentKeyIndex);
+            _currentKeyIndex++;
+            return (T) nodeValue;
+        }
 
-		public override void Reset()
-		{
-			CurrentNode = _btree.GetRoot();
-			_currentKeyIndex = _orderByType.IsOrderByDesc()
-								   ? CurrentNode.GetNbKeys()
-								   : 0;
-			NbReturnedElements = 0;
-		}
+        // else go up till a node with keys
+        while (_currentKeyIndex >= CurrentNode.GetNbKeys())
+        {
+            var child = CurrentNode;
+            CurrentNode = CurrentNode.GetParent();
+            _currentKeyIndex = IndexOfChild(CurrentNode, child);
+        }
 
-		public virtual void Dispose()
-		{
-		}
+        NbReturnedElements++;
 
-		#endregion IEnumerator<T> Members
+        var value = GetValueAt(CurrentNode, _currentKeyIndex);
+        _currentKeyIndex++;
+        return (T) value;
+    }
 
-		protected abstract object GetValueAt(IBTreeNode node, int currentIndex);
+    private T NextDesc()
+    {
+        // Try to go down till a leaf
+        while (!CurrentNode.IsLeaf())
+        {
+            CurrentNode = CurrentNode.GetChildAt(_currentKeyIndex, true);
+            _currentKeyIndex = CurrentNode.GetNbKeys();
+        }
 
-		protected override object GetCurrent()
-		{
-			return Current;
-		}
+        // If leaf has more keys
+        if (_currentKeyIndex > 0)
+        {
+            NbReturnedElements++;
 
-		private T NextAsc()
-		{
-			// Try to go down till a leaf
-			while (!CurrentNode.IsLeaf())
-			{
-				CurrentNode = CurrentNode.GetChildAt(_currentKeyIndex, true);
-				_currentKeyIndex = 0;
-			}
+            _currentKeyIndex--;
+            var nodeValue = GetValueAt(CurrentNode, _currentKeyIndex);
+            return (T) nodeValue;
+        }
 
-			// If leaf has more keys
-			if (_currentKeyIndex < CurrentNode.GetNbKeys())
-			{
-				NbReturnedElements++;
-				var nodeValue = GetValueAt(CurrentNode, _currentKeyIndex);
-				_currentKeyIndex++;
-				return (T)nodeValue;
-			}
+        // else go up till a node will keys
+        while (_currentKeyIndex == 0)
+        {
+            var child = CurrentNode;
+            CurrentNode = CurrentNode.GetParent();
+            _currentKeyIndex = IndexOfChild(CurrentNode, child);
+        }
 
-			// else go up till a node with keys
-			while (_currentKeyIndex >= CurrentNode.GetNbKeys())
-			{
-				var child = CurrentNode;
-				CurrentNode = CurrentNode.GetParent();
-				_currentKeyIndex = IndexOfChild(CurrentNode, child);
-			}
+        NbReturnedElements++;
 
-			NbReturnedElements++;
+        _currentKeyIndex--;
+        var value = GetValueAt(CurrentNode, _currentKeyIndex);
+        return (T) value;
+    }
 
-			var value = GetValueAt(CurrentNode, _currentKeyIndex);
-			_currentKeyIndex++;
-			return (T)value;
-		}
+    private static int IndexOfChild(IBTreeNode parent, IBTreeNode child)
+    {
+        for (var i = 0; i < parent.GetNbChildren(); i++)
+            if (parent.GetChildAt(i, true).GetId().Equals(child.GetId()))
+                return i;
 
-		private T NextDesc()
-		{
-			// Try to go down till a leaf
-			while (!CurrentNode.IsLeaf())
-			{
-				CurrentNode = CurrentNode.GetChildAt(_currentKeyIndex, true);
-				_currentKeyIndex = CurrentNode.GetNbKeys();
-			}
+        var errorMessage = string.Format("parent {0} does not have the specified child : {1}", parent, child);
+        throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter(errorMessage));
+    }
 
-			// If leaf has more keys
-			if (_currentKeyIndex > 0)
-			{
-				NbReturnedElements++;
+    #region IEnumerator<T> Members
 
-				_currentKeyIndex--;
-				var nodeValue = GetValueAt(CurrentNode, _currentKeyIndex);
-				return (T)nodeValue;
-			}
+    public override bool MoveNext()
+    {
+        return NbReturnedElements < _btree.GetSize();
+    }
 
-			// else go up till a node will keys
-			while (_currentKeyIndex == 0)
-			{
-				var child = CurrentNode;
-				CurrentNode = CurrentNode.GetParent();
-				_currentKeyIndex = IndexOfChild(CurrentNode, child);
-			}
-			NbReturnedElements++;
+    public new virtual T Current
+    {
+        get
+        {
+            if (_currentKeyIndex > CurrentNode.GetNbKeys() || NbReturnedElements >= _btree.GetSize())
+                throw new OdbRuntimeException(NDatabaseError.NoMoreObjectsInCollection);
 
-			_currentKeyIndex--;
-			var value = GetValueAt(CurrentNode, _currentKeyIndex);
-			return (T)value;
-		}
+            return _orderByType.IsOrderByDesc()
+                ? NextDesc()
+                : NextAsc();
+        }
+    }
 
-		private static int IndexOfChild(IBTreeNode parent, IBTreeNode child)
-		{
-			for (var i = 0; i < parent.GetNbChildren(); i++)
-			{
-				if (parent.GetChildAt(i, true).GetId().Equals(child.GetId()))
-					return i;
-			}
+    public override void Reset()
+    {
+        CurrentNode = _btree.GetRoot();
+        _currentKeyIndex = _orderByType.IsOrderByDesc()
+            ? CurrentNode.GetNbKeys()
+            : 0;
+        NbReturnedElements = 0;
+    }
 
-			var errorMessage = string.Format("parent {0} does not have the specified child : {1}", parent, child);
-			throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter(errorMessage));
-		}
-	}
+    public virtual void Dispose()
+    {
+    }
+
+    #endregion IEnumerator<T> Members
+}

@@ -3,223 +3,324 @@ using System.Diagnostics;
 namespace Furesoft.Core.Measure;
 
 /// <summary>
-/// Represents a standard prefix like "Kilo" (abbrev. "k") or "Mega" (abbrev. "M")
-/// or binary prefix like "Kibi" (abbrev. "ki").
-/// All standard prefix are registered in a static dictionary and there is no way to add
-/// new prefix.
-/// See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
+///     Represents a standard prefix like "Kilo" (abbrev. "k") or "Mega" (abbrev. "M")
+///     or binary prefix like "Kibi" (abbrev. "ki").
+///     All standard prefix are registered in a static dictionary and there is no way to add
+///     new prefix.
+///     See http://en.wikipedia.org/wiki/Metric_prefix and https://en.wikipedia.org/wiki/Binary_prefix.
 /// </summary>
 public sealed class MeasureStandardPrefix
 {
-    /// <summary>
-    /// Gets the abbreviation of the prefix.
-    /// </summary>
-    public string Abbreviation { get; }
-
-    /// <summary>
-    /// Gets the full name of the prefix.
-    /// </summary>
-    public string Name { get; }
-
-    /// <summary>
-    /// Gets the base: 10 for metric prefixes ("k (Kilo)", "Mega (M)", etc.),
-    /// 2 for binary prefixes ("Ki (Kibi)", "Mi (Mibi)", etc.) and 0 for <see cref="MeasureUnit.None"/>.
-    /// </summary>
-    public int Base { get; }
-
-    /// <summary>
-    /// Gets the prefix exponent: 3 for "k (Kilo)", 10 for "Ki (Kibi)", 6 for "M (Mega)", 20 for "Mi (Mebi)", etc.
-    /// </summary>
-    public int Exponent { get; }
-
-    /// <summary>
-    /// Gets the <see cref="ExpFactor"/> of this prefix.
-    /// </summary>
-    public ExpFactor Factor { get; }
-
-    /// <summary>
-    /// Returs the <see cref="Abbreviation"/> or the Abbreviation followed by (<see cref="Name"/>, <see cref="Factor"/>).
-    /// </summary>
-    /// <param name="withName">True if name and factor should be added.</param>
-    /// <returns>The readable string.</returns>
-    public string ToString( bool withName ) => withName ? $"{Abbreviation} ({Name}, {Factor})" : Abbreviation;
-
-    /// <summary>
-    /// Simply returns the <see cref="Abbreviation"/>.
-    /// </summary>
-    /// <returns>The abbreviation.</returns>
-    public override string ToString() => Abbreviation;
-
-		private MeasureStandardPrefix( string abbreviation, string name, int eBase, int exp )
-    {
-        Abbreviation = abbreviation;
-        Name = name;
-        Base = eBase;
-        Exponent = exp;
-        Factor = eBase == 2 ? new( exp, 0 ) : new ExpFactor( 0, exp );
-    }
-
-    /// <summary>
-    /// Applies this metric to a <see cref="AtomicMeasureUnit"/>.
-    /// </summary>
-    /// <param name="unit">The original unit.</param>
-    /// <returns>The resulting unit.</returns>
-    public AtomicMeasureUnit this[ AtomicMeasureUnit unit ] => Combine( this, unit, true ).Result;
-
-    /// <summary>
-    /// Applies this metric to a <see cref="AtomicMeasureUnit"/>.
-    /// </summary>
-    /// <param name="unit">The original unit.</param>
-    /// <returns>The resulting unit.</returns>
-    public AtomicMeasureUnit On( AtomicMeasureUnit unit ) => Combine( this, unit, true ).Result;
-
-    /// <summary>
-    /// Applies this metric to a <see cref="AtomicMeasureUnit"/>, allowing the creation of
-    /// potentially adjusted <see cref="PrefixedMeasureUnit"/>.
-    /// </summary>
-    /// <param name="unit">The original unit.</param>
-    /// <param name="allowAdjustmentPrefix">
-    /// When true, this is the same as calling <see cref="this[AtomicMeasureUnit]"/>: the resulting <see cref="PrefixedMeasureUnit"/>
-    /// can have a non neutral <see cref="PrefixedMeasureUnit.AdjustmentFactor"/>.
-    /// When false, if there is the need of an adjusment prefix (for instance on a "DeciMega") the adjustement will be returned and
-    /// the resulting AtomicMeasureUnit will have a neutral adjustment.
-    /// </param>
-    /// <returns>The resulting adjustment and unit.</returns>
-    public (ExpFactor Adjustment, AtomicMeasureUnit Result) On( AtomicMeasureUnit unit, bool allowAdjustmentPrefix ) => Combine( this, unit, allowAdjustmentPrefix );
-
-		private static (ExpFactor Adjustment, AtomicMeasureUnit Result) Combine( MeasureStandardPrefix prefix, AtomicMeasureUnit u, bool allowAdjustmentPrefix )
-    {
-        if( prefix.Base == 0 ) return (ExpFactor.Neutral, u);
-        if( u is PrefixedMeasureUnit p )
-        {
-            var newExp = prefix.Factor.Multiply( p.Prefix.Factor ).Multiply( p.AdjustmentFactor );
-            if( newExp.IsNeutral ) return (ExpFactor.Neutral,p.AtomicMeasureUnit);
-            var best = FindBest( newExp, p.AtomicMeasureUnit.AutoStandardPrefix );
-            if( !allowAdjustmentPrefix ) return (best.Adjustment, u.Context.RegisterPrefixed( ExpFactor.Neutral, best.Prefix, p.AtomicMeasureUnit ));
-            return (ExpFactor.Neutral, u.Context.RegisterPrefixed( best.Adjustment, best.Prefix, p.AtomicMeasureUnit ));
-        }
-        if( (u.AutoStandardPrefix & AutoStandardPrefix.Binary) == 0 && prefix.Base == 2 
-            || (u.AutoStandardPrefix & AutoStandardPrefix.Metric) == 0 && prefix.Base == 10 )
-        {
-                return (ExpFactor.Neutral, u.Context.RegisterPrefixed( prefix.Factor, None, u ));
-        }
-        return (ExpFactor.Neutral, u.Context.RegisterPrefixed( ExpFactor.Neutral, prefix, u ));
-    }
-
-    /// <summary>
-    /// Finds the best prefix given a <see cref="ExpFactor"/>.
-    /// If both metric and binary exponents exist (ie. are not zero), the metric prefix
-    /// is selected (the Exp2 is injected in the adjustment factor).
-    /// </summary>
-    /// <param name="newExp">Must not be the neutral factor.</param>
-    /// <param name="stdPrefix">
-    /// Whether the actual standard prefixes are allowed. When not, it is the adjustemnt factor
-    /// that handles the exponent and the prefix None is used.
-    /// </param>
-    /// <returns>The best prefix with the required adjustment factor.</returns>
-    internal static (ExpFactor Adjustment, MeasureStandardPrefix Prefix) FindBest( ExpFactor newExp, AutoStandardPrefix stdPrefix )
-    {
-        // Privilegiates metric prefix if any and if metric is allowed.
-        Debug.Assert( !newExp.IsNeutral );
-        if( newExp.Exp10 != 0 && (stdPrefix&AutoStandardPrefix.Metric) != 0 )
-        {
-            var b10 = FindBest( newExp.Exp10, allMetricIndex, allMetric );
-            return (new(newExp.Exp2, b10.Item1), b10.Item2);
-        }
-        if( newExp.Exp2 != 0 && (stdPrefix&AutoStandardPrefix.Binary) != 0 )
-        {
-            Debug.Assert( newExp.Exp2 != 0 );
-            var b2 = FindBest( newExp.Exp2, allBinaryIndex, allBinary );
-            return (new( b2.Item1, 0 ), b2.Item2);
-        }
-        return (newExp, None);
-    }
-
-		private static (int,MeasureStandardPrefix) FindBest( int v, int[] indexes, MeasureStandardPrefix[] prefixes )
-    {
-        var idx = Array.BinarySearch( indexes, v );
-        if( idx >= 0 ) return (0, prefixes[idx]);
-        idx = ~idx;
-        if( idx == indexes.Length )
-			{
-				--idx;
-			}
-			else if( idx != 0 )
-        {
-            var positiveDelta = prefixes[idx].Exponent - v;
-            Debug.Assert( positiveDelta > 0 );
-            var fromPrevious = v - prefixes[idx - 1].Exponent;
-            Debug.Assert( fromPrevious > 0 );
-            if( fromPrevious < positiveDelta ) --idx;
-        }
-        var p = prefixes[idx];
-        return (v-p.Exponent,p);
-    }
-
     private static readonly Dictionary<string, MeasureStandardPrefix> prefixes;
     private static readonly MeasureStandardPrefix[] allBinary;
     private static readonly int[] allBinaryIndex;
     private static readonly MeasureStandardPrefix[] allMetric;
     private static readonly int[] allMetricIndex;
 
+    /// <summary>
+    ///     None prefix. It has empty <see cref="Abbreviation" /> and <see cref="Name" />, its <see cref="Base" /> is 0,
+    ///     <see cref="Exponent" /> is 0 and <see cref="Factor" /> is <see cref="ExpFactor.Neutral" />.
+    /// </summary>
+    public static readonly MeasureStandardPrefix None;
+
     static MeasureStandardPrefix()
     {
-        None = new( "", "", 0, 0 );
+        None = new("", "", 0, 0);
 
-        Yocto = new( "y", "Yocto", 10, -24 );
-        Zepto = new( "z", "Zepto", 10, -21 );
-        Atto = new( "a", "Atto", 10, -18 );
-        Femto = new( "f", "Femto", 10, -15 );
-        Pico = new( "p", "Pico", 10, -12 );
-        Nano = new( "n", "Nano", 10, -9 );
-        Micro = new( "µ", "Micro", 10, -6 );
-        Milli = new( "m", "Milli", 10, -3 );
-        Centi = new( "c", "Centi", 10, -2 );
-        Deci = new( "d", "Deci", 10, -1 );
-        Deca = new( "da", "Deca", 10, 1 );
-        Hecto = new( "h", "Hecto", 10, 2 );
-        Kilo = new( "k", "Kilo", 10, 3 );
-        Mega = new( "M", "Mega", 10, 6 );
-        Giga = new( "G", "Giga", 10, 9 );
-        Tera = new( "T", "Tera", 10, 12 );
-        Peta = new( "P", "Peta", 10, 15 );
-        Exa = new( "E", "Exa", 10, 18 );
-        Zetta = new( "Z", "Zetta", 10, 21 );
-        Yotta = new( "Y", "Yotta", 10, 24 );
+        Yocto = new("y", "Yocto", 10, -24);
+        Zepto = new("z", "Zepto", 10, -21);
+        Atto = new("a", "Atto", 10, -18);
+        Femto = new("f", "Femto", 10, -15);
+        Pico = new("p", "Pico", 10, -12);
+        Nano = new("n", "Nano", 10, -9);
+        Micro = new("µ", "Micro", 10, -6);
+        Milli = new("m", "Milli", 10, -3);
+        Centi = new("c", "Centi", 10, -2);
+        Deci = new("d", "Deci", 10, -1);
+        Deca = new("da", "Deca", 10, 1);
+        Hecto = new("h", "Hecto", 10, 2);
+        Kilo = new("k", "Kilo", 10, 3);
+        Mega = new("M", "Mega", 10, 6);
+        Giga = new("G", "Giga", 10, 9);
+        Tera = new("T", "Tera", 10, 12);
+        Peta = new("P", "Peta", 10, 15);
+        Exa = new("E", "Exa", 10, 18);
+        Zetta = new("Z", "Zetta", 10, 21);
+        Yotta = new("Y", "Yotta", 10, 24);
 
-        Kibi = new( "Ki", "Kibi", 2, 10 );
-        Mebi = new( "Mi", "Mebi", 2, 20 );
-        Gibi = new( "Gi", "Gibi", 2, 30 );
-        Tebi = new( "Ti", "Tebi", 2, 40 );
-        Pebi = new( "Pi", "Pebi", 2, 50 );
-        Exbi = new( "Ei", "Exbi", 2, 60 );
-        Zebi = new( "Zi", "Zebi", 2, 70 );
-        Yobi = new( "Yi", "Yobi", 2, 80 );
+        Kibi = new("Ki", "Kibi", 2, 10);
+        Mebi = new("Mi", "Mebi", 2, 20);
+        Gibi = new("Gi", "Gibi", 2, 30);
+        Tebi = new("Ti", "Tebi", 2, 40);
+        Pebi = new("Pi", "Pebi", 2, 50);
+        Exbi = new("Ei", "Exbi", 2, 60);
+        Zebi = new("Zi", "Zebi", 2, 70);
+        Yobi = new("Yi", "Yobi", 2, 80);
 
-        allMetric = new MeasureStandardPrefix[] {
-            Yocto, Zepto, Atto, Femto, Pico, Nano, Micro, Milli, Centi, Deci, Deca,
-            Hecto, Kilo, Mega, Giga, Tera, Peta, Exa, Zetta, Yotta };
-        allMetricIndex = allMetric.Select( p => (int)p.Factor.Exp10 ).ToArray();
-
-        allBinary = new MeasureStandardPrefix[] { Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi };
-        allBinaryIndex = allBinary.Select( p => (int)p.Factor.Exp2 ).ToArray();
-
-			prefixes = new()
-			{
-				{ string.Empty, None }
-			};
-			foreach ( var p in allMetric.Concat( allBinary ) )
+        allMetric = new[]
         {
-            prefixes.Add( p.Abbreviation, p );
-            prefixes.Add( p.Name, p );
+            Yocto, Zepto, Atto, Femto, Pico, Nano, Micro, Milli, Centi, Deci, Deca,
+            Hecto, Kilo, Mega, Giga, Tera, Peta, Exa, Zetta, Yotta
+        };
+        allMetricIndex = allMetric.Select(p => (int) p.Factor.Exp10).ToArray();
+
+        allBinary = new[] {Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi};
+        allBinaryIndex = allBinary.Select(p => (int) p.Factor.Exp2).ToArray();
+
+        prefixes = new()
+        {
+            {string.Empty, None}
+        };
+        foreach (var p in allMetric.Concat(allBinary))
+        {
+            prefixes.Add(p.Abbreviation, p);
+            prefixes.Add(p.Name, p);
         }
     }
 
+    private MeasureStandardPrefix(string abbreviation, string name, int eBase, int exp)
+    {
+        Abbreviation = abbreviation;
+        Name = name;
+        Base = eBase;
+        Exponent = exp;
+        Factor = eBase == 2 ? new(exp, 0) : new ExpFactor(0, exp);
+    }
+
     /// <summary>
-    /// None prefix. It has empty <see cref="Abbreviation"/> and <see cref="Name"/>, its <see cref="Base"/> is 0, 
-    /// <see cref="Exponent"/> is 0 and <see cref="Factor"/> is <see cref="ExpFactor.Neutral"/>.
+    ///     Gets the abbreviation of the prefix.
     /// </summary>
-    public static readonly MeasureStandardPrefix None;
+    public string Abbreviation { get; }
+
+    /// <summary>
+    ///     Gets the full name of the prefix.
+    /// </summary>
+    public string Name { get; }
+
+    /// <summary>
+    ///     Gets the base: 10 for metric prefixes ("k (Kilo)", "Mega (M)", etc.),
+    ///     2 for binary prefixes ("Ki (Kibi)", "Mi (Mibi)", etc.) and 0 for <see cref="MeasureUnit.None" />.
+    /// </summary>
+    public int Base { get; }
+
+    /// <summary>
+    ///     Gets the prefix exponent: 3 for "k (Kilo)", 10 for "Ki (Kibi)", 6 for "M (Mega)", 20 for "Mi (Mebi)", etc.
+    /// </summary>
+    public int Exponent { get; }
+
+    /// <summary>
+    ///     Gets the <see cref="ExpFactor" /> of this prefix.
+    /// </summary>
+    public ExpFactor Factor { get; }
+
+    /// <summary>
+    ///     Applies this metric to a <see cref="AtomicMeasureUnit" />.
+    /// </summary>
+    /// <param name="unit">The original unit.</param>
+    /// <returns>The resulting unit.</returns>
+    public AtomicMeasureUnit this[AtomicMeasureUnit unit] => Combine(this, unit, true).Result;
+
+    /// <summary>
+    ///     Gets all standard prefixes (including <see cref="None" />).
+    /// </summary>
+    public static IEnumerable<MeasureStandardPrefix> All => allMetric.Concat(allBinary);
+
+    /// <summary>
+    ///     Gets all the metric prefixes.
+    /// </summary>
+    public static IReadOnlyCollection<MeasureStandardPrefix> MetricPrefixes => allMetric;
+
+    /// <summary>
+    ///     Gets all the binary prefixes.
+    /// </summary>
+    public static IReadOnlyCollection<MeasureStandardPrefix> BinaryPrefixes => allBinary;
+
+    /// <summary>
+    ///     Returs the <see cref="Abbreviation" /> or the Abbreviation followed by (<see cref="Name" />, <see cref="Factor" />
+    ///     ).
+    /// </summary>
+    /// <param name="withName">True if name and factor should be added.</param>
+    /// <returns>The readable string.</returns>
+    public string ToString(bool withName)
+    {
+        return withName ? $"{Abbreviation} ({Name}, {Factor})" : Abbreviation;
+    }
+
+    /// <summary>
+    ///     Simply returns the <see cref="Abbreviation" />.
+    /// </summary>
+    /// <returns>The abbreviation.</returns>
+    public override string ToString()
+    {
+        return Abbreviation;
+    }
+
+    /// <summary>
+    ///     Applies this metric to a <see cref="AtomicMeasureUnit" />.
+    /// </summary>
+    /// <param name="unit">The original unit.</param>
+    /// <returns>The resulting unit.</returns>
+    public AtomicMeasureUnit On(AtomicMeasureUnit unit)
+    {
+        return Combine(this, unit, true).Result;
+    }
+
+    /// <summary>
+    ///     Applies this metric to a <see cref="AtomicMeasureUnit" />, allowing the creation of
+    ///     potentially adjusted <see cref="PrefixedMeasureUnit" />.
+    /// </summary>
+    /// <param name="unit">The original unit.</param>
+    /// <param name="allowAdjustmentPrefix">
+    ///     When true, this is the same as calling <see cref="this[AtomicMeasureUnit]" />: the resulting
+    ///     <see cref="PrefixedMeasureUnit" />
+    ///     can have a non neutral <see cref="PrefixedMeasureUnit.AdjustmentFactor" />.
+    ///     When false, if there is the need of an adjusment prefix (for instance on a "DeciMega") the adjustement will be
+    ///     returned and
+    ///     the resulting AtomicMeasureUnit will have a neutral adjustment.
+    /// </param>
+    /// <returns>The resulting adjustment and unit.</returns>
+    public (ExpFactor Adjustment, AtomicMeasureUnit Result) On(AtomicMeasureUnit unit, bool allowAdjustmentPrefix)
+    {
+        return Combine(this, unit, allowAdjustmentPrefix);
+    }
+
+    private static (ExpFactor Adjustment, AtomicMeasureUnit Result) Combine(MeasureStandardPrefix prefix,
+        AtomicMeasureUnit u, bool allowAdjustmentPrefix)
+    {
+        if (prefix.Base == 0) return (ExpFactor.Neutral, u);
+        if (u is PrefixedMeasureUnit p)
+        {
+            var newExp = prefix.Factor.Multiply(p.Prefix.Factor).Multiply(p.AdjustmentFactor);
+            if (newExp.IsNeutral) return (ExpFactor.Neutral, p.AtomicMeasureUnit);
+            var best = FindBest(newExp, p.AtomicMeasureUnit.AutoStandardPrefix);
+            if (!allowAdjustmentPrefix)
+                return (best.Adjustment,
+                    u.Context.RegisterPrefixed(ExpFactor.Neutral, best.Prefix, p.AtomicMeasureUnit));
+            return (ExpFactor.Neutral, u.Context.RegisterPrefixed(best.Adjustment, best.Prefix, p.AtomicMeasureUnit));
+        }
+
+        if (((u.AutoStandardPrefix & AutoStandardPrefix.Binary) == 0 && prefix.Base == 2)
+            || ((u.AutoStandardPrefix & AutoStandardPrefix.Metric) == 0 && prefix.Base == 10))
+            return (ExpFactor.Neutral, u.Context.RegisterPrefixed(prefix.Factor, None, u));
+        return (ExpFactor.Neutral, u.Context.RegisterPrefixed(ExpFactor.Neutral, prefix, u));
+    }
+
+    /// <summary>
+    ///     Finds the best prefix given a <see cref="ExpFactor" />.
+    ///     If both metric and binary exponents exist (ie. are not zero), the metric prefix
+    ///     is selected (the Exp2 is injected in the adjustment factor).
+    /// </summary>
+    /// <param name="newExp">Must not be the neutral factor.</param>
+    /// <param name="stdPrefix">
+    ///     Whether the actual standard prefixes are allowed. When not, it is the adjustemnt factor
+    ///     that handles the exponent and the prefix None is used.
+    /// </param>
+    /// <returns>The best prefix with the required adjustment factor.</returns>
+    internal static (ExpFactor Adjustment, MeasureStandardPrefix Prefix) FindBest(ExpFactor newExp,
+        AutoStandardPrefix stdPrefix)
+    {
+        // Privilegiates metric prefix if any and if metric is allowed.
+        Debug.Assert(!newExp.IsNeutral);
+        if (newExp.Exp10 != 0 && (stdPrefix & AutoStandardPrefix.Metric) != 0)
+        {
+            var b10 = FindBest(newExp.Exp10, allMetricIndex, allMetric);
+            return (new(newExp.Exp2, b10.Item1), b10.Item2);
+        }
+
+        if (newExp.Exp2 != 0 && (stdPrefix & AutoStandardPrefix.Binary) != 0)
+        {
+            Debug.Assert(newExp.Exp2 != 0);
+            var b2 = FindBest(newExp.Exp2, allBinaryIndex, allBinary);
+            return (new(b2.Item1, 0), b2.Item2);
+        }
+
+        return (newExp, None);
+    }
+
+    private static (int, MeasureStandardPrefix) FindBest(int v, int[] indexes, MeasureStandardPrefix[] prefixes)
+    {
+        var idx = Array.BinarySearch(indexes, v);
+        if (idx >= 0) return (0, prefixes[idx]);
+        idx = ~idx;
+        if (idx == indexes.Length)
+        {
+            --idx;
+        }
+        else if (idx != 0)
+        {
+            var positiveDelta = prefixes[idx].Exponent - v;
+            Debug.Assert(positiveDelta > 0);
+            var fromPrevious = v - prefixes[idx - 1].Exponent;
+            Debug.Assert(fromPrevious > 0);
+            if (fromPrevious < positiveDelta) --idx;
+        }
+
+        var p = prefixes[idx];
+        return (v - p.Exponent, p);
+    }
+
+    /// <summary>
+    ///     Gets a prefix by its abbreviation or name.
+    /// </summary>
+    /// <param name="n">The abbreviation or name of the prefix.</param>
+    /// <returns>The associated prefix, if no prefix was found, <c>null</c>.</returns>
+    public static MeasureStandardPrefix Get(string n)
+    {
+        prefixes.TryGetValue(n, out var p);
+        return p;
+    }
+
+    /// <summary>
+    ///     Gets all the prefixes for a <see cref="AutoStandardPrefix" />.
+    /// </summary>
+    /// <param name="a">The auto standard prefix.</param>
+    /// <returns>An empty set, <see cref="All" />, <see cref="MetricPrefixes" /> or <see cref="BinaryPrefixes" />.</returns>
+    public static IEnumerable<MeasureStandardPrefix> GetPrefixes(AutoStandardPrefix a)
+    {
+        switch (a)
+        {
+            case AutoStandardPrefix.Both: return All;
+            case AutoStandardPrefix.Binary: return BinaryPrefixes;
+            case AutoStandardPrefix.Metric: return MetricPrefixes;
+        }
+
+        return Enumerable.Empty<MeasureStandardPrefix>();
+    }
+
+    /// <summary>
+    ///     Based on the first or first and second charaters of the given string, tries to find
+    ///     the corresponding <see cref="Abbreviation" />.
+    /// </summary>
+    /// <param name="s">The string to search.</param>
+    /// <returns>The standard prefix or <see cref="None" /> if not found.</returns>
+    public static MeasureStandardPrefix FindPrefix(string s)
+    {
+        if (string.IsNullOrWhiteSpace(s)) return None;
+        return s[0] switch
+        {
+            'y' => Yocto,
+            'z' => Zepto,
+            'a' => Atto,
+            'f' => Femto,
+            'p' => Pico,
+            'n' => Nano,
+            'µ' => Micro,
+            'm' => Milli,
+            'c' => Centi,
+            'd' => s.Length > 1 && s[1] == 'a' ? Deca : Deci,
+            'h' => Hecto,
+            'k' => Kilo,
+            'K' => s.Length > 1 && s[1] == 'i' ? Kibi : None,
+            'M' => s.Length > 1 && s[1] == 'i' ? Mebi : Mega,
+            'G' => s.Length > 1 && s[1] == 'i' ? Gibi : Giga,
+            'T' => s.Length > 1 && s[1] == 'i' ? Tebi : Tera,
+            'P' => s.Length > 1 && s[1] == 'i' ? Pebi : Peta,
+            'E' => s.Length > 1 && s[1] == 'i' ? Exbi : Exa,
+            'Z' => s.Length > 1 && s[1] == 'i' ? Zebi : Zetta,
+            'Y' => s.Length > 1 && s[1] == 'i' ? Yobi : Yotta,
+            _ => None
+        };
+    }
 
 #pragma warning disable 1591
     public static readonly MeasureStandardPrefix Yotta;
@@ -252,83 +353,4 @@ public sealed class MeasureStandardPrefix
     public static readonly MeasureStandardPrefix Mebi;
     public static readonly MeasureStandardPrefix Kibi;
 #pragma warning restore 1591
-
-    /// <summary>
-    /// Gets a prefix by its abbreviation or name.
-    /// </summary>
-    /// <param name="n">The abbreviation or name of the prefix.</param>
-    /// <returns>The associated prefix, if no prefix was found, <c>null</c>.</returns>
-    public static MeasureStandardPrefix Get( string n )
-    {
-        prefixes.TryGetValue( n, out var p );
-        return p;
-    }
-
-    /// <summary>
-    /// Gets all standard prefixes (including <see cref="None"/>).
-    /// </summary>
-    public static IEnumerable<MeasureStandardPrefix> All => allMetric.Concat( allBinary );
-
-    /// <summary>
-    /// Gets all the metric prefixes.
-    /// </summary>
-    public static IReadOnlyCollection<MeasureStandardPrefix> MetricPrefixes => allMetric;
-
-    /// <summary>
-    /// Gets all the binary prefixes.
-    /// </summary>
-    public static IReadOnlyCollection<MeasureStandardPrefix> BinaryPrefixes => allBinary;
-
-    /// <summary>
-    /// Gets all the prefixes for a <see cref="AutoStandardPrefix"/>.
-    /// </summary>
-    /// <param name="a">The auto standard prefix.</param>
-    /// <returns>An empty set, <see cref="All"/>, <see cref="MetricPrefixes"/> or <see cref="BinaryPrefixes"/>.</returns>
-    public static IEnumerable<MeasureStandardPrefix> GetPrefixes( AutoStandardPrefix a )
-    {
-        switch( a )
-        {
-            case AutoStandardPrefix.Both: return All;
-            case AutoStandardPrefix.Binary: return BinaryPrefixes;
-            case AutoStandardPrefix.Metric: return MetricPrefixes;
-        }
-        return Enumerable.Empty<MeasureStandardPrefix>();
-    }
-
-    /// <summary>
-    /// Based on the first or first and second charaters of the given string, tries to find
-    /// the corresponding <see cref="Abbreviation"/>.
-    /// </summary>
-    /// <param name="s">The string to search.</param>
-    /// <returns>The standard prefix or <see cref="None"/> if not found.</returns>
-    public static MeasureStandardPrefix FindPrefix( string s )
-    {
-        if(string.IsNullOrWhiteSpace( s ) ) return None;
-			return s[0] switch
-			{
-				'y' => Yocto,
-				'z' => Zepto,
-				'a' => Atto,
-				'f' => Femto,
-				'p' => Pico,
-				'n' => Nano,
-				'µ' => Micro,
-				'm' => Milli,
-				'c' => Centi,
-				'd' => s.Length > 1 && s[1] == 'a' ? Deca : Deci,
-				'h' => Hecto,
-				'k' => Kilo,
-				'K' => s.Length > 1 && s[1] == 'i' ? Kibi : None,
-				'M' => s.Length > 1 && s[1] == 'i' ? Mebi : Mega,
-				'G' => s.Length > 1 && s[1] == 'i' ? Gibi : Giga,
-				'T' => s.Length > 1 && s[1] == 'i' ? Tebi : Tera,
-				'P' => s.Length > 1 && s[1] == 'i' ? Pebi : Peta,
-				'E' => s.Length > 1 && s[1] == 'i' ? Exbi : Exa,
-				'Z' => s.Length > 1 && s[1] == 'i' ? Zebi : Zetta,
-				'Y' => s.Length > 1 && s[1] == 'i' ? Yobi : Yotta,
-				_ => None,
-			};
-		}
 }
-
-

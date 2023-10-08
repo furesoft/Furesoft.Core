@@ -5,14 +5,9 @@ using Furesoft.PrattParser.Parselets;
 
 namespace Furesoft.Core.Rules.DSL.Parselets;
 
-public class AssignmentParselet : IPrefixParselet<AstNode>
+public class AssignmentParselet : IPrefixParselet
 {
-    public int GetBindingPower()
-    {
-        return BindingPower.Assignment;
-    }
-
-    public AstNode Parse(Parser<AstNode> parser, Token token)
+    public AstNode Parse(Parser parser, Token token)
     {
         // set x to value
         var name = parser.Parse();
@@ -21,5 +16,10 @@ public class AssignmentParselet : IPrefixParselet<AstNode>
         var value = parser.Parse(BindingPower.Assignment - 1);
 
         return new BinaryOperatorNode(name, "=", value);
+    }
+
+    public int GetBindingPower()
+    {
+        return BindingPower.Assignment;
     }
 }

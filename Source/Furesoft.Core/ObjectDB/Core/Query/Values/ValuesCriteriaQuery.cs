@@ -8,310 +8,304 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
-	/// <summary>
-	///   A values Criteria query is a query to retrieve object values instead of objects.
-	/// </summary>
-	/// <remarks>
-	///   A values Criteria query is a query to retrieve object values instead of objects.
-	///   Values Criteria Query allows one to retrieve one field value of an object:
-	///    - A field values
-	///    - The sum of a specific numeric field
-	///    - The Max value of a specific numeric field
-	///    - The Min value of a specific numeric field
-	///    - The Average value of a specific numeric value
-	/// </remarks>
-	internal sealed class ValuesCriteriaQuery : SodaQuery, IInternalValuesQuery
-	{
-		private string[] _groupByFieldList;
+/// <summary>
+///     A values Criteria query is a query to retrieve object values instead of objects.
+/// </summary>
+/// <remarks>
+///     A values Criteria query is a query to retrieve object values instead of objects.
+///     Values Criteria Query allows one to retrieve one field value of an object:
+///     - A field values
+///     - The sum of a specific numeric field
+///     - The Max value of a specific numeric field
+///     - The Min value of a specific numeric field
+///     - The Average value of a specific numeric value
+/// </remarks>
+internal sealed class ValuesCriteriaQuery : SodaQuery, IInternalValuesQuery
+{
+    private string[] _groupByFieldList;
 
-		private bool _hasGroupBy;
+    private bool _hasGroupBy;
 
-		private IOdbList<IQueryFieldAction> _objectActions;
+    private IOdbList<IQueryFieldAction> _objectActions;
 
-		/// <summary>
-		///   To specify if the result must build instance of object meta representation
-		/// </summary>
-		private bool _returnInstance;
+    /// <summary>
+    ///     To specify if the result must build instance of object meta representation
+    /// </summary>
+    private bool _returnInstance;
 
-		public ValuesCriteriaQuery(Type underlyingType, OID oid)
-			: base(underlyingType)
-		{
-			SetOidOfObjectToQuery(oid);
-			Init();
-		}
+    public ValuesCriteriaQuery(Type underlyingType, OID oid)
+        : base(underlyingType)
+    {
+        SetOidOfObjectToQuery(oid);
+        Init();
+    }
 
-		public ValuesCriteriaQuery(Type underlyingType)
-			: base(underlyingType)
-		{
-			Init();
-		}
+    public ValuesCriteriaQuery(Type underlyingType)
+        : base(underlyingType)
+    {
+        Init();
+    }
 
-		#region IValuesQuery Members
+    private void Init()
+    {
+        _objectActions = new OdbList<IQueryFieldAction>();
+        _returnInstance = true;
+    }
 
-		public IValuesQuery Count(string alias)
-		{
-			_objectActions.Add(new CountAction(alias));
-			return this;
-		}
+    #region IValuesQuery Members
 
-		public IValuesQuery Sum(string attributeName)
-		{
-			return Sum(attributeName, attributeName);
-		}
+    public IValuesQuery Count(string alias)
+    {
+        _objectActions.Add(new CountAction(alias));
+        return this;
+    }
 
-		public IValuesQuery Sum(string attributeName, string alias)
-		{
-			_objectActions.Add(new SumAction(attributeName, alias));
-			return this;
-		}
+    public IValuesQuery Sum(string attributeName)
+    {
+        return Sum(attributeName, attributeName);
+    }
 
-		public IValuesQuery Sublist(string attributeName, int fromIndex, int size, bool throwException)
-		{
-			return Sublist(attributeName, attributeName, fromIndex, size, throwException);
-		}
+    public IValuesQuery Sum(string attributeName, string alias)
+    {
+        _objectActions.Add(new SumAction(attributeName, alias));
+        return this;
+    }
 
-		public IValuesQuery Sublist(string attributeName, string alias, int fromIndex, int size, bool throwException)
-		{
-			_objectActions.Add(new SublistAction(this, attributeName, alias, fromIndex, size, throwException));
-			return this;
-		}
+    public IValuesQuery Sublist(string attributeName, int fromIndex, int size, bool throwException)
+    {
+        return Sublist(attributeName, attributeName, fromIndex, size, throwException);
+    }
 
-		public IValuesQuery Sublist(string attributeName, int fromIndex, int toIndex)
-		{
-			return Sublist(attributeName, attributeName, fromIndex, toIndex);
-		}
+    public IValuesQuery Sublist(string attributeName, string alias, int fromIndex, int size, bool throwException)
+    {
+        _objectActions.Add(new SublistAction(this, attributeName, alias, fromIndex, size, throwException));
+        return this;
+    }
 
-		public IValuesQuery Sublist(string attributeName, string alias, int fromIndex, int toIndex)
-		{
-			_objectActions.Add(new SublistAction(this, attributeName, alias, fromIndex, toIndex));
-			return this;
-		}
+    public IValuesQuery Sublist(string attributeName, int fromIndex, int toIndex)
+    {
+        return Sublist(attributeName, attributeName, fromIndex, toIndex);
+    }
 
-		public IValuesQuery Size(string attributeName)
-		{
-			return Size(attributeName, attributeName);
-		}
+    public IValuesQuery Sublist(string attributeName, string alias, int fromIndex, int toIndex)
+    {
+        _objectActions.Add(new SublistAction(this, attributeName, alias, fromIndex, toIndex));
+        return this;
+    }
 
-		public IValuesQuery Size(string attributeName, string alias)
-		{
-			_objectActions.Add(new SizeAction(this, attributeName, alias));
-			return this;
-		}
+    public IValuesQuery Size(string attributeName)
+    {
+        return Size(attributeName, attributeName);
+    }
 
-		public IValuesQuery Avg(string attributeName)
-		{
-			return Avg(attributeName, attributeName);
-		}
+    public IValuesQuery Size(string attributeName, string alias)
+    {
+        _objectActions.Add(new SizeAction(this, attributeName, alias));
+        return this;
+    }
 
-		public IValuesQuery Avg(string attributeName, string alias)
-		{
-			_objectActions.Add(new AverageValueAction(attributeName, alias));
-			return this;
-		}
+    public IValuesQuery Avg(string attributeName)
+    {
+        return Avg(attributeName, attributeName);
+    }
 
-		public IValuesQuery Max(string attributeName)
-		{
-			return Max(attributeName, attributeName);
-		}
+    public IValuesQuery Avg(string attributeName, string alias)
+    {
+        _objectActions.Add(new AverageValueAction(attributeName, alias));
+        return this;
+    }
 
-		public IValuesQuery Max(string attributeName, string alias)
-		{
-			_objectActions.Add(new MaxValueAction(attributeName, alias));
-			return this;
-		}
+    public IValuesQuery Max(string attributeName)
+    {
+        return Max(attributeName, attributeName);
+    }
 
-		public IValuesQuery Field(string attributeName)
-		{
-			return Field(attributeName, attributeName);
-		}
+    public IValuesQuery Max(string attributeName, string alias)
+    {
+        _objectActions.Add(new MaxValueAction(attributeName, alias));
+        return this;
+    }
 
-		public IValuesQuery Field(string attributeName, string alias)
-		{
-			_objectActions.Add(new FieldValueAction(attributeName, alias));
-			return this;
-		}
+    public IValuesQuery Field(string attributeName)
+    {
+        return Field(attributeName, attributeName);
+    }
 
-		public IEnumerable<IQueryFieldAction> GetObjectActions()
-		{
-			return _objectActions;
-		}
+    public IValuesQuery Field(string attributeName, string alias)
+    {
+        _objectActions.Add(new FieldValueAction(attributeName, alias));
+        return this;
+    }
 
-		/// <summary>
-		///   Returns the list of involved fields for this query.
-		/// </summary>
-		/// <remarks>
-		///   Returns the list of involved fields for this query. List of String <pre>If query must return sum("value") and field("name"), involvedField will contain "value","name"</pre>
-		/// </remarks>
-		public override IOdbList<string> GetAllInvolvedFields()
-		{
-			IOdbList<string> list = new OdbList<string>();
+    public IEnumerable<IQueryFieldAction> GetObjectActions()
+    {
+        return _objectActions;
+    }
 
-			// To check field duplicity
-			IDictionary<string, string> map = new OdbHashMap<string, string>();
-			list.AddAll(base.GetAllInvolvedFields());
+    /// <summary>
+    ///     Returns the list of involved fields for this query.
+    /// </summary>
+    /// <remarks>
+    ///     Returns the list of involved fields for this query. List of String
+    ///     <pre>If query must return sum("value") and field("name"), involvedField will contain "value","name"</pre>
+    /// </remarks>
+    public override IOdbList<string> GetAllInvolvedFields()
+    {
+        IOdbList<string> list = new OdbList<string>();
 
-			if (list.IsNotEmpty())
-			{
-				foreach (var value in list)
-					map.Add(value, value);
-			}
+        // To check field duplicity
+        IDictionary<string, string> map = new OdbHashMap<string, string>();
+        list.AddAll(base.GetAllInvolvedFields());
 
-			var iterator = _objectActions.GetEnumerator();
-			string name;
+        if (list.IsNotEmpty())
+            foreach (var value in list)
+                map.Add(value, value);
 
-			while (iterator.MoveNext())
-			{
-				var queryFieldAction = iterator.Current;
-				if (queryFieldAction is CountAction)
-					continue;
+        var iterator = _objectActions.GetEnumerator();
+        string name;
 
-				name = queryFieldAction.GetAttributeName();
-				if (map.ContainsKey(name))
-					continue;
+        while (iterator.MoveNext())
+        {
+            var queryFieldAction = iterator.Current;
+            if (queryFieldAction is CountAction)
+                continue;
 
-				list.Add(name);
-				map.Add(name, name);
-			}
+            name = queryFieldAction.GetAttributeName();
+            if (map.ContainsKey(name))
+                continue;
 
-			if (_hasGroupBy)
-			{
-				foreach (var groupByField in _groupByFieldList)
-				{
-					name = groupByField;
+            list.Add(name);
+            map.Add(name, name);
+        }
 
-					if (map.ContainsKey(name))
-						continue;
+        if (_hasGroupBy)
+            foreach (var groupByField in _groupByFieldList)
+            {
+                name = groupByField;
 
-					list.Add(name);
-					map.Add(name, name);
-				}
-			}
+                if (map.ContainsKey(name))
+                    continue;
 
-			if (HasOrderBy())
-			{
-				foreach (var field in OrderByFields)
-				{
-					name = field;
-					if (map.ContainsKey(name))
-						continue;
+                list.Add(name);
+                map.Add(name, name);
+            }
 
-					list.Add(name);
-					map.Add(name, name);
-				}
-			}
-			map.Clear();
+        if (HasOrderBy())
+            foreach (var field in OrderByFields)
+            {
+                name = field;
+                if (map.ContainsKey(name))
+                    continue;
 
-			return list;
-		}
+                list.Add(name);
+                map.Add(name, name);
+            }
 
-		public bool IsMultiRow()
-		{
-			var isMultiRow = true;
-			IQueryFieldAction queryFieldAction;
+        map.Clear();
 
-			// Group by protection
-			// When a group by with one field exist in the query, FieldObjectAction with this field must be set to SingleRow
-			var groupBy = _hasGroupBy && _groupByFieldList.Length == 1;
-			var iterator = _objectActions.GetEnumerator();
+        return list;
+    }
 
-			if (groupBy)
-			{
-				var oneGroupByField = _groupByFieldList[0];
-				while (iterator.MoveNext())
-				{
-					queryFieldAction = iterator.Current;
-					if (queryFieldAction is FieldValueAction &&
-						queryFieldAction.GetAttributeName().Equals(oneGroupByField))
-					{
-						queryFieldAction.SetMultiRow(false);
-					}
-				}
-			}
+    public bool IsMultiRow()
+    {
+        var isMultiRow = true;
+        IQueryFieldAction queryFieldAction;
 
-			iterator = _objectActions.GetEnumerator();
+        // Group by protection
+        // When a group by with one field exist in the query, FieldObjectAction with this field must be set to SingleRow
+        var groupBy = _hasGroupBy && _groupByFieldList.Length == 1;
+        var iterator = _objectActions.GetEnumerator();
 
-			if (iterator.MoveNext())
-			{
-				queryFieldAction = iterator.Current;
-				isMultiRow = queryFieldAction.IsMultiRow();
-			}
+        if (groupBy)
+        {
+            var oneGroupByField = _groupByFieldList[0];
+            while (iterator.MoveNext())
+            {
+                queryFieldAction = iterator.Current;
+                if (queryFieldAction is FieldValueAction &&
+                    queryFieldAction.GetAttributeName().Equals(oneGroupByField))
+                    queryFieldAction.SetMultiRow(false);
+            }
+        }
 
-			while (iterator.MoveNext())
-			{
-				queryFieldAction = iterator.Current;
-				if (isMultiRow != queryFieldAction.IsMultiRow())
-					throw new OdbRuntimeException(NDatabaseError.ValuesQueryNotConsistent.AddParameter(this));
-			}
+        iterator = _objectActions.GetEnumerator();
 
-			return isMultiRow;
-		}
+        if (iterator.MoveNext())
+        {
+            queryFieldAction = iterator.Current;
+            isMultiRow = queryFieldAction.IsMultiRow();
+        }
 
-		public IValuesQuery GroupBy(string fieldList)
-		{
-			_groupByFieldList = fieldList.Split(',');
+        while (iterator.MoveNext())
+        {
+            queryFieldAction = iterator.Current;
+            if (isMultiRow != queryFieldAction.IsMultiRow())
+                throw new OdbRuntimeException(NDatabaseError.ValuesQueryNotConsistent.AddParameter(this));
+        }
 
-			_hasGroupBy = true;
-			return this;
-		}
+        return isMultiRow;
+    }
 
-		public bool HasGroupBy()
-		{
-			return _hasGroupBy;
-		}
+    public IValuesQuery GroupBy(string fieldList)
+    {
+        _groupByFieldList = fieldList.Split(',');
 
-		public string[] GetGroupByFieldList()
-		{
-			return _groupByFieldList;
-		}
+        _hasGroupBy = true;
+        return this;
+    }
 
-		public bool ReturnInstance()
-		{
-			return _returnInstance;
-		}
+    public bool HasGroupBy()
+    {
+        return _hasGroupBy;
+    }
 
-		public void SetReturnInstance(bool returnInstance)
-		{
-			_returnInstance = returnInstance;
-		}
+    public string[] GetGroupByFieldList()
+    {
+        return _groupByFieldList;
+    }
 
-		public int ObjectActionsCount { get { return _objectActions.Count; } }
+    public bool ReturnInstance()
+    {
+        return _returnInstance;
+    }
 
-		public IValuesQuery Min(string fieldName)
-		{
-			return Min(fieldName, fieldName);
-		}
+    public void SetReturnInstance(bool returnInstance)
+    {
+        _returnInstance = returnInstance;
+    }
 
-		public IValuesQuery Min(string fieldName, string alias)
-		{
-			_objectActions.Add(new MinValueAction(fieldName, alias));
-			return this;
-		}
+    public int ObjectActionsCount => _objectActions.Count;
 
-		public IValues Execute()
-		{
-			return ((IInternalQuery)this).GetQueryEngine().GetValues(this, -1, -1);
-		}
+    public IValuesQuery Min(string fieldName)
+    {
+        return Min(fieldName, fieldName);
+    }
 
-		public override IObjectSet<TItem> Execute<TItem>()
-		{
-			throw new OdbRuntimeException(NDatabaseError.UnsupportedOperation.AddParameter("IValuesQuery.Execute()"));
-		}
+    public IValuesQuery Min(string fieldName, string alias)
+    {
+        _objectActions.Add(new MinValueAction(fieldName, alias));
+        return this;
+    }
 
-		public override IObjectSet<TItem> Execute<TItem>(bool inMemory)
-		{
-			throw new OdbRuntimeException(NDatabaseError.UnsupportedOperation.AddParameter("IValuesQuery.Execute()"));
-		}
+    public IValues Execute()
+    {
+        return ((IInternalQuery) this).GetQueryEngine().GetValues(this, -1, -1);
+    }
 
-		public override IObjectSet<TItem> Execute<TItem>(bool inMemory, int startIndex, int endIndex)
-		{
-			throw new OdbRuntimeException(NDatabaseError.UnsupportedOperation.AddParameter("IValuesQuery.Execute()"));
-		}
+    public override IObjectSet<TItem> Execute<TItem>()
+    {
+        throw new OdbRuntimeException(NDatabaseError.UnsupportedOperation.AddParameter("IValuesQuery.Execute()"));
+    }
 
-		#endregion IValuesQuery Members
+    public override IObjectSet<TItem> Execute<TItem>(bool inMemory)
+    {
+        throw new OdbRuntimeException(NDatabaseError.UnsupportedOperation.AddParameter("IValuesQuery.Execute()"));
+    }
 
-		private void Init()
-		{
-			_objectActions = new OdbList<IQueryFieldAction>();
-			_returnInstance = true;
-		}
-	}
+    public override IObjectSet<TItem> Execute<TItem>(bool inMemory, int startIndex, int endIndex)
+    {
+        throw new OdbRuntimeException(NDatabaseError.UnsupportedOperation.AddParameter("IValuesQuery.Execute()"));
+    }
+
+    #endregion IValuesQuery Members
+}

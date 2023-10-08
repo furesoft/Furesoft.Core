@@ -6,152 +6,153 @@ using Furesoft.Core.ObjectDB.Meta;
 
 namespace Furesoft.Core.ObjectDB.Transaction;
 
-	/// <summary>
-	///   An ODB Session.
-	/// </summary>
-	/// <remarks>
-	///   An ODB Session. Keeps track of all the session operations.
-	///   Caches objects and manage the transaction. The meta model of the database is stored in the session.
-	/// </remarks>
-	internal abstract class Session : ISession
-	{
-		private readonly string _baseIdentification;
-		private readonly IOdbCache _cache = new OdbCache();
+/// <summary>
+///     An ODB Session.
+/// </summary>
+/// <remarks>
+///     An ODB Session. Keeps track of all the session operations.
+///     Caches objects and manage the transaction. The meta model of the database is stored in the session.
+/// </remarks>
+internal abstract class Session : ISession
+{
+    private readonly string _baseIdentification;
+    private readonly IOdbCache _cache = new OdbCache();
 
-		private readonly string _id;
+    private readonly string _id;
 
-		/// <summary>
-		///   A temporary cache used for object info read
-		/// </summary>
-		private readonly IReadObjectsCache _readObjectsCache = new ReadObjectsCache();
+    /// <summary>
+    ///     A temporary cache used for object info read
+    /// </summary>
+    private readonly IReadObjectsCache _readObjectsCache = new ReadObjectsCache();
 
-		private IMetaModel _metaModel;
-		private bool _rollbacked;
+    private IMetaModel _metaModel;
+    private bool _rollbacked;
 
-		protected Session(string id, string baseIdentification)
-		{
-			_id = id;
-			_baseIdentification = baseIdentification;
-		}
+    protected Session(string id, string baseIdentification)
+    {
+        _id = id;
+        _baseIdentification = baseIdentification;
+    }
 
-		#region ISession Members
+    private void ClearCache()
+    {
+        _cache.Clear(false);
+    }
 
-		public int CompareTo(object o)
-		{
-			if (o == null || !(o is Session))
-				return -100;
+    public override int GetHashCode()
+    {
+        return _id != null
+            ? _id.GetHashCode()
+            : 0;
+    }
 
-			var session = (ISession)o;
-			return string.Compare(GetId(), session.GetId(), StringComparison.Ordinal);
-		}
+    protected virtual void Clear()
+    {
+        _cache.Clear(true);
+        if (_metaModel != null)
+            _metaModel.Clear();
+    }
 
-		public IOdbCache GetCache()
-		{
-			return _cache;
-		}
+    public override string ToString()
+    {
+        var transaction = GetTransaction();
+        if (transaction == null)
+            return string.Format("name={0} sid={1} - no transaction", _baseIdentification, _id);
 
-		public IReadObjectsCache GetTmpCache()
-		{
-			return _readObjectsCache;
-		}
+        var n = transaction.GetNumberOfWriteActions().ToString();
+        return string.Format("name={0} - sid={1} - Nb Actions = {2}", _baseIdentification, _id, n);
+    }
 
-		public virtual void Rollback()
-		{
-			ClearCache();
-			_rollbacked = true;
-		}
+    public override bool Equals(object obj)
+    {
+        if (obj == null || !(obj is Session))
+            return false;
+        var session = (ISession) obj;
+        return GetId().Equals(session.GetId());
+    }
 
-		public void Close()
-		{
-			Clear();
-		}
+    #region ISession Members
 
-		public bool IsRollbacked()
-		{
-			return _rollbacked;
-		}
+    public int CompareTo(object o)
+    {
+        if (o == null || !(o is Session))
+            return -100;
 
-		public string GetId()
-		{
-			return _id;
-		}
+        var session = (ISession) o;
+        return string.Compare(GetId(), session.GetId(), StringComparison.Ordinal);
+    }
 
-		public abstract IStorageEngine GetStorageEngine();
+    public IOdbCache GetCache()
+    {
+        return _cache;
+    }
 
-		public abstract bool TransactionIsPending();
+    public IReadObjectsCache GetTmpCache()
+    {
+        return _readObjectsCache;
+    }
 
-		public abstract void Commit();
+    public virtual void Rollback()
+    {
+        ClearCache();
+        _rollbacked = true;
+    }
 
-		public abstract ITransaction GetTransaction();
+    public void Close()
+    {
+        Clear();
+    }
 
-		public abstract void SetFileSystemInterfaceToApplyTransaction(IFileSystemInterface fsi);
+    public bool IsRollbacked()
+    {
+        return _rollbacked;
+    }
 
-		public IMetaModel GetMetaModel()
-		{
-			if (_metaModel == null)
-			{
-				// MetaModel can be null (this happens at the end of the
-				// Transaction.commitMetaModel() method)when the user commited the
-				// database
-				// And continue using it. In this case, after the commit, the
-				// metamodel is set to null
-				// and lazy-reloaded when the user use the odb again.
-				_metaModel = new MetaModel();
-				try
-				{
-					GetStorageEngine().GetObjectReader().LoadMetaModel(_metaModel, true);
-				}
-				catch (Exception e)
-				{
-					throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter("Session.getMetaModel"), e);
-				}
-			}
-			return _metaModel;
-		}
+    public string GetId()
+    {
+        return _id;
+    }
 
-		public void RemoveObjectFromCache(object @object)
-		{
-			_cache.RemoveObject(@object);
-		}
+    public abstract IStorageEngine GetStorageEngine();
 
-		public abstract IObjectWriter GetObjectWriter();
+    public abstract bool TransactionIsPending();
 
-		#endregion ISession Members
+    public abstract void Commit();
 
-		private void ClearCache()
-		{
-			_cache.Clear(false);
-		}
+    public abstract ITransaction GetTransaction();
 
-		public override int GetHashCode()
-		{
-			return (_id != null
-						? _id.GetHashCode()
-						: 0);
-		}
+    public abstract void SetFileSystemInterfaceToApplyTransaction(IFileSystemInterface fsi);
 
-		protected virtual void Clear()
-		{
-			_cache.Clear(true);
-			if (_metaModel != null)
-				_metaModel.Clear();
-		}
+    public IMetaModel GetMetaModel()
+    {
+        if (_metaModel == null)
+        {
+            // MetaModel can be null (this happens at the end of the
+            // Transaction.commitMetaModel() method)when the user commited the
+            // database
+            // And continue using it. In this case, after the commit, the
+            // metamodel is set to null
+            // and lazy-reloaded when the user use the odb again.
+            _metaModel = new MetaModel();
+            try
+            {
+                GetStorageEngine().GetObjectReader().LoadMetaModel(_metaModel, true);
+            }
+            catch (Exception e)
+            {
+                throw new OdbRuntimeException(NDatabaseError.InternalError.AddParameter("Session.getMetaModel"), e);
+            }
+        }
 
-		public override string ToString()
-		{
-			var transaction = GetTransaction();
-			if (transaction == null)
-				return string.Format("name={0} sid={1} - no transaction", _baseIdentification, _id);
+        return _metaModel;
+    }
 
-			var n = transaction.GetNumberOfWriteActions().ToString();
-			return string.Format("name={0} - sid={1} - Nb Actions = {2}", _baseIdentification, _id, n);
-		}
+    public void RemoveObjectFromCache(object @object)
+    {
+        _cache.RemoveObject(@object);
+    }
 
-		public override bool Equals(object obj)
-		{
-			if (obj == null || !(obj is Session))
-				return false;
-			var session = (ISession)obj;
-			return GetId().Equals(session.GetId());
-		}
-	}
+    public abstract IObjectWriter GetObjectWriter();
+
+    #endregion ISession Members
+}

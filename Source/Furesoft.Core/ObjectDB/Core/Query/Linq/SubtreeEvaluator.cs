@@ -2,89 +2,85 @@ using System.Linq.Expressions;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
-	internal sealed class SubtreeEvaluator : LinqQueryTranslator
-	{
-		private readonly HashSet<Expression> _candidates;
+internal sealed class SubtreeEvaluator : LinqQueryTranslator
+{
+    private readonly HashSet<Expression> _candidates;
 
-		private SubtreeEvaluator(HashSet<Expression> candidates)
-		{
-			_candidates = candidates;
-		}
+    private SubtreeEvaluator(HashSet<Expression> candidates)
+    {
+        _candidates = candidates;
+    }
 
-		public static Expression Evaluate(Expression expression)
-		{
-			var nominator = new Nominator(expression, exp => exp.NodeType != ExpressionType.Parameter);
+    public static Expression Evaluate(Expression expression)
+    {
+        var nominator = new Nominator(expression, exp => exp.NodeType != ExpressionType.Parameter);
 
-			return new SubtreeEvaluator(nominator.Candidates).Visit(expression);
-		}
+        return new SubtreeEvaluator(nominator.Candidates).Visit(expression);
+    }
 
-		protected override Expression Visit(Expression expression)
-		{
-			if (expression == null)
-				return null;
+    protected override Expression Visit(Expression expression)
+    {
+        if (expression == null)
+            return null;
 
-			return _candidates.Contains(expression)
-				? EvaluateCandidate(expression)
-				: base.Visit(expression);
-		}
+        return _candidates.Contains(expression)
+            ? EvaluateCandidate(expression)
+            : base.Visit(expression);
+    }
 
-		private static Expression EvaluateCandidate(Expression expression)
-		{
-			if (expression.NodeType == ExpressionType.Constant)
-				return expression;
+    private static Expression EvaluateCandidate(Expression expression)
+    {
+        if (expression.NodeType == ExpressionType.Constant)
+            return expression;
 
-			var evaluator = Expression.Lambda(expression).Compile();
-			return Expression.Constant(evaluator.DynamicInvoke(null), expression.Type);
-		}
+        var evaluator = Expression.Lambda(expression).Compile();
+        return Expression.Constant(evaluator.DynamicInvoke(null), expression.Type);
+    }
 
-		#region Nested type: Nominator
+    #region Nested type: Nominator
 
-		private sealed class Nominator : ExpressionTransformer
-		{
-			private readonly HashSet<Expression> _candidates = new();
-			private readonly Func<Expression, bool> _predicate;
-			private bool _cannotBeEvaluated;
+    private sealed class Nominator : ExpressionTransformer
+    {
+        private readonly Func<Expression, bool> _predicate;
+        private bool _cannotBeEvaluated;
 
-			public Nominator(Expression expression, Func<Expression, bool> predicate)
-			{
-				_predicate = predicate;
+        public Nominator(Expression expression, Func<Expression, bool> predicate)
+        {
+            _predicate = predicate;
 
-				Visit(expression);
-			}
+            Visit(expression);
+        }
 
-			public HashSet<Expression> Candidates
-			{
-				get { return _candidates; }
-			}
+        public HashSet<Expression> Candidates { get; } = new();
 
-			private void AddCandidate(Expression expression)
-			{
-				_candidates.Add(expression);
-			}
+        private void AddCandidate(Expression expression)
+        {
+            Candidates.Add(expression);
+        }
 
-			protected override Expression Visit(Expression expression)
-			{
-				if (expression == null)
-					return null;
+        protected override Expression Visit(Expression expression)
+        {
+            if (expression == null)
+                return null;
 
-				var saveCannotBeEvaluated = _cannotBeEvaluated;
-				_cannotBeEvaluated = false;
+            var saveCannotBeEvaluated = _cannotBeEvaluated;
+            _cannotBeEvaluated = false;
 
-				base.Visit(expression);
+            base.Visit(expression);
 
-				if (_cannotBeEvaluated)
-					return expression;
+            if (_cannotBeEvaluated)
+                return expression;
 
-				if (_predicate(expression))
-					AddCandidate(expression);
-				else
-					_cannotBeEvaluated = true;
+            if (_predicate(expression))
+                AddCandidate(expression);
+            else
+                _cannotBeEvaluated = true;
 
-				_cannotBeEvaluated |= saveCannotBeEvaluated;
+            _cannotBeEvaluated |= saveCannotBeEvaluated;
 
-				return expression;
-			}
-		}
+            return expression;
+        }
+    }
 
-		#endregion Nested type: Nominator
-	}
+    #endregion Nested type: Nominator
+}

@@ -5,163 +5,163 @@ using Furesoft.Core.ObjectDB.Tool;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 
-	internal abstract class ExpressionQueryBuilder : ExpressionVisitor
-	{
-		protected QueryBuilderRecorder Recorder { get; private set; }
+internal abstract class ExpressionQueryBuilder : ExpressionVisitor
+{
+    protected QueryBuilderRecorder Recorder { get; private set; }
 
-		public virtual IQueryBuilderRecord Process(LambdaExpression expression)
-		{
-			return ProcessExpression(SubtreeEvaluator.Evaluate(Normalize(expression)));
-		}
+    public virtual IQueryBuilderRecord Process(LambdaExpression expression)
+    {
+        return ProcessExpression(SubtreeEvaluator.Evaluate(Normalize(expression)));
+    }
 
-		private static Expression Normalize(Expression expression)
-		{
-			return new ExpressionTreeNormalizer().Normalize(expression);
-		}
+    private static Expression Normalize(Expression expression)
+    {
+        return new ExpressionTreeNormalizer().Normalize(expression);
+    }
 
-		protected abstract Dictionary<Expression, IQueryBuilderRecord> GetCachingStrategy();
+    protected abstract Dictionary<Expression, IQueryBuilderRecord> GetCachingStrategy();
 
-		private IQueryBuilderRecord ProcessExpression(Expression expression)
-		{
-			return GetCachingStrategy().GetOrAdd(expression, CreateRecord);
-		}
+    private IQueryBuilderRecord ProcessExpression(Expression expression)
+    {
+        return GetCachingStrategy().GetOrAdd(expression, CreateRecord);
+    }
 
-		private IQueryBuilderRecord CreateRecord(Expression expression)
-		{
-			Recorder = new();
-			Visit(expression);
-			return Recorder.Record;
-		}
+    private IQueryBuilderRecord CreateRecord(Expression expression)
+    {
+        Recorder = new();
+        Visit(expression);
+        return Recorder.Record;
+    }
 
-		private static bool IsParameter(Expression expression)
-		{
-			if (expression == null)
-				return false;
-			return expression.NodeType == ExpressionType.Parameter;
-		}
+    private static bool IsParameter(Expression expression)
+    {
+        if (expression == null)
+            return false;
+        return expression.NodeType == ExpressionType.Parameter;
+    }
 
-		protected static bool StartsWithParameterReference(Expression expression)
-		{
-			if (IsParameter(expression))
-				return true;
+    protected static bool StartsWithParameterReference(Expression expression)
+    {
+        if (IsParameter(expression))
+            return true;
 
-			if (expression is UnaryExpression unary)
-				return StartsWithParameterReference(unary.Operand);
+        if (expression is UnaryExpression unary)
+            return StartsWithParameterReference(unary.Operand);
 
-			if (expression is MemberExpression me)
-				return StartsWithParameterReference(me.Expression);
+        if (expression is MemberExpression me)
+            return StartsWithParameterReference(me.Expression);
 
-			if (expression is MethodCallExpression call && call.Object != null)
-				return StartsWithParameterReference(call.Object);
+        if (expression is MethodCallExpression call && call.Object != null)
+            return StartsWithParameterReference(call.Object);
 
-			return false;
-		}
+        return false;
+    }
 
-		private static bool IsFieldAccessExpression(MemberExpression m)
-		{
-			return m.Member.MemberType == MemberTypes.Field;
-		}
+    private static bool IsFieldAccessExpression(MemberExpression m)
+    {
+        return m.Member.MemberType == MemberTypes.Field;
+    }
 
-		private static bool IsPropertyAccessExpression(MemberExpression m)
-		{
-			return m.Member.MemberType == MemberTypes.Property;
-		}
+    private static bool IsPropertyAccessExpression(MemberExpression m)
+    {
+        return m.Member.MemberType == MemberTypes.Property;
+    }
 
-		protected static void AnalyseMethod(QueryBuilderRecorder recorder, MethodInfo method)
-		{
-			try
-			{
-				var analyser = new ReflectionMethodAnalyser(method);
-				analyser.Run(recorder);
-			}
-			catch (Exception e)
-			{
-				throw new LinqQueryException(e.Message, e);
-			}
-		}
+    protected static void AnalyseMethod(QueryBuilderRecorder recorder, MethodInfo method)
+    {
+        try
+        {
+            var analyser = new ReflectionMethodAnalyser(method);
+            analyser.Run(recorder);
+        }
+        catch (Exception e)
+        {
+            throw new LinqQueryException(e.Message, e);
+        }
+    }
 
-		private static MethodInfo GetGetMethod(MemberExpression m)
-		{
-			return ((PropertyInfo)m.Member).GetGetMethod();
-		}
+    private static MethodInfo GetGetMethod(MemberExpression m)
+    {
+        return ((PropertyInfo) m.Member).GetGetMethod();
+    }
 
-		protected void ProcessMemberAccess(MemberExpression m)
-		{
-			Visit(m.Expression);
-			if (IsFieldAccessExpression(m))
-			{
-				var descendingEnumType = ResolveDescendingEnumType(m);
-				Recorder.Add(
-					ctx =>
-						{
-							ctx.Descend(m.Member.Name);
-							ctx.PushDescendigFieldEnumType(descendingEnumType);
-						});
+    protected void ProcessMemberAccess(MemberExpression m)
+    {
+        Visit(m.Expression);
+        if (IsFieldAccessExpression(m))
+        {
+            var descendingEnumType = ResolveDescendingEnumType(m);
+            Recorder.Add(
+                ctx =>
+                {
+                    ctx.Descend(m.Member.Name);
+                    ctx.PushDescendigFieldEnumType(descendingEnumType);
+                });
 
-				return;
-			}
+            return;
+        }
 
-			if (IsPropertyAccessExpression(m))
-			{
-				AnalyseMethod(Recorder, GetGetMethod(m));
-				return;
-			}
+        if (IsPropertyAccessExpression(m))
+        {
+            AnalyseMethod(Recorder, GetGetMethod(m));
+            return;
+        }
 
-			CannotConvertToSoda(m);
-		}
+        CannotConvertToSoda(m);
+    }
 
-		private static Type ResolveDescendingEnumType(Expression expression)
-		{
-			return !expression.Type.IsEnum ? null : expression.Type;
-		}
+    private static Type ResolveDescendingEnumType(Expression expression)
+    {
+        return !expression.Type.IsEnum ? null : expression.Type;
+    }
 
-		protected static void CannotConvertToSoda(Expression e)
-		{
-			throw new LinqQueryException(e.ToString());
-		}
+    protected static void CannotConvertToSoda(Expression e)
+    {
+        throw new LinqQueryException(e.ToString());
+    }
 
-		private static void CannotConvertToSoda(ElementInit init)
-		{
-			throw new LinqQueryException(init.ToString());
-		}
+    private static void CannotConvertToSoda(ElementInit init)
+    {
+        throw new LinqQueryException(init.ToString());
+    }
 
-		private static void CannotConvertToSoda(MemberBinding binding)
-		{
-			throw new LinqQueryException(binding.ToString());
-		}
+    private static void CannotConvertToSoda(MemberBinding binding)
+    {
+        throw new LinqQueryException(binding.ToString());
+    }
 
-		protected override void VisitBinding(MemberBinding binding)
-		{
-			CannotConvertToSoda(binding);
-		}
+    protected override void VisitBinding(MemberBinding binding)
+    {
+        CannotConvertToSoda(binding);
+    }
 
-		protected override void VisitConditional(ConditionalExpression conditional)
-		{
-			CannotConvertToSoda(conditional);
-		}
+    protected override void VisitConditional(ConditionalExpression conditional)
+    {
+        CannotConvertToSoda(conditional);
+    }
 
-		protected override void VisitElementInitializer(ElementInit initializer)
-		{
-			CannotConvertToSoda(initializer);
-		}
+    protected override void VisitElementInitializer(ElementInit initializer)
+    {
+        CannotConvertToSoda(initializer);
+    }
 
-		protected override void VisitInvocation(InvocationExpression invocation)
-		{
-			CannotConvertToSoda(invocation);
-		}
+    protected override void VisitInvocation(InvocationExpression invocation)
+    {
+        CannotConvertToSoda(invocation);
+    }
 
-		protected override void VisitListInit(ListInitExpression init)
-		{
-			CannotConvertToSoda(init);
-		}
+    protected override void VisitListInit(ListInitExpression init)
+    {
+        CannotConvertToSoda(init);
+    }
 
-		protected override void VisitNew(NewExpression nex)
-		{
-			CannotConvertToSoda(nex);
-		}
+    protected override void VisitNew(NewExpression nex)
+    {
+        CannotConvertToSoda(nex);
+    }
 
-		protected override void VisitNewArray(NewArrayExpression newArray)
-		{
-			CannotConvertToSoda(newArray);
-		}
-	}
+    protected override void VisitNewArray(NewArrayExpression newArray)
+    {
+        CannotConvertToSoda(newArray);
+    }
+}

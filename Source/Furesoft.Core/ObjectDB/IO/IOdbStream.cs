@@ -1,26 +1,26 @@
 namespace Furesoft.Core.ObjectDB.IO;
 
+/// <summary>
+///     The basic IO interface for basic IO operation like reading and writing bytes
+/// </summary>
+internal interface IOdbStream : IDisposable
+{
 	/// <summary>
-	///   The basic IO interface for basic IO operation like reading and writing bytes
+	///     Gets the length in bytes of the stream
 	/// </summary>
-	internal interface IOdbStream : IDisposable
-	{
-		/// <summary>
-		///  Sets the current position of this stream to the given value
-		/// </summary>
-		/// <param name="position">offset</param>
-		void SetPosition(long position);
+	long Length { get; }
 
-		void Write(byte value);
+	/// <summary>
+	///     Sets the current position of this stream to the given value
+	/// </summary>
+	/// <param name="position">offset</param>
+	void SetPosition(long position);
 
-		void Write(byte[] buffer, int size);
+    void Write(byte value);
 
-		int Read(byte[] buffer, int size);
+    void Write(byte[] buffer, int size);
 
-		int Read();
+    int Read(byte[] buffer, int size);
 
-		/// <summary>
-		/// Gets the length in bytes of the stream
-		/// </summary>
-		long Length { get; }
-	}
+    int Read();
+}

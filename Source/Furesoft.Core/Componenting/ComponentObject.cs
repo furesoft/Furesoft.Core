@@ -2,16 +2,7 @@
 
 public sealed class ComponentObject
 {
-    public string Name { get; }
-
-    public ComponentObject Parent { get; private set; }
-    public List<ComponentObject> Children { get; set; }
-
-    public Scene Scene { get; set; }
-
-    private List<Component> _comps;
-
-    public IReadOnlyList<Component> Components => _comps;
+    private readonly List<Component> _comps;
 
     private bool _isInitialized;
 
@@ -23,18 +14,27 @@ public sealed class ComponentObject
         Name = name;
     }
 
+    public string Name { get; }
+
+    public ComponentObject Parent { get; private set; }
+    public List<ComponentObject> Children { get; set; }
+
+    public Scene Scene { get; set; }
+
+    public IReadOnlyList<Component> Components => _comps;
+
     public void SetParent(ComponentObject parent)
     {
         Parent?.Children.Remove(this);
-        
+
         Parent = parent;
-        
+
         Parent?.Children.Add(this);
     }
 
     public ComponentObject GetRootParent()
     {
-        ComponentObject current = this;
+        var current = this;
         ComponentObject parent;
         do
         {
@@ -42,9 +42,8 @@ public sealed class ComponentObject
             if (parent == null)
                 return current;
             current = parent;
-        }
-        while (parent != null);
-        
+        } while (parent != null);
+
         return null;
     }
 
@@ -63,7 +62,7 @@ public sealed class ComponentObject
 
         foreach (var comp in _comps)
             comp.Initialize();
-        
+
         foreach (var comp in _comps)
             comp.Start();
 
@@ -87,7 +86,7 @@ public sealed class ComponentObject
         _comps.Add(comp);
 
         if (!_isInitialized) return;
-        
+
         comp.Initialize();
         comp.Start();
     }
@@ -95,11 +94,9 @@ public sealed class ComponentObject
     public T GetComponent<T>()
     {
         foreach (var comp in _comps)
-        {
             if (comp is T matched)
                 return matched;
-        }
-        
+
         return default;
     }
 
@@ -109,10 +106,7 @@ public sealed class ComponentObject
         foreach (var component in Children)
         {
             var childComponent = component.GetComponent<T>();
-            if (childComponent is null || childComponent.Enabled != !includeNotEnabled)
-            {
-                continue;
-            }
+            if (childComponent is null || childComponent.Enabled != !includeNotEnabled) continue;
 
             return childComponent;
         }
@@ -133,10 +127,8 @@ public sealed class ComponentObject
     public void RemoveComponents<T>() where T : Component
     {
         foreach (var comp in Enumerable.Reverse(_comps))
-        {
             if (comp is T matched)
                 RemoveComponent(matched);
-        }
     }
 
     public void RemoveAllComponents()
@@ -145,5 +137,8 @@ public sealed class ComponentObject
             RemoveComponent(comp);
     }
 
-    public override string ToString() => Name;
+    public override string ToString()
+    {
+        return Name;
+    }
 }

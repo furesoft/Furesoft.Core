@@ -1,8 +1,8 @@
 namespace Furesoft.Core.ObjectDB.Services;
 
-	public interface ICommitListener
-	{
-		void BeforeCommit();
+public interface ICommitListener
+{
+    void BeforeCommit();
 
-		void AfterCommit();
-	}
+    void AfterCommit();
+}

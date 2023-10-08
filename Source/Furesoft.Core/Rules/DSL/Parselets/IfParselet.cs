@@ -5,19 +5,19 @@ using Furesoft.PrattParser.Parselets;
 
 namespace Furesoft.Core.Rules.DSL.Parselets;
 
-public class IfParselet : IPrefixParselet<AstNode>
+public class IfParselet : IPrefixParselet
 {
-    public int GetBindingPower()
-    {
-        return (int)BindingPower.Product - 1;
-    }
-
-    public AstNode Parse(Parser<AstNode> parser, Token token)
+    public AstNode Parse(Parser parser, Token token)
     {
         var condition = parser.Parse(GetBindingPower() - 1);
         parser.Match("then");
         var body = parser.Parse();
 
         return new IfNode(condition, body);
+    }
+
+    public int GetBindingPower()
+    {
+        return (int) BindingPower.Product - 1;
     }
 }

@@ -1,35 +1,20 @@
 ﻿namespace Furesoft.Core.Storage.Serializers;
 
-	public class TreeIntSerializer : ISerializer<int>
-	{
-		public byte[] Serialize(int value)
-		{
-			return LittleEndianByteOrder.GetBytes(value);
-		}
+public class TreeIntSerializer : ISerializer<int>
+{
+    public byte[] Serialize(int value)
+    {
+        return LittleEndianByteOrder.GetBytes(value);
+    }
 
-		public int Deserialize(byte[] buffer, int offset, int length)
-		{
-			if (length != 4)
-			{
-				throw new ArgumentException("Invalid length: " + length);
-			}
+    public int Deserialize(byte[] buffer, int offset, int length)
+    {
+        if (length != 4) throw new ArgumentException("Invalid length: " + length);
 
-			return BufferHelper.ReadBufferInt32(buffer, offset);
-		}
+        return BufferHelper.ReadBufferInt32(buffer, offset);
+    }
 
-		public bool IsFixedSize
-		{
-			get
-			{
-				return true;
-			}
-		}
+    public bool IsFixedSize => true;
 
-		public int Length
-		{
-			get
-			{
-				return 4;
-			}
-		}
-	}
+    public int Length => 4;
+}

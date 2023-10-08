@@ -4,220 +4,215 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Meta;
 
-	/// <summary>
-	///   Some basic info about an object info like position, its class info,...
-	/// </summary>
-	public sealed class ObjectInfoHeader
-	{
-		private int[] _attributeIds;
+/// <summary>
+///     Some basic info about an object info like position, its class info,...
+/// </summary>
+public sealed class ObjectInfoHeader
+{
+    private int[] _attributeIds;
 
-		/// <summary>
-		///   Can be position(for native object) or id(for non native object, positions are positive e ids are negative
-		/// </summary>
-		private long[] _attributesIdentification;
+    /// <summary>
+    ///     Can be position(for native object) or id(for non native object, positions are positive e ids are negative
+    /// </summary>
+    private long[] _attributesIdentification;
 
-		private OID _classInfoId;
-		private long _creationDate;
-		private OID _nextObjectOID;
-		private int _objectVersion;
-		private OID _oid;
-		private long _position;
-		private OID _previousObjectOID;
-		private long _updateDate;
+    private OID _classInfoId;
+    private long _creationDate;
+    private OID _nextObjectOID;
+    private int _objectVersion;
+    private OID _oid;
+    private long _position;
+    private OID _previousObjectOID;
+    private long _updateDate;
 
-		public ObjectInfoHeader(long position, OID previousObjectOID, OID nextObjectOID, OID classInfoId,
-								long[] attributesIdentification, int[] attributeIds)
-		{
-			_position = position;
-			_oid = null;
-			_previousObjectOID = previousObjectOID;
-			_nextObjectOID = nextObjectOID;
-			_classInfoId = classInfoId;
-			_attributesIdentification = attributesIdentification;
-			_attributeIds = attributeIds;
-			_objectVersion = 1;
-			_creationDate = OdbTime.GetCurrentTimeInTicks();
-		}
+    public ObjectInfoHeader(long position, OID previousObjectOID, OID nextObjectOID, OID classInfoId,
+        long[] attributesIdentification, int[] attributeIds)
+    {
+        _position = position;
+        _oid = null;
+        _previousObjectOID = previousObjectOID;
+        _nextObjectOID = nextObjectOID;
+        _classInfoId = classInfoId;
+        _attributesIdentification = attributesIdentification;
+        _attributeIds = attributeIds;
+        _objectVersion = 1;
+        _creationDate = OdbTime.GetCurrentTimeInTicks();
+    }
 
-		public ObjectInfoHeader()
-		{
-			_position = -1;
-			_oid = null;
-			_objectVersion = 1;
-			_creationDate = OdbTime.GetCurrentTimeInTicks();
-		}
+    public ObjectInfoHeader()
+    {
+        _position = -1;
+        _oid = null;
+        _objectVersion = 1;
+        _creationDate = OdbTime.GetCurrentTimeInTicks();
+    }
 
-		public OID GetNextObjectOID()
-		{
-			return _nextObjectOID;
-		}
+    public long RefCounter { get; set; }
 
-		public void SetNextObjectOID(OID nextObjectOID)
-		{
-			_nextObjectOID = nextObjectOID;
-		}
+    public bool IsRoot { get; set; }
 
-		public long GetPosition()
-		{
-			return _position;
-		}
+    public OID GetNextObjectOID()
+    {
+        return _nextObjectOID;
+    }
 
-		public void SetPosition(long position)
-		{
-			_position = position;
-		}
+    public void SetNextObjectOID(OID nextObjectOID)
+    {
+        _nextObjectOID = nextObjectOID;
+    }
 
-		public OID GetPreviousObjectOID()
-		{
-			return _previousObjectOID;
-		}
+    public long GetPosition()
+    {
+        return _position;
+    }
 
-		public void SetPreviousObjectOID(OID previousObjectOID)
-		{
-			_previousObjectOID = previousObjectOID;
-		}
+    public void SetPosition(long position)
+    {
+        _position = position;
+    }
 
-		public OID GetClassInfoId()
-		{
-			return _classInfoId;
-		}
+    public OID GetPreviousObjectOID()
+    {
+        return _previousObjectOID;
+    }
 
-		public override string ToString()
-		{
-			var buffer = new StringBuilder();
-			buffer.Append("oid=").Append(_oid);
-			buffer.Append(" - class info id=").Append(_classInfoId);
-			buffer.Append(" - position=").Append(_position).Append(" | prev=").Append(_previousObjectOID);
-			buffer.Append(" | next=").Append(_nextObjectOID);
-			buffer.Append(" attrs =[");
-			if (_attributesIdentification != null)
-			{
-				foreach (var value in _attributesIdentification)
-					buffer.Append(value).Append(" ");
-			}
-			else
-			{
-				buffer.Append(" nulls ");
-			}
+    public void SetPreviousObjectOID(OID previousObjectOID)
+    {
+        _previousObjectOID = previousObjectOID;
+    }
 
-			buffer.Append(" ]");
-			return buffer.ToString();
-		}
+    public OID GetClassInfoId()
+    {
+        return _classInfoId;
+    }
 
-		public long[] GetAttributesIdentification()
-		{
-			return _attributesIdentification;
-		}
+    public override string ToString()
+    {
+        var buffer = new StringBuilder();
+        buffer.Append("oid=").Append(_oid);
+        buffer.Append(" - class info id=").Append(_classInfoId);
+        buffer.Append(" - position=").Append(_position).Append(" | prev=").Append(_previousObjectOID);
+        buffer.Append(" | next=").Append(_nextObjectOID);
+        buffer.Append(" attrs =[");
+        if (_attributesIdentification != null)
+            foreach (var value in _attributesIdentification)
+                buffer.Append(value).Append(" ");
+        else
+            buffer.Append(" nulls ");
 
-		public void SetAttributesIdentification(long[] attributesIdentification)
-		{
-			_attributesIdentification = attributesIdentification;
-		}
+        buffer.Append(" ]");
+        return buffer.ToString();
+    }
 
-		public OID GetOid()
-		{
-			return _oid;
-		}
+    public long[] GetAttributesIdentification()
+    {
+        return _attributesIdentification;
+    }
 
-		public void SetOid(OID oid)
-		{
-			_oid = oid;
-		}
+    public void SetAttributesIdentification(long[] attributesIdentification)
+    {
+        _attributesIdentification = attributesIdentification;
+    }
 
-		public long GetCreationDate()
-		{
-			return _creationDate;
-		}
+    public OID GetOid()
+    {
+        return _oid;
+    }
 
-		public void SetCreationDate(long creationDate)
-		{
-			_creationDate = creationDate;
-		}
+    public void SetOid(OID oid)
+    {
+        _oid = oid;
+    }
 
-		public long GetUpdateDate()
-		{
-			return _updateDate;
-		}
+    public long GetCreationDate()
+    {
+        return _creationDate;
+    }
 
-		public void SetUpdateDate(long updateDate)
-		{
-			_updateDate = updateDate;
-		}
+    public void SetCreationDate(long creationDate)
+    {
+        _creationDate = creationDate;
+    }
 
-		/// <summary>
-		///   Return the attribute identification (position or id) from the attribute id FIXME Remove dependency from StorageEngineConstant
-		/// </summary>
-		/// <param name="attributeId"> </param>
-		/// <returns> -1 if attribute with this id does not exist </returns>
-		public long GetAttributeIdentificationFromId(int attributeId)
-		{
-			if (_attributeIds == null)
-				return StorageEngineConstant.NullObjectIdId;
+    public long GetUpdateDate()
+    {
+        return _updateDate;
+    }
 
-			for (var i = 0; i < _attributeIds.Length; i++)
-			{
-				if (_attributeIds[i] == attributeId)
-					return _attributesIdentification[i];
-			}
+    public void SetUpdateDate(long updateDate)
+    {
+        _updateDate = updateDate;
+    }
 
-			return StorageEngineConstant.NullObjectIdId;
-		}
+    /// <summary>
+    ///     Return the attribute identification (position or id) from the attribute id FIXME Remove dependency from
+    ///     StorageEngineConstant
+    /// </summary>
+    /// <param name="attributeId"> </param>
+    /// <returns> -1 if attribute with this id does not exist </returns>
+    public long GetAttributeIdentificationFromId(int attributeId)
+    {
+        if (_attributeIds == null)
+            return StorageEngineConstant.NullObjectIdId;
 
-		public void SetAttributesIds(int[] ids)
-		{
-			_attributeIds = ids;
-		}
+        for (var i = 0; i < _attributeIds.Length; i++)
+            if (_attributeIds[i] == attributeId)
+                return _attributesIdentification[i];
 
-		public int[] GetAttributeIds()
-		{
-			return _attributeIds;
-		}
+        return StorageEngineConstant.NullObjectIdId;
+    }
 
-		public void SetClassInfoId(OID classInfoId2)
-		{
-			_classInfoId = classInfoId2;
-		}
+    public void SetAttributesIds(int[] ids)
+    {
+        _attributeIds = ids;
+    }
 
-		public int GetObjectVersion()
-		{
-			return _objectVersion;
-		}
+    public int[] GetAttributeIds()
+    {
+        return _attributeIds;
+    }
 
-		public void SetObjectVersion(int objectVersion)
-		{
-			_objectVersion = objectVersion;
-		}
+    public void SetClassInfoId(OID classInfoId2)
+    {
+        _classInfoId = classInfoId2;
+    }
 
-		public long RefCounter { get; set; }
+    public int GetObjectVersion()
+    {
+        return _objectVersion;
+    }
 
-		public bool IsRoot { get; set; }
+    public void SetObjectVersion(int objectVersion)
+    {
+        _objectVersion = objectVersion;
+    }
 
-		public override int GetHashCode()
-		{
-			var result = 1;
-			result = 31 * result + (int)(_position ^ ((_position) >> (32 & 0x1f)));
-			return result;
-		}
+    public override int GetHashCode()
+    {
+        var result = 1;
+        result = 31 * result + (int) (_position ^ (_position >> (32 & 0x1f)));
+        return result;
+    }
 
-		public override bool Equals(object obj)
-		{
-			if (this == obj)
-				return true;
+    public override bool Equals(object obj)
+    {
+        if (this == obj)
+            return true;
 
-			if (obj == null)
-				return false;
+        if (obj == null)
+            return false;
 
-			if (GetType() != obj.GetType())
-				return false;
+        if (GetType() != obj.GetType())
+            return false;
 
-			var other = (ObjectInfoHeader)obj;
+        var other = (ObjectInfoHeader) obj;
 
-			return _position == other._position;
-		}
+        return _position == other._position;
+    }
 
-		public void IncrementVersionAndUpdateDate()
-		{
-			_objectVersion++;
-			_updateDate = OdbTime.GetCurrentTimeInTicks();
-		}
-	}
+    public void IncrementVersionAndUpdateDate()
+    {
+        _objectVersion++;
+        _updateDate = OdbTime.GetCurrentTimeInTicks();
+    }
+}

@@ -2,86 +2,86 @@
 
 namespace Furesoft.Core.ObjectDB.Services;
 
-	internal class ReflectionService : IReflectionService
-	{
-		public IList<MemberInfo> GetFieldsAndProperties(Type type)
-		{
-			var result = new List<MemberInfo>();
+internal class ReflectionService : IReflectionService
+{
+    public IList<MemberInfo> GetFieldsAndProperties(Type type)
+    {
+        var result = new List<MemberInfo>();
 
-			result.AddRange(GetFields(type));
-			result.AddRange(GetProperties(type));
+        result.AddRange(GetFields(type));
+        result.AddRange(GetProperties(type));
 
-			return result;
-		}
+        return result;
+    }
 
-		public IList<FieldInfo> GetFields(Type type)
-		{
-			const int Capacity = 50;
+    public IList<FieldInfo> GetFields(Type type)
+    {
+        const int Capacity = 50;
 
-			var attributesNames = new List<string>(Capacity);
-			var result = new List<FieldInfo>(Capacity);
+        var attributesNames = new List<string>(Capacity);
+        var result = new List<FieldInfo>(Capacity);
 
-			var classes = GetAllClasses(type);
+        var classes = GetAllClasses(type);
 
-			foreach (var class1 in classes)
-			{
-				var baseClassfields =
-					class1.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public |
-									 BindingFlags.DeclaredOnly);
+        foreach (var class1 in classes)
+        {
+            var baseClassfields =
+                class1.GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public |
+                                 BindingFlags.DeclaredOnly);
 
-				foreach (var fieldInfo in baseClassfields)
-				{
-					if (attributesNames.Contains(fieldInfo.Name))
-						continue;
+            foreach (var fieldInfo in baseClassfields)
+            {
+                if (attributesNames.Contains(fieldInfo.Name))
+                    continue;
 
-					result.Add(fieldInfo);
-					attributesNames.Add(fieldInfo.Name);
-				}
-			}
+                result.Add(fieldInfo);
+                attributesNames.Add(fieldInfo.Name);
+            }
+        }
 
-			return result;
-		}
+        return result;
+    }
 
-		public IList<PropertyInfo> GetProperties(Type type)
-		{
-			const int Capacity = 50;
+    public IList<PropertyInfo> GetProperties(Type type)
+    {
+        const int Capacity = 50;
 
-			var attributesNames = new List<string>(Capacity);
-			var result = new List<PropertyInfo>(Capacity);
+        var attributesNames = new List<string>(Capacity);
+        var result = new List<PropertyInfo>(Capacity);
 
-			var classes = GetAllClasses(type);
+        var classes = GetAllClasses(type);
 
-			foreach (var class1 in classes)
-			{
-				var baseProperties =
-					class1.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public |
-										 BindingFlags.DeclaredOnly);
+        foreach (var class1 in classes)
+        {
+            var baseProperties =
+                class1.GetProperties(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public |
+                                     BindingFlags.DeclaredOnly);
 
-				foreach (var propertyInfo in baseProperties)
-				{
-					if (attributesNames.Contains(propertyInfo.Name))
-						continue;
+            foreach (var propertyInfo in baseProperties)
+            {
+                if (attributesNames.Contains(propertyInfo.Name))
+                    continue;
 
-					result.Add(propertyInfo);
-					attributesNames.Add(propertyInfo.Name);
-				}
-			}
+                result.Add(propertyInfo);
+                attributesNames.Add(propertyInfo.Name);
+            }
+        }
 
-			return result;
-		}
+        return result;
+    }
 
-		private IEnumerable<Type> GetAllClasses(Type type)
-		{
-			var result = new List<Type> { type };
+    private IEnumerable<Type> GetAllClasses(Type type)
+    {
+        var result = new List<Type> {type};
 
-			var baseType = type.BaseType;
+        var baseType = type.BaseType;
 
-			while (baseType != null && baseType != typeof(object))
-			{
-				result.Add(baseType);
-				baseType = baseType.BaseType;
-			}
+        while (baseType != null && baseType != typeof(object))
+        {
+            result.Add(baseType);
+            baseType = baseType.BaseType;
+        }
 
-			return result;
-		}
-	}
+        return result;
+    }
+}

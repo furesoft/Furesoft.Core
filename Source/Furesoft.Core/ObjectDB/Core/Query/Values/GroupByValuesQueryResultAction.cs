@@ -6,95 +6,94 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Values;
 
-	internal sealed class GroupByValuesQueryResultAction : IMatchingObjectAction
-	{
-		private readonly string[] _groupByFieldList;
+internal sealed class GroupByValuesQueryResultAction : IMatchingObjectAction
+{
+    private readonly string[] _groupByFieldList;
 
-		/// <summary>
-		///   When executing a group by result, results are temporary stored in a hash map and at the end transfered to a Values objects In this case, the key of the map is the group by composed key, the value is a ValuesQueryResultAction
-		/// </summary>
-		private readonly IDictionary<IOdbComparable, ValuesQueryResultAction> _groupByResult;
+    /// <summary>
+    ///     When executing a group by result, results are temporary stored in a hash map and at the end transfered to a Values
+    ///     objects In this case, the key of the map is the group by composed key, the value is a ValuesQueryResultAction
+    /// </summary>
+    private readonly IDictionary<IOdbComparable, ValuesQueryResultAction> _groupByResult;
 
-		/// <summary>
-		///   An object to build instances
-		/// </summary>
-		private readonly IInstanceBuilder _instanceBuilder;
+    /// <summary>
+    ///     An object to build instances
+    /// </summary>
+    private readonly IInstanceBuilder _instanceBuilder;
 
-		private readonly IInternalValuesQuery _query;
+    private readonly IInternalValuesQuery _query;
 
-		private readonly bool _queryHasOrderBy;
+    private readonly bool _queryHasOrderBy;
 
-		private readonly int _returnArraySize;
-		private IInternalValues _result;
+    private readonly int _returnArraySize;
+    private IInternalValues _result;
 
-		public GroupByValuesQueryResultAction(IInternalValuesQuery query, IInstanceBuilder instanceBuilder)
-		{
-			_query = query;
-			_queryHasOrderBy = query.HasOrderBy();
-			_instanceBuilder = instanceBuilder;
-			_returnArraySize = query.ObjectActionsCount;
-			_groupByFieldList = query.GetGroupByFieldList();
-			_groupByResult = new OdbHashMap<IOdbComparable, ValuesQueryResultAction>();
-		}
+    public GroupByValuesQueryResultAction(IInternalValuesQuery query, IInstanceBuilder instanceBuilder)
+    {
+        _query = query;
+        _queryHasOrderBy = query.HasOrderBy();
+        _instanceBuilder = instanceBuilder;
+        _returnArraySize = query.ObjectActionsCount;
+        _groupByFieldList = query.GetGroupByFieldList();
+        _groupByResult = new OdbHashMap<IOdbComparable, ValuesQueryResultAction>();
+    }
 
-		#region IMatchingObjectAction Members
+    private void Merge(IOdbComparable key, IValues values)
+    {
+        while (values.HasNext())
+            if (_queryHasOrderBy)
+                _result.AddWithKey(key, values.NextValues());
+            else
+                _result.Add(values.NextValues());
+    }
 
-		public void ObjectMatch(OID oid, IOdbComparable orderByKey)
-		{
-		}
+    #region IMatchingObjectAction Members
 
-		// This method os not used in Values Query API
-		public void ObjectMatch(OID oid, object @object, IOdbComparable orderByKey)
-		{
-			var values = (AttributeValuesMap)@object;
-			var groupByKey = IndexTool.BuildIndexKey("GroupBy", values, _groupByFieldList);
-			var result = _groupByResult[groupByKey];
+    public void ObjectMatch(OID oid, IOdbComparable orderByKey)
+    {
+    }
 
-			if (result == null)
-			{
-				result = new(_query, null, _instanceBuilder);
-				result.Start();
-				_groupByResult.Add(groupByKey, result);
-			}
+    // This method os not used in Values Query API
+    public void ObjectMatch(OID oid, object @object, IOdbComparable orderByKey)
+    {
+        var values = (AttributeValuesMap) @object;
+        var groupByKey = IndexTool.BuildIndexKey("GroupBy", values, _groupByFieldList);
+        var result = _groupByResult[groupByKey];
 
-			result.ObjectMatch(oid, @object, orderByKey);
-		}
+        if (result == null)
+        {
+            result = new(_query, null, _instanceBuilder);
+            result.Start();
+            _groupByResult.Add(groupByKey, result);
+        }
 
-		public void Start()
-		{
-		}
+        result.ObjectMatch(oid, @object, orderByKey);
+    }
 
-		// Nothing to do
-		public void End()
-		{
-			if (_query != null && _query.HasOrderBy())
-				_result = new InMemoryBTreeCollectionForValues(_query.GetOrderByType());
-			else
-				_result = new SimpleListForValues(_returnArraySize);
+    public void Start()
+    {
+    }
 
-			foreach (var key in _groupByResult.Keys)
-			{
-				var vqra = _groupByResult[key];
-				vqra.End();
-				Merge(key, vqra.GetValues());
-			}
-		}
+    // Nothing to do
+    public void End()
+    {
+        if (_query != null && _query.HasOrderBy())
+            _result = new InMemoryBTreeCollectionForValues(_query.GetOrderByType());
+        else
+            _result = new SimpleListForValues(_returnArraySize);
 
-		public IInternalObjectSet<T> GetObjects<T>()
-		{
-			return (IInternalObjectSet<T>)_result;
-		}
+        foreach (var key in _groupByResult.Keys)
+        {
+            var vqra = _groupByResult[key];
+            vqra.End();
+            Merge(key, vqra.GetValues());
+        }
+    }
 
-		#endregion IMatchingObjectAction Members
+    public IInternalObjectSet<T> GetObjects<T>()
+    {
+        return (IInternalObjectSet<T>) _result;
+    }
 
-		private void Merge(IOdbComparable key, IValues values)
-		{
-			while (values.HasNext())
-			{
-				if (_queryHasOrderBy)
-					_result.AddWithKey(key, values.NextValues());
-				else
-					_result.Add(values.NextValues());
-			}
-		}
-	}
+    #endregion IMatchingObjectAction Members
+}

@@ -5,122 +5,122 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.Criteria;
 
-	/// <summary>
-	///   A simple Criteria execution plan Check if the query can use index and tries to find the best index to be used
-	/// </summary>
-	internal sealed class CriteriaQueryExecutionPlan : IQueryExecutionPlan
-	{
-		[NonPersistent] private readonly ClassInfo _classInfo;
+/// <summary>
+///     A simple Criteria execution plan Check if the query can use index and tries to find the best index to be used
+/// </summary>
+internal sealed class CriteriaQueryExecutionPlan : IQueryExecutionPlan
+{
+    [NonPersistent] private readonly ClassInfo _classInfo;
 
-		[NonPersistent] private readonly SodaQuery _query;
+    [NonPersistent] private readonly SodaQuery _query;
+    private ClassInfo _classInfo1;
 
-		[NonPersistent] private ClassInfoIndex _classInfoIndex;
+    [NonPersistent] private ClassInfoIndex _classInfoIndex;
 
-		/// <summary>
-		///   To keep the execution detail
-		/// </summary>
-		private string _details;
+    /// <summary>
+    ///     To keep the execution detail
+    /// </summary>
+    private string _details;
 
-		/// <summary>
-		///   to keep track of the end date time of the plan
-		/// </summary>
-		private long _end;
+    /// <summary>
+    ///     to keep track of the end date time of the plan
+    /// </summary>
+    private long _end;
 
-		/// <summary>
-		///   to keep track of the start date time of the plan
-		/// </summary>
-		private long _start;
+    /// <summary>
+    ///     to keep track of the start date time of the plan
+    /// </summary>
+    private long _start;
 
-		private bool _useIndex;
-		private ClassInfo _classInfo1;
+    private bool _useIndex;
 
-		public CriteriaQueryExecutionPlan(ClassInfo classInfo, SodaQuery query)
-		{
-			_classInfo = classInfo;
-			_query = query;
-			((IInternalQuery)_query).SetExecutionPlan(this);
-			Init();
-		}
+    public CriteriaQueryExecutionPlan(ClassInfo classInfo, SodaQuery query)
+    {
+        _classInfo = classInfo;
+        _query = query;
+        ((IInternalQuery) _query).SetExecutionPlan(this);
+        Init();
+    }
 
-		#region IQueryExecutionPlan Members
+    private long GetDuration()
+    {
+        return _end - _start;
+    }
 
-		public ClassInfoIndex GetIndex()
-		{
-			return _classInfoIndex;
-		}
+    private void Init()
+    {
+        _start = 0;
+        _end = 0;
 
-		public bool UseIndex()
-		{
-			return _useIndex;
-		}
+        // for instance, only manage index for one field query using 'equal'
+        if (_classInfo.HasIndex() && _query.HasCriteria() &&
+            ((IInternalConstraint) _query.GetCriteria()).CanUseIndex())
+        {
+            var fields = _query.GetAllInvolvedFields();
+            if (fields.IsEmpty())
+            {
+                _useIndex = false;
+            }
+            else
+            {
+                var fieldIds = GetAllInvolvedFieldIds(fields);
+                _classInfoIndex = _classInfo.GetIndexForAttributeIds(fieldIds);
+                if (_classInfoIndex != null)
+                    _useIndex = true;
+            }
+        }
 
-		public string GetDetails()
-		{
-			if (_details != null)
-				return _details;
+        // Keep the detail
+        _details = GetDetails();
+    }
 
-			return _classInfoIndex == null
-					   ? string.Format("No index used, Execution time={0}ms", GetDuration())
-					   : string.Format("Following indexes have been used : {0}, Execution time={1}ms",
-									   _classInfoIndex.Name, GetDuration());
-		}
+    /// <summary>
+    ///     Transform a list of field names into a list of field ids
+    /// </summary>
+    /// <param name="fields"> </param>
+    /// <returns> The array of field ids </returns>
+    private int[] GetAllInvolvedFieldIds(IList<string> fields)
+    {
+        var nbFields = fields.Count;
+        var fieldIds = new int[nbFields];
+        for (var i = 0; i < nbFields; i++)
+            fieldIds[i] = _classInfo.GetAttributeId(fields[i]);
 
-		public void End()
-		{
-			_end = OdbTime.GetCurrentTimeInMs();
-		}
+        return fieldIds;
+    }
 
-		public void Start()
-		{
-			_start = OdbTime.GetCurrentTimeInMs();
-		}
+    #region IQueryExecutionPlan Members
 
-		#endregion IQueryExecutionPlan Members
+    public ClassInfoIndex GetIndex()
+    {
+        return _classInfoIndex;
+    }
 
-		private long GetDuration()
-		{
-			return (_end - _start);
-		}
+    public bool UseIndex()
+    {
+        return _useIndex;
+    }
 
-		private void Init()
-		{
-			_start = 0;
-			_end = 0;
+    public string GetDetails()
+    {
+        if (_details != null)
+            return _details;
 
-			// for instance, only manage index for one field query using 'equal'
-			if (_classInfo.HasIndex() && _query.HasCriteria() &&
-				((IInternalConstraint)_query.GetCriteria()).CanUseIndex())
-			{
-				var fields = _query.GetAllInvolvedFields();
-				if (fields.IsEmpty())
-				{
-					_useIndex = false;
-				}
-				else
-				{
-					var fieldIds = GetAllInvolvedFieldIds(fields);
-					_classInfoIndex = _classInfo.GetIndexForAttributeIds(fieldIds);
-					if (_classInfoIndex != null)
-						_useIndex = true;
-				}
-			}
+        return _classInfoIndex == null
+            ? string.Format("No index used, Execution time={0}ms", GetDuration())
+            : string.Format("Following indexes have been used : {0}, Execution time={1}ms",
+                _classInfoIndex.Name, GetDuration());
+    }
 
-			// Keep the detail
-			_details = GetDetails();
-		}
+    public void End()
+    {
+        _end = OdbTime.GetCurrentTimeInMs();
+    }
 
-		/// <summary>
-		///   Transform a list of field names into a list of field ids
-		/// </summary>
-		/// <param name="fields"> </param>
-		/// <returns> The array of field ids </returns>
-		private int[] GetAllInvolvedFieldIds(IList<string> fields)
-		{
-			var nbFields = fields.Count;
-			var fieldIds = new int[nbFields];
-			for (var i = 0; i < nbFields; i++)
-				fieldIds[i] = _classInfo.GetAttributeId(fields[i]);
+    public void Start()
+    {
+        _start = OdbTime.GetCurrentTimeInMs();
+    }
 
-			return fieldIds;
-		}
-	}
+    #endregion IQueryExecutionPlan Members
+}

@@ -12,8 +12,8 @@ public interface IGeneralRule<T> where T : class, new()
 
     bool IsExceptionHandler { get; set; }
 
-    bool IsGlobalExceptionHandler { get; set; }      
-        
+    bool IsGlobalExceptionHandler { get; set; }
+
     Type ObservedRule { get; }
 
     Exception UnhandledException { get; set; }

@@ -1,23 +1,23 @@
 namespace Furesoft.Core.ObjectDB.Btree;
 
-	/// <summary>
-	///   Interface used to persist and load btree and btree node from a persistent layer
-	/// </summary>
-	public interface IBTreePersister
-	{
-		IBTreeNode LoadNodeById(object id);
+/// <summary>
+///     Interface used to persist and load btree and btree node from a persistent layer
+/// </summary>
+public interface IBTreePersister
+{
+    IBTreeNode LoadNodeById(object id);
 
-		void SaveNode(IBTreeNode node);
+    void SaveNode(IBTreeNode node);
 
-		void SaveBTree(IBTree tree);
+    void SaveBTree(IBTree tree);
 
-		IBTree LoadBTree(object id);
+    IBTree LoadBTree(object id);
 
-		void Close();
+    void Close();
 
-		void DeleteNode(IBTreeNode parent);
+    void DeleteNode(IBTreeNode parent);
 
-		void SetBTree(IBTree tree);
+    void SetBTree(IBTree tree);
 
-		void Flush();
-	}
+    void Flush();
+}

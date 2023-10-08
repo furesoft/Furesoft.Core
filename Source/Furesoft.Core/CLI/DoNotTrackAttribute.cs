@@ -1,6 +1,6 @@
 ﻿namespace Furesoft.Core.CLI;
 
-	[AttributeUsage(AttributeTargets.Class)]
-	public class DoNotTrackAttribute : Attribute
-	{
-	}
+[AttributeUsage(AttributeTargets.Class)]
+public class DoNotTrackAttribute : Attribute
+{
+}

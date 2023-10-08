@@ -1,0 +1,34 @@
+﻿{
+  $type: TranslationUnit<AstNode>,
+  Tree: {
+    $type: BinaryOperatorNode,
+    LeftExpr: {
+      $type: NameAstNode,
+      Name: x,
+      Range: 1:5-1:5
+    },
+    Operator: =,
+    RightExpr: {
+      $type: TimeLiteral,
+      SubLiterals: {
+        $type: List<PostfixOperatorNode>,
+        $values: [
+          {
+            $type: PostfixOperatorNode,
+            Expr: {
+              $type: LiteralNode<ulong>,
+              Value: 12,
+              Range: 1:10-1:11
+            },
+            Operator: s
+          }
+        ]
+      },
+      Range: 1:10-1:13
+    }
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: set x to 12s.
+  }
+}

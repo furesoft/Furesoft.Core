@@ -5,64 +5,62 @@ using Furesoft.Core.ObjectDB.Tool.Wrappers;
 
 namespace Furesoft.Core.ObjectDB.Core.Query.List;
 
-	internal sealed class ObjectValues : IObjectValues
-	{
-		/// <summary>
-		///   key=alias,value=value
-		/// </summary>
-		private readonly OdbHashMap<string, object> _valuesByAlias;
+internal sealed class ObjectValues : IObjectValues
+{
+	/// <summary>
+	///     key=alias,value=value
+	/// </summary>
+	private readonly OdbHashMap<string, object> _valuesByAlias;
 
-		private readonly object[] _valuesByIndex;
+    private readonly object[] _valuesByIndex;
 
-		public ObjectValues(int size)
-		{
-			_valuesByIndex = new object[size];
-			_valuesByAlias = new();
-		}
+    public ObjectValues(int size)
+    {
+        _valuesByIndex = new object[size];
+        _valuesByAlias = new();
+    }
 
-		#region IObjectValues Members
+    public void Set(int index, string alias, object value)
+    {
+        _valuesByIndex[index] = value;
+        _valuesByAlias.Add(alias, value);
+    }
 
-		public object GetByAlias(string alias)
-		{
-			var valueByAlias = _valuesByAlias[alias];
+    public override string ToString()
+    {
+        var buffer = new StringBuilder();
 
-			if (valueByAlias == null && !_valuesByAlias.ContainsKey(alias))
-			{
-				throw new OdbRuntimeException(
-					NDatabaseError.ValuesQueryAliasDoesNotExist.AddParameter(alias).AddParameter(_valuesByAlias.Keys));
-			}
+        foreach (var alias in _valuesByAlias.Keys)
+        {
+            var @object = _valuesByAlias[alias];
+            buffer.Append(alias).Append("=").Append(@object).Append(",");
+        }
 
-			return valueByAlias;
-		}
+        return buffer.ToString();
+    }
 
-		public object GetByIndex(int index)
-		{
-			return _valuesByIndex[index];
-		}
+    #region IObjectValues Members
 
-		public object[] GetValues()
-		{
-			return _valuesByIndex;
-		}
+    public object GetByAlias(string alias)
+    {
+        var valueByAlias = _valuesByAlias[alias];
 
-		#endregion IObjectValues Members
+        if (valueByAlias == null && !_valuesByAlias.ContainsKey(alias))
+            throw new OdbRuntimeException(
+                NDatabaseError.ValuesQueryAliasDoesNotExist.AddParameter(alias).AddParameter(_valuesByAlias.Keys));
 
-		public void Set(int index, string alias, object value)
-		{
-			_valuesByIndex[index] = value;
-			_valuesByAlias.Add(alias, value);
-		}
+        return valueByAlias;
+    }
 
-		public override string ToString()
-		{
-			var buffer = new StringBuilder();
+    public object GetByIndex(int index)
+    {
+        return _valuesByIndex[index];
+    }
 
-			foreach (var alias in _valuesByAlias.Keys)
-			{
-				var @object = _valuesByAlias[alias];
-				buffer.Append(alias).Append("=").Append(@object).Append(",");
-			}
+    public object[] GetValues()
+    {
+        return _valuesByIndex;
+    }
 
-			return buffer.ToString();
-		}
-	}
+    #endregion IObjectValues Members
+}

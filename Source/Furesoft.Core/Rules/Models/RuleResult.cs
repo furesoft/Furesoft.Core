@@ -15,7 +15,7 @@ public class RuleResult : IRuleResult
 
     public Dictionary<string, object> Data { get; set; }
 
-    public IError Error { get; set; }        
+    public IError Error { get; set; }
 
     public static Task<IRuleResult> Nil()
     {

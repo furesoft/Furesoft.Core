@@ -12,7 +12,7 @@ public class Scene
             var entity = _objects[index];
             entity.Initialize();
 
-            for (int i = 0; i < entity.Children.Count; i++)
+            for (var i = 0; i < entity.Children.Count; i++)
             {
                 var child = entity.Children[i];
 
@@ -24,11 +24,12 @@ public class Scene
     public void Add(ComponentObject obj)
     {
         obj.Scene = this;
-        
+
         _objects.Add(obj);
     }
-    
-    public ComponentObject CreateComponent(string name) {
+
+    public ComponentObject CreateComponent(string name)
+    {
         var co = new ComponentObject(name);
 
         Add(co);

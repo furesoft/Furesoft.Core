@@ -7,9 +7,9 @@ namespace Furesoft.Core.Rules.Services;
 
 internal sealed class BootstrapService<T> where T : class, new()
 {
+    private readonly IDependencyResolver _dependencyResolver;
     private readonly T _model;
     private readonly Guid _ruleEngineId;
-    private readonly IDependencyResolver _dependencyResolver;
 
     public BootstrapService(T model, Guid ruleEngineId, IDependencyResolver dependencyResolver)
     {
@@ -71,7 +71,7 @@ internal sealed class BootstrapService<T> where T : class, new()
     private void InitializeRule(IGeneralRule<T> rule, IGeneralRule<T> nestingRule = null)
     {
         rule.Model = _model;
-        rule.Configuration = new RuleEngineConfiguration<T>(rule.Configuration) { RuleEngineId = _ruleEngineId };
+        rule.Configuration = new RuleEngineConfiguration<T>(rule.Configuration) {RuleEngineId = _ruleEngineId};
 
         if (nestingRule != null && nestingRule.Configuration.NestedRulesInheritConstraint)
         {
@@ -81,7 +81,6 @@ internal sealed class BootstrapService<T> where T : class, new()
 
         if (rule is RuleAsync<T> parallelRule && parallelRule.IsParallel &&
             nestingRule is RuleAsync<T> nestingParallelRule)
-        {
             if (nestingParallelRule.ParallelConfiguration != null &&
                 nestingParallelRule.ParallelConfiguration.NestedParallelRulesInherit)
             {
@@ -94,7 +93,6 @@ internal sealed class BootstrapService<T> where T : class, new()
                     TaskScheduler = nestingParallelRule.ParallelConfiguration.TaskScheduler
                 };
             }
-        }
 
         rule.Resolver = _dependencyResolver;
     }
@@ -107,9 +105,9 @@ internal sealed class BootstrapService<T> where T : class, new()
         {
             resolvedRule = _dependencyResolver.GetService(type) as TK;
 
-            if (resolvedRule == null) throw new UnsupportedRuleException(ruleObject.ToString());                
+            if (resolvedRule == null) throw new UnsupportedRuleException(ruleObject.ToString());
         }
 
-        return (TK)(resolvedRule ?? ruleObject);
+        return (TK) (resolvedRule ?? ruleObject);
     }
 }

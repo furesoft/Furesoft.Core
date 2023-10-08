@@ -3,15 +3,15 @@ using Furesoft.Core.ObjectDB.Api.Query;
 
 namespace Furesoft.Core.ObjectDB.Core;
 
-	public interface IQueryEngine
-	{
-		IValues GetValues(IInternalValuesQuery query, int startIndex, int endIndex);
+public interface IQueryEngine
+{
+    IValues GetValues(IInternalValuesQuery query, int startIndex, int endIndex);
 
-		long Count(Type underlyingType, IConstraint constraint);
+    long Count(Type underlyingType, IConstraint constraint);
 
-		IInternalObjectSet<T> GetObjects<T>(IQuery query, bool inMemory, int startIndex, int endIndex);
+    IInternalObjectSet<T> GetObjects<T>(IQuery query, bool inMemory, int startIndex, int endIndex);
 
-		OID GetObjectId<T>(T plainObject, bool throwExceptionIfDoesNotExist) where T : class;
+    OID GetObjectId<T>(T plainObject, bool throwExceptionIfDoesNotExist) where T : class;
 
-		object GetObjectFromOid(OID oid);
-	}
+    object GetObjectFromOid(OID oid);
+}

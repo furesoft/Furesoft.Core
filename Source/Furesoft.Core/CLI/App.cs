@@ -3,117 +3,104 @@ using System.Reflection;
 
 namespace Furesoft.Core.CLI;
 
-	/// <summary>
-	/// A Class to build CommandLine Applications easily
-	/// </summary>
-	public class App
-	{
-		private Dictionary<string, ICliCommand> _commands = new();
+/// <summary>
+///     A Class to build CommandLine Applications easily
+/// </summary>
+public class App
+{
+    public static App Current = new();
+    private readonly Dictionary<string, ICliCommand> _commands = new();
 
-		public static App Current = new();
+    public void AddCommand(ICliCommand cmd)
+    {
+        _commands.Add(cmd.Name, cmd);
+    }
 
-		public void AddCommand(ICliCommand cmd)
-		{
-			_commands.Add(cmd.Name, cmd);
-		}
+    public event Action BeforeRun;
 
-		public event Action BeforeRun;
+    /// <summary>
+    ///     Start The Application
+    /// </summary>
+    /// <returns>The Return Code</returns>
+    public int Run()
+    {
+        //collect all command processors
+        var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(_ => _.GetTypes());
 
-		/// <summary>
-		/// Start The Application
-		/// </summary>
-		/// <returns>The Return Code</returns>
-		public int Run()
-		{
-			//collect all command processors
-			var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(_ => _.GetTypes());
+        BeforeRun?.Invoke();
 
-			BeforeRun?.Invoke();
+        foreach (var t in types)
+        {
+            if (t.GetCustomAttribute<DoNotTrackAttribute>() != null)
+                continue;
 
-			foreach (var t in types)
-			{
-				if (t.GetCustomAttribute<DoNotTrackAttribute>() != null)
-					continue;
+            if (t.IsInterface || t.IsAbstract) continue;
 
-				if (t.IsInterface || t.IsAbstract)
-					continue;
-				else if (typeof(ICliCommand).IsAssignableFrom(t))
-				{
-					var instance = (ICliCommand)Activator.CreateInstance(t, Array.Empty<Type>());
-					_commands.Add(instance.Name, instance);
-				}
-			}
+            if (typeof(ICliCommand).IsAssignableFrom(t))
+            {
+                var instance = (ICliCommand) Activator.CreateInstance(t, Array.Empty<Type>());
+                _commands.Add(instance.Name, instance);
+            }
+        }
 
-			var args = Environment.GetCommandLineArgs();
+        var args = Environment.GetCommandLineArgs();
 
-			if (args.Length == 1)
-			{
-				PrintAllCommands();
-				return -1;
-			}
+        if (args.Length == 1)
+        {
+            PrintAllCommands();
+            return -1;
+        }
 
-			if (args.Length == 2 && (args[1] == "--interactive" || args[1] == "-i"))
-			{
-				while (true)
-				{
-					Console.Write(">> ");
-					var input = Console.ReadLine();
-					ProcessCommand(input.Split(' ', StringSplitOptions.RemoveEmptyEntries), true);
-				}
-			}
-			else
-			{
-				return ProcessCommand(args);
-			}
-		}
+        if (args.Length == 2 && (args[1] == "--interactive" || args[1] == "-i"))
+            while (true)
+            {
+                Console.Write(">> ");
+                var input = Console.ReadLine();
+                ProcessCommand(input.Split(' ', StringSplitOptions.RemoveEmptyEntries), true);
+            }
 
-		public int EvaluateLine(string cmd)
-		{
-			return ProcessCommand(cmd.Split(' ', StringSplitOptions.RemoveEmptyEntries)); ;
-		}
+        return ProcessCommand(args);
+    }
 
-		private int ProcessCommand(string[] args, bool isInteractive = false)
-		{
-			if (args.Length == 0)
-			{
-				PrintAllCommands();
-				return 0;
-			}
+    public int EvaluateLine(string cmd)
+    {
+        return ProcessCommand(cmd.Split(' ', StringSplitOptions.RemoveEmptyEntries));
+        ;
+    }
 
-			var name = "";
-			if (isInteractive)
-				name = args[0];
-			else
-			{
-				name = args[1];
-			}
+    private int ProcessCommand(string[] args, bool isInteractive = false)
+    {
+        if (args.Length == 0)
+        {
+            PrintAllCommands();
+            return 0;
+        }
 
-			//find correct processor and invoke it with new argumentvector
-			if (_commands.ContainsKey(name))
-				return _commands[name].Invoke(new(args));
-			else if (name == "help")
-			{
-				PrintAllCommands();
-			}
-			else
-			{
-				// Print list of commands with helptext
-				PrintAllCommands();
-			}
+        var name = "";
+        if (isInteractive)
+            name = args[0];
+        else
+            name = args[1];
 
-			return -1;
-		}
+        //find correct processor and invoke it with new argumentvector
+        if (_commands.ContainsKey(name))
+            return _commands[name].Invoke(new(args));
+        if (name == "help")
+            PrintAllCommands();
+        else
+            // Print list of commands with helptext
+            PrintAllCommands();
 
-		public void PrintAllCommands()
-		{
-			var table = new ConsoleTable(Console.CursorTop, ConsoleTable.Align.Left, new string[] { "Command", "Description" });
-			var rows = new ArrayList();
+        return -1;
+    }
 
-			foreach (var cmd in _commands)
-			{
-				rows.Add(new string[] { cmd.Key, cmd.Value.Description, cmd.Value.HelpText });
-			}
+    public void PrintAllCommands()
+    {
+        var table = new ConsoleTable(Console.CursorTop, ConsoleTable.Align.Left, new[] {"Command", "Description"});
+        var rows = new ArrayList();
 
-			table.RePrint(rows);
-		}
-	}
+        foreach (var cmd in _commands) rows.Add(new[] {cmd.Key, cmd.Value.Description, cmd.Value.HelpText});
+
+        table.RePrint(rows);
+    }
+}
