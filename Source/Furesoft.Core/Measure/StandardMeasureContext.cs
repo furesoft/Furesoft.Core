@@ -98,7 +98,7 @@ public class StandardMeasureContext : MeasureContext
         : base(name, isDefault)
     {
         Unit = DefineFundamental("#", "Unit", AutoStandardPrefix.Metric);
-        Metre = DefineFundamental("m", "Metre", AutoStandardPrefix.Metric);
+        Metre = DefineFundamental("m", "Meter", AutoStandardPrefix.Metric);
         Gram = DefineFundamental("g", "Gram", AutoStandardPrefix.Metric, MeasureStandardPrefix.Kilo);
         Second = DefineFundamental("s", "Second", AutoStandardPrefix.Metric);
         Ampere = DefineFundamental("A", "Ampere", AutoStandardPrefix.Metric);
