@@ -14,8 +14,8 @@ internal struct RuleBasedSpecStore<TSpec>
     public RuleBasedSpecStore(TSpec defaultSpec)
     {
         DefaultSpec = defaultSpec;
-        instructionSpecs = new Dictionary<Type, Func<InstructionPrototype, TSpec>>();
-        intrinsicSpecs = new Dictionary<string, Func<IntrinsicPrototype, TSpec>>();
+        instructionSpecs = [];
+        intrinsicSpecs = [];
     }
 
     /// <summary>

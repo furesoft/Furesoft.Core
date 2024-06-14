@@ -16,7 +16,7 @@ public class DescribedGenericMember : DescribedMember, IGenericMember
     public DescribedGenericMember(QualifiedName fullName)
         : base(fullName)
     {
-        genericParamList = new List<IGenericParameter>();
+        genericParamList = [];
     }
 
     private List<IGenericParameter> genericParamList;

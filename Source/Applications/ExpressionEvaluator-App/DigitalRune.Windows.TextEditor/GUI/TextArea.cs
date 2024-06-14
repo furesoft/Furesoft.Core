@@ -296,7 +296,7 @@ namespace DigitalRune.Windows.TextEditor
       _lineNumberMargin = new LineNumberMargin(this);
       _foldMargin = new FoldMargin(this);
       _iconMargin = new IconMargin(this);
-      _leftMargins.AddRange(new AbstractMargin[] { _iconMargin, _lineNumberMargin, _foldMargin });
+      _leftMargins.AddRange([_iconMargin, _lineNumberMargin, _foldMargin]);
       _textView = new TextView(this);
       OptionsChanged();
 

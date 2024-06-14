@@ -48,7 +48,7 @@ public class Plotter
         yMax = ymax;
         Background = Color.White;
         AxisColor = Color.Black;
-        Functions = new List<Graph>();
+        Functions = [];
     }
 
     void EmptyPlot()

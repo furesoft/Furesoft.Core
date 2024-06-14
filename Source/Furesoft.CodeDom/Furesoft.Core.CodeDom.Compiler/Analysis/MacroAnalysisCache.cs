@@ -16,7 +16,7 @@ internal sealed class MacroAnalysisCache
     /// </summary>
     public MacroAnalysisCache()
         : this(
-            new List<FlowGraphAnalysisCache>(),
+            [],
             ImmutableDictionary.Create<Type, int>(),
             ImmutableDictionary.Create<int, int>())
     { }

@@ -12,9 +12,9 @@ namespace DigitalRune.Windows.TextEditor.Completion
     private int _defaultIndex = -1;
     private string _preSelection;
     private bool _insertSpace;
-    private char[] _commitKeys = { '{', '}', '[', ']', '(', ')', '.', ',', ':', ';', 
+    private char[] _commitKeys = [ '{', '}', '[', ']', '(', ')', '.', ',', ':', ';', 
                                    '+', '-', '*', '/', '%', '&', '|', '^', '!', '~', 
-                                   '=', '<', '>', '?', '@', '#', '\'', '"', '\\' };
+                                   '=', '<', '>', '?', '@', '#', '\'', '"', '\\' ];
 
     
     /// <summary>

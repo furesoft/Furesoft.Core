@@ -121,8 +121,10 @@ public sealed class IndirectCallPrototype : InstructionPrototype
     /// </returns>
     public Instruction Instantiate(ValueTag callee, IReadOnlyList<ValueTag> arguments)
     {
-        var extendedArgs = new List<ValueTag>();
-        extendedArgs.Add(callee);
+        var extendedArgs = new List<ValueTag>
+        {
+            callee
+        };
         extendedArgs.AddRange(arguments);
         return Instantiate(extendedArgs);
     }

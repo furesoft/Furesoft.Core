@@ -4,7 +4,7 @@ public delegate Expression MacroInvokeDelegate(MacroContext context, params Expr
 
 public abstract class Macro
 {
-    public List<ChildList<Expression>> Rules = new();
+    public List<ChildList<Expression>> Rules = [];
 
     public abstract string Name { get; }
 

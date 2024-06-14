@@ -47,7 +47,7 @@ public static class PropertyTypeModifierAttribute
             { PropertyTypeModifier.Setter, "setter" },
             { PropertyTypeModifier.Init, "init" },
         };
-        invModifierNames = new Dictionary<string, PropertyTypeModifier>();
+        invModifierNames = [];
         foreach (var pair in modifierNames)
         {
             invModifierNames[pair.Value] = pair.Key;

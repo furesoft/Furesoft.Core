@@ -229,7 +229,7 @@ public abstract class LatticeAnalysis<TCell> : IFlowGraphAnalysis<LatticeAnalysi
                         {
                             if (!parameterArgs.TryGetValue(pair.Key, out HashSet<ValueTag> args))
                             {
-                                args = new HashSet<ValueTag>();
+                                args = [];
                                 parameterArgs[pair.Key] = args;
                             }
 
@@ -277,7 +277,7 @@ public abstract class LatticeAnalysis<TCell> : IFlowGraphAnalysis<LatticeAnalysi
     {
         if (!parameterArguments.TryGetValue(value, out HashSet<ValueTag> args))
         {
-            args = new HashSet<ValueTag>();
+            args = [];
             parameterArguments[value] = args;
         }
 

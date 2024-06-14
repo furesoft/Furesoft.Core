@@ -16,7 +16,7 @@ public class CommandlineArguments
     // Constructor
     public CommandlineArguments(IEnumerable<string> args)
     {
-        Parameters = new();
+        Parameters = [];
         var spliter = new Regex(@"^-{1,2}|=", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         var remover = new Regex(@"^['""]?(.*?)['""]?$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         string parameter = null;

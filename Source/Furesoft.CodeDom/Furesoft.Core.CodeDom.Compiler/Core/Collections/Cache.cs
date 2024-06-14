@@ -76,7 +76,7 @@ public sealed class LruCache<TKey, TValue> : Cache<TKey, TValue>
     {
         Capacity = capacity;
         cache =
-            new Dictionary<TKey, LinkedListNode<KeyValuePair<TKey, TValue>>>();
+            [];
         evictionList = new LinkedList<KeyValuePair<TKey, TValue>>();
     }
 

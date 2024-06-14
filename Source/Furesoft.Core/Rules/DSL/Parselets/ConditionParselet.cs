@@ -8,16 +8,19 @@ namespace Furesoft.Core.Rules.DSL.Parselets;
 
 public class ConditionParselet : IInfixParselet
 {
-    private readonly Dictionary<string[], Symbol> _tokenMappins = new();
+    private readonly Dictionary<string[], Symbol> _tokenMappins = [];
+    private readonly int bindingPower;
 
-    public ConditionParselet()
+    public ConditionParselet(int bindingPower)
     {
-        _tokenMappins.Add(new[] {"less", "than"}, "<");
-        _tokenMappins.Add(new[] {"less", "than", "or", "equal"}, "<=");
-        _tokenMappins.Add(new[] {"greater", "than", "or", "equal"}, ">=");
-        _tokenMappins.Add(new[] {"greater", "than"}, ">");
-        _tokenMappins.Add(new[] {"equal", "to"}, "==");
-        _tokenMappins.Add(new[] {"not", "equal", "to"}, "!=");
+        _tokenMappins.Add(["less", "than"], "<");
+        _tokenMappins.Add(["less", "than", "or", "equal"], "<=");
+        _tokenMappins.Add(["greater", "than", "or", "equal"], ">=");
+        _tokenMappins.Add(["greater", "than"], ">");
+        _tokenMappins.Add(["equal", "to"], "==");
+        _tokenMappins.Add(["not", "equal", "to"], "!=");
+
+        this.bindingPower = bindingPower;
     }
 
     public AstNode Parse(Parser parser, AstNode left, Token token)
@@ -35,10 +38,7 @@ public class ConditionParselet : IInfixParselet
         return null;
     }
 
-    public int GetBindingPower()
-    {
-        return (int) BindingPower.Product;
-    }
+    public int GetBindingPower() => bindingPower;
 
     private AstNode BuildNode(Parser parser, Symbol op, AstNode left)
     {

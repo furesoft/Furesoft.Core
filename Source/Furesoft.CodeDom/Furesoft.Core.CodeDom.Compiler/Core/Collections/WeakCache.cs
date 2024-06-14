@@ -100,12 +100,12 @@ public sealed class WeakCache<TKey, TValue> : Cache<TKey, TValue>
     /// </summary>
     private int MaxConcurrency => domainLocks.Length;
 
-    private static readonly int[] primes = new int[]
-    {
+    private static readonly int[] primes =
+    [
         31, 97, 389, 1543, 6151, 24593,
         98317, 393241, 1572869, 6291469,
         25165843, 100663319, 402653189, 1610612741
-    };
+    ];
 
     private int TruncateHashCode(int hashCode)
     {

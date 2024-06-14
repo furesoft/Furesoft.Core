@@ -9,7 +9,7 @@ namespace Furesoft.Core.ObjectDB.Core.Query.Linq;
 internal sealed class ReflectionMethodAnalyser
 {
     private static readonly Dictionary<MethodInfo, FieldInfo> fieldCache =
-        new();
+        [];
 
     private static readonly ILPattern getterPattern =
         ILPattern.Sequence(

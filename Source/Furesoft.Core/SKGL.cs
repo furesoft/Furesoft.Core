@@ -42,8 +42,8 @@ public class SerialKeyConfiguration : BaseConfiguration
         //will be changed in validating class.
         get;
         set;
-    } = new bool[8]
-    {
+    } =
+    [
         false,
         false,
         false,
@@ -53,7 +53,7 @@ public class SerialKeyConfiguration : BaseConfiguration
         false,
         false
         //the default value of the Fetures array.
-    };
+    ];
 
     public bool addSplitChar { get; set; } = true;
 }

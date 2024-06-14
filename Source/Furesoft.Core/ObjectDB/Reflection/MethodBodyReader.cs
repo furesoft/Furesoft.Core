@@ -9,7 +9,7 @@ internal sealed class MethodBodyReader
     private static readonly OpCode[] twoBytesOpcodes = new OpCode[0x1f];
     private readonly MethodBody _body;
     private readonly ByteBuffer _il;
-    private readonly List<Instruction> _instructions = new();
+    private readonly List<Instruction> _instructions = [];
     private readonly IList<LocalVariableInfo> _locals;
     private readonly MethodBase _method;
     private readonly Type[] _methodArguments;

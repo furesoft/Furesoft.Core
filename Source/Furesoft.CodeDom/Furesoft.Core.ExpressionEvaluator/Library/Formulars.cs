@@ -18,10 +18,12 @@ public static class Formulars
         {
             double[] storage = m.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope()).Get<double>()).ToArray();
 
-            var rows = new List<double[]>();
-            rows.Add(storage.Take(3).ToArray());
-            rows.Add(storage.Skip(3).Take(3).ToArray());
-            rows.Add(storage.Skip(6).Take(3).ToArray());
+            var rows = new List<double[]>
+            {
+                storage.Take(3).ToArray(),
+                storage.Skip(3).Take(3).ToArray(),
+                storage.Skip(6).Take(3).ToArray()
+            };
 
             A = Matrix<double>.Build.DenseOfRowArrays(rows);
             b = Vector<double>.Build.Dense(v.Storage.Select(_ => mc.ExpressionParser.EvaluateExpression(_, Scope.CreateScope()).Get<double>()).ToArray());

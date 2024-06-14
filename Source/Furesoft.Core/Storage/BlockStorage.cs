@@ -2,7 +2,7 @@
 
 public class BlockStorage : IBlockStorage
 {
-    private readonly Dictionary<uint, Block> blocks = new();
+    private readonly Dictionary<uint, Block> blocks = [];
     private readonly Stream stream;
 
     public BlockStorage(Stream storage, int blockSize = 40960, int blockHeaderSize = 48)

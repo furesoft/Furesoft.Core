@@ -3,24 +3,17 @@ using Argon;
 using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
 using Furesoft.PrattParser;
-using Furesoft.PrattParser.Testing;
+using Furesoft.PrattParser.Testing.Converter;
 using RulesTest.Models;
 
 namespace RulesTest;
 
-[UsesVerify]
-public class TestDsl
+public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
 {
     [ModuleInitializer]
-    public static void Init()
+    public static void Initalize()
     {
-        VerifierSettings.AddExtraSettings(_ =>
-        {
-            _.Converters.Add(new SymbolConverter());
-            _.Converters.Add(new DocumentConverter());
-            _.Converters.Add(new RangeConverter());
-            _.TypeNameHandling = TypeNameHandling.All;
-        });
+        Init();
     }
 
     [Fact]
@@ -28,7 +21,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("not 5", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -36,7 +29,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("5 %", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -44,7 +37,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("5 is equal to 5", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -52,7 +45,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("if 5 is equal to 5 then error 'something went wrong'", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -60,7 +53,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("set x to 42.", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -68,7 +61,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("set x to 12s.", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -76,7 +69,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("12s.", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -84,7 +77,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("12s.13min.", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -92,7 +85,7 @@ public class TestDsl
     {
         var node = Parser.Parse<Grammar>("12min 13s.", "test.dsl");
 
-        return Verify(node);
+        return Verify(node, settings);
     }
 
     [Fact]
@@ -105,7 +98,7 @@ public class TestDsl
 
         var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
 
-        return Verify(_evaluate(new { }, new()));
+        return Verify(_evaluate(new { }, []), settings);
     }
 
     [Fact]
@@ -118,7 +111,7 @@ public class TestDsl
 
         var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
 
-        return Verify(_evaluate(new { }, new()));
+        return Verify(_evaluate(new { }, []), settings);
     }
 
     [Fact]
@@ -130,6 +123,6 @@ public class TestDsl
 
         var result = engine.Execute();
 
-        return Verify(result);
+        return Verify(result, settings);
     }
 }

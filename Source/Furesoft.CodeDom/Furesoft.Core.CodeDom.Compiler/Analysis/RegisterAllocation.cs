@@ -133,7 +133,7 @@ public abstract class GreedyRegisterAllocator<TRegister> : IFlowGraphAnalysis<Re
                 && !TryRecycleRegister(valueType, recyclable, out assignedRegister))
             {
                 assignedRegister = CreateRegister(valueType);
-                registerInterference[assignedRegister] = new HashSet<ValueTag>();
+                registerInterference[assignedRegister] = [];
             }
 
             // Allocate the register we recycled or created to the value.

@@ -183,7 +183,7 @@ internal sealed class QueryConstraint : IInternalConstraint
             ? equalsEvaluation.GetValues()
             : _evaluation is IdentityEvaluation identityEvaluation
                 ? identityEvaluation.GetValues()
-                : new();
+                : [];
     }
 
     /// <summary>

@@ -78,7 +78,7 @@ namespace DigitalRune.Windows.TextEditor.Highlighting
         }
         if (doc.DocumentElement.HasAttribute("extensions"))
         {
-          highlighter.Extensions = doc.DocumentElement.GetAttribute("extensions").Split(new char[] { ';', '|' });
+          highlighter.Extensions = doc.DocumentElement.GetAttribute("extensions").Split([';', '|']);
         }
 
         XmlElement environment = doc.DocumentElement["Environment"];

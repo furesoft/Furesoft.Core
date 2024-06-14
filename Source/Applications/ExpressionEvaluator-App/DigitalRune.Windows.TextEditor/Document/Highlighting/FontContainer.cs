@@ -103,7 +103,7 @@ namespace DigitalRune.Windows.TextEditor.Highlighting
     /// <returns>The font.</returns>
     public static Font ParseFont(string font)
     {
-      string[] descr = font.Split(new char[] { ',', '=' });
+      string[] descr = font.Split([',', '=']);
       return new Font(descr[1], Single.Parse(descr[3]));
     }
 

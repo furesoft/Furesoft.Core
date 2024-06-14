@@ -13,7 +13,7 @@ internal sealed class CachedTypeResolver : ITypeResolver
 	///     The cache, mapping type names (<see cref="string" /> instances) against
 	///     <see cref="System.Type" /> instances.
 	/// </summary>
-	private readonly Dictionary<string, Type> _typeCache = new();
+	private readonly Dictionary<string, Type> _typeCache = [];
 
     private readonly ITypeResolver _typeResolver;
 

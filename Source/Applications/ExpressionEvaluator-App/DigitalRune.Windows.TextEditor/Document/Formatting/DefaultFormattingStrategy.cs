@@ -12,7 +12,7 @@ namespace DigitalRune.Windows.TextEditor.Formatting
   /// </summary>
   public class DefaultFormattingStrategy : IFormattingStrategy
   {
-    private static readonly char[] _whitespaceChars = { ' ', '\t' };
+    private static readonly char[] _whitespaceChars = [' ', '\t'];
 
 
     /// <summary>

@@ -24,14 +24,14 @@ public class ConversionOperatorDecl : OperatorDecl
     /// Create a <see cref="ConversionOperatorDecl"/>.
     /// </summary>
     public ConversionOperatorDecl(Expression destinationType, Modifiers modifiers, CodeObject body, ParameterDecl parameter)
-        : base(GetInternalName(modifiers), destinationType, modifiers, body, new[] { parameter })
+        : base(GetInternalName(modifiers), destinationType, modifiers, body, [parameter])
     { }
 
     /// <summary>
     /// Create a <see cref="ConversionOperatorDecl"/>.
     /// </summary>
     public ConversionOperatorDecl(Expression destinationType, Modifiers modifiers, ParameterDecl parameter)
-        : base(GetInternalName(modifiers), destinationType, modifiers, new[] { parameter })
+        : base(GetInternalName(modifiers), destinationType, modifiers, [parameter])
     { }
 
     /// <summary>

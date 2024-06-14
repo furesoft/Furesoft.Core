@@ -307,7 +307,7 @@ internal sealed class NDatabaseError : IError
     public IError AddParameter<T>(T o) where T : class
     {
         if (_parameters == null)
-            _parameters = new List<object>();
+            _parameters = [];
         _parameters.Add(o.ToString());
         return this;
     }
@@ -315,7 +315,7 @@ internal sealed class NDatabaseError : IError
     public IError AddParameter(string s)
     {
         if (_parameters == null)
-            _parameters = new List<object>();
+            _parameters = [];
 
         _parameters.Add(s ?? "[null object]");
         return this;
@@ -324,7 +324,7 @@ internal sealed class NDatabaseError : IError
     public IError AddParameter(int i)
     {
         if (_parameters == null)
-            _parameters = new List<object>();
+            _parameters = [];
         _parameters.Add(i);
         return this;
     }
@@ -332,7 +332,7 @@ internal sealed class NDatabaseError : IError
     public IError AddParameter(byte i)
     {
         if (_parameters == null)
-            _parameters = new List<object>();
+            _parameters = [];
         _parameters.Add(i);
         return this;
     }
@@ -340,7 +340,7 @@ internal sealed class NDatabaseError : IError
     public IError AddParameter(long l)
     {
         if (_parameters == null)
-            _parameters = new List<object>();
+            _parameters = [];
         _parameters.Add(l);
         return this;
     }

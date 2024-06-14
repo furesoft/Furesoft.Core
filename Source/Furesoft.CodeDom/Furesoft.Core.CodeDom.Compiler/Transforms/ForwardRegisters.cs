@@ -59,7 +59,7 @@ public sealed class ForwardRegisters : IntraproceduralOptimization
             }
             definitions[block] = localDefs;
             imports[block] = localImports;
-            extraArgs[block] = new List<ValueTag>();
+            extraArgs[block] = [];
         }
 
         var predecessors = graph.GetAnalysisResult<BasicBlockPredecessors>();
@@ -76,7 +76,7 @@ public sealed class ForwardRegisters : IntraproceduralOptimization
 
             var blockImports = imports[block];
             blockImports.ExceptWith(blockDefs.Keys);
-            imports[block] = new HashSet<ValueTag>();
+            imports[block] = [];
 
             foreach (var value in blockImports)
             {

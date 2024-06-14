@@ -84,7 +84,7 @@ public sealed class Index<TContainer, TKey, TValue>
         {
             if (!results.TryGetValue(kvPair.Key, out List<TValue> elemList))
             {
-                elemList = new List<TValue>();
+                elemList = [];
                 results[kvPair.Key] = elemList;
             }
             elemList.Add(kvPair.Value);

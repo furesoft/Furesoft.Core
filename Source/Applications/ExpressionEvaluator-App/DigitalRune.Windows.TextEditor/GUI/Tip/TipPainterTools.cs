@@ -14,7 +14,7 @@ namespace DigitalRune.Windows.TextEditor
 
       if (IsVisibleText(description))
       {
-        string[] splitDescription = description.Split(new char[] { '\n' }, 2);
+        string[] splitDescription = description.Split(['\n'], 2);
 
         if (splitDescription.Length > 0)
         {
@@ -38,7 +38,7 @@ namespace DigitalRune.Windows.TextEditor
 
       if (IsVisibleText(description))
       {
-        string[] splitDescription = description.Split(new char[] { '\n' }, 2);
+        string[] splitDescription = description.Split(['\n'], 2);
 
         if (splitDescription.Length > 0)
         {
@@ -63,7 +63,7 @@ namespace DigitalRune.Windows.TextEditor
       if (IsVisibleText(description))
       {
         string[] splitDescription = description.Split
-          (new char[] { '\n' }, 2);
+          (['\n'], 2);
 
         if (splitDescription.Length > 0)
         {
@@ -88,7 +88,7 @@ namespace DigitalRune.Windows.TextEditor
       if (IsVisibleText(description))
       {
         string[] splitDescription = description.Split
-          (new char[] { '\n' }, 2);
+          (['\n'], 2);
 
         if (splitDescription.Length > 0)
         {

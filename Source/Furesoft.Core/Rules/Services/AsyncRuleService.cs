@@ -5,8 +5,8 @@ namespace Furesoft.Core.Rules.Services;
 
 internal sealed class AsyncRuleService<T> where T : class, new()
 {
-    private readonly ConcurrentBag<IRuleResult> _asyncRuleResults = new();
-    private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = new();
+    private readonly ConcurrentBag<IRuleResult> _asyncRuleResults = [];
+    private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = [];
     private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
     private readonly IEnumerable<IRuleAsync<T>> _rules;
     private readonly RxRuleService<IRuleAsync<T>, T> _rxRuleService;

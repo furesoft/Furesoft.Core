@@ -458,10 +458,14 @@ internal sealed class ObjectReader : IObjectReader
 
                         attributeOid = OIDFactory.BuildObjectOID(-attributeIdentification);
                         attributePosition = GetObjectPositionFromItsOid(attributeOid, useCache, false);
-                        IOdbList<string> list1 = new OdbList<string>(1);
-                        list1.Add(relationAttributeName);
-                        IOdbList<string> list2 = new OdbList<string>(1);
-                        list2.Add(attributeNameToSearch);
+                        IOdbList<string> list1 = new OdbList<string>(1)
+                        {
+                            relationAttributeName
+                        };
+                        IOdbList<string> list2 = new OdbList<string>(1)
+                        {
+                            attributeNameToSearch
+                        };
                         map.PutAll(ReadObjectInfoValuesFromPosition(cai.GetClassInfo(), attributeOid,
                             attributePosition, useCache, list1, list2,
                             recursionLevel + 1));

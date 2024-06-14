@@ -37,7 +37,7 @@ public sealed class ReturnFlow : BlockFlow
     public bool HasReturnValue { get { return _returnValue != null; } }
 
     /// <inheritdoc/>
-    public override IReadOnlyList<Instruction> Instructions => HasReturnValue ? new Instruction[] { ReturnValue } : new Instruction[0];
+    public override IReadOnlyList<Instruction> Instructions => HasReturnValue ? new Instruction[] { ReturnValue } : [];
 
     /// <inheritdoc/>
     public override IReadOnlyList<Branch> Branches => EmptyArray<Branch>.Value;

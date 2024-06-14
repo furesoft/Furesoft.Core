@@ -51,7 +51,7 @@ internal sealed class SubtreeEvaluator : LinqQueryTranslator
             Visit(expression);
         }
 
-        public HashSet<Expression> Candidates { get; } = new();
+        public HashSet<Expression> Candidates { get; } = [];
 
         private void AddCandidate(Expression expression)
         {

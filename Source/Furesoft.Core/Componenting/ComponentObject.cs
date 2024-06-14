@@ -8,8 +8,8 @@ public sealed class ComponentObject
 
     public ComponentObject(string name)
     {
-        Children = new();
-        _comps = new();
+        Children = [];
+        _comps = [];
 
         Name = name;
     }

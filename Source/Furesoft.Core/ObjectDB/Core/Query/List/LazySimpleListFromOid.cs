@@ -35,7 +35,7 @@ internal sealed class LazySimpleListFromOid<T> : OdbList<T>, IInternalObjectSet<
     {
         _engine = engine;
         _returnInstance = returnObjects;
-        _oids = new();
+        _oids = [];
     }
 
     private T Get(int index)

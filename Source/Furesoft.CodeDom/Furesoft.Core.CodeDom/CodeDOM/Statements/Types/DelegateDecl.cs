@@ -253,7 +253,7 @@ public class DelegateDecl : TypeDecl, IParameters
         // code generation.  We have to create a dummy constructor that will allow a MethodRef to be passed to it, in order
         // to make the C# syntax work when resolving.
         TypeRef delegateTypeRef = CreateRef();
-        ConstructorDecl constructor = new(new[] { new ParameterDecl(DelegateConstructorParameterName, delegateTypeRef) }) { IsGenerated = true };
+        ConstructorDecl constructor = new([new ParameterDecl(DelegateConstructorParameterName, delegateTypeRef)]) { IsGenerated = true };
         Add(constructor);
     }
 

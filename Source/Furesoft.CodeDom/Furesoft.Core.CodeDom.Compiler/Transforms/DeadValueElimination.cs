@@ -80,7 +80,7 @@ public sealed class DeadValueElimination : IntraproceduralOptimization
         var phiArgs = new Dictionary<ValueTag, HashSet<ValueTag>>();
         foreach (var param in graph.ParameterTags)
         {
-            phiArgs[param] = new HashSet<ValueTag>();
+            phiArgs[param] = [];
         }
 
         // Instructions that are part of block flows are live.
@@ -162,7 +162,7 @@ public sealed class DeadValueElimination : IntraproceduralOptimization
                     {
                         if (!results.TryGetValue(item, out HashSet<ValueTag> localDeps))
                         {
-                            results[item] = localDeps = new HashSet<ValueTag>();
+                            results[item] = localDeps = [];
                         }
                         localDeps.Add(instruction);
                     }

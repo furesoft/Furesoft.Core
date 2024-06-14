@@ -158,19 +158,19 @@ public sealed class AllocaToRegister : IntraproceduralOptimization
         {
             this.graphBuilder = graphBuilder;
             this.eligibleAllocas = eligibleAllocas;
-            currentDef = new Dictionary<ValueTag, Dictionary<BasicBlockTag, ValueTag>>();
-            incompletePhis = new Dictionary<BasicBlockTag, Dictionary<ValueTag, BlockParameter>>();
-            filledBlocks = new HashSet<BasicBlockTag>();
-            processedBlocks = new HashSet<BasicBlockTag>();
+            currentDef = [];
+            incompletePhis = [];
+            filledBlocks = [];
+            processedBlocks = [];
             predecessors = graphBuilder.GetAnalysisResult<BasicBlockPredecessors>();
 
             foreach (var alloca in eligibleAllocas)
             {
-                currentDef[alloca] = new Dictionary<BasicBlockTag, ValueTag>();
+                currentDef[alloca] = [];
             }
             foreach (var tag in graphBuilder.BasicBlockTags)
             {
-                incompletePhis[tag] = new Dictionary<ValueTag, BlockParameter>();
+                incompletePhis[tag] = [];
             }
         }
 

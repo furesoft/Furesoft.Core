@@ -14,7 +14,7 @@ public sealed class TypeResolver
     /// </summary>
     public TypeResolver()
     {
-        assemblySet = new HashSet<IAssembly>();
+        assemblySet = [];
         nestedTypeNamespaces = new ConcurrentDictionary<IType, TypeResolverNamespace>();
         genericMemberNamespaces = new ConcurrentDictionary<IGenericMember, TypeResolverNamespace>();
         RootNamespace = new TypeResolverNamespace();
@@ -466,10 +466,10 @@ public sealed class TypeResolverNamespace
 {
     internal TypeResolverNamespace()
     {
-        typeMap = new Dictionary<UnqualifiedName, List<IType>>();
-        impreciseTypeMap = new Dictionary<string, List<IType>>();
-        namespaceMap = new Dictionary<UnqualifiedName, TypeResolverNamespace>();
-        typeSet = new HashSet<IType>();
+        typeMap = [];
+        impreciseTypeMap = [];
+        namespaceMap = [];
+        typeSet = [];
     }
 
     private Dictionary<UnqualifiedName, List<IType>> typeMap;
@@ -535,7 +535,7 @@ public sealed class TypeResolverNamespace
     {
         if (!dict.TryGetValue(key, out List<TValue> result))
         {
-            result = new List<TValue>();
+            result = [];
             dict[key] = result;
         }
         return result;

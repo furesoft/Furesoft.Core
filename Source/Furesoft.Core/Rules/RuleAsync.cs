@@ -6,7 +6,7 @@ namespace Furesoft.Core.Rules;
 
 public abstract class RuleAsync<T> : IRuleAsync<T> where T : class, new()
 {
-    private IList<object> Rules { get; set; } = new List<object>();
+    private IList<object> Rules { get; set; } = [];
 
     public T Model { get; set; }
 

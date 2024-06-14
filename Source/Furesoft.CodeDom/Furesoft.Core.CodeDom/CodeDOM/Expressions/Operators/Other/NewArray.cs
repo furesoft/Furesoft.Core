@@ -49,7 +49,7 @@ public class NewArray : NewOperator
     /// <param name="type">An expression representing the TypeRef of the elements of the array.</param>
     /// <param name="parameters">The array size parameters (if any).</param>
     public NewArray(Expression type, params Expression[] parameters)
-        : base(type, (parameters ?? new Expression[] { null }))  // Treat null as a single null parameter
+        : base(type, (parameters ?? [null]))  // Treat null as a single null parameter
     { }
 
     /// <summary>

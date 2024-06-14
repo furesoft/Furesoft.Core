@@ -47,13 +47,13 @@ public class DescribedProperty : DescribedMember, IProperty
     {
         _propertyType = propertyType;
         _parentType = parentType;
-        _indexers = new List<Parameter>();
-        _accessors = new List<IAccessor>();
+        _indexers = [];
+        _accessors = [];
     }
 
     public IReadOnlyList<IAccessor> Accessors => (IReadOnlyList<IAccessor>)_accessors;
     public IReadOnlyList<Parameter> IndexerParameters => (IReadOnlyList<Parameter>)_indexers;
-    public List<DescribedPropertyMethod> PropertyMethods { get; } = new();
+    public List<DescribedPropertyMethod> PropertyMethods { get; } = [];
     public IType ParentType => _parentType;
     public IType PropertyType => _propertyType;
 

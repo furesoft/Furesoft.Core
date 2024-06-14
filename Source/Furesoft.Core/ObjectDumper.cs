@@ -15,7 +15,7 @@ public sealed class ObjectDumper
     {
         _indentSize = indentSize;
         _stringBuilder = new();
-        _hashListOfFoundElements = new();
+        _hashListOfFoundElements = [];
     }
 
     public static string Dump(object element)

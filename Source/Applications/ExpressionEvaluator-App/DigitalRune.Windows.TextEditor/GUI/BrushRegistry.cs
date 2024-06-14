@@ -19,7 +19,7 @@ namespace DigitalRune.Windows.TextEditor
     private static readonly Dictionary<Color, Brush> _brushes = new Dictionary<Color, Brush>();
     private static readonly Dictionary<Color, Pen> _pens = new Dictionary<Color, Pen>();
     private static readonly Dictionary<Color, Pen> _dotPens = new Dictionary<Color, Pen>();
-    private static readonly float[] _dotPattern = { 1, 1, 1, 1 };
+    private static readonly float[] _dotPattern = [1, 1, 1, 1];
 
 
     /// <summary>

@@ -120,11 +120,11 @@ public class DescribedType : DescribedGenericMember, IType
 
     private void Initialize()
     {
-        baseTypeList = new List<IType>();
-        fieldList = new List<IField>();
-        methodList = new List<IMethod>();
-        propertyList = new List<IProperty>();
-        nestedTypeList = new List<IType>();
+        baseTypeList = [];
+        fieldList = [];
+        methodList = [];
+        propertyList = [];
+        nestedTypeList = [];
     }
 
     private void CheckParent(ITypeMember member)

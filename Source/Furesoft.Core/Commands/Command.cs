@@ -3,7 +3,7 @@
 public class Command
 {
     public string Name { get; set; }
-    public List<object> Args { get; set; } = new();
+    public List<object> Args { get; set; } = [];
 
     public T GetArg<T>(int index)
     {

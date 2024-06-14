@@ -12,5 +12,5 @@ public class DescribedAttribute : IAttribute
     }
 
     public IType AttributeType => _attributeType;
-    public List<AttributeArgument> ConstructorArguments { get; set; } = new();
+    public List<AttributeArgument> ConstructorArguments { get; set; } = [];
 }

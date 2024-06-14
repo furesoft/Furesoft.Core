@@ -5,7 +5,7 @@ namespace Furesoft.Core.ObjectDB.Tool;
 /// </summary>
 internal static class DLogger
 {
-    private static readonly IList<ILogger> Loggers = new List<ILogger>();
+    private static readonly IList<ILogger> Loggers = [];
 
     internal static void Register(ILogger logger)
     {

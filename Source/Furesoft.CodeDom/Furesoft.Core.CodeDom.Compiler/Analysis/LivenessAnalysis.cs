@@ -21,8 +21,8 @@ public sealed class BlockLiveness
     {
         this.block = block;
         blockInstructions = new HashSet<ValueTag>(block.InstructionTags);
-        livePositions = new Dictionary<ValueTag, int>();
-        deadPositions = new Dictionary<ValueTag, int>();
+        livePositions = [];
+        deadPositions = [];
         ExportIndex = block.InstructionTags.Count
             + block.Flow.Instructions.Count
             + block.Flow.Branches.Count;

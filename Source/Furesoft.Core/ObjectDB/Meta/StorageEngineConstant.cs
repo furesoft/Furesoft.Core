@@ -120,12 +120,12 @@ internal static class StorageEngineConstant
     internal static readonly int DatabaseHeaderProtectedZoneSize = DatabaseHeaderCurrentIdBlockPosition;
 
     internal static readonly int[] DatabaseHeaderPositions =
-    {
+    [
         DatabaseHeaderVersionPosition, DatabaseHeaderDatabaseIdPosition, DatabaseHeaderLastTransactionId,
         DatabaseHeaderNumberOfClassesPosition, DatabaseHeaderFirstClassOid,
         DatabaseHeaderLastCloseStatusPosition, DatabaseHeaderDatabaseCharacterEncodingPosition,
         DatabaseHeaderEmptySpaceWhichCouldBeUsedInTheFuture
-    };
+    ];
 
     private static readonly long classOffsetBlockType = ClassOffsetBlockSize + OdbType.Integer.Size;
 

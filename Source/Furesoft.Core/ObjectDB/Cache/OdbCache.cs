@@ -12,7 +12,7 @@ namespace Furesoft.Core.ObjectDB.Cache;
 /// </summary>
 internal sealed class OdbCache : IOdbCache
 {
-    private static readonly List<Action> cleanMethods = new();
+    private static readonly List<Action> cleanMethods = [];
 
     /// <summary>
     ///     Entry to get object info pointers (position,next object pos, previous object pos and class info pos) from the id

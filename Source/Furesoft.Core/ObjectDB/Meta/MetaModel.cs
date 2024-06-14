@@ -44,8 +44,8 @@ internal sealed class MetaModel : IMetaModel
         _rapidAccessForClassesByName = new OdbHashMap<Type, ClassInfo>(10);
         _rapidAccessForClassesByOid = new OdbHashMap<OID, ClassInfo>(10);
         _existingClasses = new List<Type>(10);
-        _allClassInfos = new List<ClassInfo>();
-        _changedClasses = new();
+        _allClassInfos = [];
+        _changedClasses = [];
     }
 
     public void AddClass(ClassInfo classInfo)

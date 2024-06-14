@@ -57,14 +57,14 @@ public sealed class MeasureStandardPrefix
         Zebi = new("Zi", "Zebi", 2, 70);
         Yobi = new("Yi", "Yobi", 2, 80);
 
-        allMetric = new[]
-        {
+        allMetric =
+        [
             Yocto, Zepto, Atto, Femto, Pico, Nano, Micro, Milli, Centi, Deci, Deca,
             Hecto, Kilo, Mega, Giga, Tera, Peta, Exa, Zetta, Yotta
-        };
+        ];
         allMetricIndex = allMetric.Select(p => (int) p.Factor.Exp10).ToArray();
 
-        allBinary = new[] {Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi};
+        allBinary = [Kibi, Mebi, Gibi, Tebi, Pebi, Exbi, Zebi, Yobi];
         allBinaryIndex = allBinary.Select(p => (int) p.Factor.Exp2).ToArray();
 
         prefixes = new()

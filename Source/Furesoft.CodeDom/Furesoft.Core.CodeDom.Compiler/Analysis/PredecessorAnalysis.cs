@@ -68,7 +68,7 @@ public sealed class PredecessorAnalysis : IFlowGraphAnalysis<BasicBlockPredecess
         // Fill the predecessor dictionary with empty sets.
         foreach (var tag in graph.BasicBlockTags)
         {
-            predecessorDict[tag] = new HashSet<BasicBlockTag>();
+            predecessorDict[tag] = [];
         }
 
         // Fill the sets.

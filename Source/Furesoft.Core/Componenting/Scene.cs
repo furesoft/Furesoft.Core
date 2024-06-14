@@ -2,7 +2,7 @@
 
 public class Scene
 {
-    private readonly List<ComponentObject> _objects = new();
+    private readonly List<ComponentObject> _objects = [];
     public IReadOnlyList<ComponentObject> Objects => _objects;
 
     public void Initialize()

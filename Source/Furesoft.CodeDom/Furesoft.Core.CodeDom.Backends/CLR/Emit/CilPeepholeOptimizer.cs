@@ -120,8 +120,7 @@ public sealed class CilPeepholeOptimizer : PeepholeOptimizer<Instruction, Except
     }
 
     private static readonly PeepholeRewriteRule<Instruction>[] rules =
-        new PeepholeRewriteRule<Instruction>[]
-    {
+        [
         ElideNop,
         ElideDupPop,
         ElideLdlocStloc,
@@ -142,7 +141,7 @@ public sealed class CilPeepholeOptimizer : PeepholeOptimizer<Instruction, Except
         CeqBrfalseToBneUn,
         CompareOneAndToCompare,
         DupInitobjLoadobjPopToInitObj
-    };
+    ];
 
     /// <summary>
     /// An instance of the CIL peephole optimizer.

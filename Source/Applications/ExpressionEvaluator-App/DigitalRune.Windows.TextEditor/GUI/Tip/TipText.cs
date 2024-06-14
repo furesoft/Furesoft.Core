@@ -83,19 +83,19 @@ namespace DigitalRune.Windows.TextEditor
       brush = Brushes.Black;
       if (flipped)
       {
-        Graphics.FillPolygon(brush, new PointF[] {
+        Graphics.FillPolygon(brush, [
 					new PointF(x,                y + triHeight2 - triHeight4),
 					new PointF(x + triWidth / 2, y + triHeight2 + triHeight4),
 					new PointF(x + triWidth,     y + triHeight2 - triHeight4),
-				});
+				]);
       }
       else
       {
-        Graphics.FillPolygon(brush, new PointF[] {
+        Graphics.FillPolygon(brush, [
 					new PointF(x,                y +  triHeight2 + triHeight4),
 					new PointF(x + triWidth / 2, y +  triHeight2 - triHeight4),
 					new PointF(x + triWidth,     y +  triHeight2 + triHeight4),
-				});
+				]);
       }
     }
 

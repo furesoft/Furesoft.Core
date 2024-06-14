@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
 	<OutputType>WinExe</OutputType>
-	<TargetFramework>net7.0-windows</TargetFramework>
+	<TargetFramework>net8.0-windows</TargetFramework>
 	<RootNamespace>ExpressionEvaluator_App</RootNamespace>
 	<UseWindowsForms>true</UseWindowsForms>
 	<LangVersion>preview</LangVersion>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+	<PackageReference Include="System.Drawing.Common" Version="8.0.6" />
   </ItemGroup>
 
   <ItemGroup>

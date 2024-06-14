@@ -33,6 +33,6 @@ internal sealed class Not : AbstractExpression
 
     public override AttributeValuesMap GetValues()
     {
-        return new();
+        return [];
     }
 }

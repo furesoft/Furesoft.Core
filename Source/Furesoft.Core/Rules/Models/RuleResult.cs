@@ -6,7 +6,7 @@ public class RuleResult : IRuleResult
 {
     public RuleResult()
     {
-        Data = new();
+        Data = [];
     }
 
     public string Name { get; set; }

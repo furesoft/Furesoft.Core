@@ -17,7 +17,7 @@ public sealed class DescribedAssembly : DescribedMember, IAssembly
     public DescribedAssembly(QualifiedName fullName)
         : base(fullName)
     {
-        definedTypes = new List<IType>();
+        definedTypes = [];
     }
 
     /// <inheritdoc/>

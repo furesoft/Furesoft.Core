@@ -9,7 +9,7 @@ namespace Furesoft.Core.CLI;
 public class App
 {
     public static App Current = new();
-    private readonly Dictionary<string, ICliCommand> _commands = new();
+    private readonly Dictionary<string, ICliCommand> _commands = [];
 
     public void AddCommand(ICliCommand cmd)
     {
@@ -96,7 +96,7 @@ public class App
 
     public void PrintAllCommands()
     {
-        var table = new ConsoleTable(Console.CursorTop, ConsoleTable.Align.Left, new[] {"Command", "Description"});
+        var table = new ConsoleTable(Console.CursorTop, ConsoleTable.Align.Left, ["Command", "Description"]);
         var rows = new ArrayList();
 
         foreach (var cmd in _commands) rows.Add(new[] {cmd.Key, cmd.Value.Description, cmd.Value.HelpText});

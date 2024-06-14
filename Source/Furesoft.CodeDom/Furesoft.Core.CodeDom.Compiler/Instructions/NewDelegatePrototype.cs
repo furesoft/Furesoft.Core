@@ -147,7 +147,7 @@ public sealed class NewDelegatePrototype : InstructionPrototype
         return Instantiate(
             thisArgument == null
             ? EmptyArray<ValueTag>.Value
-            : new ValueTag[] { thisArgument });
+            : [thisArgument]);
     }
 
     private static readonly InterningCache<NewDelegatePrototype> instanceCache

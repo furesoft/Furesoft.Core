@@ -2,9 +2,9 @@
 
 public sealed class TreeDiskNodeManager<K, V> : ITreeNodeManager<K, V>
 {
-    private readonly Dictionary<uint, TreeNode<K, V>> _dirtyNodes = new();
+    private readonly Dictionary<uint, TreeNode<K, V>> _dirtyNodes = [];
     private readonly Queue<TreeNode<K, V>> _nodeStrongRefs = new();
-    private readonly Dictionary<uint, WeakReference<TreeNode<K, V>>> _nodeWeakRefs = new();
+    private readonly Dictionary<uint, WeakReference<TreeNode<K, V>>> _nodeWeakRefs = [];
     private readonly TreeDiskNodeSerializer<K, V> _serializer;
     private readonly int maxStrongNodeRefs = 200;
     private readonly IRecordStorage recordStorage;

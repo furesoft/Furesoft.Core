@@ -47,7 +47,7 @@ internal sealed class LazyOdbBtreePersister : IBTreePersister, ICommitListener
     public LazyOdbBtreePersister(IStorageEngine engine)
     {
         _oids = new OdbHashMap<OID, object>();
-        _modifiedObjectOids = new();
+        _modifiedObjectOids = [];
         _modifiedObjectOidList = new OdbList<OID>(500);
         _engine = engine;
         _engine.AddCommitListener(this);

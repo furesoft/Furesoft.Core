@@ -2,7 +2,7 @@
 
 internal sealed class MatchContext
 {
-    private readonly Dictionary<object, object> _data = new();
+    private readonly Dictionary<object, object> _data = [];
 
     internal MatchContext(Instruction instruction)
     {

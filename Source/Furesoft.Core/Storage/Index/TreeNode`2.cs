@@ -33,7 +33,7 @@ public class TreeNode<K, V>
 
         // Setting up readonly attributes
         this.nodeManager = nodeManager;
-        this.childrenIds = new();
+        this.childrenIds = [];
         this.entries = new(this.nodeManager.MinEntriesPerNode * 2);
 
         // Loading up data

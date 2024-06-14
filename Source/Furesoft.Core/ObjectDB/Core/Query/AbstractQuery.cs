@@ -31,7 +31,7 @@ internal abstract class AbstractQuery : IInternalQuery
 
         OrderByType = OrderByConstants.OrderByNone;
         UnderlyingType = underlyingType;
-        OrderByFields = new();
+        OrderByFields = [];
     }
 
     public abstract IConstraint Constrain(object value);

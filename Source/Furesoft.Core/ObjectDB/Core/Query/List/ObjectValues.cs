@@ -17,7 +17,7 @@ internal sealed class ObjectValues : IObjectValues
     public ObjectValues(int size)
     {
         _valuesByIndex = new object[size];
-        _valuesByAlias = new();
+        _valuesByAlias = [];
     }
 
     public void Set(int index, string alias, object value)

@@ -408,7 +408,7 @@ public class MultiEnumMemberDecl : EnumMemberDecl, IMultiVariableDecl
         // If we're aligning bit-flag enum constants, create an alignment state to hold the alignment offset
         bool aligningConstants = (isBitFlag && nameColumnWidth > 0);
         if (aligningConstants)
-            writer.BeginAlignment(this, new[] { nameColumnWidth });
+            writer.BeginAlignment(this, [nameColumnWidth]);
 
         // Pass any total width through to WriteList to align any EOL comments
         int[] columnWidths = (totalWidth > 0 ? new[] { totalWidth } : null);

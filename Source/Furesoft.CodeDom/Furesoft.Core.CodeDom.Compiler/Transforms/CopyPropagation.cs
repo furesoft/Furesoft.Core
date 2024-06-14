@@ -112,8 +112,8 @@ public sealed class CopyPropagation : IntraproceduralOptimization
         {
             foreach (var param in block.ParameterTags)
             {
-                phiArgs[param] = new HashSet<ValueTag>();
-                phiUsers[param] = new HashSet<ValueTag>();
+                phiArgs[param] = [];
+                phiUsers[param] = [];
                 if (block.IsEntryPoint)
                 {
                     specialPhis.Add(param);

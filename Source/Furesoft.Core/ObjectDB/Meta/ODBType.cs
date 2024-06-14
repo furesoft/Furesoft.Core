@@ -23,7 +23,7 @@ public sealed class OdbType
     ///     or a collection or any other, we put the odb type in this cache
     /// </remarks>
     private static readonly Dictionary<string, OdbType> cacheOfTypesByName =
-        new();
+        [];
 
     public static readonly string DefaultArrayComponentClassName = OdbClassNameResolver.GetFullName(typeof(object));
 
@@ -31,30 +31,32 @@ public sealed class OdbType
 
     static OdbType()
     {
-        IList<OdbType> allTypes = new List<OdbType>(32);
-        //// DO NOT FORGET DO ADD THE TYPE IN THIS LIST WHEN CREATING A NEW ONE!!!
-        allTypes.Add(Null);
-        allTypes.Add(Byte);
-        allTypes.Add(SByte);
-        allTypes.Add(Short);
-        allTypes.Add(UShort);
-        allTypes.Add(Integer);
-        allTypes.Add(UInteger);
-        allTypes.Add(Long);
-        allTypes.Add(ULong);
-        allTypes.Add(Float);
-        allTypes.Add(Double);
-        allTypes.Add(Decimal);
-        allTypes.Add(Character);
-        allTypes.Add(Boolean);
-        allTypes.Add(Date);
-        allTypes.Add(String);
-        allTypes.Add(Enum);
-        allTypes.Add(Array);
-        allTypes.Add(Oid);
-        allTypes.Add(ObjectOid);
-        allTypes.Add(ClassOid);
-        allTypes.Add(NonNative);
+        IList<OdbType> allTypes = new List<OdbType>(32)
+        {
+            //// DO NOT FORGET DO ADD THE TYPE IN THIS LIST WHEN CREATING A NEW ONE!!!
+            Null,
+            Byte,
+            SByte,
+            Short,
+            UShort,
+            Integer,
+            UInteger,
+            Long,
+            ULong,
+            Float,
+            Double,
+            Decimal,
+            Character,
+            Boolean,
+            Date,
+            String,
+            Enum,
+            Array,
+            Oid,
+            ObjectOid,
+            ClassOid,
+            NonNative
+        };
 
         foreach (var type in allTypes)
         {

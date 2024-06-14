@@ -28,8 +28,8 @@ public class DescribedMethod : DescribedGenericMember, IMethod
         ParentType = parentType;
         IsStatic = isStatic;
         ReturnParameter = new Parameter(returnType);
-        paramList = new List<Parameter>();
-        baseMethodList = new List<IMethod>();
+        paramList = [];
+        baseMethodList = [];
     }
 
     /// <inheritdoc/>

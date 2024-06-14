@@ -150,7 +150,7 @@ internal sealed class EndFinallyFlow : BlockFlow
 {
     public EndFinallyFlow()
     {
-        this.Destinations = new Dictionary<int, Branch>();
+        this.Destinations = [];
     }
 
     public override IReadOnlyList<Branch> Branches

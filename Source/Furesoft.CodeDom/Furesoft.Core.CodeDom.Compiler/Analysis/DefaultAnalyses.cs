@@ -13,7 +13,7 @@ public static class DefaultAnalyses
 {
     static DefaultAnalyses()
     {
-        defaults = new Dictionary<Type, Func<FlowGraph, FlowGraphAnalysisCache>>();
+        defaults = [];
 
         Register(ValueUseAnalysis.Instance);
         Register(new EffectfulInstructionAnalysis());

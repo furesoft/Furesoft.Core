@@ -78,7 +78,7 @@ internal sealed class DataSharingService
 
     private static string[] BuildKey(string key, string ruleEngineId)
     {
-        return new[] {string.Join("_", ruleEngineId, key), key};
+        return [string.Join("_", ruleEngineId, key), key];
     }
 
     private static string GetRuleEngineId<T>(IConfiguration<T> configuration)

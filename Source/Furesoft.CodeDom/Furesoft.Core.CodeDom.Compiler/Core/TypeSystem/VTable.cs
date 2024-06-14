@@ -9,7 +9,7 @@ internal sealed class VTable
 {
     // This cache interns all VTables.
     private static ConditionalWeakTable<IType, VTable> instanceCache
-        = new();
+        = [];
 
     private Dictionary<IMethod, IMethod> implementations;
 

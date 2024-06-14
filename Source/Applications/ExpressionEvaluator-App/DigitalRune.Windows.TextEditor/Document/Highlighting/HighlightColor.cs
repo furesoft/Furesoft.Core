@@ -146,7 +146,7 @@ namespace DigitalRune.Windows.TextEditor.Highlighting
         }
         else
         {
-          _color = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, new object[0]);
+          _color = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, []);
         }
         _hasForeground = true;
       }
@@ -168,7 +168,7 @@ namespace DigitalRune.Windows.TextEditor.Highlighting
         }
         else
         {
-          _backgroundcolor = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, new object[0]);
+          _backgroundcolor = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, []);
         }
         _hasBackground = true;
       }
@@ -210,7 +210,7 @@ namespace DigitalRune.Windows.TextEditor.Highlighting
         }
         else
         {
-          _color = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, new object[0]);
+          _color = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, []);
         }
         _hasForeground = true;
       }
@@ -232,7 +232,7 @@ namespace DigitalRune.Windows.TextEditor.Highlighting
         }
         else
         {
-          _backgroundcolor = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, new object[0]);
+          _backgroundcolor = (Color) (Color.GetType()).InvokeMember(c, BindingFlags.GetProperty, null, Color, []);
         }
         _hasBackground = true;
       }

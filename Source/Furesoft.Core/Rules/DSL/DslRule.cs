@@ -7,7 +7,7 @@ namespace Furesoft.Core.Rules.DSL;
 public class DslRule<T> : Rule<T>
     where T : class, new()
 {
-    private readonly List<string> _errors = new();
+    private readonly List<string> _errors = [];
     private readonly Func<T, List<string>, bool> _evaluate;
 
     public DslRule(string source)

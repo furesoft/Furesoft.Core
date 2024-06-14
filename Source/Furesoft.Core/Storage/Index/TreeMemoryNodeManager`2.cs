@@ -2,7 +2,7 @@
 
 public class TreeMemoryNodeManager<K, V> : ITreeNodeManager<K, V>
 {
-    private readonly Dictionary<uint, TreeNode<K, V>> _nodes = new();
+    private readonly Dictionary<uint, TreeNode<K, V>> _nodes = [];
     private int _idCounter = 1;
 
     /// <summary>

@@ -6,7 +6,7 @@ namespace Furesoft.Core.ExpressionEvaluator;
 public class ExpressionParser
 {
     public readonly Binder Binder = new();
-    public Dictionary<string, Module> Modules = new();
+    public Dictionary<string, Module> Modules = [];
     public Scope RootScope = Scope.CreateScope();
 
     public ExpressionParser()

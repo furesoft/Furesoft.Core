@@ -122,8 +122,10 @@ public sealed class CallPrototype : InstructionPrototype
         ValueTag thisArgument,
         IReadOnlyList<ValueTag> arguments)
     {
-        var extendedArgs = new List<ValueTag>();
-        extendedArgs.Add(thisArgument);
+        var extendedArgs = new List<ValueTag>
+        {
+            thisArgument
+        };
         extendedArgs.AddRange(arguments);
         return Instantiate(extendedArgs);
     }

@@ -80,8 +80,8 @@ public class OnDemandOptimizer : Optimizer
         getInitMethodBody = getInitialMethodBody;
         holders = new ConcurrentDictionary<IMethod, MethodBodyHolder>();
         graphLock = new object();
-        results = new Dictionary<IMethod, TaskCompletionSource<MethodBody>>();
-        dependencies = new Dictionary<IMethod, HashSet<IMethod>>();
+        results = [];
+        dependencies = [];
     }
 
     /// <summary>
@@ -343,7 +343,7 @@ public class OnDemandOptimizer : Optimizer
         {
             source = new TaskCompletionSource<MethodBody>();
             results[method] = source;
-            dependencies[method] = new HashSet<IMethod>();
+            dependencies[method] = [];
         }
         return source.Task;
     }

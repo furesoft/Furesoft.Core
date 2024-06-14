@@ -245,10 +245,10 @@ public sealed class ClrMethodBodyEmitter
         {
             this.Processor = processor;
             this.RegisterAllocation = registerAllocation;
-            this.branchTargets = new Dictionary<BasicBlockTag, CilInstruction>();
-            this.pendingTargets = new List<BasicBlockTag>();
-            this.patches = new List<CilOpInstruction>();
-            this.registerUseCounters = new Dictionary<Mono.Cecil.Cil.VariableDefinition, int>();
+            this.branchTargets = [];
+            this.pendingTargets = [];
+            this.patches = [];
+            this.registerUseCounters = [];
 
             this.pendingTryHandlers = new Stack<BasicBlockTag>();
             this.pendingHandlers = new Stack<Tuple<BasicBlockTag, BasicBlockTag, Mono.Cecil.Cil.ExceptionHandler>>();

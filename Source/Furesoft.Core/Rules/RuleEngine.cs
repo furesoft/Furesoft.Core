@@ -23,7 +23,7 @@ public sealed class RuleEngine<T> where T : class, new()
 {
     private readonly RuleEngineConfiguration<T> _ruleEngineConfiguration = new(new Configuration<T>());
     private readonly Guid _ruleEngineId = Guid.NewGuid();
-    private readonly List<object> _rules = new();
+    private readonly List<object> _rules = [];
     private AsyncRuleService<T> _asyncRuleService;
     private IDependencyResolver _dependencyResolver;
     private T _model;

@@ -3,7 +3,7 @@
 public static class Injector
 {
     private static readonly Dictionary<Type, Type> mappings
-        = new();
+        = [];
 
     public static T Get<T>()
     {

@@ -189,7 +189,7 @@ public sealed class ClrMethodBodyAnalyzer
             { OpCodes.Conv_U, TypeEnvironment.NaturalUInt },
         };
 
-        this.leaveTokens = new Dictionary<BasicBlockTag, int>();
+        this.leaveTokens = [];
     }
 
     /// <summary>
@@ -536,8 +536,8 @@ public sealed class ClrMethodBodyAnalyzer
     private void AnalyzeBranchTargets(
         Mono.Cecil.Cil.MethodBody cilMethodBody)
     {
-        branchTargets = new Dictionary<Mono.Cecil.Cil.Instruction, BasicBlockBuilder>();
-        analyzedBlocks = new HashSet<BasicBlockBuilder>();
+        branchTargets = [];
+        analyzedBlocks = [];
 
         // Analyze regular control flow.
         if (cilMethodBody.Instructions.Count > 0)
@@ -1609,11 +1609,11 @@ ArithmeticIntrinsics.Operators.Subtract,
                 new BlockParameter(param.Type, param.Name.ToString()))
             .ToImmutableList();
 
-        this.freeTemporaries = new HashSet<ValueTag>();
+        this.freeTemporaries = [];
 
         // For each parameter, allocate a stack slot and store the
         // value of the parameter in the stack slot.
-        this.parameterStackSlots = new List<NamedInstructionBuilder>();
+        this.parameterStackSlots = [];
         for (int i = 0; i < extParameters.Count; i++)
         {
             var param = extParameters[i];
@@ -1633,7 +1633,7 @@ ArithmeticIntrinsics.Operators.Subtract,
         }
 
         // For each local, allocate an empty stack slot.
-        this.localStackSlots = new List<NamedInstructionBuilder>();
+        this.localStackSlots = [];
         foreach (var local in cilMethodBody.Variables)
         {
             var varType = local.VariableType;
@@ -1669,8 +1669,8 @@ ArithmeticIntrinsics.Operators.Subtract,
         Mono.Cecil.Cil.MethodBody cilMethodBody)
     {
         // Initialize exception handler data structures.
-        exceptionHandlers = new Dictionary<Mono.Cecil.Cil.Instruction, IReadOnlyList<CilExceptionHandler>>();
-        exceptionHandlerClauses = new Dictionary<Mono.Cecil.Cil.Instruction, IReadOnlyList<CilExceptionHandler>>();
+        exceptionHandlers = [];
+        exceptionHandlerClauses = [];
         var ehMapping = new Dictionary<Mono.Cecil.Cil.ExceptionHandler, CilExceptionHandler>();
 
         // If there are no exception handlers then we can save ourselves quite

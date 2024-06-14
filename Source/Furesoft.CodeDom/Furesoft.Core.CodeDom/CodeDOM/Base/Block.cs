@@ -897,7 +897,7 @@ public class Block : CodeObject, ICollection<CodeObject>, ICollection
 
                 if (--j > i)
                 {
-                    writer.BeginAlignment(this, new[] { maxCodeWidth });
+                    writer.BeginAlignment(this, [maxCodeWidth]);
                     endAlignmentAt = j;
                 }
             }

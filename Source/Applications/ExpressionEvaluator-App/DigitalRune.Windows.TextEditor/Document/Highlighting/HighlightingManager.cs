@@ -126,7 +126,7 @@ namespace DigitalRune.Windows.TextEditor.Highlighting
     void CreateDefaultHighlightingStrategy()
     {
       DefaultHighlightingStrategy defaultHighlightingStrategy = new DefaultHighlightingStrategy();
-      defaultHighlightingStrategy.Extensions = new string[] { };
+      defaultHighlightingStrategy.Extensions = [];
       defaultHighlightingStrategy.Rules.Add(new HighlightRuleSet());
       _highlightingDefinitions["Default"] = defaultHighlightingStrategy;
     }

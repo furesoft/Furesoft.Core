@@ -316,9 +316,9 @@ internal sealed class GenericParameterToStandinVisitor : TypeVisitor
     public GenericParameterToStandinVisitor()
     {
         this.memoizedStandins =
-            new Dictionary<IGenericParameter, ClrGenericParameterStandin>();
+            [];
         this.processedParents =
-            new HashSet<IGenericMember>();
+            [];
     }
 
     protected override bool IsOfInterest(IType type)

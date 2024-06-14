@@ -12,7 +12,7 @@ namespace Furesoft.Core.ObjectDB.Meta;
 /// </summary>
 public sealed class ClassInfo
 {
-    private static readonly Dictionary<string, Type> typeCache = new();
+    private static readonly Dictionary<string, Type> typeCache = [];
     private readonly AttributesCache _attributesCache;
 
     /// <summary>

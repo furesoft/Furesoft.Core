@@ -69,7 +69,7 @@ public sealed class LazyBlockReachability : BlockReachability
     public LazyBlockReachability(FlowGraph graph)
     {
         Graph = graph;
-        results = new Dictionary<BasicBlockTag, HashSet<BasicBlockTag>>();
+        results = [];
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ public sealed class LazyBlockReachability : BlockReachability
         }
         else
         {
-            reachable = new HashSet<BasicBlockTag>();
+            reachable = [];
             AddReachableBlocks(source, reachable);
             results[source] = reachable;
             return reachable;

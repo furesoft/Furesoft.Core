@@ -57,8 +57,10 @@ public abstract class InstructionPrototype
     {
         get
         {
-            var results = new List<IMember>();
-            results.Add(ResultType);
+            var results = new List<IMember>
+            {
+                ResultType
+            };
             Map(
                 new MemberMapping(
                     type =>

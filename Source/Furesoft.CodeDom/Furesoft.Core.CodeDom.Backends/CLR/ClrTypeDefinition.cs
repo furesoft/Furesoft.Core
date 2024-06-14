@@ -388,7 +388,7 @@ public sealed class ClrTypeDefinition : IType
         //     them to the overriding methods.
         //
 
-        virtualMethodSet = new HashSet<IMethod>();
+        virtualMethodSet = [];
 
         contentsInitializer.Initialize();
         foreach (var baseType in baseTypeList)
@@ -420,7 +420,7 @@ public sealed class ClrTypeDefinition : IType
             virtualMethodSet.UnionWith(allMethodDefs);
             foreach (var method in allMethodDefs)
             {
-                method.BaseMethodStore = new List<IMethod>();
+                method.BaseMethodStore = [];
             }
             return;
         }
@@ -428,7 +428,7 @@ public sealed class ClrTypeDefinition : IType
         // Handle explicit overrides.
         foreach (var method in allMethodDefs)
         {
-            method.BaseMethodStore = new List<IMethod>();
+            method.BaseMethodStore = [];
             foreach (var overrideRef in method.Definition.Overrides)
             {
                 var overrideMethod = Assembly.Resolve(overrideRef);
@@ -448,7 +448,7 @@ public sealed class ClrTypeDefinition : IType
                 signature,
                 out virtualMethodList))
             {
-                virtualMethodList = new List<IMethod>();
+                virtualMethodList = [];
                 virtualMethodSignatures[signature] = virtualMethodList;
             }
             virtualMethodList.Add(virtualMethod);

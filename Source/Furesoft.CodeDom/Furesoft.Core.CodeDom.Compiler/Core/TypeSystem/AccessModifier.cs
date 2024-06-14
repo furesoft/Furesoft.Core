@@ -74,7 +74,7 @@ public static class AccessModifierAttribute
             { AccessModifier.ProtectedOrInternal, "protected-or-internal" },
             { AccessModifier.Public, "public" },
         };
-        invModifierNames = new Dictionary<string, AccessModifier>();
+        invModifierNames = [];
         foreach (var pair in modifierNames)
         {
             invModifierNames[pair.Value] = pair.Key;

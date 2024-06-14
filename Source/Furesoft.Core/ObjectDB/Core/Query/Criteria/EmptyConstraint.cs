@@ -115,7 +115,7 @@ internal sealed class EmptyConstraint : IInternalConstraint
 
     public AttributeValuesMap GetValues()
     {
-        return new();
+        return [];
     }
 
     public IOdbList<string> GetAllInvolvedFields()

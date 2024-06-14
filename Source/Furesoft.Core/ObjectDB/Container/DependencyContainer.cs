@@ -2,8 +2,8 @@
 
 internal static class DependencyContainer
 {
-    private static readonly Dictionary<Type, Func<object>> factory = new();
-    private static readonly Dictionary<Type, Func<object, object>> factoryWithArgument = new();
+    private static readonly Dictionary<Type, Func<object>> factory = [];
+    private static readonly Dictionary<Type, Func<object, object>> factoryWithArgument = [];
 
     internal static void Register<TInterface>(Func<object> factoryMethod)
     {

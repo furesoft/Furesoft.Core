@@ -4,14 +4,14 @@ namespace Furesoft.Core.ExpressionEvaluator;
 
 public class Scope
 {
-    public Dictionary<string, Expression> Aliases = new();
-    public Dictionary<string, FunctionDefinition> Functions = new();
-    public Dictionary<string, Func<double[], double>> ImportedFunctions = new();
-    public Dictionary<string, Macro> Macros = new();
+    public Dictionary<string, Expression> Aliases = [];
+    public Dictionary<string, FunctionDefinition> Functions = [];
+    public Dictionary<string, Func<double[], double>> ImportedFunctions = [];
+    public Dictionary<string, Macro> Macros = [];
 
-    public Dictionary<string, List<OperatorOverload>> OperatorOverloads = new();
-    public Dictionary<string, Expression> SetDefinitions = new();
-    public Dictionary<string, ValueType> Variables = new();
+    public Dictionary<string, List<OperatorOverload>> OperatorOverloads = [];
+    public Dictionary<string, Expression> SetDefinitions = [];
+    public Dictionary<string, ValueType> Variables = [];
     public Macro Initializer { get; set; }
 
     public Scope Parent { get; set; }
@@ -51,8 +51,10 @@ public class Scope
         }
         else
         {
-            var l = new List<OperatorOverload>();
-            l.Add(opOverload);
+            var l = new List<OperatorOverload>
+            {
+                opOverload
+            };
 
             OperatorOverloads.Add(symbol, l);
         }
@@ -78,8 +80,10 @@ public class Scope
         }
         else
         {
-            var l = new List<OperatorOverload>();
-            l.Add(opOverload);
+            var l = new List<OperatorOverload>
+            {
+                opOverload
+            };
 
             OperatorOverloads.Add(symbol, l);
         }
@@ -134,8 +138,10 @@ public class Scope
                 {
                     var m = new ReflectionMacro(funcName, new Func<MacroContext, Expression[], Expression>((c, args) =>
                     {
-                        var na = new List<object>();
-                        na.Add(c);
+                        var na = new List<object>
+                        {
+                            c
+                        };
 
                         var parameters = mi.GetParameters();
 

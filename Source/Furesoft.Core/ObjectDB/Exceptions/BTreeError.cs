@@ -68,7 +68,7 @@ internal sealed class BTreeError : IError
     public IError AddParameter(string s)
     {
         if (_parameters == null)
-            _parameters = new List<string>();
+            _parameters = [];
 
         _parameters.Add(s);
         return this;

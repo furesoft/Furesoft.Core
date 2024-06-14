@@ -186,7 +186,7 @@ public sealed class ValueNumberingAnalysis : IFlowGraphAnalysis<ValueNumbering>
 
         public ValueNumberingImpl()
         {
-            valueNumbers = new Dictionary<ValueTag, ValueTag>();
+            valueNumbers = [];
             instructionNumbers = new Dictionary<Instruction, ValueTag>(
                 new ValueNumberingInstructionComparer(this));
         }

@@ -2,19 +2,47 @@
 using Furesoft.PrattParser;
 using Furesoft.PrattParser.Parselets;
 using Furesoft.PrattParser.Parselets.Literals;
+using static Furesoft.PrattParser.PredefinedSymbols;
 
 namespace Furesoft.Core.Rules.DSL;
 
 public class Grammar : Parser
 {
-    public Grammar()
+    private void AddOperators()
     {
-        Block(PredefinedSymbols.Dot, PredefinedSymbols.EOF, -1);
+        Prefix("not");
+        Prefix("and");
+        Prefix("or");
+
+        InfixLeft("==", "Sum");
+
+        Register("set", new AssignmentParselet(BindingPowers.Get("Assignment")));
+
+        Postfix("%");
+    }
+
+    protected override void InitLexer(Lexer lexer)
+    {
+        lexer.Ignore(' ');
+        lexer.Ignore('\t');
+        lexer.MatchString("'", "'");
+        lexer.MatchNumber(allowHex: true, allowBin: true);
+        lexer.MatchBoolean(ignoreCasing: true);
+
+        lexer.AddSymbols("equal", "less", "greater", "then", "than", "to");
+        lexer.AddSymbol("set");
+
+        lexer.AddSymbols("d", "h", "min", "s", "ms", "qs");
+    }
+
+    protected override void InitParselets()
+    {
+        Block(Dot, EOF);
 
         Register("error", new ErrorParselet());
-        Register(PredefinedSymbols.Name, new NameParselet());
+        Register(Name, new NameParselet());
 
-        Register(PredefinedSymbols.Number, new TimeLiteralParselet());
+        Register(Number, new TimeLiteralParselet());
         Register(PredefinedSymbols.Boolean, new BooleanLiteralParselet());
         Register(PredefinedSymbols.String, new StringLiteralParselet());
 
@@ -24,46 +52,9 @@ public class Grammar : Parser
 
         AddOperators();
 
-        Register("(", new CallParselet());
+        Register("(", new CallParselet(BindingPowers.Get("Call")));
 
-        Register("is", new ConditionParselet());
-        Register("if", new IfParselet());
-    }
-
-    private void AddOperators()
-    {
-        Prefix("not", BindingPower.Prefix);
-        Prefix("and", BindingPower.Product);
-        Prefix("or", BindingPower.Sum);
-        InfixLeft("==", BindingPower.Sum);
-
-        Register("set", new AssignmentParselet());
-
-        Postfix("%", BindingPower.PostFix);
-    }
-
-    protected override void InitLexer(Lexer lexer)
-    {
-        lexer.Ignore(' ');
-        lexer.Ignore('\t');
-        lexer.MatchString("'", "'");
-        lexer.MatchNumber(true, true);
-        lexer.MatchBoolean();
-
-        lexer.AddSymbol("equal");
-        lexer.AddSymbol("less");
-        lexer.AddSymbol("greater");
-        lexer.AddSymbol("than");
-        lexer.AddSymbol("then");
-        lexer.AddSymbol("to");
-
-        lexer.AddSymbol("set");
-
-        lexer.AddSymbol("d");
-        lexer.AddSymbol("h");
-        lexer.AddSymbol("min");
-        lexer.AddSymbol("s");
-        lexer.AddSymbol("ms");
-        lexer.AddSymbol("qs");
+        Register("is", new ConditionParselet(BindingPowers.Get("Product")));
+        Register("if", new IfParselet(BindingPowers.Get("Product") - 1));
     }
 }

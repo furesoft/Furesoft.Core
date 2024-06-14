@@ -23,16 +23,16 @@ public class Activator<ActivationStrategy>
 
     public T CreateInstance<T>(object arg1)
     {
-        return (T) CreateInstance(typeof(T), new[] {arg1});
+        return (T) CreateInstance(typeof(T), [arg1]);
     }
 
     public T CreateInstance<T>(object arg1, object arg2)
     {
-        return (T) CreateInstance(typeof(T), new[] {arg1, arg2});
+        return (T) CreateInstance(typeof(T), [arg1, arg2]);
     }
 
     public T CreateInstance<T>(object arg1, object arg2, object arg3)
     {
-        return (T) CreateInstance(typeof(T), new[] {arg1, arg2, arg3});
+        return (T) CreateInstance(typeof(T), [arg1, arg2, arg3]);
     }
 }

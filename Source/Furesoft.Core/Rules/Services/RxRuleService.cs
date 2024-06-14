@@ -69,7 +69,7 @@ internal sealed class RxRuleService<TK, T> where T : class, new() where TK : IGe
         Parallel.ForEach(rules, r =>
         {
             if (predicate(r))
-                rxRules.AddOrUpdate(r.ObservedRule, new List<TK> {r}, (type, list) =>
+                rxRules.AddOrUpdate(r.ObservedRule, [r], (type, list) =>
                 {
                     list.Add(r);
                     return list;

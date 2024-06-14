@@ -226,7 +226,7 @@ public class Switch : BlockStatement
 
             // If we're aligning, create an alignment state to hold the alignment offset value so the SwitchItems can find it
             if (alignmentOffset > 0)
-                writer.BeginAlignment(this, new[] { alignmentOffset });
+                writer.BeginAlignment(this, [alignmentOffset]);
 
             _body.AsText(writer, flags);
 

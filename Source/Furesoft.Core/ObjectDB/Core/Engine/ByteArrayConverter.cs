@@ -9,9 +9,9 @@ namespace Furesoft.Core.ObjectDB.Core.Engine;
 /// </summary>
 internal static class ByteArrayConverter
 {
-    private static readonly byte[] bytesForTrue = {1};
+    private static readonly byte[] bytesForTrue = [1];
 
-    private static readonly byte[] bytesForFalse = {0};
+    private static readonly byte[] bytesForFalse = [0];
 
     private static readonly int intSize = OdbType.Integer.Size;
 

@@ -177,9 +177,9 @@ public sealed class CilInstructionSelector :
         this.Method = method;
         this.TypeEnvironment = typeEnvironment;
         this.AllocaToVariableMapping = allocaToVariableMapping;
-        this.tempDefs = new List<VariableDefinition>();
-        this.freeTempsByType = new Dictionary<IType, HashSet<VariableDefinition>>();
-        this.tempTypes = new Dictionary<VariableDefinition, IType>();
+        this.tempDefs = [];
+        this.freeTempsByType = [];
+        this.tempTypes = [];
     }
 
     /// <summary>
@@ -568,7 +568,7 @@ ArrayIntrinsics.Operators.StoreElement);
         HashSet<VariableDefinition> tempSet;
         if (!freeTempsByType.TryGetValue(type, out tempSet))
         {
-            freeTempsByType[type] = tempSet = new HashSet<VariableDefinition>();
+            freeTempsByType[type] = tempSet = [];
         }
         if (tempSet.Count == 0)
         {
@@ -977,7 +977,7 @@ ArrayIntrinsics.Operators.StoreElement);
                         SelectedInstructions.Create(
                             EmptyArray<CilCodegenInstruction>.Value,
                             dependencies));
-                    dependencies = new List<ValueTag>();
+                    dependencies = [];
                 }
 
                 chunks.Add(selectForNonValueArg(arg));
@@ -1336,15 +1336,14 @@ ArrayIntrinsics.Operators.StoreElement);
 
                 return CreateSelection(
                     storeInstruction,
-                    new[]
-                    {
+                    [
                         // Load the array.
                         arguments[1],
                         // Load the index.
                         arguments[2],
                         // Load the value to store in the array.
                         arguments[0]
-                    });
+                    ]);
             }
             throw new NotSupportedException(
                 $"Cannot select instructions for call to unknown array intrinsic '{prototype.Name}'.");
@@ -1365,10 +1364,11 @@ ArrayIntrinsics.Operators.StoreElement);
     {
         var switchFlow = (SwitchFlow)flow;
 
-        var chunks = new List<SelectedInstructions<CilCodegenInstruction>>();
-
-        // Select instructions for the switch value.
-        chunks.Add(SelectInstructionsImpl(switchFlow.SwitchValue, graph));
+        var chunks = new List<SelectedInstructions<CilCodegenInstruction>>
+        {
+            // Select instructions for the switch value.
+            SelectInstructionsImpl(switchFlow.SwitchValue, graph)
+        };
 
         if (switchFlow.IsIfElseFlow)
         {
@@ -1605,15 +1605,15 @@ ArrayIntrinsics.Operators.StoreElement);
         var exceptionThunkTag = new BasicBlockTag("exception_thunk");
 
         // Compose the flow codegen chunks.
-        var chunks = new List<SelectedInstructions<CilCodegenInstruction>>();
-
-        chunks.Add(
+        var chunks = new List<SelectedInstructions<CilCodegenInstruction>>
+        {
             SelectedInstructions.Create<CilCodegenInstruction>(
-                CilTryStartMarker.Instance));
+                CilTryStartMarker.Instance),
 
-        // Select CIL instructions for the 'risky' Flame IR instruction,
-        // i.e., the instruction that might throw.
-        chunks.Add(SelectInstructionsImpl(flow.Instruction, graph));
+            // Select CIL instructions for the 'risky' Flame IR instruction,
+            // i.e., the instruction that might throw.
+            SelectInstructionsImpl(flow.Instruction, graph)
+        };
 
         if (flow.Instruction.ResultType != TypeEnvironment.Void)
         {
@@ -2072,12 +2072,13 @@ ArrayIntrinsics.Operators.StoreElement);
         else if (proto is SizeOfPrototype)
         {
             var sizeofProto = (SizeOfPrototype)proto;
-            var ops = new List<CilCodegenInstruction>();
-            ops.Add(
+            var ops = new List<CilCodegenInstruction>
+            {
                 new CilOpInstruction(
                     CilInstruction.Create(
                         OpCodes.Sizeof,
-                        Method.Module.ImportReference(sizeofProto.MeasuredType))));
+                        Method.Module.ImportReference(sizeofProto.MeasuredType)))
+            };
             ops.AddRange(EmitConvert(sizeofProto.ResultType, TypeEnvironment.UInt32, false));
             return SelectedInstructions.Create<CilCodegenInstruction>(ops);
         }

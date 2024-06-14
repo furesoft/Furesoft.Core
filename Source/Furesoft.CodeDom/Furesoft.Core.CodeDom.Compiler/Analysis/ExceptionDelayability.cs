@@ -145,10 +145,9 @@ public sealed class PermissiveExceptionDelayability : ExceptionDelayability
         new();
 
     private static readonly HashSet<string> delayableIntrinsics =
-        new()
-    {
+        [
         ArrayIntrinsics.Namespace.GetIntrinsicName(ArrayIntrinsics.Operators.GetElementPointer)
-    };
+    ];
 
     private PermissiveExceptionDelayability()
     { }

@@ -10,8 +10,8 @@ public partial class MeasureUnit
 
         public Combinator(IEnumerable<ExponentMeasureUnit> units)
         {
-            _normM = new();
-            _normE = new();
+            _normM = [];
+            _normE = [];
             _dimensionLessFactor = ExpFactor.Neutral;
             if (units != null) Add(units);
         }

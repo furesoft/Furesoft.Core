@@ -6,7 +6,7 @@ namespace Furesoft.Core.ObjectDB.Meta;
 
 internal class MetaModelCompabilityChecker : IMetaModelCompabilityChecker
 {
-    private readonly IList<ClassInfoCompareResult> _results = new List<ClassInfoCompareResult>();
+    private readonly IList<ClassInfoCompareResult> _results = [];
 
     /// <summary>
     ///     Receive the current class info (loaded from current classes present on runtime and check against the persisted meta

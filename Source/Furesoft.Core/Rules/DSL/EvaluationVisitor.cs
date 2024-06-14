@@ -11,7 +11,7 @@ namespace Furesoft.Core.Rules.DSL;
 public class EvaluationVisitor<T> : IVisitor<Expression>
     where T : class, new()
 {
-    private readonly List<string> _errors = new();
+    private readonly List<string> _errors = [];
 
     private readonly ParameterExpression _errorsParameterExpression =
         Expression.Parameter(typeof(List<string>), "errors");
@@ -61,7 +61,7 @@ public class EvaluationVisitor<T> : IVisitor<Expression>
 
     private bool VisitName(AstNode node, out Expression expression)
     {
-        if (node is NameAstNode name)
+        if (node is NameNode name)
         {
             expression = Expression.MakeMemberAccess(_modelParameterExpression, GetMemberInfo(name));
 
@@ -72,7 +72,7 @@ public class EvaluationVisitor<T> : IVisitor<Expression>
         return false;
     }
 
-    private MemberInfo GetMemberInfo(NameAstNode name)
+    private MemberInfo GetMemberInfo(NameNode name)
     {
         return typeof(T).GetProperty(name.Name);
     }

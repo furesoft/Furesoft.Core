@@ -143,7 +143,7 @@ public class Namespace : CodeObject, INamedCodeObject, INamespace
     public static string RemovePrefix(ref string input)
     {
         string prefix;
-        int dot = input.IndexOfAny(new[] { '.', '+' });
+        int dot = input.IndexOfAny(['.', '+']);
         if (dot > 0)
         {
             prefix = input.Substring(0, dot);

@@ -1477,7 +1477,7 @@ public class TypeRef : TypeRefBase
                 // allow a MethodRef to be passed to it, in order to make the C# syntax work.  The Parent
                 // can't be set to the Type, but the Type can be acquired from the parameter's type.
                 ConstructorDecl constructorDecl =
-                    new(new[] { new ParameterDecl(DelegateDecl.DelegateConstructorParameterName, new TypeRef(type)) }) { IsGenerated = true, Name = TypeUtil.NonGenericName(type) };
+                    new([new ParameterDecl(DelegateDecl.DelegateConstructorParameterName, new TypeRef(type))]) { IsGenerated = true, Name = TypeUtil.NonGenericName(type) };
                 return new NamedCodeObjectGroup(constructorDecl);
             }
             // Find both public and protected instance constructors

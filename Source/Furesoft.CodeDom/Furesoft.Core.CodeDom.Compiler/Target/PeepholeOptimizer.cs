@@ -169,14 +169,14 @@ public class PeepholeOptimizer<TInstruction, TExternalRef>
         {
             foreach (var target in GetBranchTargets(insn))
             {
-                replacedBranchTargets[target] = new HashSet<TInstruction> { target };
+                replacedBranchTargets[target] = [target];
             }
         }
         foreach (var externalRef in externalRefs)
         {
             foreach (var target in GetInstructionReferences(externalRef))
             {
-                replacedBranchTargets[target] = new HashSet<TInstruction> { target };
+                replacedBranchTargets[target] = [target];
             }
         }
 
@@ -413,7 +413,7 @@ public class PeepholeOptimizer<TInstruction, TExternalRef>
             {
                 if (!replacedBranchTargets.TryGetValue(newFirst.Value, out HashSet<TInstruction> newBranchTargets))
                 {
-                    replacedBranchTargets[newFirst.Value] = newBranchTargets = new HashSet<TInstruction>();
+                    replacedBranchTargets[newFirst.Value] = newBranchTargets = [];
                 }
 
                 newBranchTargets.Add(oldFirstInstruction);

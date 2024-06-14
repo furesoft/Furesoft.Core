@@ -115,11 +115,11 @@ public class StackInstructionStreamBuilder<TInstruction> : InstructionStreamBuil
             this.instructions = instructions;
             instructionBlobs = new LinkedList<IReadOnlyList<TInstruction>>();
             resurrectionList = ImmutableList.CreateBuilder<ValueTag>();
-            resurrectionPoints = new Dictionary<ValueTag, LinkedListNode<IReadOnlyList<TInstruction>>>();
-            invResurrectionPoints = new Dictionary<LinkedListNode<IReadOnlyList<TInstruction>>, ValueTag>();
+            resurrectionPoints = [];
+            invResurrectionPoints = [];
             uses = block.Graph.GetAnalysisResult<ValueUses>();
-            refCount = new Dictionary<ValueTag, int>();
-            emptyStackPoints = new HashSet<LinkedListNode<IReadOnlyList<TInstruction>>>();
+            refCount = [];
+            emptyStackPoints = [];
         }
 
         /// <summary>

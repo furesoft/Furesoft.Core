@@ -113,7 +113,7 @@ public struct QualifiedName
     private UnqualifiedName[] PrependQualifier(UnqualifiedName prefix)
     {
         if (qualifiers == null)
-            return new UnqualifiedName[] { prefix };
+            return [prefix];
 
         int len = qualifiers.Length - qualifierIndex;
         var results = new UnqualifiedName[len + 1];
@@ -204,7 +204,7 @@ public struct QualifiedName
         }
     }
 
-    private static readonly UnqualifiedName[] emptyPath = new UnqualifiedName[0];
+    private static readonly UnqualifiedName[] emptyPath = [];
 
     /// <summary>
     /// Describes this qualified name as a "path": a sequence of unqualified

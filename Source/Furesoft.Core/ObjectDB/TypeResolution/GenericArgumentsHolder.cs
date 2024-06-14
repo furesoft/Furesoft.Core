@@ -204,10 +204,10 @@ internal sealed class GenericArgumentsHolder
         string s, string delimiters, bool trimTokens, bool ignoreEmptyTokens, string quoteChars)
     {
         if (s == null)
-            return new string[0];
+            return [];
 
         if (string.IsNullOrEmpty(delimiters))
-            return new[] {s};
+            return [s];
 
         if (quoteChars == null)
             quoteChars = string.Empty;

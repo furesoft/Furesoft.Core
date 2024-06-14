@@ -6,7 +6,7 @@ namespace Furesoft.Core.Rules;
 
 public abstract class Rule<T> : IRule<T> where T : class, new()
 {
-    private IList<object> Rules { get; } = new List<object>();
+    private IList<object> Rules { get; } = [];
 
     public T Model { get; set; }
 

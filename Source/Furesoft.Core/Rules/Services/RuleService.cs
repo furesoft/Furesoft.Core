@@ -5,7 +5,7 @@ namespace Furesoft.Core.Rules.Services;
 internal class RuleService<T> where T : class, new()
 {
     private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
-    private readonly ICollection<IRuleResult> _ruleResults = new List<IRuleResult>();
+    private readonly ICollection<IRuleResult> _ruleResults = [];
     private readonly IEnumerable<IRule<T>> _rules;
     private readonly RxRuleService<IRule<T>, T> _rxRuleService;
 

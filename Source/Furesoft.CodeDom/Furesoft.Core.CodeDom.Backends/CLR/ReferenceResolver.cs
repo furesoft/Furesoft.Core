@@ -53,8 +53,8 @@ public sealed class ReferenceResolver
     {
         this.AssemblyResolver = resolver;
         this.TypeEnvironment = typeEnvironment;
-        this.assemblyCache = new Dictionary<string, IAssembly>();
-        this.typeResolvers = new Dictionary<IAssembly, TypeResolver>();
+        this.assemblyCache = [];
+        this.typeResolvers = [];
         this.cacheLock = new ReaderWriterLockSlim();
 
         this.fieldIndex = new Index<IType, KeyValuePair<string, IType>, IField>(

@@ -60,7 +60,7 @@ public sealed class UniqueNameSet<T>
     {
         this.getName = getName;
         generateName = new PrefixNameGenerator<T>(prefix).GenerateName;
-        nameSet = new HashSet<string>();
+        nameSet = [];
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public sealed class UniqueNameSet<T>
     {
         this.getName = getName;
         this.generateName = generateName;
-        nameSet = new HashSet<string>();
+        nameSet = [];
     }
 
     /// <summary>

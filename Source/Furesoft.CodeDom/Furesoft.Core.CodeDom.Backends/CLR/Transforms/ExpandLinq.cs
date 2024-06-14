@@ -136,7 +136,7 @@ public sealed class ExpandLinq : IntraproceduralOptimization
                 ValueTag value,
                 FlowGraph graph)
     {
-        return AnyBranchArguments(new HashSet<ValueTag>() { value }, graph);
+        return AnyBranchArguments([value], graph);
     }
 
     private static bool IsCallTo(

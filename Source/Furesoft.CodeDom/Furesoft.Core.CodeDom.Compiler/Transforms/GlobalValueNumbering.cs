@@ -32,7 +32,7 @@ public sealed class GlobalValueNumbering : IntraproceduralOptimization
         {
             if (!equivValues.TryGetValue(insn.Instruction, out HashSet<ValueTag> valueSet))
             {
-                equivValues[insn.Instruction] = valueSet = new HashSet<ValueTag>();
+                equivValues[insn.Instruction] = valueSet = [];
             }
             valueSet.Add(insn);
         }

@@ -7,7 +7,7 @@ namespace Furesoft.Core.ExpressionEvaluator;
 
 public class Binder
 {
-    public Dictionary<string, List<FunctionArgumentConditionDefinition>> ArgumentConstraints = new();
+    public Dictionary<string, List<FunctionArgumentConditionDefinition>> ArgumentConstraints = [];
 
     public Dictionary<string, (object min, object max)> NumberSets = new()
     {

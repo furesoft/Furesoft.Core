@@ -23,7 +23,7 @@ public class TimeLiteralParselet : IPrefixParselet
     public AstNode Parse(Parser parser, Token token)
     {
         var numberParselet = new NumberParselet();
-        List<PostfixOperatorNode> subLiterals = new();
+        List<PostfixOperatorNode> subLiterals = [];
 
         var firstToken = token;
         while (token.Type == PredefinedSymbols.Number)
@@ -44,7 +44,7 @@ public class TimeLiteralParselet : IPrefixParselet
             .WithRange(token.Document, subLiterals[0].Expr.Range.Start, token.GetRange().End);
     }
 
-    private bool IsTimeSubLiteral(Token token)
+    private static bool IsTimeSubLiteral(Token token)
     {
         return TimePostfixConverters.ContainsKey(token.Type.Name);
     }

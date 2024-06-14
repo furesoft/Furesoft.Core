@@ -25,7 +25,7 @@ public partial class MeasureUnit
         Context = ctx;
         Abbreviation = abbreviation;
         Name = name;
-        _units = new[] {(ExponentMeasureUnit) this};
+        _units = [(ExponentMeasureUnit) this];
         if (isNormalized)
         {
             _normalizationFactor = FullFactor.Neutral;

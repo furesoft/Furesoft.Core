@@ -16,7 +16,7 @@ public sealed class SymmetricRelation<T>
     /// </summary>
     public SymmetricRelation()
     {
-        relation = new Dictionary<T, HashSet<T>>();
+        relation = [];
     }
 
     /// <summary>

@@ -22,13 +22,12 @@ public sealed class ReassociateOperators : IntraproceduralOptimization
     // A set of integer arithmetic operators `op` for which
     // `(a op b) op c == a op (b op c)` holds.
     private static readonly HashSet<string> assocIntArith =
-        new()
-    {
+        [
 Operators.Add,
 Operators.Multiply,
 Operators.And,
 Operators.Or,
-Operators.Xor        };
+Operators.Xor        ];
 
     // A set of `(op1, op2)` pairs for which `(a op1 b) op1 c == a op1 (b op2 c)` holds,
     // where both `op1` and `op2` are integer arithmetic operators.
@@ -192,12 +191,11 @@ Operators.Xor        };
             {
                 var right = instruction.InsertBefore(
                     rightPrototype.Instantiate(
-                        new[]
-                        {
+                        [
                             left.Instruction.Arguments[1],
                             instruction.Instruction.Arguments[1]
-                        }));
-                instruction.Instruction = proto.Instantiate(new[] { left.Instruction.Arguments[0], right });
+                        ]));
+                instruction.Instruction = proto.Instantiate([left.Instruction.Arguments[0], right]);
                 instruction.Graph.RemoveInstruction(left);
             }
         }
