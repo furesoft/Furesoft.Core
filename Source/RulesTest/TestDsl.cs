@@ -1,9 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
-using Argon;
 using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
 using Furesoft.PrattParser;
-using Furesoft.PrattParser.Testing.Converter;
 using RulesTest.Models;
 
 namespace RulesTest;
@@ -38,6 +36,23 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
         var node = Parser.Parse<Grammar>("5 is equal to 5", "test.dsl");
 
         return Verify(node, settings);
+    }
+
+    [Fact]
+    public Task Divisible_Should_Pass()
+    {
+        var node = Parser.Parse<Grammar>("5 is divisible by 5", "test.dsl");
+
+        var visitor = new EvaluationVisitor<object>();
+
+        var evaluationResult = visitor.ToLambda(node.Tree.Accept(visitor));
+
+        var _evaluate = (Func<object, List<string>, bool>)evaluationResult.Compile();
+
+        return Verify(new {
+            tree = node,
+            result =  _evaluate(new { }, [])
+        }, settings);
     }
 
     [Fact]
@@ -98,7 +113,11 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
 
         var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
 
-        return Verify(_evaluate(new { }, []), settings);
+        return Verify(new
+        {
+            tree = node,
+            result = _evaluate(new { }, [])
+        }, settings);
     }
 
     [Fact]
@@ -111,7 +130,11 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
 
         var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
 
-        return Verify(_evaluate(new { }, []), settings);
+        return Verify(new
+        {
+            tree = node,
+            result = _evaluate(new { }, [])
+        }, settings);
     }
 
     [Fact]

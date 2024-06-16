@@ -30,6 +30,7 @@ public class Grammar : Parser
         lexer.MatchBoolean(ignoreCasing: true);
 
         lexer.AddSymbols("equal", "less", "greater", "then", "than", "to");
+        lexer.AddSymbols("divisible", "by");
         lexer.AddSymbol("set");
 
         lexer.AddSymbols("d", "h", "min", "s", "ms", "qs");

@@ -8,17 +8,19 @@ namespace Furesoft.Core.Rules.DSL.Parselets;
 
 public class ConditionParselet : IInfixParselet
 {
-    private readonly Dictionary<string[], Symbol> _tokenMappins = [];
+    private readonly Dictionary<string[], Symbol> _tokenMappings = [];
     private readonly int bindingPower;
 
     public ConditionParselet(int bindingPower)
     {
-        _tokenMappins.Add(["less", "than"], "<");
-        _tokenMappins.Add(["less", "than", "or", "equal"], "<=");
-        _tokenMappins.Add(["greater", "than", "or", "equal"], ">=");
-        _tokenMappins.Add(["greater", "than"], ">");
-        _tokenMappins.Add(["equal", "to"], "==");
-        _tokenMappins.Add(["not", "equal", "to"], "!=");
+        _tokenMappings.Add(["less", "than"], "<");
+        _tokenMappings.Add(["less", "than", "or", "equal"], "<=");
+        _tokenMappings.Add(["greater", "than", "or", "equal"], ">=");
+        _tokenMappings.Add(["greater", "than"], ">");
+        _tokenMappings.Add(["equal", "to"], "==");
+        _tokenMappings.Add(["not", "equal", "to"], "!=");
+
+        _tokenMappings.Add(["divisible", "by"], "%.");
 
         this.bindingPower = bindingPower;
     }
@@ -32,7 +34,7 @@ public class ConditionParselet : IInfixParselet
         var currentToken = parser.Consume();
 
         token.Document.Messages.Add(
-            Message.Error("Unknown Condition Pattern",
+            Message.Error($"Unknown Condition Pattern '{currentToken.Text}'",
                 new(token.Document, token.GetSourceSpanStart(), currentToken.GetSourceSpanEnd())));
 
         return null;
@@ -49,7 +51,7 @@ public class ConditionParselet : IInfixParselet
 
     private Symbol MatchesMultipleTokensAsSingleToken(Parser parser)
     {
-        foreach (var mapping in _tokenMappins)
+        foreach (var mapping in _tokenMappings)
         {
             for (uint i = 0; i < mapping.Key.Length; i++)
                 if (!parser.IsMatch(mapping.Key[i], i))

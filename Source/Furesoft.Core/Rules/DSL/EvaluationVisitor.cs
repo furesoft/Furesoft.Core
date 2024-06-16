@@ -203,6 +203,8 @@ public class EvaluationVisitor<T> : IVisitor<Expression>
             ">" => Expression.GreaterThan(leftVisited, rightVisited),
 
             "=" => Expression.Assign(leftVisited, rightVisited),
+            
+            "%." => Expression.Equal(Expression.Modulo(leftVisited, rightVisited), Expression.Constant(0ul)),
 
             _ => result
         };
