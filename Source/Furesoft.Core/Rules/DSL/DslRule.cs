@@ -1,6 +1,6 @@
 ﻿using Furesoft.Core.Rules.Interfaces;
 using Furesoft.Core.Rules.Models;
-using Furesoft.PrattParser;
+using Silverfly;
 
 namespace Furesoft.Core.Rules.DSL;
 
@@ -18,15 +18,15 @@ public class DslRule<T> : Rule<T>
 
         var evaluationResult = visitor.ToLambda(tree.Tree.Accept(visitor));
 
-        _evaluate = (Func<T, List<string>, bool>) evaluationResult.Compile();
+        _evaluate = (Func<T, List<string>, bool>)evaluationResult.Compile();
     }
 
     public override IRuleResult Invoke()
     {
         var success = _evaluate(Model, _errors);
 
-        if (success) return new RuleResult {Result = Model};
+        if (success) return new RuleResult { Result = Model };
 
-        return new RuleResult {Error = new Error(string.Join(Environment.NewLine, _errors))};
+        return new RuleResult { Error = new Error(string.Join(Environment.NewLine, _errors)) };
     }
 }

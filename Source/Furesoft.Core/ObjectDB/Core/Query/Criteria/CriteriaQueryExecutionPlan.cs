@@ -13,8 +13,6 @@ internal sealed class CriteriaQueryExecutionPlan : IQueryExecutionPlan
     [NonPersistent] private readonly ClassInfo _classInfo;
 
     [NonPersistent] private readonly SodaQuery _query;
-    private ClassInfo _classInfo1;
-
     [NonPersistent] private ClassInfoIndex _classInfoIndex;
 
     /// <summary>

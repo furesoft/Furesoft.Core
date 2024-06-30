@@ -1,0 +1,18 @@
+﻿{
+  $type: TranslationUnit,
+  Tree: {
+    $type: PrefixOperatorNode,
+    Operator: not,
+    Expr: {
+      $type: LiteralNode,
+      Value: 5,
+      Range: 1:5-1:5
+    },
+    Range: 1:1-1:5
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: not 5,
+    Messages: []
+  }
+}

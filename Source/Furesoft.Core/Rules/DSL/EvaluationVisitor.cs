@@ -2,9 +2,9 @@
 using System.Reflection;
 using Furesoft.Core.Rules.DSL.Nodes;
 using Furesoft.Core.Rules.DSL.Parselets;
-using Furesoft.PrattParser;
-using Furesoft.PrattParser.Nodes;
-using Furesoft.PrattParser.Nodes.Operators;
+using Silverfly;
+using Silverfly.Nodes;
+using Silverfly.Nodes.Operators;
 
 namespace Furesoft.Core.Rules.DSL;
 
@@ -84,26 +84,32 @@ public class EvaluationVisitor<T> : IVisitor<Expression>
 
     private static bool VisitConstant(AstNode node, out Expression visit)
     {
-        switch (node)
+        if(node is not LiteralNode l)
         {
-            case LiteralNode<long> ci:
-                visit = Expression.Constant(ci.Value);
+            visit = Expression.Empty();
+            return false;
+        }
+
+        switch (l.Value)
+        {
+            case long ci:
+                visit = Expression.Constant(ci);
                 return true;
 
-            case LiteralNode<ulong> uic:
-                visit = Expression.Constant(uic.Value);
+            case ulong uic:
+                visit = Expression.Constant(uic);
                 return true;
 
-            case LiteralNode<string> cs:
-                visit = Expression.Constant(cs.Value);
+            case string cs:
+                visit = Expression.Constant(cs);
                 return true;
 
-            case LiteralNode<bool> cb:
-                visit = Expression.Constant(cb.Value);
+            case bool cb:
+                visit = Expression.Constant(cb);
                 return true;
 
-            case LiteralNode<double> cbd:
-                visit = Expression.Constant(cbd.Value);
+            case double cbd:
+                visit = Expression.Constant(cbd);
                 return true;
             default:
                 visit = Expression.Empty();
@@ -203,7 +209,7 @@ public class EvaluationVisitor<T> : IVisitor<Expression>
             ">" => Expression.GreaterThan(leftVisited, rightVisited),
 
             "=" => Expression.Assign(leftVisited, rightVisited),
-            
+
             "%." => Expression.Equal(Expression.Modulo(leftVisited, rightVisited), Expression.Constant(0ul)),
 
             _ => result

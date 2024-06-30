@@ -1,0 +1,26 @@
+﻿{
+  $type: dynamic,
+  tree: {
+    $type: TranslationUnit,
+    Tree: {
+      $type: BinaryOperatorNode,
+      LeftExpr: {
+        $type: LiteralNode,
+        Value: 5,
+        Range: 1:1-1:1
+      },
+      Operator: %.,
+      RightExpr: {
+        $type: LiteralNode,
+        Value: 5,
+        Range: 1:19-1:19
+      }
+    },
+    Document: {
+      Filename: test.dsl,
+      Source: 5 is divisible by 5,
+      Messages: []
+    }
+  },
+  result: true
+}

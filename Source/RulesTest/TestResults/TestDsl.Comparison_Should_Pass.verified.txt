@@ -1,0 +1,22 @@
+﻿{
+  $type: TranslationUnit,
+  Tree: {
+    $type: BinaryOperatorNode,
+    LeftExpr: {
+      $type: LiteralNode,
+      Value: 5,
+      Range: 1:1-1:1
+    },
+    Operator: ==,
+    RightExpr: {
+      $type: LiteralNode,
+      Value: 5,
+      Range: 1:15-1:15
+    }
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: 5 is equal to 5,
+    Messages: []
+  }
+}

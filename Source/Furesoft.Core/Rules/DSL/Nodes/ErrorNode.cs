@@ -1,13 +1,7 @@
-﻿using Furesoft.PrattParser.Nodes;
+﻿using Silverfly.Nodes;
 
 namespace Furesoft.Core.Rules.DSL.Nodes;
 
-public class ErrorNode : AstNode
+public record ErrorNode(string Message) : AstNode
 {
-    public ErrorNode(string message)
-    {
-        Message = message;
-    }
-
-    public string Message { get; }
 }

@@ -1,8 +1,8 @@
 ﻿using Furesoft.Core.Rules.DSL.Parselets;
-using Furesoft.PrattParser;
-using Furesoft.PrattParser.Parselets;
-using Furesoft.PrattParser.Parselets.Literals;
-using static Furesoft.PrattParser.PredefinedSymbols;
+using Silverfly;
+using Silverfly.Parselets;
+using Silverfly.Parselets.Literals;
+using static Silverfly.PredefinedSymbols;
 
 namespace Furesoft.Core.Rules.DSL;
 
@@ -34,11 +34,12 @@ public class Grammar : Parser
         lexer.AddSymbol("set");
 
         lexer.AddSymbols("d", "h", "min", "s", "ms", "qs");
+        lexer.AddSymbol(".");
     }
 
     protected override void InitParselets()
     {
-        Block(Dot, EOF);
+        Block(SOF, EOF, Dot);
 
         Register("error", new ErrorParselet());
         Register(Name, new NameParselet());

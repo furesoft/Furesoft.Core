@@ -60,7 +60,7 @@ public class SerialKeyConfiguration : BaseConfiguration
 
 public class Validate : BaseConfiguration
 {
-    private readonly methods _a = new();
+    private readonly Methods _a = new();
 
     private string _res = "";
 
@@ -258,7 +258,7 @@ public class Validate : BaseConfiguration
     }
 }
 
-internal class methods : SerialKeyConfiguration
+internal class Methods : SerialKeyConfiguration
 {
     //The construction of the key
     protected internal string _encrypt(int _days, bool[] _tfg, string _secretPhase, int ID, DateTime _creationDate)

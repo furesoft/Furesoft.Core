@@ -1,0 +1,22 @@
+﻿{
+  $type: TranslationUnit,
+  Tree: {
+    $type: BinaryOperatorNode,
+    LeftExpr: {
+      $type: NameNode,
+      Name: x,
+      Range: 1:5-1:5
+    },
+    Operator: =,
+    RightExpr: {
+      $type: LiteralNode,
+      Value: 42,
+      Range: 1:10-1:11
+    }
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: set x to 42.,
+    Messages: []
+  }
+}

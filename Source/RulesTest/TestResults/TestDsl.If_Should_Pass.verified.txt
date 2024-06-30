@@ -1,0 +1,30 @@
+﻿{
+  $type: TranslationUnit,
+  Tree: {
+    $type: IfNode,
+    Condition: {
+      $type: BinaryOperatorNode,
+      LeftExpr: {
+        $type: LiteralNode,
+        Value: 5,
+        Range: 1:4-1:4
+      },
+      Operator: ==,
+      RightExpr: {
+        $type: LiteralNode,
+        Value: 5,
+        Range: 1:18-1:18
+      }
+    },
+    Body: {
+      $type: ErrorNode,
+      Message: something went wrong,
+      Range: 1:25-1:50
+    }
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: if 5 is equal to 5 then error 'something went wrong',
+    Messages: []
+  }
+}

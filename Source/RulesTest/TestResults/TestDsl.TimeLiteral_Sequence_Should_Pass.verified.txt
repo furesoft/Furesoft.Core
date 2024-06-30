@@ -1,0 +1,35 @@
+﻿{
+  $type: TranslationUnit,
+  Tree: {
+    $type: TimeLiteral,
+    SubLiterals: {
+      $type: ImmutableList<PostfixOperatorNode>,
+      $values: [
+        {
+          $type: PostfixOperatorNode,
+          Expr: {
+            $type: LiteralNode,
+            Value: 12,
+            Range: 1:1-1:2
+          },
+          Operator: min
+        },
+        {
+          $type: PostfixOperatorNode,
+          Expr: {
+            $type: LiteralNode,
+            Value: 13,
+            Range: 1:7-1:8
+          },
+          Operator: s
+        }
+      ]
+    },
+    Range: 1:1-1:10
+  },
+  Document: {
+    Filename: test.dsl,
+    Source: 12min 13s.,
+    Messages: []
+  }
+}

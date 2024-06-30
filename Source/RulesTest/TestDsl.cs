@@ -1,12 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
-using Furesoft.PrattParser;
+using Silverfly;
 using RulesTest.Models;
 
 namespace RulesTest;
 
-public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
+public class TestDsl : Silverfly.Testing.SnapshotParserTestBase
 {
     [ModuleInitializer]
     public static void Initalize()
@@ -49,9 +49,10 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
 
         var _evaluate = (Func<object, List<string>, bool>)evaluationResult.Compile();
 
-        return Verify(new {
+        return Verify(new
+        {
             tree = node,
-            result =  _evaluate(new { }, [])
+            result = _evaluate(new { }, [])
         }, settings);
     }
 
@@ -111,7 +112,7 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
 
         var evaluationResult = visitor.ToLambda(node.Tree.Accept(visitor));
 
-        var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
+        var _evaluate = (Func<object, List<string>, TimeSpan>)evaluationResult.Compile();
 
         return Verify(new
         {
@@ -128,7 +129,7 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
 
         var evaluationResult = visitor.ToLambda(node.Tree.Accept(visitor));
 
-        var _evaluate = (Func<object, List<string>, TimeSpan>) evaluationResult.Compile();
+        var _evaluate = (Func<object, List<string>, TimeSpan>)evaluationResult.Compile();
 
         return Verify(new
         {
@@ -140,7 +141,7 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
     [Fact]
     public Task SimpleRule_Should_Pass()
     {
-        var engine = RuleEngine<Product>.GetInstance(new() {Description = "hello world", Price = 999});
+        var engine = RuleEngine<Product>.GetInstance(new() { Description = "hello world", Price = 999 });
 
         engine.AddRule("if Description == 'hello world' then error 'wrong key'");
 

@@ -1,0 +1,15 @@
+﻿{
+  $type: List<IRuleResult>,
+  $values: [
+    {
+      $type: RuleResult,
+      Name: DslRule`1,
+      Result: {
+        $type: Product,
+        Name: Desktop Computer,
+        Price: 999.0,
+        Description: hello world
+      }
+    }
+  ]
+}
