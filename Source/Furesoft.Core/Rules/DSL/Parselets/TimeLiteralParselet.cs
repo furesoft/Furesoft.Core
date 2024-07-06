@@ -1,10 +1,10 @@
 ﻿using System.Collections.Immutable;
 using Furesoft.Core.Rules.DSL.Nodes;
-using Furesoft.PrattParser;
-using Furesoft.PrattParser.Nodes;
-using Furesoft.PrattParser.Nodes.Operators;
-using Furesoft.PrattParser.Parselets;
-using Furesoft.PrattParser.Parselets.Literals;
+using Silverfly;
+using Silverfly.Nodes;
+using Silverfly.Nodes.Operators;
+using Silverfly.Parselets;
+using Silverfly.Parselets.Literals;
 
 namespace Furesoft.Core.Rules.DSL.Parselets;
 
@@ -27,6 +27,7 @@ public class TimeLiteralParselet : IPrefixParselet
 
         var firstToken = token;
         while (token.Type == PredefinedSymbols.Number)
+        {
             if (IsTimeSubLiteral(parser.LookAhead(0)))
             {
                 var number = numberParselet.Parse(parser, token);
@@ -37,6 +38,7 @@ public class TimeLiteralParselet : IPrefixParselet
             {
                 break;
             }
+        }
 
         if (subLiterals.Count == 0) return numberParselet.Parse(parser, firstToken);
 

@@ -6,8 +6,8 @@ namespace RulesTest;
 
 public class TestNestedRuleAsync
 {
-    [Fact]
-    public async void TestAsyncNestedRules()
+    [Test]
+    public async Task TestAsyncNestedRules()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
 
@@ -16,6 +16,6 @@ public class TestNestedRuleAsync
         var ruleResults = await ruleEngineExecutor.ExecuteAsync();
 
         Assert.NotNull(ruleResults);
-        Assert.Equal("ProductNestedRuleAsyncC", ruleResults.FindRuleResult<ProductNestedRuleAsyncC>().Name);
+        Assert.AreEqual("ProductNestedRuleAsyncC", ruleResults.FindRuleResult<ProductNestedRuleAsyncC>().Name);
     }
 }

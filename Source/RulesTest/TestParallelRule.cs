@@ -6,8 +6,8 @@ namespace RulesTest;
 
 public class TestParallelRule
 {
-    [Fact]
-    public async void TestParallelRules()
+    [Test]
+    public async Task TestParallelRules()
     {
         var product = new Product();
         var engineExecutor = RuleEngine<Product>.GetInstance(product);
@@ -21,13 +21,13 @@ public class TestParallelRule
         var ruleResults = await ruleEngineExecutor.ExecuteAsync();
 
         Assert.NotNull(ruleResults);
-        Assert.Equal("Product", product.Name);
-        Assert.Equal(0.0m, product.Price);
-        Assert.Equal("Description", product.Description);
+        Assert.AreEqual("Product", product.Name);
+        Assert.AreEqual(0.0m, product.Price);
+        Assert.AreEqual("Description", product.Description);
     }
 
-    [Fact]
-    public async void TestNestedParallelRules()
+    [Test]
+    public async Task TestNestedParallelRules()
     {
         var product = new Product();
         var engineExecutor = RuleEngine<Product>.GetInstance(product);
@@ -39,6 +39,6 @@ public class TestParallelRule
             new ProductNestedParallelUpdateC());
 
         var ruleResults = await ruleEngineExecutor.ExecuteAsync();
-        Assert.Equal(8, ruleResults.Count());
+        Assert.AreEqual(8, ruleResults.Count());
     }
 }

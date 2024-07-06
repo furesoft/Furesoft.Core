@@ -1,6 +1,6 @@
 ﻿using Furesoft.Core.Rules.Interfaces;
 using Furesoft.Core.Rules.Models;
-using Furesoft.PrattParser;
+using Silverfly;
 
 namespace Furesoft.Core.Rules.DSL;
 

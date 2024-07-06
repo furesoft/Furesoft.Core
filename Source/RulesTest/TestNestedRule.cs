@@ -7,7 +7,7 @@ namespace RulesTest;
 
 public class TestNestedRule
 {
-    [Fact]
+    [Test]
     public void TestNestedRules()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -16,10 +16,10 @@ public class TestNestedRule
         var nestedRuleResult = ruleResults.FindRuleResult<ProductNestedRuleC>();
 
         Assert.NotNull(nestedRuleResult);
-        Assert.Equal("ProductNestedRuleC", nestedRuleResult.Name);
+        Assert.AreEqual("ProductNestedRuleC", nestedRuleResult.Name);
     }
 
-    [Fact]
+    [Test]
     public void TestNestedRuleError()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -28,10 +28,10 @@ public class TestNestedRule
         var errors = ruleResults.GetErrors();
 
         Assert.NotNull(errors);
-        Assert.Equal("Error", errors.FindRuleResult<ProductChildErrorRule>().Error.Message);
+        Assert.AreEqual("Error", errors.FindRuleResult<ProductChildErrorRule>().Error.Message);
     }
 
-    [Fact]
+    [Test]
     public void TestNestedRuleInheritsConstraint()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product { Price = 49.99m });
@@ -47,6 +47,6 @@ public class TestNestedRule
 
         var ruleResults = ruleEngineExecutor.Execute();
 
-        Assert.Empty(ruleResults);
+        Assert.IsEmpty(ruleResults);
     }
 }

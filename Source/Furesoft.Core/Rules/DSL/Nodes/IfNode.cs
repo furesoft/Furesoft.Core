@@ -1,15 +1,7 @@
-﻿using Furesoft.PrattParser.Nodes;
+﻿using Silverfly.Nodes;
 
 namespace Furesoft.Core.Rules.DSL.Nodes;
 
-public class IfNode : AstNode
+public record IfNode(AstNode Condition, AstNode Body) : AstNode
 {
-    public IfNode(AstNode condition, AstNode body)
-    {
-        Condition = condition;
-        Body = body;
-    }
-
-    public AstNode Condition { get; }
-    public AstNode Body { get; }
 }

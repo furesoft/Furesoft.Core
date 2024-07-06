@@ -1,8 +1,8 @@
 ﻿using Furesoft.Core.Rules.DSL.Parselets;
-using Furesoft.PrattParser;
-using Furesoft.PrattParser.Parselets;
-using Furesoft.PrattParser.Parselets.Literals;
-using static Furesoft.PrattParser.PredefinedSymbols;
+using Silverfly;
+using Silverfly.Parselets;
+using Silverfly.Parselets.Literals;
+using static Silverfly.PredefinedSymbols;
 
 namespace Furesoft.Core.Rules.DSL;
 

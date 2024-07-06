@@ -1,12 +1,12 @@
 ﻿using System.Runtime.CompilerServices;
 using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
-using Silverfly;
 using RulesTest.Models;
 using Silverfly.Testing;
 
 namespace RulesTest;
 
+[TestFixture]
 public class TestDsl : SnapshotParserTestBase<Grammar>
 {
     [ModuleInitializer]
@@ -15,25 +15,25 @@ public class TestDsl : SnapshotParserTestBase<Grammar>
         Init(new TestOptions(UseStatementsAtToplevel: true));
     }
 
-    [Fact]
+    [Test]
     public Task Not_Should_Pass()
     {
         return Test("not 5");
     }
 
-    [Fact]
+    [Test]
     public Task Percent_Should_Pass()
     {
         return Test("5 %");
     }
 
-    [Fact]
+    [Test]
     public Task Comparison_Should_Pass()
     {
         return Test("5 is equal to 5");
     }
 
-    [Fact]
+    [Test]
     public Task Divisible_Should_Pass()
     {
         var node = Parse("5 is divisible by 5");
@@ -50,43 +50,43 @@ public class TestDsl : SnapshotParserTestBase<Grammar>
         }, Settings);
     }
 
-    [Fact]
+    [Test]
     public Task If_Should_Pass()
     {
         return Test("if 5 is equal to 5 then error 'something went wrong'");
     }
 
-    [Fact]
+    [Test]
     public Task Set_Should_Pass()
     {
         return Test("set x to 42.");
     }
 
-    [Fact]
+    [Test]
     public Task Parse_Time_Seconds_Should_Pass()
     {
         return Test("set x to 12s.");
     }
 
-    [Fact]
+    [Test]
     public Task Time_Seconds_Should_Pass()
     {
         return Test("12s.");
     }
 
-    [Fact]
+    [Test]
     public Task Block_Multiple_Should_Pass()
     {
         return Test("12s.13min.");
     }
 
-    [Fact]
+    [Test]
     public Task TimeLiteral_Sequence_Should_Pass()
     {
         return Test("12min 13s.");
     }
 
-    [Fact]
+    [Test]
     public Task TimeLiteral_Evaluation_Sequence_Should_Pass()
     {
         var node = Parse("12min 13s.");
@@ -103,7 +103,7 @@ public class TestDsl : SnapshotParserTestBase<Grammar>
         }, Settings);
     }
 
-    [Fact]
+    [Test]
     public Task Evaluate_Time_Seconds_Should_Pass()
     {
         var node = Parse("12s");
@@ -120,7 +120,7 @@ public class TestDsl : SnapshotParserTestBase<Grammar>
         }, Settings);
     }
 
-    [Fact]
+    [Test]
     public Task SimpleRule_Should_Pass()
     {
         var engine = RuleEngine<Product>.GetInstance(new() {Description = "hello world", Price = 999});
