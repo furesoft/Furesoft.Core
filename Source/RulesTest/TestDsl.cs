@@ -1,47 +1,42 @@
 ﻿using System.Runtime.CompilerServices;
 using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
-using Furesoft.PrattParser;
+using Silverfly;
 using RulesTest.Models;
+using Silverfly.Testing;
 
 namespace RulesTest;
 
-public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
+public class TestDsl : SnapshotParserTestBase<Grammar>
 {
     [ModuleInitializer]
     public static void Initalize()
     {
-        Init();
+        Init(new TestOptions(UseStatementsAtToplevel: true));
     }
 
     [Fact]
     public Task Not_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("not 5", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("not 5");
     }
 
     [Fact]
     public Task Percent_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("5 %", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("5 %");
     }
 
     [Fact]
     public Task Comparison_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("5 is equal to 5", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("5 is equal to 5");
     }
 
     [Fact]
     public Task Divisible_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("5 is divisible by 5", "test.dsl");
+        var node = Parse("5 is divisible by 5");
 
         var visitor = new EvaluationVisitor<object>();
 
@@ -52,61 +47,49 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
         return Verify(new {
             tree = node,
             result =  _evaluate(new { }, [])
-        }, settings);
+        }, Settings);
     }
 
     [Fact]
     public Task If_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("if 5 is equal to 5 then error 'something went wrong'", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("if 5 is equal to 5 then error 'something went wrong'");
     }
 
     [Fact]
     public Task Set_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("set x to 42.", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("set x to 42.");
     }
 
     [Fact]
     public Task Parse_Time_Seconds_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("set x to 12s.", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("set x to 12s.");
     }
 
     [Fact]
     public Task Time_Seconds_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("12s.", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("12s.");
     }
 
     [Fact]
     public Task Block_Multiple_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("12s.13min.", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("12s.13min.");
     }
 
     [Fact]
     public Task TimeLiteral_Sequence_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("12min 13s.", "test.dsl");
-
-        return Verify(node, settings);
+        return Test("12min 13s.");
     }
 
     [Fact]
     public Task TimeLiteral_Evaluation_Sequence_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("12min 13s.", "test.dsl");
+        var node = Parse("12min 13s.");
         var visitor = new EvaluationVisitor<object>();
 
         var evaluationResult = visitor.ToLambda(node.Tree.Accept(visitor));
@@ -117,13 +100,13 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
         {
             tree = node,
             result = _evaluate(new { }, [])
-        }, settings);
+        }, Settings);
     }
 
     [Fact]
     public Task Evaluate_Time_Seconds_Should_Pass()
     {
-        var node = Parser.Parse<Grammar>("12s", "test.dsl");
+        var node = Parse("12s");
         var visitor = new EvaluationVisitor<object>();
 
         var evaluationResult = visitor.ToLambda(node.Tree.Accept(visitor));
@@ -134,7 +117,7 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
         {
             tree = node,
             result = _evaluate(new { }, [])
-        }, settings);
+        }, Settings);
     }
 
     [Fact]
@@ -146,6 +129,6 @@ public class TestDsl : Furesoft.PrattParser.Testing.SnapshotParserTestBase
 
         var result = engine.Execute();
 
-        return Verify(result, settings);
+        return Verify(result, Settings);
     }
 }
