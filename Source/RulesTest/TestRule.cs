@@ -8,9 +8,10 @@ using Xunit;
 
 namespace RulesTest;
 
+[TestFixture]
 public class TestRule
 {
-    [Fact]
+    [Test]
     public void TestInvoke()
     {
         var ruleResults = RuleEngine<Product>.GetInstance(new Product())
@@ -20,7 +21,7 @@ public class TestRule
         Assert.Equal("Product Description", ruleResults.FindRuleResult<ProductRule>().Result);
     }
 
-    [Fact]
+    [Test]
     public void TestBeforeInvoke()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -32,7 +33,7 @@ public class TestRule
         Assert.Equal("Value", value);
     }
 
-    [Fact]
+    [Test]
     public void TestAfterInvoke()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -43,7 +44,7 @@ public class TestRule
         Assert.NotNull(ruleResult);
     }
 
-    [Fact]
+    [Test]
     public void TestSkip()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -52,7 +53,7 @@ public class TestRule
         Assert.False(ruleResults.Any());
     }
 
-    [Fact]
+    [Test]
     public void TestTerminate()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -61,7 +62,7 @@ public class TestRule
         Assert.Single(ruleResults);
     }
 
-    [Fact]
+    [Test]
     public void TestConstraint()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -70,7 +71,7 @@ public class TestRule
         Assert.Single(ruleResults);
     }
 
-    [Fact]
+    [Test]
     public void TestTryAddTryGetValue()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -83,7 +84,7 @@ public class TestRule
         Assert.Equal("Product Description4", ruleResults[3]);
     }
 
-    [Fact]
+    [Test]
     public void TestExecutionOrder()
     {
         var ruleResults = RuleEngine<Product>.GetInstance(new Product())
@@ -94,7 +95,7 @@ public class TestRule
         Assert.Equal("ProductExecutionOrderRuleA", ruleResults.Skip(1).First().Name);
     }
 
-    [Fact]
+    [Test]
     public void TestErrorResult()
     {
         var errors = RuleEngine<Product>.GetInstance(new Product())

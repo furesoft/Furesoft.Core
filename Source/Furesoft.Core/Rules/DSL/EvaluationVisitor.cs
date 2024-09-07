@@ -8,7 +8,8 @@ using Silverfly.Nodes.Operators;
 
 namespace Furesoft.Core.Rules.DSL;
 
-public class EvaluationVisitor<T> : IVisitor<Expression>
+//TODO: update visitor to for<>()
+public class EvaluationVisitor<T> : NodeVisitor<Expression>
     where T : class, new()
 {
     private readonly List<string> _errors = [];

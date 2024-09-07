@@ -4,9 +4,10 @@ using RulesTest.Models;
 
 namespace RulesTest;
 
+[TestFixture]
 public class TestRuleAsync
 {
-    [Fact]
+    [Test]
     public async void TestInvokeAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -15,7 +16,7 @@ public class TestRuleAsync
         Assert.Equal("Product Description", ruleResults.First().Result);
     }
 
-    [Fact]
+    [Test]
     public async void TestBeforeInvokeAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -27,7 +28,7 @@ public class TestRuleAsync
         Assert.Equal("Description", value);
     }
 
-    [Fact]
+    [Test]
     public async void TestAfterInvokeAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -36,7 +37,7 @@ public class TestRuleAsync
         Assert.Single(ruleResults);
     }
 
-    [Fact]
+    [Test]
     public async void TestSkipAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -45,7 +46,7 @@ public class TestRuleAsync
         Assert.False(ruleResults.Any());
     }
 
-    [Fact]
+    [Test]
     public async void TestTerminateAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -54,7 +55,7 @@ public class TestRuleAsync
         Assert.Single(ruleResults);
     }
 
-    [Fact]
+    [Test]
     public async void TestConstraintAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -63,7 +64,7 @@ public class TestRuleAsync
         Assert.Single(ruleResults);
     }
 
-    [Fact]
+    [Test]
     public async void TestTryAddTryGetValueAsync()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -72,7 +73,7 @@ public class TestRuleAsync
         Assert.Equal("Product Description", ruleResults.First().Result);
     }
 
-    [Fact]
+    [Test]
     public async void TestExecutionOrder()
     {
         var ruleResults = await RuleEngine<Product>.GetInstance(new Product())

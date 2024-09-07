@@ -8,20 +8,20 @@ namespace Furesoft.Core.Rules.DSL;
 
 public class Grammar : Parser
 {
-    private void AddOperators()
+    private void AddOperators(ParserDefinition def)
     {
-        Prefix("not");
-        Prefix("and");
-        Prefix("or");
+        def.Prefix("not");
+        def.Prefix("and");
+        def.Prefix("or");
 
-        InfixLeft("==", "Sum");
+        def.InfixLeft("==", "Sum");
 
-        Register("set", new AssignmentParselet(BindingPowers.Get("Assignment")));
+        def.Register("set", new AssignmentParselet(def.PrecedenceLevels.GetPrecedence("Assignment")));
 
-        Postfix("%");
+        def.Postfix("%");
     }
 
-    protected override void InitLexer(Lexer lexer)
+    protected override void InitLexer(LexerConfig lexer)
     {
         lexer.Ignore(' ');
         lexer.Ignore('\t');
@@ -37,26 +37,26 @@ public class Grammar : Parser
         lexer.AddSymbol(".");
     }
 
-    protected override void InitParselets()
+    protected override void InitParser(ParserDefinition def)
     {
-        Block(SOF, EOF, Dot);
+        def.Block(SOF, EOF, Dot);
 
-        Register("error", new ErrorParselet());
-        Register(Name, new NameParselet());
+        def.Register("error", new ErrorParselet());
+        def.Register(Name, new NameParselet());
 
-        Register(Number, new TimeLiteralParselet());
-        Register(PredefinedSymbols.Boolean, new BooleanLiteralParselet());
-        Register(PredefinedSymbols.String, new StringLiteralParselet());
+        def.Register(Number, new TimeLiteralParselet());
+        def.Register(PredefinedSymbols.Boolean, new BooleanLiteralParselet());
+        def.Register(PredefinedSymbols.String, new StringLiteralParselet());
 
-        this.AddArithmeticOperators();
-        this.AddLogicalOperators();
-        this.AddCommonAssignmentOperators();
+        def.AddArithmeticOperators();
+        def.AddLogicalOperators();
+        def.AddCommonAssignmentOperators();
 
-        AddOperators();
+        AddOperators(def);
 
-        Register("(", new CallParselet(BindingPowers.Get("Call")));
+        def.Register("(", new CallParselet(def.PrecedenceLevels.GetPrecedence("Call")));
 
-        Register("is", new ConditionParselet(BindingPowers.Get("Product")));
-        Register("if", new IfParselet(BindingPowers.Get("Product") - 1));
+        def.Register("is", new ConditionParselet(def.PrecedenceLevels.GetPrecedence("Product")));
+        def.Register("if", new IfParselet(def.PrecedenceLevels.GetPrecedence("Product") - 1));
     }
 }

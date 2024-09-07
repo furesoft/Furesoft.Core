@@ -5,9 +5,10 @@ using RulesTest.Rules;
 
 namespace RulesTest;
 
+[TestFixture]
 public class TestRxRule
 {
-    [Fact]
+    [Test]
     public void TestReactiveRules()
     {
         var product = new Product();
@@ -18,7 +19,7 @@ public class TestRxRule
             $"expected {rr.FindRuleResult<ProductReactiveRule>().Data["Ticks"]} actual {rr.FindRuleResult<ProductRule>().Data["Ticks"]}");
     }
 
-    [Fact]
+    [Test]
     public void TestProactiveRules()
     {
         var product = new Product();
@@ -29,7 +30,7 @@ public class TestRxRule
             $"expected {rr.FindRuleResult<ProductProactiveRule>().Data["Ticks"]} actual {rr.FindRuleResult<ProductRule>().Data["Ticks"]}");
     }
 
-    [Fact]
+    [Test]
     public void TestExceptionHandler()
     {
         var product = new Product();
@@ -39,7 +40,7 @@ public class TestRxRule
         Assert.NotNull(rr.FindRuleResult<ProductExceptionHandler>().Error.Exception);
     }        
 
-    [Fact]
+    [Test]
     public async void TestExceptionHandlerAsync()
     {
         var product = new Product();
@@ -49,7 +50,7 @@ public class TestRxRule
         Assert.NotNull(rr.FindRuleResult<ProductExceptionHandlerAsync>().Error.Exception);
     }
 
-    [Fact]
+    [Test]
     public void TestGlobalExceptionHandler()
     {
         var product = new Product();
@@ -59,7 +60,7 @@ public class TestRxRule
         Assert.NotNull(rr.FindRuleResult<ProductGlobalExceptionHandler>().Error.Exception);
     }
 
-    [Fact]
+    [Test]
     public async void TestGlobalExceptionHandlerAsync()
     {
         var product = new Product();

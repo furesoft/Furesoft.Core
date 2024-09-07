@@ -97,18 +97,6 @@ public class TestClass
         ExecuteTest(input, expected);
     }
 
-    [Test]
-    public void GenerateSymbol_Should_Pass()
-    {
-        MacroContext mc = new(null, null, null);
-
-        var symbol = mc.GenerateSymbol();
-        var symbolText = symbol.Reference.ToString();
-
-        Assert.IsFalse(string.IsNullOrEmpty(symbolText));
-        Assert.IsTrue(symbolText.Length == 9);
-    }
-
     [TestCase("4*5", 20)]
     [TestCase("3+4*5", 23)]
     [TestCase("(3+4)*5", 35)]

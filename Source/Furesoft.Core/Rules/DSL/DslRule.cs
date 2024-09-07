@@ -12,7 +12,7 @@ public class DslRule<T> : Rule<T>
 
     public DslRule(string source)
     {
-        var tree = Parser.Parse<Grammar>(source);
+        var tree = new Grammar().Parse(source);
 
         var visitor = new EvaluationVisitor<T>();
 

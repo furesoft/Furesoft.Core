@@ -2,12 +2,14 @@
 using Furesoft.Core.Rules.Models;
 using RulesTest.Models;
 using RulesTest.Rules;
+using Assert = Xunit.Assert;
 
 namespace RulesTest;
 
+[TestFixture]
 public class TestNestedRule
 {
-    [Fact]
+    [Test]
     public void TestNestedRules()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -19,7 +21,7 @@ public class TestNestedRule
         Assert.Equal("ProductNestedRuleC", nestedRuleResult.Name);
     }
 
-    [Fact]
+    [Test]
     public void TestNestedRuleError()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
@@ -31,7 +33,7 @@ public class TestNestedRule
         Assert.Equal("Error", errors.FindRuleResult<ProductChildErrorRule>().Error.Message);
     }
 
-    [Fact]
+    [Test]
     public void TestNestedRuleInheritsConstraint()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product { Price = 49.99m });

@@ -4,9 +4,10 @@ using RulesTest.Models;
 
 namespace RulesTest;
 
+[TestFixture]
 public class TestParallelRule
 {
-    [Fact]
+    [Test]
     public async void TestParallelRules()
     {
         var product = new Product();
@@ -26,7 +27,7 @@ public class TestParallelRule
         Assert.Equal("Description", product.Description);
     }
 
-    [Fact]
+    [Test]
     public async void TestNestedParallelRules()
     {
         var product = new Product();

@@ -4,9 +4,10 @@ using RulesTest.Models;
 
 namespace RulesTest;
 
+[TestFixture]
 public class TestNestedRuleAsync
 {
-    [Fact]
+    [Test]
     public async void TestAsyncNestedRules()
     {
         var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());

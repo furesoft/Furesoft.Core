@@ -5,14 +5,16 @@
         <Nullable>disable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>furesoft</Authors>
-        <Version>1.0.14</Version>
+        <Version>1.0.15</Version>
         <LangVersion>Latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Silverfly" Version="1.0.60" />
+        <PackageReference Include="Silverfly" Version="1.0.67" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+        <PackageReference Include="ZeroFormatter" Version="1.6.4" />
     </ItemGroup>
 </Project>
