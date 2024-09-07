@@ -27,6 +27,7 @@ public class TimeLiteralParselet : IPrefixParselet
 
         var firstToken = token;
         while (token.Type == PredefinedSymbols.Number)
+        {
             if (IsTimeSubLiteral(parser.LookAhead(0)))
             {
                 var number = numberParselet.Parse(parser, token);
@@ -37,6 +38,7 @@ public class TimeLiteralParselet : IPrefixParselet
             {
                 break;
             }
+        }
 
         if (subLiterals.Count == 0) return numberParselet.Parse(parser, firstToken);
 

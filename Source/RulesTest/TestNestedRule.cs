@@ -18,7 +18,7 @@ public class TestNestedRule
         var nestedRuleResult = ruleResults.FindRuleResult<ProductNestedRuleC>();
 
         Assert.NotNull(nestedRuleResult);
-        Assert.Equal("ProductNestedRuleC", nestedRuleResult.Name);
+        Assert.AreEqual("ProductNestedRuleC", nestedRuleResult.Name);
     }
 
     [Test]
@@ -30,7 +30,7 @@ public class TestNestedRule
         var errors = ruleResults.GetErrors();
 
         Assert.NotNull(errors);
-        Assert.Equal("Error", errors.FindRuleResult<ProductChildErrorRule>().Error.Message);
+        Assert.AreEqual("Error", errors.FindRuleResult<ProductChildErrorRule>().Error.Message);
     }
 
     [Test]
@@ -49,6 +49,6 @@ public class TestNestedRule
 
         var ruleResults = ruleEngineExecutor.Execute();
 
-        Assert.Empty(ruleResults);
+        Assert.IsEmpty(ruleResults);
     }
 }
