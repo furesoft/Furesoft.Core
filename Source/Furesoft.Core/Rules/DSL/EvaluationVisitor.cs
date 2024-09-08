@@ -31,7 +31,7 @@ public class EvaluationVisitor<T> : NodeVisitor<Expression>
         VisitIf(node, ref body);
 
         // ToDo: remove temporary fix
-        if (node is BinaryOperatorNode bin && bin.Operator.Name == "=")
+        if (node is BinaryOperatorNode bin && bin.Operator.Text.ToString() == "=")
             body = Expression.Block(body, Expression.Constant(true));
 
         if (VisitConstant(node, out var visit)) return visit;
@@ -75,7 +75,7 @@ public class EvaluationVisitor<T> : NodeVisitor<Expression>
 
     private MemberInfo GetMemberInfo(NameNode name)
     {
-        return typeof(T).GetProperty(name.Name);
+        return typeof(T).GetProperty(name.Token.Text.ToString());
     }
 
     public LambdaExpression ToLambda(Expression body)
@@ -128,7 +128,7 @@ public class EvaluationVisitor<T> : NodeVisitor<Expression>
         {
             var subLiteral = timeLiteral.SubLiterals[index];
             var visitTimePostFix = VisitTimePostFix(subLiteral,
-                TimeLiteralParselet.TimePostfixConverters[subLiteral.Operator.Name]);
+                TimeLiteralParselet.TimePostfixConverters[subLiteral.Operator.Text.ToString()]);
 
             if (index == 0)
             {
@@ -149,7 +149,7 @@ public class EvaluationVisitor<T> : NodeVisitor<Expression>
 
         var visited = Visit(prefixOperatorNode.Expr);
 
-        result = prefixOperatorNode.Operator.Name switch
+        result = prefixOperatorNode.Operator.Text.ToString() switch
         {
             "-" => Expression.Negate(visited),
             _ => result
@@ -163,14 +163,14 @@ public class EvaluationVisitor<T> : NodeVisitor<Expression>
 
         var visited = Visit(postfix.Expr);
 
-        if (TimeLiteralParselet.TimePostfixConverters.TryGetValue(postfix.Operator.Name, out var timeConverter))
+        if (TimeLiteralParselet.TimePostfixConverters.TryGetValue(postfix.Operator.Text.ToString(), out var timeConverter))
         {
             result = VisitTimePostFix(postfix, timeConverter);
 
             return;
         }
 
-        result = postfix.Operator.Name switch
+        result = postfix.Operator.Text.ToString() switch
         {
             "%" => Expression.Divide(Expression.Convert(visited, typeof(double)), Expression.Constant(100.0)),
             _ => result
@@ -194,7 +194,7 @@ public class EvaluationVisitor<T> : NodeVisitor<Expression>
         var leftVisited = Visit(binaryOperatorNode.LeftExpr);
         var rightVisited = Visit(binaryOperatorNode.RightExpr);
 
-        result = binaryOperatorNode.Operator.Name switch
+        result = binaryOperatorNode.Operator.Text.ToString() switch
         {
             "+" => Expression.Add(leftVisited, rightVisited),
             "-" => Expression.Subtract(leftVisited, rightVisited),

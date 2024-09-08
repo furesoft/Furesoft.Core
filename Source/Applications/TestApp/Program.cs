@@ -2,13 +2,55 @@
 using Furesoft.Core.ExpressionEvaluator;
 using Furesoft.Core.ExpressionEvaluator.Library;
 using System;
+using Furesoft.Core.GraphDb;
+using Furesoft.Core.GraphDb.IO;
 
 namespace TestApp;
+
+record Actor(string Name)
+{
+
+}
+
+record Movie(string Name)
+{
+
+}
+
+class HasRole
+{
+
+}
 
 internal static class Program
 {
     public static int Main(string[] args)
     {
+        DbControl.DbPath = Environment.CurrentDirectory;
+        var db = new DbEngine();
+
+        var movie = new Movie("The Big Bang Theory");
+        var jim = new Actor("Jim");
+        var john = new Actor("John");
+
+        var movieNode = db.AddNode(movie);
+        var jimNode = db.AddNode(jim);
+        var johnNode = db.AddNode(john);
+
+        db.AddRelation(movieNode, johnNode, new HasRole());
+        db.AddRelation(movieNode, jimNode, new HasRole());
+
+        db.SaveChanges();
+
+        var q = db.CreateQuery();
+        var qm = q.Match<Movie>(m => m.Name == "The Big Bang Theory");
+        q.To<HasRole>();
+        q.Match(NodeDescription.Any());
+
+        q.Execute();
+
+        db.Dispose();
+
         ExpressionParser.Init();
 
         var ep = new ExpressionParser();

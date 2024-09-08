@@ -75,6 +75,21 @@ public class Query
         return To(new RelationDescription(typeof(T).Name, ConvertExprToDictionary(expression)));
     }
 
+    public RelationSet To<T>()
+    {
+        return To(new RelationDescription(typeof(T).Name, []));
+    }
+
+    public RelationSet From<T>(Expression<Func<T, bool>> expression)
+    {
+        return From(new RelationDescription(typeof(T).Name, ConvertExprToDictionary(expression)));
+    }
+
+    public RelationSet From<T>()
+    {
+        return From(new RelationDescription(typeof(T).Name, []));
+    }
+
     public NodeSet Match(NodeDescription nodeDescription)
     {
         if (_nodeSets.Count == 0 && _relationSets.Count == 0)

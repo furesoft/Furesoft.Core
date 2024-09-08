@@ -9,7 +9,7 @@ namespace Furesoft.Core.Rules.DSL.Parselets;
 public class ConditionParselet : IInfixParselet
 {
     private readonly Dictionary<string[], Symbol> _tokenMappings = [];
-    private readonly int bindingPower;
+    private readonly int _bindingPower;
 
     public ConditionParselet(int bindingPower)
     {
@@ -22,14 +22,14 @@ public class ConditionParselet : IInfixParselet
 
         _tokenMappings.Add(["divisible", "by"], "%.");
 
-        this.bindingPower = bindingPower;
+        this._bindingPower = bindingPower;
     }
 
     public AstNode Parse(Parser parser, AstNode left, Token token)
     {
         var symbol = MatchesMultipleTokensAsSingleToken(parser);
 
-        if (symbol.Name != "") return BuildNode(parser, symbol, left);
+        if (symbol.Name != "") return BuildNode(parser, token.Rewrite(symbol), left);
 
         var currentToken = parser.Consume();
 
@@ -40,9 +40,9 @@ public class ConditionParselet : IInfixParselet
         return null;
     }
 
-    public int GetBindingPower() => bindingPower;
+    public int GetBindingPower() => _bindingPower;
 
-    private AstNode BuildNode(Parser parser, Symbol op, AstNode left)
+    private AstNode BuildNode(Parser parser, Token op, AstNode left)
     {
         var right = parser.Parse(GetBindingPower() - 1);
 

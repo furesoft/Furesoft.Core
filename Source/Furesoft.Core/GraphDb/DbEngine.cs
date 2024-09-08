@@ -46,7 +46,7 @@ public class DbEngine : IDisposable
         return relation;
     }
 
-    public Relation AddRelation<TFrom, TTo, TRel>(TFrom from, TTo to, TRel obj)
+    public Relation AddRelation<TFrom, TTo, TRel>(TFrom from, TRel obj, TTo to)
     {
         var fromNode = AddNode(from);
         var toNode = AddNode(to);

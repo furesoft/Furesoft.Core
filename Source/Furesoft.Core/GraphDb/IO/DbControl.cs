@@ -17,7 +17,7 @@ public static class DbControl
 
     private const string IdStoragePath = "id.storage";
     private static readonly TraceSource TraceSource = new("TraceGraphyDb");
-    private static string DbPath;
+    public static string DbPath;
     private static bool _initializedIoFlag;
 
     internal static readonly Dictionary<string, int> BlockByteSize = new()

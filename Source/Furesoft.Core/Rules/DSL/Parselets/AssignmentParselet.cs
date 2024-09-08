@@ -15,7 +15,7 @@ public class AssignmentParselet(int bindingPower) : IPrefixParselet
         parser.Match("to");
         var value = parser.Parse(bindingPower - 1);
 
-        return new BinaryOperatorNode(name, "=", value);
+        return new BinaryOperatorNode(name, token.Rewrite("="), value);
     }
 
     public int GetBindingPower() => bindingPower;

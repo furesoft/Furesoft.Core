@@ -31,7 +31,7 @@ public class TimeLiteralParselet : IPrefixParselet
             if (IsTimeSubLiteral(parser.LookAhead(0)))
             {
                 var number = numberParselet.Parse(parser, token);
-                subLiterals.Add(new(number, parser.Consume().Type));
+                subLiterals.Add(new(number, parser.Consume(), null));
                 token = parser.Consume();
             }
             else
