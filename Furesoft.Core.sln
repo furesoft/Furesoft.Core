@@ -19,10 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CodeDom", "CodeDom", "{19FB
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furesoft.Core.CodeDom", "Source\Furesoft.CodeDom\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj", "{F96D4823-1130-4BFB-9AC5-31562361C754}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furesoft.Core.CodeDom.Backends", "Source\Furesoft.CodeDom\Furesoft.Core.CodeDom.Backends\Furesoft.Core.CodeDom.Backends.csproj", "{EB5CC9C8-4A06-48F9-949E-872935057C01}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furesoft.Core.CodeDom.Compiler", "Source\Furesoft.CodeDom\Furesoft.Core.CodeDom.Compiler\Furesoft.Core.CodeDom.Compiler.csproj", "{A767C7AA-634D-452E-A553-2B83AEF06DE7}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Furesoft.Core.ExpressionEvaluator", "Source\Furesoft.CodeDom\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj", "{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Furesoft.Core.Componenting.MonoGame", "Source\Furesoft.Core.Componenting.MonoGame\Furesoft.Core.Componenting.MonoGame.csproj", "{9F8E9BBD-B1B4-4261-892A-A09DE7523A8F}"
@@ -85,22 +81,6 @@ Global
 		{F96D4823-1130-4BFB-9AC5-31562361C754}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F96D4823-1130-4BFB-9AC5-31562361C754}.Release|x86.ActiveCfg = Release|Any CPU
 		{F96D4823-1130-4BFB-9AC5-31562361C754}.Release|x86.Build.0 = Release|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Debug|x86.Build.0 = Debug|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Release|x86.ActiveCfg = Release|Any CPU
-		{EB5CC9C8-4A06-48F9-949E-872935057C01}.Release|x86.Build.0 = Release|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Debug|x86.Build.0 = Debug|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Release|x86.ActiveCfg = Release|Any CPU
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7}.Release|x86.Build.0 = Release|Any CPU
 		{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B2B9CC6-BAE7-45DA-9E16-F2DE5D9EE6A4}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -134,8 +114,6 @@ Global
 		{566F58B9-D3F7-4953-B35A-255E26748218} = {04BF8670-4337-45F2-8E5A-FE81FC785362}
 		{8177776E-F51C-4477-AAD3-C2FEA2EB51B4} = {04BF8670-4337-45F2-8E5A-FE81FC785362}
 		{F96D4823-1130-4BFB-9AC5-31562361C754} = {19FB77E0-91F5-436C-99D0-02AEEDF2F690}
-		{EB5CC9C8-4A06-48F9-949E-872935057C01} = {19FB77E0-91F5-436C-99D0-02AEEDF2F690}
-		{A767C7AA-634D-452E-A553-2B83AEF06DE7} = {19FB77E0-91F5-436C-99D0-02AEEDF2F690}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2C228B53-9468-441E-B21D-406B49105C7D}
