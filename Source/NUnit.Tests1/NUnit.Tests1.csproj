@@ -7,15 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-	<PackageReference Include="NUnit" Version="4.1.0" />
-	<PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+	<PackageReference Include="NUnit" Version="4.2.2" />
+	<PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+	<PackageReference Include="Silverfly.Testing" Version="1.0.77" />
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\Furesoft.CodeDom\Furesoft.Core.CodeDom\Furesoft.Core.CodeDom.csproj" />
 	<ProjectReference Include="..\Furesoft.CodeDom\Furesoft.Core.ExpressionEvaluator\Furesoft.Core.ExpressionEvaluator.csproj" />
-	<ProjectReference Include="..\Furesoft.Core.Parsing\Furesoft.Core.Parsing.csproj" />
   </ItemGroup>
 
   <ItemGroup>

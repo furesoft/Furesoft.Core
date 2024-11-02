@@ -1,14 +1,13 @@
 ﻿using System.Runtime.CompilerServices;
 using Furesoft.Core.Rules;
 using Furesoft.Core.Rules.DSL;
-using Silverfly;
 using RulesTest.Models;
 using Silverfly.Testing;
 
 namespace RulesTest;
 
 [TestFixture]
-public class TestDsl : Silverfly.Testing.SnapshotParserTestBase<Grammar>
+public class TestDsl : SnapshotParserTestBase<Grammar>
 {
     [ModuleInitializer]
     public static void Initalize()

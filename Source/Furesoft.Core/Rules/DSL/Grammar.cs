@@ -27,7 +27,7 @@ public class Grammar : Parser
         lexer.Ignore('\t');
         lexer.MatchString("'", "'");
         lexer.MatchNumber(allowHex: true, allowBin: true);
-        lexer.MatchBoolean(ignoreCasing: true);
+        lexer.MatchBoolean();
 
         lexer.AddSymbols("equal", "less", "greater", "then", "than", "to");
         lexer.AddSymbols("divisible", "by");
@@ -39,7 +39,7 @@ public class Grammar : Parser
 
     protected override void InitParser(ParserDefinition def)
     {
-        def.Block(SOF, EOF, Dot);
+        def.Block(SOF, EOF, ".");
 
         def.Register("error", new ErrorParselet());
         def.Register(Name, new NameParselet());
